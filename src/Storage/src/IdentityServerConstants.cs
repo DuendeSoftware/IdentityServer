@@ -3,7 +3,7 @@
 
 #pragma warning disable 1591
 
-namespace IdentityServer4
+namespace Duende.IdentityServer
 {
     internal static class IdentityServerConstants
     {

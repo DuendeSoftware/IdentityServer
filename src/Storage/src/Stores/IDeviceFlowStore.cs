@@ -3,9 +3,9 @@
 
 
 using System.Threading.Tasks;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 
-namespace IdentityServer4.Stores
+namespace Duende.IdentityServer.Stores
 {
     /// <summary>
     /// Interface for the device flow store

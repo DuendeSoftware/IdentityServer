@@ -8,7 +8,7 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 
-namespace IdentityServer4.Models
+namespace Duende.IdentityServer.Models
 {
     /// <summary>
     /// Models an OpenID Connect or OAuth2 client

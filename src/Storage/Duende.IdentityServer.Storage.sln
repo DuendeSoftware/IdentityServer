@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2EEC146C-3C96-4871-BBAF-8341719BD533}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.Storage", "src\IdentityServer4.Storage.csproj", "{A5E2B0DD-9C88-42B5-BCEC-7ED701504FF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Duende.IdentityServer.Storage", "src\Duende.IdentityServer.Storage.csproj", "{A5E2B0DD-9C88-42B5-BCEC-7ED701504FF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

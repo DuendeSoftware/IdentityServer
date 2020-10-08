@@ -3,15 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
 
-    <PackageId>IdentityServer4.Storage</PackageId>
-    <Description>Storage interfaces and models for IdentityServer4</Description>
-    <Authors>Brock Allen;Dominick Baier</Authors>
+    <PackageId>Duende.IdentityServer.Storage</PackageId>
+    <Description>Storage interfaces and models for Duende IdentityServer</Description>
+    <Authors>Duende Software</Authors>
 
     <PackageTags>OAuth2;OAuth 2.0;OpenID Connect;Security;Identity;IdentityServer</PackageTags>
     <PackageIcon>icon.jpg</PackageIcon>
-    <PackageProjectUrl>https://github.com/IdentityServer/IdentityServer4</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/DuendeSoftware/IdentityServer</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>https://github.com/IdentityServer/IdentityServer4/releases</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/DuendeSoftware/IdentityServer/releases</PackageReleaseNotes>
 
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

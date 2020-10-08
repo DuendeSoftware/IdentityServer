@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityServer4.Stores;
 using System;
+using Duende.IdentityServer.Stores;
 
-namespace IdentityServer4.Extensions
+namespace Duende.IdentityServer.Extensions
 {
     /// <summary>
     /// Extensions for PersistedGrantFilter.

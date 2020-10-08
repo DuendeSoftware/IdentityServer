@@ -10,7 +10,7 @@ using System.Linq;
 
 #pragma warning disable 1591
 
-namespace IdentityServer4.Stores.Serialization
+namespace Duende.IdentityServer.Stores.Serialization
 {
     public class CustomContractResolver: DefaultContractResolver
     {

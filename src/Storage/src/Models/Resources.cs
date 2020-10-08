@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace IdentityServer4.Models
+namespace Duende.IdentityServer.Models
 {
     /// <summary>
     /// Models a collection of identity and API resources.

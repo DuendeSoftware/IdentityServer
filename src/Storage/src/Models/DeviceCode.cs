@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace IdentityServer4.Models
+namespace Duende.IdentityServer.Models
 {
     /// <summary>
     /// Represents data needed for device flow.
