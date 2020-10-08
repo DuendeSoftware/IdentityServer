@@ -8,7 +8,7 @@ pushd ./src/Storage
 Invoke-Expression "./build.ps1 $args"
 popd
 
-pushd ./src/IdentityServer4
+pushd ./src/IdentityServer
 Invoke-Expression "./build.ps1 $args"
 popd
 
