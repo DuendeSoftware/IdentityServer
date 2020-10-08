@@ -4,10 +4,10 @@
 
 using System;
 using System.Threading.Tasks;
-using IdentityServer4.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace IdentityServer4.EntityFramework.Interfaces
+namespace Duende.IdentityServer.EntityFramework.Interfaces
 {
     /// <summary>
     /// Abstraction for the operational data context.

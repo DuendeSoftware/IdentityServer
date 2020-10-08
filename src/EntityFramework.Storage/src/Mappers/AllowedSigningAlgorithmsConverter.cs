@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 
-namespace IdentityServer4.EntityFramework.Mappers
+namespace Duende.IdentityServer.EntityFramework.Mappers
 {
     class AllowedSigningAlgorithmsConverter : 
         IValueConverter<ICollection<string>, string>,

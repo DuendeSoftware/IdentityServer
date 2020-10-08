@@ -5,19 +5,18 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using IdentityServer4.EntityFramework.Interfaces;
-using IdentityServer4.EntityFramework.Mappers;
-using IdentityServer4.Models;
-using IdentityServer4.Stores;
+using Duende.IdentityServer.EntityFramework.Interfaces;
+using Duende.IdentityServer.EntityFramework.Mappers;
+using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace IdentityServer4.EntityFramework.Stores
+namespace Duende.IdentityServer.EntityFramework.Stores
 {
     /// <summary>
     /// Implementation of IClientStore thats uses EF.
     /// </summary>
-    /// <seealso cref="IdentityServer4.Stores.IClientStore" />
+    /// <seealso cref="IClientStore" />
     public class ClientStore : IClientStore
     {
         /// <summary>
@@ -49,9 +48,9 @@ namespace IdentityServer4.EntityFramework.Stores
         /// <returns>
         /// The client
         /// </returns>
-        public virtual async Task<Client> FindClientByIdAsync(string clientId)
+        public virtual async Task<Duende.IdentityServer.Models.Client> FindClientByIdAsync(string clientId)
         {
-            IQueryable<Entities.Client> baseQuery = Context.Clients
+            IQueryable<Duende.IdentityServer.EntityFramework.Entities.Client> baseQuery = Context.Clients
                 .Where(x => x.ClientId == clientId);
 
             var client = (await baseQuery.ToArrayAsync())

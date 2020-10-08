@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using AutoMapper;
 
-namespace IdentityServer4.EntityFramework.Mappers
+namespace Duende.IdentityServer.EntityFramework.Mappers
 {
     /// <summary>
     /// Defines entity/model mapping for scopes.
@@ -18,15 +18,15 @@ namespace IdentityServer4.EntityFramework.Mappers
         /// </summary>
         public ScopeMapperProfile()
         {
-            CreateMap<Entities.ApiScopeProperty, KeyValuePair<string, string>>()
+            CreateMap<Duende.IdentityServer.EntityFramework.Entities.ApiScopeProperty, KeyValuePair<string, string>>()
                 .ReverseMap();
 
-            CreateMap<Entities.ApiScopeClaim, string>()
+            CreateMap<Duende.IdentityServer.EntityFramework.Entities.ApiScopeClaim, string>()
                .ConstructUsing(x => x.Type)
                .ReverseMap()
                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src));
 
-            CreateMap<Entities.ApiScope, Models.ApiScope>(MemberList.Destination)
+            CreateMap<Duende.IdentityServer.EntityFramework.Entities.ApiScope, Models.ApiScope>(MemberList.Destination)
                 .ConstructUsing(src => new Models.ApiScope())
                 .ForMember(x => x.Properties, opts => opts.MapFrom(x => x.Properties))
                 .ForMember(x => x.UserClaims, opts => opts.MapFrom(x => x.UserClaims))

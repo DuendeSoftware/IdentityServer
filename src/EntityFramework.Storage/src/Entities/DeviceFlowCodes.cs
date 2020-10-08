@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IdentityServer4.EntityFramework.Entities
+namespace Duende.IdentityServer.EntityFramework.Entities
 {
     /// <summary>
     /// Entity for device flow codes

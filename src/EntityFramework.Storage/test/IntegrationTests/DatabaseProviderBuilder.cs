@@ -4,7 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 
-namespace IdentityServer4.EntityFramework.IntegrationTests
+namespace IntegrationTests
 {
     /// <summary>
     /// Helper methods to initialize DbContextOptions for the specified database provider and context.

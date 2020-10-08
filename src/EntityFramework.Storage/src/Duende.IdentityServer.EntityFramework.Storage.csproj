@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>IdentityServer4.EntityFramework.Storage</PackageId>
+    <PackageId>Duende.IdentityServer.EntityFramework.Storage</PackageId>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     
-    <Description>EntityFramework persistence layer for IdentityServer4</Description>
-    <Authors>Brock Allen;Dominick Baier;Scott Brady</Authors>
+    <Description>EntityFramework persistence layer for Duende IdentityServer</Description>
+    <Authors>Duende Software</Authors>
     <PackageTags>OAuth2;OAuth 2.0;OpenID Connect;Security;Identity;IdentityServer;EntityFramework</PackageTags>
     <PackageIcon>icon.jpg</PackageIcon>
-    <PackageProjectUrl>https://github.com/IdentityServer/IdentityServer4</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/DuendeSoftware/IdentityServer</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>https://github.com/IdentityServer/IdentityServer4/releases</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/DuendeSoftware/IdentityServer/releases</PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -32,7 +32,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="IdentityServer4.Storage" />
+    <PackageReference Include="Duende.IdentityServer.Storage" />
     
     <PackageReference Include="AutoMapper" />
 

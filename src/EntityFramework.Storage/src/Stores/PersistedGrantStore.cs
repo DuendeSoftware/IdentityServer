@@ -5,22 +5,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IdentityServer4.EntityFramework.Interfaces;
-using IdentityServer4.EntityFramework.Mappers;
-using IdentityServer4.Models;
-using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using System;
-using IdentityServer4.Extensions;
+using Duende.IdentityServer.EntityFramework.Interfaces;
+using Duende.IdentityServer.EntityFramework.Mappers;
+using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Stores;
 
-namespace IdentityServer4.EntityFramework.Stores
+
+namespace Duende.IdentityServer.EntityFramework.Stores
 {
     /// <summary>
     /// Implementation of IPersistedGrantStore thats uses EF.
     /// </summary>
-    /// <seealso cref="IdentityServer4.Stores.IPersistedGrantStore" />
-    public class PersistedGrantStore : IPersistedGrantStore
+    /// <seealso cref="IPersistedGrantStore" />
+    public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantStore
     {
         /// <summary>
         /// The DbContext.
@@ -44,7 +44,7 @@ namespace IdentityServer4.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
-        public virtual async Task StoreAsync(PersistedGrant token)
+        public virtual async Task StoreAsync(Duende.IdentityServer.Models.PersistedGrant token)
         {
             var existing = (await Context.PersistedGrants.Where(x => x.Key == token.Key).ToArrayAsync())
                 .SingleOrDefault(x => x.Key == token.Key);
@@ -73,7 +73,7 @@ namespace IdentityServer4.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
-        public virtual async Task<PersistedGrant> GetAsync(string key)
+        public virtual async Task<Duende.IdentityServer.Models.PersistedGrant> GetAsync(string key)
         {
             var persistedGrant = (await Context.PersistedGrants.AsNoTracking().Where(x => x.Key == key).ToArrayAsync())
                 .SingleOrDefault(x => x.Key == key);
@@ -85,7 +85,7 @@ namespace IdentityServer4.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
+        public async Task<IEnumerable<Duende.IdentityServer.Models.PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
         {
             filter.Validate();
 
@@ -148,7 +148,7 @@ namespace IdentityServer4.EntityFramework.Stores
         }
 
 
-        private IQueryable<Entities.PersistedGrant> Filter(IQueryable<Entities.PersistedGrant> query, PersistedGrantFilter filter)
+        private IQueryable<PersistedGrant> Filter(IQueryable<PersistedGrant> query, PersistedGrantFilter filter)
         {
             if (!String.IsNullOrWhiteSpace(filter.ClientId))
             {

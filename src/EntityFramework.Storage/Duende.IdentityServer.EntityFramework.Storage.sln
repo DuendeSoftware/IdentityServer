@@ -5,13 +5,13 @@ VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AF5DAC33-08AC-45EE-9772-4FF39FB09E57}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.EntityFramework.Storage", "src\IdentityServer4.EntityFramework.Storage.csproj", "{5302DAB3-1662-4956-97AA-5EA5E85B10F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Duende.IdentityServer.EntityFramework.Storage", "src\Duende.IdentityServer.EntityFramework.Storage.csproj", "{5302DAB3-1662-4956-97AA-5EA5E85B10F6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{712ED94A-F982-4667-A9CE-E8F21900BBED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.EntityFramework.UnitTests", "test\UnitTests\IdentityServer4.EntityFramework.UnitTests.csproj", "{8239FC82-46A3-4F21-8D05-1F0BE0B1B1FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "test\UnitTests\UnitTests.csproj", "{8239FC82-46A3-4F21-8D05-1F0BE0B1B1FC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.EntityFramework.IntegrationTests", "test\IntegrationTests\IdentityServer4.EntityFramework.IntegrationTests.csproj", "{E90F7470-C7F8-464B-9C28-87C474085812}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "test\IntegrationTests\IntegrationTests.csproj", "{E90F7470-C7F8-464B-9C28-87C474085812}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "migrations", "migrations", "{E3EF31E0-6658-4899-8BDA-FF84355E2FDD}"
 EndProject

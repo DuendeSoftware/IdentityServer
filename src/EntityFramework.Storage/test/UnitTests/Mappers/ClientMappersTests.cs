@@ -5,7 +5,6 @@
 using System;
 using System.Linq;
 using FluentAssertions;
-using IdentityServer4.EntityFramework.Mappers;
 using Xunit;
 using Client = IdentityServer4.Models.Client;
 

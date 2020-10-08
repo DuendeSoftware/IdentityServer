@@ -3,9 +3,9 @@
 
 
 using AutoMapper;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 
-namespace IdentityServer4.EntityFramework.Mappers
+namespace Duende.IdentityServer.EntityFramework.Mappers
 {
     /// <summary>
     /// Extension methods to map to/from entity/model for persisted grants.
@@ -25,7 +25,7 @@ namespace IdentityServer4.EntityFramework.Mappers
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public static PersistedGrant ToModel(this Entities.PersistedGrant entity)
+        public static PersistedGrant ToModel(this Duende.IdentityServer.EntityFramework.Entities.PersistedGrant entity)
         {
             return entity == null ? null : Mapper.Map<PersistedGrant>(entity);
         }
@@ -35,9 +35,9 @@ namespace IdentityServer4.EntityFramework.Mappers
         /// </summary>
         /// <param name="model">The model.</param>
         /// <returns></returns>
-        public static Entities.PersistedGrant ToEntity(this PersistedGrant model)
+        public static Duende.IdentityServer.EntityFramework.Entities.PersistedGrant ToEntity(this PersistedGrant model)
         {
-            return model == null ? null : Mapper.Map<Entities.PersistedGrant>(model);
+            return model == null ? null : Mapper.Map<Duende.IdentityServer.EntityFramework.Entities.PersistedGrant>(model);
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace IdentityServer4.EntityFramework.Mappers
         /// </summary>
         /// <param name="model">The model.</param>
         /// <param name="entity">The entity.</param>
-        public static void UpdateEntity(this PersistedGrant model, Entities.PersistedGrant entity)
+        public static void UpdateEntity(this PersistedGrant model, Duende.IdentityServer.EntityFramework.Entities.PersistedGrant entity)
         {
             Mapper.Map(model, entity);
         }

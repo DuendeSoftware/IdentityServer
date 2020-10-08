@@ -3,8 +3,6 @@
 
 
 using System.Linq;
-using FluentAssertions;
-using IdentityServer4.EntityFramework.Mappers;
 using Xunit;
 using ApiResource = IdentityServer4.Models.ApiResource;
 

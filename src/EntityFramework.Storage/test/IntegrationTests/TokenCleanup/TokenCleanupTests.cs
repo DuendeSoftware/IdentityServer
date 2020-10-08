@@ -2,24 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework;
+using Duende.IdentityServer.EntityFramework.DbContexts;
+using Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Interfaces;
+using Duende.IdentityServer.EntityFramework.Options;
+using Duende.IdentityServer.EntityFramework.Stores;
 using FluentAssertions;
-using IdentityServer4.EntityFramework.DbContexts;
-using IdentityServer4.EntityFramework.Entities;
-using IdentityServer4.EntityFramework.Interfaces;
-using IdentityServer4.EntityFramework.Options;
-using IdentityServer4.EntityFramework.Stores;
 using IdentityServer4.Stores;
 using IdentityServer4.Test;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using IPersistedGrantStore = Duende.IdentityServer.Stores.IPersistedGrantStore;
 
-namespace IdentityServer4.EntityFramework.IntegrationTests.TokenCleanup
+namespace IntegrationTests.TokenCleanup
 {
     public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGrantDbContext, OperationalStoreOptions>
     {
-
-
         public TokenCleanupTests(DatabaseProviderFixture<PersistedGrantDbContext> fixture) : base(fixture)
         {
             foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<PersistedGrantDbContext>)y)).ToList())
@@ -141,24 +141,24 @@ namespace IdentityServer4.EntityFramework.IntegrationTests.TokenCleanup
             }
         }
 
-        private EntityFramework.TokenCleanupService CreateSut(DbContextOptions<PersistedGrantDbContext> options)
+        private TokenCleanupService CreateSut(DbContextOptions<PersistedGrantDbContext> options)
         {
             IServiceCollection services = new ServiceCollection();
             services.AddIdentityServer()
                 .AddTestUsers(new List<TestUser>())
-                .AddInMemoryClients(new List<Models.Client>())
-                .AddInMemoryIdentityResources(new List<Models.IdentityResource>())
-                .AddInMemoryApiResources(new List<Models.ApiResource>());
+                .AddInMemoryClients(new List<Duende.IdentityServer.Models.Client>())
+                .AddInMemoryIdentityResources(new List<Duende.IdentityServer.Models.IdentityResource>())
+                .AddInMemoryApiResources(new List<Duende.IdentityServer.Models.ApiResource>());
 
             services.AddScoped<IPersistedGrantDbContext, PersistedGrantDbContext>(_ =>
                 new PersistedGrantDbContext(options, StoreOptions));
             services.AddTransient<IPersistedGrantStore, PersistedGrantStore>();
             services.AddTransient<IDeviceFlowStore, DeviceFlowStore>();
             
-            services.AddTransient<EntityFramework.TokenCleanupService>();
+            services.AddTransient<TokenCleanupService>();
             services.AddSingleton(StoreOptions);
 
-            return services.BuildServiceProvider().GetRequiredService<EntityFramework.TokenCleanupService>();
+            return services.BuildServiceProvider().GetRequiredService<TokenCleanupService>();
             //return new EntityFramework.TokenCleanupService(
             //    services.BuildServiceProvider(),
             //    new NullLogger<EntityFramework.TokenCleanup>(),

@@ -4,11 +4,11 @@
 
 #pragma warning disable 1591
 
-using IdentityServer4.Models;
 using System;
 using System.Collections.Generic;
+using Duende.IdentityServer.Models;
 
-namespace IdentityServer4.EntityFramework.Entities
+namespace Duende.IdentityServer.EntityFramework.Entities
 {
     public class Client
     {

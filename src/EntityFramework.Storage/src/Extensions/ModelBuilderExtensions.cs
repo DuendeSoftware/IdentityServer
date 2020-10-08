@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityServer4.EntityFramework.Entities;
-using IdentityServer4.EntityFramework.Options;
+using Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace IdentityServer4.EntityFramework.Extensions
+namespace Duende.IdentityServer.EntityFramework.Extensions
 {
     /// <summary>
     /// Extension methods to define the database schema for the configuration and operational data stores.

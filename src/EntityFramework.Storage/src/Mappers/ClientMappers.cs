@@ -4,7 +4,7 @@
 
 using AutoMapper;
 
-namespace IdentityServer4.EntityFramework.Mappers
+namespace Duende.IdentityServer.EntityFramework.Mappers
 {
     /// <summary>
     /// Extension methods to map to/from entity/model for clients.
@@ -24,7 +24,7 @@ namespace IdentityServer4.EntityFramework.Mappers
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public static Models.Client ToModel(this Entities.Client entity)
+        public static Models.Client ToModel(this Duende.IdentityServer.EntityFramework.Entities.Client entity)
         {
             return Mapper.Map<Models.Client>(entity);
         }
@@ -34,9 +34,9 @@ namespace IdentityServer4.EntityFramework.Mappers
         /// </summary>
         /// <param name="model">The model.</param>
         /// <returns></returns>
-        public static Entities.Client ToEntity(this Models.Client model)
+        public static Duende.IdentityServer.EntityFramework.Entities.Client ToEntity(this Models.Client model)
         {
-            return Mapper.Map<Entities.Client>(model);
+            return Mapper.Map<Duende.IdentityServer.EntityFramework.Entities.Client>(model);
         }
     }
 }
