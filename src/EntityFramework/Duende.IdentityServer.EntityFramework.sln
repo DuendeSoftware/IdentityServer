@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29230.61
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8BFDA83B-FD73-4776-9C2C-5F7FFE440C1F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.EntityFramework", "src\IdentityServer4.EntityFramework.csproj", "{AB83F911-8B78-4973-A3A9-2A2D85581F25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Duende.IdentityServer.EntityFramework", "src\Duende.IdentityServer.EntityFramework.csproj", "{AB83F911-8B78-4973-A3A9-2A2D85581F25}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host", "host\Host.csproj", "{9E9EE58E-4B98-4495-8E8B-00281B3EABDA}"
 EndProject
@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlServer", "migrations\Sql
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{19FEB622-0912-4F5E-840F-827B4B9EF026}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer4.EntityFramework.Tests", "test\IdentityServer4.EntityFramework.Tests\IdentityServer4.EntityFramework.Tests.csproj", "{E3685B06-F135-4318-B841-889C35479D5C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "test\Tests\Tests.csproj", "{E3685B06-F135-4318-B841-889C35479D5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

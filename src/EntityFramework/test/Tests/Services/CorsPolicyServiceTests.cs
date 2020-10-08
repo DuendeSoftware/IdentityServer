@@ -4,19 +4,19 @@
 
 using System;
 using System.Collections.Generic;
-using IdentityServer4.EntityFramework.DbContexts;
-using IdentityServer4.EntityFramework.Mappers;
-using IdentityServer4.Models;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Linq;
-using IdentityServer4.EntityFramework.Options;
+using Duende.IdentityServer.EntityFramework.DbContexts;
+using Duende.IdentityServer.EntityFramework.Interfaces;
+using Duende.IdentityServer.EntityFramework.Mappers;
+using Duende.IdentityServer.EntityFramework.Options;
+using Duende.IdentityServer.EntityFramework.Services;
+using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using IdentityServer4.EntityFramework.Interfaces;
-using IdentityServer4.EntityFramework.Services;
 
-namespace IdentityServer4.EntityFramework.IntegrationTests.Services
+namespace Tests.Services
 {
     public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, ConfigurationDbContext, ConfigurationStoreOptions>
     {
