@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityServer4.Models;
+using Duende.IdentityServer.EntityFramework.Mappers;
+using FluentAssertions;
 using Xunit;
 
-namespace IdentityServer4.EntityFramework.UnitTests.Mappers
+namespace UnitTests.Mappers
 {
     public class PersistedGrantMappersTests
     {
@@ -18,7 +19,7 @@ namespace IdentityServer4.EntityFramework.UnitTests.Mappers
         [Fact]
         public void CanMap()
         {
-            var model = new PersistedGrant()
+            var model = new Duende.IdentityServer.Models.PersistedGrant()
             {
                 ConsumedTime = new System.DateTime(2020, 02, 03, 4, 5, 6)
             };

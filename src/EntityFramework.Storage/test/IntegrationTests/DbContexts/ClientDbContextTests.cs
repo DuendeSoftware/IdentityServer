@@ -4,7 +4,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using IdentityServer4.EntityFramework.IntegrationTests;
+using Duende.IdentityServer.EntityFramework.DbContexts;
+using Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Options;
 using Xunit;
 
 namespace IntegrationTests.DbContexts

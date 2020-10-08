@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityServer4.Models;
+using Duende.IdentityServer.EntityFramework.Mappers;
 using Xunit;
 
-namespace IdentityServer4.EntityFramework.UnitTests.Mappers
+namespace UnitTests.Mappers
 {
     public class IdentityResourcesMappersTests
     {
@@ -18,7 +18,7 @@ namespace IdentityServer4.EntityFramework.UnitTests.Mappers
         [Fact]
         public void CanMapIdentityResources()
         {
-            var model = new IdentityResource();
+            var model = new Duende.IdentityServer.Models.IdentityResource();
             var mappedEntity = model.ToEntity();
             var mappedModel = mappedEntity.ToModel();
 

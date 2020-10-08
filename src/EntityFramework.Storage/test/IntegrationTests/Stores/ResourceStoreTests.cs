@@ -6,9 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.DbContexts;
+using Duende.IdentityServer.EntityFramework.Mappers;
+using Duende.IdentityServer.EntityFramework.Options;
+using Duende.IdentityServer.EntityFramework.Stores;
+using Duende.IdentityServer.Models;
 using IdentityModel;
-using IdentityServer4.EntityFramework.IntegrationTests;
-using IdentityServer4.Models;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 

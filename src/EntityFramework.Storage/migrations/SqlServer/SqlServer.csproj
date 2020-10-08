@@ -7,7 +7,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
-    <ProjectReference Include="..\..\src\IdentityServer4.EntityFramework.Storage.csproj" />
+    
+    <ProjectReference Include="..\..\src\Duende.IdentityServer.EntityFramework.Storage.csproj" />
   </ItemGroup>
   
 </Project>

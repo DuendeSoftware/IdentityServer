@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System.Linq;
+using Duende.IdentityServer.EntityFramework.Mappers;
+using FluentAssertions;
 using Xunit;
 
-namespace IdentityServer4.EntityFramework.UnitTests.Mappers
+namespace UnitTests.Mappers
 {
     public class ScopesMappersTests
     {
@@ -17,7 +20,7 @@ namespace IdentityServer4.EntityFramework.UnitTests.Mappers
         [Fact]
         public void CanMapScope()
         {
-            var model = new ApiScope();
+            var model = new Duende.IdentityServer.Models.ApiScope();
             var mappedEntity = model.ToEntity();
             var mappedModel = mappedEntity.ToModel();
 
@@ -28,7 +31,7 @@ namespace IdentityServer4.EntityFramework.UnitTests.Mappers
         [Fact]
         public void Properties_Map()
         {
-            var model = new ApiScope()
+            var model = new Duende.IdentityServer.Models.ApiScope()
             {
                 Description = "description",
                 DisplayName = "displayname",

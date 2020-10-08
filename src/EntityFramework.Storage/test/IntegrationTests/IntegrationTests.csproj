@@ -14,12 +14,11 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\src\Duende.IdentityServer.EntityFramework.Storage.csproj" />
-    <ProjectReference Include="..\..\src\IdentityServer4.EntityFramework.Storage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="IdentityServer4" />
-    <PackageReference Include="IdentityServer4.Storage" />
+    <PackageReference Include="Duende.IdentityServer" />
+    <PackageReference Include="Duende.IdentityServer.Storage" />
     
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
