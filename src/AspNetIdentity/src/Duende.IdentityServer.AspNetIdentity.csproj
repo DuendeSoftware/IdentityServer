@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>Duende.IdentityServer.AspNetIdentity</PackageId>
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     
     <Description>ASP.NET Core Identity Integration for IdentityServer4</Description>
     <Authors>Duende Software</Authors>
