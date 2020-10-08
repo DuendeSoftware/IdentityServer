@@ -110,6 +110,7 @@ namespace IntegrationTests.Stores
         {
             using (var context = new PersistedGrantDbContext(options, StoreOptions))
             {
+                context.PersistedGrants.RemoveRange(context.PersistedGrants.ToArray()); 
                 context.PersistedGrants.Add(CreateTestObject(sub: "sub1", clientId: "c1", sid: "s1", type: "t1").ToEntity());
                 context.PersistedGrants.Add(CreateTestObject(sub: "sub1", clientId: "c1", sid: "s1", type: "t2").ToEntity());
                 context.PersistedGrants.Add(CreateTestObject(sub: "sub1", clientId: "c1", sid: "s2", type: "t1").ToEntity());
