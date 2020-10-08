@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.UnitTests.Common
+﻿namespace UnitTests.Common
 {
     internal interface IAuthenticationSchemeHandler
     {

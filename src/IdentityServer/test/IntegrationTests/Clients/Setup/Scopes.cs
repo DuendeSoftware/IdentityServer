@@ -3,9 +3,9 @@
 
 
 using System.Collections.Generic;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 
-namespace IdentityServer.IntegrationTests.Clients.Setup
+namespace IntegrationTests.Clients.Setup
 {
     internal class Scopes
     {

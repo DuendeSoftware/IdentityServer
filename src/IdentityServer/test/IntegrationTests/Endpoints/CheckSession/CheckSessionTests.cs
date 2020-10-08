@@ -5,10 +5,10 @@
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityServer.IntegrationTests.Common;
+using IntegrationTests.Common;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Endpoints.CheckSession
+namespace IntegrationTests.Endpoints.CheckSession
 {
     public class CheckSessionTests
     {

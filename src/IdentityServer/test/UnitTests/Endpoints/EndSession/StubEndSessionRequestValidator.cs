@@ -5,9 +5,9 @@
 using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer4.Validation;
+using Duende.IdentityServer.Validation;
 
-namespace IdentityServer.UnitTests.Endpoints.EndSession
+namespace UnitTests.Endpoints.EndSession
 {
     class StubEndSessionRequestValidator : IEndSessionRequestValidator
     {

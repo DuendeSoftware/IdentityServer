@@ -5,15 +5,15 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Endpoints.Results;
+using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Models;
 using FluentAssertions;
-using IdentityServer4.Configuration;
-using IdentityServer4.Endpoints.Results;
-using IdentityServer4.Extensions;
-using IdentityServer4.Models;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Endpoints.Results
+namespace UnitTests.Endpoints.Results
 {
     public class CheckSessionResultTests
     {

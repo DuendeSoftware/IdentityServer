@@ -1,10 +1,10 @@
-﻿using IdentityServer4.Configuration;
-using IdentityServer4.Extensions;
-using IdentityServer4.Hosting;
+﻿using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Hosting;
+using Duende.IdentityServer.Extensions;
 using Xunit;
-using static IdentityServer4.Constants;
 
-namespace IdentityServer.UnitTests.Extensions
+namespace UnitTests.Extensions
 {
     public class EndpointOptionsExtensionsTests
     {
@@ -20,7 +20,7 @@ namespace IdentityServer.UnitTests.Extensions
             Assert.Equal(
                 expectedIsEndpointEnabled,
                 _options.IsEndpointEnabled(
-                    CreateTestEndpoint(EndpointNames.Authorize)));
+                    CreateTestEndpoint(Constants.EndpointNames.Authorize)));
         }
 
         [Theory]
@@ -33,7 +33,7 @@ namespace IdentityServer.UnitTests.Extensions
             Assert.Equal(
                 expectedIsEndpointEnabled,
                 _options.IsEndpointEnabled(
-                    CreateTestEndpoint(EndpointNames.CheckSession)));
+                    CreateTestEndpoint(Constants.EndpointNames.CheckSession)));
         }
 
         [Theory]
@@ -46,7 +46,7 @@ namespace IdentityServer.UnitTests.Extensions
             Assert.Equal(
                 expectedIsEndpointEnabled,
                 _options.IsEndpointEnabled(
-                    CreateTestEndpoint(EndpointNames.DeviceAuthorization)));
+                    CreateTestEndpoint(Constants.EndpointNames.DeviceAuthorization)));
         }
 
         [Theory]
@@ -59,7 +59,7 @@ namespace IdentityServer.UnitTests.Extensions
             Assert.Equal(
                 expectedIsEndpointEnabled,
                 _options.IsEndpointEnabled(
-                    CreateTestEndpoint(EndpointNames.Discovery)));
+                    CreateTestEndpoint(Constants.EndpointNames.Discovery)));
         }
 
         [Theory]
@@ -72,7 +72,7 @@ namespace IdentityServer.UnitTests.Extensions
             Assert.Equal(
                 expectedIsEndpointEnabled,
                 _options.IsEndpointEnabled(
-                    CreateTestEndpoint(EndpointNames.EndSession)));
+                    CreateTestEndpoint(Constants.EndpointNames.EndSession)));
         }
 
         [Theory]
@@ -85,7 +85,7 @@ namespace IdentityServer.UnitTests.Extensions
             Assert.Equal(
                 expectedIsEndpointEnabled,
                 _options.IsEndpointEnabled(
-                    CreateTestEndpoint(EndpointNames.Introspection)));
+                    CreateTestEndpoint(Constants.EndpointNames.Introspection)));
         }
 
         [Theory]
@@ -98,7 +98,7 @@ namespace IdentityServer.UnitTests.Extensions
             Assert.Equal(
                 expectedIsEndpointEnabled,
                 _options.IsEndpointEnabled(
-                    CreateTestEndpoint(EndpointNames.Token)));
+                    CreateTestEndpoint(Constants.EndpointNames.Token)));
         }
 
         [Theory]
@@ -111,7 +111,7 @@ namespace IdentityServer.UnitTests.Extensions
             Assert.Equal(
                 expectedIsEndpointEnabled,
                 _options.IsEndpointEnabled(
-                    CreateTestEndpoint(EndpointNames.Revocation)));
+                    CreateTestEndpoint(Constants.EndpointNames.Revocation)));
         }
 
         [Theory]
@@ -124,7 +124,7 @@ namespace IdentityServer.UnitTests.Extensions
             Assert.Equal(
                 expectedIsEndpointEnabled,
                 _options.IsEndpointEnabled(
-                    CreateTestEndpoint(EndpointNames.UserInfo)));
+                    CreateTestEndpoint(Constants.EndpointNames.UserInfo)));
         }
 
         private Endpoint CreateTestEndpoint(string name)

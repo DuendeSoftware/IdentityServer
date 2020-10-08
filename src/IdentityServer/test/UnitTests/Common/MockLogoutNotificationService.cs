@@ -1,10 +1,10 @@
-﻿using IdentityServer4.Models;
-using IdentityServer4.Services;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     public class MockLogoutNotificationService : ILogoutNotificationService
     {

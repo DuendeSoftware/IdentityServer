@@ -1,9 +1,9 @@
-﻿using IdentityServer4.Models;
-using IdentityServer4.Stores;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     class MockReferenceTokenStore : IReferenceTokenStore
     {

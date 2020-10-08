@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Models;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4.Configuration;
-using IdentityServer4.Extensions;
-using IdentityServer4.Models;
+using UnitTests.Common;
 using Microsoft.AspNetCore.Authentication;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Extensions
+namespace UnitTests.Extensions
 {
     public class JwtPayloadCreationTests
     {

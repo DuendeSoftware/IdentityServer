@@ -1,16 +1,16 @@
 ﻿using FluentAssertions;
-using IdentityServer4.Models;
-using IdentityServer4.Test;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer.IntegrationTests.Common;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Test;
+using IntegrationTests.Common;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Token
+namespace IntegrationTests.Endpoints.Token
 {
     public class TokenEndpointTests
     {

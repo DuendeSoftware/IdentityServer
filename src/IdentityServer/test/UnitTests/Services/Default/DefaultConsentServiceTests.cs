@@ -6,17 +6,17 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4;
-using IdentityServer4.Extensions;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using IdentityServer4.Validation;
+using UnitTests.Common;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Services.Default
+namespace UnitTests.Services.Default
 {
     public class DefaultConsentServiceTests
     {

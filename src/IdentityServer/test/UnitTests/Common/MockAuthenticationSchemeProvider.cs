@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     internal class MockAuthenticationSchemeProvider : IAuthenticationSchemeProvider
     {

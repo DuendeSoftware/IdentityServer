@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.TestHost;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using IdentityServer.IntegrationTests.Clients.Setup;
+using IntegrationTests.Clients.Setup;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Clients
+namespace IntegrationTests.Clients
 {
     public class DiscoveryClientTests
     {

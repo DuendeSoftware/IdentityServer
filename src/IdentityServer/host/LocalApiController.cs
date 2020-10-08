@@ -5,12 +5,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
-using static IdentityServer4.IdentityServerConstants;
+using Duende.IdentityServer;
 
 namespace IdentityServerHost
 {
     [Route("localApi")]
-    [Authorize(LocalApi.PolicyName)]
+    [Authorize(IdentityServerConstants.LocalApi.PolicyName)]
     public class LocalApiController : ControllerBase
     {
         public IActionResult Get()

@@ -1,7 +1,7 @@
-using IdentityServer4.Validation;
+using Duende.IdentityServer.Validation;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Extensions
+namespace UnitTests.Extensions
 {
     public class ValidatedAuthorizeRequestExtensionsTests
     {

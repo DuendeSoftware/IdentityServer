@@ -4,19 +4,19 @@
 
 using FluentAssertions;
 using IdentityModel.Client;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4;
-using IdentityServer4.Configuration;
-using IdentityServer4.Models;
+using IntegrationTests.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Models;
 using Xunit;
 using JsonWebKey = Microsoft.IdentityModel.Tokens.JsonWebKey;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Discovery
+namespace IntegrationTests.Endpoints.Discovery
 {
     public class DiscoveryEndpointTests
     {

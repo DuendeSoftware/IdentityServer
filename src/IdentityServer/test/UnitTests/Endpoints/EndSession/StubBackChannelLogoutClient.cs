@@ -3,10 +3,10 @@
 
 
 using System.Threading.Tasks;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 
-namespace IdentityServer.UnitTests.Endpoints.EndSession
+namespace UnitTests.Endpoints.EndSession
 {
     internal class StubBackChannelLogoutClient : IBackChannelLogoutService
     {

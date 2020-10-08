@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using FluentAssertions;
 using IdentityModel;
-using IdentityServer.UnitTests.Validation.Setup;
-using IdentityServer4.Stores;
-using IdentityServer4.Validation;
+using UnitTests.Validation.Setup;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer.UnitTests.Common;
+using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Validation;
+using FluentAssertions;
+using UnitTests.Common;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation
+namespace UnitTests.Validation
 {
     public class UserInfoRequestValidation
     {

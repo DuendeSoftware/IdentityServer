@@ -4,7 +4,6 @@
 
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
-using static Duende.IdentityServer.Constants;
 
 namespace Duende.IdentityServer.Events
 {

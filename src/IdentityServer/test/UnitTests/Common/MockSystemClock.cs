@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using System;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     class MockSystemClock : ISystemClock
     {

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-namespace IdentityServer.IntegrationTests.Clients.Setup
+namespace IntegrationTests.Clients.Setup
 {
     public class CustomResponseDto
     {

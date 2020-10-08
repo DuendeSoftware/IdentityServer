@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace IdentityServer.IntegrationTests.Common
+namespace IntegrationTests.Common
 {
     public class MessageHandlerWrapper : DelegatingHandler
     {

@@ -5,13 +5,13 @@
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Stores;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.UnitTests.Validation.Setup;
-using IdentityServer4.Stores;
+using UnitTests.Validation.Setup;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation.TokenRequest_Validation
+namespace UnitTests.Validation.TokenRequest_Validation
 {
     public class TokenRequestValidation_ClientCredentials_Invalid
     {

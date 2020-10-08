@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
+using Duende.IdentityServer.Services;
 using FluentAssertions;
-using IdentityServer4.Services;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Services.Default
+namespace UnitTests.Services.Default
 {
     public class NumericUserCodeGeneratorTests
     {

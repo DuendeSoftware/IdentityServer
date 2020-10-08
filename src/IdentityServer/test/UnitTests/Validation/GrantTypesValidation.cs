@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using Duende.IdentityServer.Models;
 using FluentAssertions;
-using IdentityServer4.Models;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation
+namespace UnitTests.Validation
 {
     public class GrantTypesValidation
     {

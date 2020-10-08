@@ -3,9 +3,9 @@
 
 
 using IdentityModel;
-using IdentityServer4.Models;
 using System.Collections.Generic;
-using static IdentityServer4.IdentityServerConstants;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 
 namespace IdentityServerHost.Configuration
 {
@@ -29,7 +29,7 @@ namespace IdentityServerHost.Configuration
             new[]
             {
                 // local API scope
-                new ApiScope(LocalApi.ScopeName),
+                new ApiScope(IdentityServerConstants.LocalApi.ScopeName),
 
                 // resource specific scopes
                 new ApiScope("resource1.scope1"),

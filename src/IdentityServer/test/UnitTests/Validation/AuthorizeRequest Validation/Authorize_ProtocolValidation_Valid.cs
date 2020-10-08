@@ -5,13 +5,13 @@
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.UnitTests.Validation.Setup;
-using IdentityServer4;
+using UnitTests.Validation.Setup;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation.AuthorizeRequest_Validation
+namespace UnitTests.Validation.AuthorizeRequest_Validation
 {
     public class Authorize_ProtocolValidation_Valid
     {

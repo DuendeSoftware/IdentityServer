@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.Logging;
-using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Validation
 {

@@ -5,13 +5,13 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Test;
 using FluentAssertions;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4.Models;
-using IdentityServer4.Test;
+using IntegrationTests.Common;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Authorize
+namespace IntegrationTests.Endpoints.Authorize
 {
     public class SessionIdTests
     {

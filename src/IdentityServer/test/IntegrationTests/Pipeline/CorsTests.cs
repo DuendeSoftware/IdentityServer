@@ -7,15 +7,15 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Test;
 using FluentAssertions;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using IdentityServer4.Test;
+using IntegrationTests.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Pipeline
+namespace IntegrationTests.Pipeline
 {
     public class CorsTests
     {

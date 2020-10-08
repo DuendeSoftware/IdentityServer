@@ -6,18 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4.Configuration;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using IdentityServer4.Services.Default;
-using IdentityServer4.Stores;
-using IdentityServer4.Stores.Serialization;
-using IdentityServer4.Validation;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Services.Default;
+using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Stores.Serialization;
+using Duende.IdentityServer.Validation;
+using UnitTests.Common;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 
-namespace IdentityServer.UnitTests.Validation.Setup
+namespace UnitTests.Validation.Setup
 {
     internal static class Factory
     {

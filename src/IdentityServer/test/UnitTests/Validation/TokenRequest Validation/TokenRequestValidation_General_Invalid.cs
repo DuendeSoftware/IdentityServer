@@ -6,15 +6,15 @@ using System;
 using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.UnitTests.Validation.Setup;
-using IdentityServer4;
-using IdentityServer4.Models;
-using IdentityServer4.Stores;
+using UnitTests.Validation.Setup;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation.TokenRequest_Validation
+namespace UnitTests.Validation.TokenRequest_Validation
 {
     public class TokenRequestValidation_General_Invalid
     {

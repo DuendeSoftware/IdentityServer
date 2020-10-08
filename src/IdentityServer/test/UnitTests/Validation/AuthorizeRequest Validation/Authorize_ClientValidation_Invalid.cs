@@ -4,14 +4,14 @@
 
 using System.Collections.Specialized;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Configuration;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.UnitTests.Common;
-using IdentityServer.UnitTests.Validation.Setup;
-using IdentityServer4.Configuration;
+using UnitTests.Common;
+using UnitTests.Validation.Setup;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation.AuthorizeRequest_Validation
+namespace UnitTests.Validation.AuthorizeRequest_Validation
 {
     public class Authorize_ClientValidation_Invalid
     {

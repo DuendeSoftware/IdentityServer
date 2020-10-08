@@ -5,7 +5,7 @@
 using System;
 using Microsoft.AspNetCore.Authentication;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     internal class StubClock : ISystemClock
     {

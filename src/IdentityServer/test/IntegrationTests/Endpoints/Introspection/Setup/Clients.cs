@@ -3,9 +3,9 @@
 
 
 using System.Collections.Generic;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Introspection.Setup
+namespace IntegrationTests.Endpoints.Introspection.Setup
 {
     internal class Clients
     {

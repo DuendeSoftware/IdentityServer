@@ -7,22 +7,22 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.UnitTests.Common;
-using IdentityServer.UnitTests.Services.Default;
-using IdentityServer.UnitTests.Validation.Setup;
-using IdentityServer4;
-using IdentityServer4.Configuration;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using IdentityServer4.Stores;
-using IdentityServer4.Validation;
+using UnitTests.Common;
+using UnitTests.Services.Default;
+using UnitTests.Validation.Setup;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation.Secrets
+namespace UnitTests.Validation.Secrets
 {
     public class PrivateKeyJwtSecretValidation
     {

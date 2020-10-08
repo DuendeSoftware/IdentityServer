@@ -24,11 +24,11 @@
     <!--our stuff -->
     <PackageReference Update="IdentityModel" Version="4.4.0" />
 
-    <PackageReference Update="IdentityServer4" Version="$(IdentityServerVersion)" />
-    <PackageReference Update="IdentityServer4.AspNetIdentity" Version="$(IdentityServerVersion)" />
-    <PackageReference Update="IdentityServer4.Storage" Version="$(IdentityServerVersion)" />
-    <PackageReference Update="IdentityServer4.EntityFramework.Storage" Version="$(IdentityServerVersion)" />
-    <PackageReference Update="IdentityServer4.EntityFramework" Version="$(IdentityServerVersion)" />
+    <PackageReference Update="Duende.IdentityServer" Version="$(IdentityServerVersion)" />
+    <PackageReference Update="Duende.IdentityServer.AspNetIdentity" Version="$(IdentityServerVersion)" />
+    <PackageReference Update="Duende.IdentityServer.Storage" Version="$(IdentityServerVersion)" />
+    <PackageReference Update="Duende.IdentityServer.EntityFramework.Storage" Version="$(IdentityServerVersion)" />
+    <PackageReference Update="Duende.IdentityServer.EntityFramework" Version="$(IdentityServerVersion)" />
 
     <!--microsoft extensions -->
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="$(ExtensionsVersion)" />

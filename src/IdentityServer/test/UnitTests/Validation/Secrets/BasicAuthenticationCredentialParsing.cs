@@ -4,16 +4,16 @@
 
 using System;
 using System.Text;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4;
-using IdentityServer4.Configuration;
-using IdentityServer4.Validation;
+using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation.Secrets
+namespace UnitTests.Validation.Secrets
 {
     public class BasicAuthenticationSecretParsing
     {

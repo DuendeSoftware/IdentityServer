@@ -4,9 +4,9 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using IdentityServer4.Validation;
+using Duende.IdentityServer.Validation;
 
-namespace IdentityServer.IntegrationTests.Clients.Setup
+namespace IntegrationTests.Clients.Setup
 {
     public class TestCustomTokenRequestValidator : ICustomTokenRequestValidator
     {

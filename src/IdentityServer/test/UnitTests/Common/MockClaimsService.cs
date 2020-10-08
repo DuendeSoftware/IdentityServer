@@ -1,11 +1,11 @@
-﻿using IdentityServer4.Services;
-using IdentityServer4.Validation;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Validation;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     class MockClaimsService : IClaimsService
     {

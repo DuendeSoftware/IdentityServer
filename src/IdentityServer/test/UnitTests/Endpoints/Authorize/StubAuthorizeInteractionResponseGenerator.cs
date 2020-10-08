@@ -3,11 +3,11 @@
 
 
 using System.Threading.Tasks;
-using IdentityServer4.Models;
-using IdentityServer4.ResponseHandling;
-using IdentityServer4.Validation;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.ResponseHandling;
+using Duende.IdentityServer.Validation;
 
-namespace IdentityServer.UnitTests.Endpoints.Authorize
+namespace UnitTests.Endpoints.Authorize
 {
     internal class StubAuthorizeInteractionResponseGenerator : IAuthorizeInteractionResponseGenerator
     {

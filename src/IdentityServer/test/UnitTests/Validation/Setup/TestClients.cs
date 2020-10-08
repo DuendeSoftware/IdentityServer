@@ -3,10 +3,10 @@
 
 
 using System.Collections.Generic;
-using IdentityServer4;
-using IdentityServer4.Models;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 
-namespace IdentityServer.UnitTests.Validation.Setup
+namespace UnitTests.Validation.Setup
 {
     internal class TestClients
     {

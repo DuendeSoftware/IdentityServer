@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
-using IdentityServer4.Validation;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation
+namespace UnitTests.Validation
 {
     /// <summary>
     /// Tests for ResponseTypeEqualityComparer

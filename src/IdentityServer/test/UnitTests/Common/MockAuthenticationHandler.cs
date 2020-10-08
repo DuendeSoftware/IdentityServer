@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     internal class MockAuthenticationHandler : IAuthenticationHandler
     {

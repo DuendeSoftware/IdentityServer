@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityServer4;
-using IdentityServer4.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Extensions
+namespace UnitTests.Extensions
 {
     public class IdentityServerBuilderExtensionsCryptoTests
     {

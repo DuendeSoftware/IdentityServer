@@ -5,11 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4;
-using IdentityServer4.Models;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
+using IntegrationTests.Common;
 
-namespace IdentityServer.IntegrationTests.Clients.Setup
+namespace IntegrationTests.Clients.Setup
 {
     internal class Clients
     {

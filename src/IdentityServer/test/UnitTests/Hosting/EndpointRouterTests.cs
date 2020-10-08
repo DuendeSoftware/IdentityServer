@@ -5,27 +5,27 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Hosting;
 using FluentAssertions;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4.Configuration;
-using IdentityServer4.Hosting;
+using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Xunit;
-using static IdentityServer4.Constants;
 
-namespace IdentityServer.UnitTests.Hosting
+namespace UnitTests.Hosting
 {
     public class EndpointRouterTests
     {
-        private Dictionary<string, IdentityServer4.Hosting.Endpoint> _pathMap;
-        private List<IdentityServer4.Hosting.Endpoint> _endpoints;
+        private Dictionary<string, Duende.IdentityServer.Hosting.Endpoint> _pathMap;
+        private List<Duende.IdentityServer.Hosting.Endpoint> _endpoints;
         private IdentityServerOptions _options;
         private EndpointRouter _subject;
 
         public EndpointRouterTests()
         {
-            _pathMap = new Dictionary<string, IdentityServer4.Hosting.Endpoint>();
-            _endpoints = new List<IdentityServer4.Hosting.Endpoint>();
+            _pathMap = new Dictionary<string, Duende.IdentityServer.Hosting.Endpoint>();
+            _endpoints = new List<Duende.IdentityServer.Hosting.Endpoint>();
             _options = new IdentityServerOptions();
             _subject = new EndpointRouter(_endpoints, _options, TestLogger.Create<EndpointRouter>());
         }
@@ -33,15 +33,15 @@ namespace IdentityServer.UnitTests.Hosting
         [Fact]
         public void Endpoint_ctor_requires_path_to_start_with_slash()
         {
-            Action a = () => new IdentityServer4.Hosting.Endpoint("ep1", "ep1", typeof(MyEndpointHandler));
+            Action a = () => new Duende.IdentityServer.Hosting.Endpoint("ep1", "ep1", typeof(MyEndpointHandler));
             a.Should().Throw<ArgumentException>();
         }
 
         [Fact]
         public void Find_should_return_null_for_incorrect_path()
         {
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint("ep1", "/ep1", typeof(MyEndpointHandler)));
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint("ep2", "/ep2", typeof(MyOtherEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep1", "/ep1", typeof(MyEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep2", "/ep2", typeof(MyOtherEndpointHandler)));
 
             var ctx = new DefaultHttpContext();
             ctx.Request.Path = new PathString("/wrong");
@@ -54,8 +54,8 @@ namespace IdentityServer.UnitTests.Hosting
         [Fact]
         public void Find_should_find_path()
         {
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint("ep1", "/ep1", typeof(MyEndpointHandler)));
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint("ep2", "/ep2", typeof(MyOtherEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep1", "/ep1", typeof(MyEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep2", "/ep2", typeof(MyOtherEndpointHandler)));
 
             var ctx = new DefaultHttpContext();
             ctx.Request.Path = new PathString("/ep1");
@@ -68,8 +68,8 @@ namespace IdentityServer.UnitTests.Hosting
         [Fact]
         public void Find_should_not_find_nested_paths()
         {
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint("ep1", "/ep1", typeof(MyEndpointHandler)));
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint("ep2", "/ep2", typeof(MyOtherEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep1", "/ep1", typeof(MyEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep2", "/ep2", typeof(MyOtherEndpointHandler)));
 
             var ctx = new DefaultHttpContext();
             ctx.Request.Path = new PathString("/ep1/subpath");
@@ -82,8 +82,8 @@ namespace IdentityServer.UnitTests.Hosting
         [Fact]
         public void Find_should_find_first_registered_mapping()
         {
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint("ep1", "/ep1", typeof(MyEndpointHandler)));
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint("ep1", "/ep1", typeof(MyOtherEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep1", "/ep1", typeof(MyEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep1", "/ep1", typeof(MyOtherEndpointHandler)));
 
             var ctx = new DefaultHttpContext();
             ctx.Request.Path = new PathString("/ep1");
@@ -96,8 +96,8 @@ namespace IdentityServer.UnitTests.Hosting
         [Fact]
         public void Find_should_return_null_for_disabled_endpoint()
         {
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint(EndpointNames.Authorize, "/ep1", typeof(MyEndpointHandler)));
-            _endpoints.Add(new IdentityServer4.Hosting.Endpoint("ep2", "/ep2", typeof(MyOtherEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint(Constants.EndpointNames.Authorize, "/ep1", typeof(MyEndpointHandler)));
+            _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep2", "/ep2", typeof(MyOtherEndpointHandler)));
 
             _options.Endpoints.EnableAuthorizeEndpoint = false;
 

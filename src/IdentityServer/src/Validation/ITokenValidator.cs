@@ -3,7 +3,6 @@
 
 
 using System.Threading.Tasks;
-using Duende.IdentityServer.Models;
 
 namespace Duende.IdentityServer.Validation
 {

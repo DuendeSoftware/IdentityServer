@@ -1,7 +1,7 @@
-﻿using IdentityServer4.Models;
-using IdentityServer4.Validation;
+﻿using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Validation;
 
-namespace IdentityServer.UnitTests.Validation.Setup
+namespace UnitTests.Validation.Setup
 { 
     public static class ValidationExtensions
     {

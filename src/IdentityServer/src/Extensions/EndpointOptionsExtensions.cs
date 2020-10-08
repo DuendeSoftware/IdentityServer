@@ -4,7 +4,6 @@
 
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Hosting;
-using static Duende.IdentityServer.Constants;
 
 namespace Duende.IdentityServer.Extensions
 {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 
-namespace IdentityServer.UnitTests.Cors
+namespace UnitTests.Cors
 {
     public class MockCorsPolicyProvider : ICorsPolicyProvider
     {

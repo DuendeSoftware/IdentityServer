@@ -7,16 +7,16 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Test;
 using FluentAssertions;
 using IdentityModel;
 using IdentityModel.Client;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4;
-using IdentityServer4.Models;
-using IdentityServer4.Test;
+using IntegrationTests.Common;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Conformance.Pkce
+namespace IntegrationTests.Conformance.Pkce
 {
     public class PkceTests
     {

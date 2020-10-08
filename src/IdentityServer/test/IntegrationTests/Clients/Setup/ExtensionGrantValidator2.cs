@@ -3,9 +3,9 @@
 
 
 using System.Threading.Tasks;
-using IdentityServer4.Validation;
+using Duende.IdentityServer.Validation;
 
-namespace IdentityServer.IntegrationTests.Clients.Setup
+namespace IntegrationTests.Clients.Setup
 {
     public class ExtensionGrantValidator2 : IExtensionGrantValidator
     {
@@ -21,7 +21,7 @@ namespace IdentityServer.IntegrationTests.Clients.Setup
             else
             {
                 // custom error message
-                context.Result = new GrantValidationResult(IdentityServer4.Models.TokenRequestErrors.InvalidGrant, "invalid custom credential");
+                context.Result = new GrantValidationResult(Duende.IdentityServer.Models.TokenRequestErrors.InvalidGrant, "invalid custom credential");
             }
 
             return Task.CompletedTask;

@@ -6,11 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Events;
+using Duende.IdentityServer.Services;
 using FluentAssertions;
-using IdentityServer4.Events;
-using IdentityServer4.Services;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     public class TestEventService : IEventService
     {

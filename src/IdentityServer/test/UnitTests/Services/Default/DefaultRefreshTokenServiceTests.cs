@@ -1,18 +1,18 @@
-using FluentAssertions;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using IdentityServer4.Stores;
-using IdentityServer4.Stores.Serialization;
+using UnitTests.Common;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer.UnitTests.Validation.Setup;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Stores.Serialization;
+using FluentAssertions;
+using UnitTests.Validation.Setup;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Services.Default
+namespace UnitTests.Services.Default
 {
     public class DefaultRefreshTokenServiceTests
     {

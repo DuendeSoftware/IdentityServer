@@ -4,22 +4,22 @@
 using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Endpoints;
+using Duende.IdentityServer.Endpoints.Results;
+using Duende.IdentityServer.Hosting;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.ResponseHandling;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4;
-using IdentityServer4.Configuration;
-using IdentityServer4.Endpoints;
-using IdentityServer4.Endpoints.Results;
-using IdentityServer4.Hosting;
-using IdentityServer4.Models;
-using IdentityServer4.ResponseHandling;
-using IdentityServer4.Services;
-using IdentityServer4.Validation;
+using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Endpoints.Authorize
+namespace UnitTests.Endpoints.Authorize
 {
     public class AuthorizeEndpointBaseTests
     {

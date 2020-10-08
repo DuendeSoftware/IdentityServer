@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Introspection.Setup
+namespace IntegrationTests.Endpoints.Introspection.Setup
 {
     public class Startup
     {

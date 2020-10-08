@@ -5,14 +5,14 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Models;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4.Models;
+using IntegrationTests.Common;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Endpoints.DeviceAuthorization
+namespace IntegrationTests.Endpoints.DeviceAuthorization
 {
     public class DeviceAuthorizationTests
     {

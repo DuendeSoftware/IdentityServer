@@ -1,9 +1,9 @@
-﻿using IdentityServer4.Validation;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Validation;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     class MockResourceValidator : IResourceValidator
     {

@@ -4,14 +4,14 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Endpoints.Results;
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
-using IdentityServer4.Configuration;
-using IdentityServer4.Endpoints.Results;
-using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Endpoints.EndSession
+namespace UnitTests.Endpoints.EndSession
 {
     public class EndSessionCallbackResultTests
     {

@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using FluentAssertions;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4.Configuration;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
+using UnitTests.Common;
 using Microsoft.Extensions.Caching.Distributed;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Services.Default
+namespace UnitTests.Services.Default
 {
     public class DistributedDeviceFlowThrottlingServiceTests
     {

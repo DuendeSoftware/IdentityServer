@@ -1,9 +1,9 @@
-﻿using IdentityServer4.Models;
-using IdentityServer4.Stores;
+﻿using System.Linq;
 using Xunit;
-using FluentAssertions;
 using System.Threading.Tasks;
-using System.Linq;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores;
+using FluentAssertions;
 
 namespace IdentityServer.UnitTests.Stores
 {

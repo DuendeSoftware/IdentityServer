@@ -10,19 +10,19 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Test;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4;
-using IdentityServer4.Configuration;
-using IdentityServer4.Models;
-using IdentityServer4.Test;
+using IntegrationTests.Common;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Authorize
+namespace IntegrationTests.Endpoints.Authorize
 {
     public class JwtRequestAuthorizeTests
     {

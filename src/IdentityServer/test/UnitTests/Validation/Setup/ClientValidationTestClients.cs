@@ -5,12 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4;
-using IdentityServer4.Models;
-using static IdentityServer4.IdentityServerConstants;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
+using UnitTests.Common;
 
-namespace IdentityServer.UnitTests.Validation.Setup
+namespace UnitTests.Validation.Setup
 {
     internal static class ClientValidationTestClients
     {
@@ -181,11 +180,11 @@ namespace IdentityServer.UnitTests.Validation.Setup
                     {
                         new Secret(@"CN=invalid", "mtls.test")
                         {
-                            Type = SecretTypes.X509CertificateName
+                            Type = IdentityServerConstants.SecretTypes.X509CertificateName
                         },
                         new Secret("invalid", "mtls.test")
                         {
-                            Type = SecretTypes.X509CertificateThumbprint
+                            Type = IdentityServerConstants.SecretTypes.X509CertificateThumbprint
                         },
                     }
                 },
@@ -200,11 +199,11 @@ namespace IdentityServer.UnitTests.Validation.Setup
                     {
                         new Secret(@"CN=identityserver_testing", "mtls.test")
                         {
-                            Type = SecretTypes.X509CertificateName
+                            Type = IdentityServerConstants.SecretTypes.X509CertificateName
                         },
                         new Secret("4B5FE072C7AD8A9B5DCFDD1A20608BB54DE0954F", "mtls.test")
                         {
-                            Type = SecretTypes.X509CertificateThumbprint
+                            Type = IdentityServerConstants.SecretTypes.X509CertificateThumbprint
                         },
                     }
                 }

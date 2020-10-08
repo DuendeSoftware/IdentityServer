@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     public class MockProfileService : IProfileService
     {

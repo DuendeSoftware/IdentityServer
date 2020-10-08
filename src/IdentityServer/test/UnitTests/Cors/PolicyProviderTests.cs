@@ -4,18 +4,18 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Configuration.DependencyInjection;
+using Duende.IdentityServer.Hosting;
+using Duende.IdentityServer.Services;
 using FluentAssertions;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4.Configuration;
-using IdentityServer4.Configuration.DependencyInjection;
-using IdentityServer4.Hosting;
-using IdentityServer4.Services;
+using UnitTests.Common;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Cors
+namespace UnitTests.Cors
 {
     public class PolicyProviderTests
     {

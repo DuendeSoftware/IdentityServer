@@ -13,14 +13,14 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IdentityModel;
 using IdentityModel.Client;
-using IdentityServer.IntegrationTests.Clients.Setup;
+using IntegrationTests.Clients.Setup;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Clients
+namespace IntegrationTests.Clients
 {
     public class ExtensionGrantClient
     {

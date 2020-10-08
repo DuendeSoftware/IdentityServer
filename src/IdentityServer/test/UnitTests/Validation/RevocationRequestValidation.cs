@@ -5,15 +5,15 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.UnitTests.Common;
-using IdentityServer4;
-using IdentityServer4.Models;
-using IdentityServer4.Validation;
+using UnitTests.Common;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation
+namespace UnitTests.Validation
 {
     public class RevocationRequestValidation
     {

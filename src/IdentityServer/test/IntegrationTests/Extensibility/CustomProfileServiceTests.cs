@@ -2,16 +2,16 @@
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
+using IntegrationTests.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Extensibility
+namespace IntegrationTests.Extensibility
 {
     public class CustomProfileServiceTests
     {
@@ -38,7 +38,7 @@ namespace IdentityServer.IntegrationTests.Extensibility
             _mockPipeline.IdentityScopes.Add(new IdentityResources.OpenId());
             _mockPipeline.IdentityScopes.Add(new IdentityResource("custom_identity", new string[] { "foo" }));
 
-            _mockPipeline.Users.Add(new IdentityServer4.Test.TestUser
+            _mockPipeline.Users.Add(new Duende.IdentityServer.Test.TestUser
             {
                 SubjectId = "bob",
                 Username = "bob",

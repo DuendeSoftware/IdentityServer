@@ -11,17 +11,17 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Test;
 using FluentAssertions;
 using IdentityModel;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4.Models;
-using IdentityServer4.Test;
+using IntegrationTests.Common;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using static IdentityServer4.IdentityServerConstants;
 
-namespace IdentityServer.IntegrationTests.Endpoints.EndSession
+namespace IntegrationTests.Endpoints.EndSession
 {
     public class EndSessionTests
     {
@@ -407,7 +407,7 @@ namespace IdentityServer.IntegrationTests.Endpoints.EndSession
 
             // since we don't have real ws-fed, we used OIDC to signin, but fooling this
             // at signout to use ws-fed so we can test the iframe params
-            _wsfedClient.ProtocolType = ProtocolTypes.WsFederation;
+            _wsfedClient.ProtocolType = IdentityServerConstants.ProtocolTypes.WsFederation;
 
             response = await _mockPipeline.BrowserClient.GetAsync(signoutFrameUrl);
             var html = await response.Content.ReadAsStringAsync();

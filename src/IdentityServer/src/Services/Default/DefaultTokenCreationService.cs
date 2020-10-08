@@ -13,7 +13,6 @@ using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
-using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Services
 {

@@ -3,9 +3,9 @@
 
 
 using System.Collections.Generic;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 
-namespace IdentityServer.UnitTests.Validation.Setup
+namespace UnitTests.Validation.Setup
 {
     internal class TestScopes
     {

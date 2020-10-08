@@ -5,9 +5,9 @@
 using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer4.Validation;
+using Duende.IdentityServer.Validation;
 
-namespace IdentityServer.UnitTests.Endpoints.Authorize
+namespace UnitTests.Endpoints.Authorize
 {
     public class StubAuthorizeRequestValidator : IAuthorizeRequestValidator
     {

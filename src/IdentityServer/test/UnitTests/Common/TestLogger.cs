@@ -4,7 +4,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace IdentityServer.UnitTests.Common
+namespace UnitTests.Common
 {
     public static class TestLogger
     {

@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using FluentAssertions;
-using IdentityServer4.Configuration;
-using IdentityServer4.Models;
-using IdentityServer4.Validation;
 using System;
 using System.Threading.Tasks;
-using IdentityServer.UnitTests.Validation.Setup;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Validation;
+using FluentAssertions;
+using UnitTests.Validation.Setup;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Validation
+namespace UnitTests.Validation
 {
     public class ClientConfigurationValidation
     {

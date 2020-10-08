@@ -7,16 +7,16 @@ using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Stores.Default;
+using Duende.IdentityServer.Test;
 using FluentAssertions;
-using IdentityServer.IntegrationTests.Common;
-using IdentityServer4.Models;
-using IdentityServer4.Stores;
-using IdentityServer4.Stores.Default;
-using IdentityServer4.Test;
+using IntegrationTests.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Authorize
+namespace IntegrationTests.Endpoints.Authorize
 {
     public class ConsentTests
     {

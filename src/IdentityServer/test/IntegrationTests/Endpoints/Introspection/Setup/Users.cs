@@ -3,9 +3,9 @@
 
 
 using System.Collections.Generic;
-using IdentityServer4.Test;
+using Duende.IdentityServer.Test;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Introspection.Setup
+namespace IntegrationTests.Endpoints.Introspection.Setup
 {
     public static class Users
     {

@@ -1,7 +1,7 @@
-﻿using IdentityServer4.Extensions;
-using Xunit;
+﻿using Xunit;
+using Duende.IdentityServer.Extensions;
 
-namespace IdentityServer.UnitTests.Extensions
+namespace UnitTests.Extensions
 {
     public class StringExtensionsTests
     {
