@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{932FA9D0-7FB4-4047-8FFD-B74907B5FA15}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.AspNetIdentity", "src\IdentityServer4.AspNetIdentity.csproj", "{A2CDBE15-5898-4A04-94DC-133EE03A78B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Duende.IdentityServer.AspNetIdentity", "src\Duende.IdentityServer.AspNetIdentity.csproj", "{A2CDBE15-5898-4A04-94DC-133EE03A78B3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host", "host\Host.csproj", "{B7FBA07C-A462-4869-AF94-5E36DFC3742D}"
 EndProject

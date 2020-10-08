@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace IdentityServer4.AspNetIdentity
+namespace Duende.IdentityServer.AspNetIdentity
 {
     /// <summary>
     /// Implements callback for SecurityStampValidator's OnRefreshingPrincipal event.

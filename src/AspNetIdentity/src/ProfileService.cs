@@ -2,22 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityServer4.Extensions;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 
-namespace IdentityServer4.AspNetIdentity
+namespace Duende.IdentityServer.AspNetIdentity
 {
     /// <summary>
     /// IProfileService to integrate with ASP.NET Identity.
     /// </summary>
     /// <typeparam name="TUser">The type of the user.</typeparam>
-    /// <seealso cref="IdentityServer4.Services.IProfileService" />
+    /// <seealso cref="IProfileService" />
     public class ProfileService<TUser> : IProfileService
         where TUser : class
     {

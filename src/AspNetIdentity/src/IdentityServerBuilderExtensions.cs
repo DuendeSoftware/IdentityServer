@@ -4,10 +4,9 @@
 
 using System;
 using System.Linq;
+using Duende.IdentityServer;
 using IdentityModel;
-using IdentityServer4;
-using IdentityServer4.AspNetIdentity;
-using IdentityServer4.Configuration;
+using Duende.IdentityServer.AspNetIdentity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 

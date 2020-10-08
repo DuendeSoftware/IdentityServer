@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>IdentityServer4.AspNetIdentity</PackageId>
+    <PackageId>Duende.IdentityServer.AspNetIdentity</PackageId>
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     
     <Description>ASP.NET Core Identity Integration for IdentityServer4</Description>
-    <Authors>Brock Allen;Dominick Baier</Authors>
-    <AssemblyName>IdentityServer4.AspNetIdentity</AssemblyName>
+    <Authors>Duende Software</Authors>
+    <AssemblyName>Duende.IdentityServer.AspNetIdentity</AssemblyName>
     <PackageTags>OAuth2;OAuth 2.0;OpenID Connect;Security;Identity;IdentityServer;ASP.NET Identity</PackageTags>
     <PackageIcon>icon.jpg</PackageIcon>
-    <PackageProjectUrl>https://github.com/IdentityServer/IdentityServer4</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/DuendeSoftware/IdentityServer</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>https://github.com/IdentityServer/IdentityServer4/releases</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/DuendeSoftware/IdentityServer/releases</PackageReleaseNotes>
 
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -39,7 +39,7 @@
   </ItemGroup>
     
   <ItemGroup>
-    <PackageReference Include="IdentityServer4" />
+    <PackageReference Include="Duende.IdentityServer" />
     
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>

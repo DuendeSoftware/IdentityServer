@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Duende.IdentityServer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
@@ -8,7 +9,6 @@ using IdentityServerHost.Data;
 using IdentityServerHost.Configuration;
 using IdentityServer4.Models;
 using Microsoft.Extensions.Hosting;
-using IdentityServer4;
 
 namespace IdentityServerHost
 {
