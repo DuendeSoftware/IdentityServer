@@ -83,7 +83,7 @@ namespace Duende.IdentityServer.Configuration
         {
             _idsrv = idsrv;
             _authOptions = authOptions;
-            _logger = loggerFactory.CreateLogger("IdentityServer4.Startup");
+            _logger = loggerFactory.CreateLogger("Duende.IdentityServer.Startup");
         }
 
         public void PostConfigure(string name, CookieAuthenticationOptions options)

@@ -18,7 +18,7 @@ namespace Duende.IdentityServer.Stores
     /// <typeparam name="TModel"></typeparam>
     public class ProtectedDataMessageStore<TModel> : IMessageStore<TModel>
     {
-        private const string Purpose = "IdentityServer4.Stores.ProtectedDataMessageStore";
+        private const string Purpose = "Duende.IdentityServer.Stores.ProtectedDataMessageStore";
 
         /// <summary>
         /// The data protector.
