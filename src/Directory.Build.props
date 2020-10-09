@@ -1,0 +1,25 @@
+<Project>
+ <PropertyGroup>
+    <PackageTags>OAuth 2.0;OpenID Connect;Security;Identity;IdentityServer;ASP.NET Core</PackageTags>
+    <Authors>Duende Software</Authors>
+    <Company>Duende Software</Company>
+    <Copyright>Duende Software</Copyright>
+
+    <PackageIcon>icon.jpg</PackageIcon>
+    <PackageProjectUrl>https://github.com/DuendeSoftware/IdentityServer</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/DuendeSoftware/IdentityServer/releases</PackageReleaseNotes>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">True</ContinuousIntegrationBuild>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">True</ContinuousIntegrationBuild>
+ </PropertyGroup>
+
+ <ItemGroup>
+    <None Include="../../../icon.jpg" Pack="true" Visible="false" PackagePath="" />
+  </ItemGroup>
+</Project>
