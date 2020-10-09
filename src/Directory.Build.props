@@ -4,7 +4,11 @@
     <Authors>Duende Software</Authors>
     <Company>Duende Software</Company>
     <Copyright>Duende Software</Copyright>
+    <Product>Duende IdentityServer</Product>
 
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    
     <PackageIcon>icon.jpg</PackageIcon>
     <PackageProjectUrl>https://github.com/DuendeSoftware/IdentityServer</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/DuendeSoftware/IdentityServer/releases</PackageReleaseNotes>
@@ -20,6 +24,7 @@
  </PropertyGroup>
 
  <ItemGroup>
+    <None Include="../../../LICENSE" Pack="true" Visible="false" PackagePath="" />
     <None Include="../../../icon.jpg" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 </Project>
