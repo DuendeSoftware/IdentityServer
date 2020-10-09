@@ -6,6 +6,7 @@
     
     <Description>ASP.NET Core Identity Integration for Duende IdentityServer</Description>
     <AssemblyName>Duende.IdentityServer.AspNetIdentity</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,6 +6,7 @@
 
     <Description>EntityFramework persistence layer for Duende IdentityServer</Description>
     <AssemblyName>Duende.IdentityServer.EntityFramework</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
