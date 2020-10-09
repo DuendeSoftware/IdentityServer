@@ -5,32 +5,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <Description>EntityFramework persistence layer for Duende IdentityServer</Description>
-    <Authors>Duende Software</Authors>
     <AssemblyName>Duende.IdentityServer.EntityFramework</AssemblyName>
-    <PackageTags>OAuth2;OAuth 2.0;OpenID Connect;Security;Identity;IdentityServer;EntityFramework</PackageTags>
-    <PackageIcon>icon.jpg</PackageIcon>
-    <PackageProjectUrl>https://github.com/DuendeSoftware/IdentityServer</PackageProjectUrl>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>https://github.com/DuendeSoftware/IdentityServer/releases</PackageReleaseNotes>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-
-    <AssemblyOriginatorKeyFile>../../../key.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">True</ContinuousIntegrationBuild>
-    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">True</ContinuousIntegrationBuild>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="../../../icon.jpg" Pack="true" Visible="false" PackagePath="" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Duende.IdentityServer" />
