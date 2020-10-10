@@ -2,21 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Duende.IdentityServer.Models;
 
-namespace Duende.IdentityServer.Stores
+namespace Duende.IdentityServer.Services.KeyManagement
 {
     /// <summary>
-    /// Interface for the validation key store
+    /// Interface to model locking when a new key is to be created.
     /// </summary>
-    public interface IValidationKeysStore
+    public interface INewKeyLock
     {
         /// <summary>
-        /// Gets all validation keys.
+        /// Locks
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync();
+        Task LockAsync();
+        
+        /// <summary>
+        /// Unlocks
+        /// </summary>
+        /// <returns></returns>
+        void Unlock();
     }
 }

@@ -135,5 +135,10 @@ namespace Duende.IdentityServer.Configuration
         /// Gets or sets the mutual TLS options.
         /// </summary>
         public MutualTlsOptions MutualTls { get; set; } = new MutualTlsOptions();
+        
+        /// <summary>
+        /// Gets or sets the signing key management options.
+        /// </summary>
+        public KeyManagementOptions KeyManagement { get; set; } = new KeyManagementOptions();
     }
 }
