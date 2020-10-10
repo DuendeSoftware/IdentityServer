@@ -20,7 +20,6 @@
 
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="All" />
-    <PackageReference Include="System.Security.Principal.Windows" />
     
     <ProjectReference Include="..\src\Duende.IdentityServer.csproj" />
   </ItemGroup>
