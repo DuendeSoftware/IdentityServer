@@ -20,8 +20,12 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
     steps:
     - uses: actions/checkout@af513c7a016048ae468971c52ed77d9562c7c819
-    - name: 'Install .NET Core SDK'
+    - name: 'Install main .NET Core SDK'
       uses: actions/setup-dotnet@v1
+    - name: 'Install 3.1 .NET Core SDK'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
     - run: dotnet --info
     
     - if: contains(matrix.runs-on, 'macOS') || contains(matrix.runs-on, 'ubuntu')
