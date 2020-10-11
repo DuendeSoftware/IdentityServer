@@ -1,6 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
 
-namespace IdentityServer4.Models.ManageViewModels
+
+using System.ComponentModel.DataAnnotations;
+
+namespace Duende.IdentityServer.Models.ManageViewModels
 {
     public class ChangePasswordViewModel
     {

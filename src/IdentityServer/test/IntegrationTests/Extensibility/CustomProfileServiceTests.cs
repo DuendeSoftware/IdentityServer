@@ -1,4 +1,8 @@
-﻿using System.Net;
+﻿// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;

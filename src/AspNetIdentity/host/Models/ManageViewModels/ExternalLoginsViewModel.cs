@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 
-namespace IdentityServer4.Models.ManageViewModels
+namespace Duende.IdentityServer.Models.ManageViewModels
 {
     public class ExternalLoginsViewModel
     {
