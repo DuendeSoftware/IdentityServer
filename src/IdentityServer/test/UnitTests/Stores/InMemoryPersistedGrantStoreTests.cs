@@ -1,4 +1,8 @@
-﻿using System.Linq;
+﻿// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
+using System.Linq;
 using Xunit;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
