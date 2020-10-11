@@ -1,4 +1,8 @@
-﻿using IdentityServer4.Models;
+﻿// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

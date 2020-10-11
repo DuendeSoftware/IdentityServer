@@ -1,7 +1,11 @@
-﻿using System.ComponentModel;
+﻿// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace IdentityServer4.Models.ManageViewModels
+namespace Duende.IdentityServer.Models.ManageViewModels
 {
     public class EnableAuthenticatorViewModel
     {
