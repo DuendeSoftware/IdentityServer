@@ -1,4 +1,8 @@
-﻿using Duende.IdentityServer.EntityFramework;
+﻿// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
+using Duende.IdentityServer.EntityFramework;
 using Duende.IdentityServer.EntityFramework.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
