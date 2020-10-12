@@ -9,7 +9,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     
-    <PackageIcon>icon.jpg</PackageIcon>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/DuendeSoftware/IdentityServer</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/DuendeSoftware/IdentityServer/releases</PackageReleaseNotes>
 
@@ -23,6 +23,6 @@
 
  <ItemGroup>
     <None Include="../../../LICENSE" Pack="true" Visible="false" PackagePath="" />
-    <None Include="../../../icon.jpg" Pack="true" Visible="false" PackagePath="" />
+    <None Include="../../../icon.png" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 </Project>

@@ -1,10 +1,10 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Duende.IdentityServer.Models.AccountViewModels
+namespace IdentityServerHost.Models.AccountViewModels
 {
     public class ForgotPasswordViewModel
     {
