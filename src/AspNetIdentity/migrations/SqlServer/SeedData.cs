@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,10 +7,10 @@ using System.Linq;
 using System.Security.Claims;
 using IdentityServerHost.Data;
 using IdentityModel;
-using IdentityServer4.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using IdentityServerHost.Models;
 
 namespace IdentityServerHost
 {

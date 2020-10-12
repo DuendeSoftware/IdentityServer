@@ -1,4 +1,4 @@
-﻿@using Duende.IdentityServer.Extensions
+@using Duende.IdentityServer.Extensions
 @{
     string name = null;
     if (!true.Equals(ViewData["signed-out"]))
@@ -11,8 +11,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
         <a href="~/" class="navbar-brand">
-            <img src="~/icon.png" class="icon-banner">
-            IdentityServer4
+            <img src="~/duende-logo.svg" class="icon-banner">
+            Duende IdentityServer
         </a>
 
         @if (!string.IsNullOrWhiteSpace(name))

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SqlServer.Migrations.ConfigurationDb
 {
-    public partial class Config : Migration
+    public partial class Configuration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

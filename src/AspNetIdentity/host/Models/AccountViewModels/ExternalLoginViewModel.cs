@@ -4,7 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Duende.IdentityServer.Models.AccountViewModels
+namespace IdentityServerHost.Models.AccountViewModels
 {
     public class ExternalLoginViewModel
     {

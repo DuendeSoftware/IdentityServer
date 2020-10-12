@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using IdentityServerHost.Data;
 using Microsoft.AspNetCore.Identity;
-using IdentityServer4.Models;
+using IdentityServerHost.Models;
 
 namespace SqlServer
 {
