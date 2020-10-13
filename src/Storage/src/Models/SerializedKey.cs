@@ -34,5 +34,10 @@ namespace Duende.IdentityServer.Models
         /// Serialized data for key.
         /// </summary>
         public string Data { get; set; }
+        
+        /// <summary>
+        /// Indicates if data is protected.
+        /// </summary>
+        public bool DataProtected { get; set; }
     }
 }

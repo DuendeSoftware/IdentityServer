@@ -20,6 +20,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <summary>
         /// Constructor for DataProtectionKeyProtector.
         /// </summary>
+        /// <param name="options"></param>
         /// <param name="dataProtectionProvider"></param>
         public DataProtectionKeyProtector(KeyManagementOptions options, IDataProtectionProvider dataProtectionProvider)
         {
@@ -35,7 +36,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
         public SerializedKey Protect(RsaKeyContainer key)
         {
             var data = KeySerializer.Serialize(key);
-            //if (_options.DataProtectKeys)
+            
+            if (_options.DataProtectKeys)
             {
                 data = _dataProtectionProvider.Protect(data);
             }
@@ -45,7 +47,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 Created = DateTime.UtcNow,
                 Id = key.Id,
                 KeyType = key.KeyType,
-                Data = data
+                Data = data,
+                DataProtected = _options.DataProtectKeys,
             };
         }
 
@@ -56,12 +59,16 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <returns></returns>
         public RsaKeyContainer Unprotect(SerializedKey key)
         {
-            var data = _dataProtectionProvider.Unprotect(key.Data);
+            var data = key.DataProtected ? 
+                _dataProtectionProvider.Unprotect(key.Data) : 
+                key.Data;
+            
             var item = KeySerializer.Deserialize<RsaKeyContainer>(data);
             if (item.KeyType == KeyType.X509)
             {
                 item = KeySerializer.Deserialize<X509KeyContainer>(data);
             }
+
             return item;
         }
     }
