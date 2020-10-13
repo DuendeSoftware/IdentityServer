@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 
@@ -12,14 +13,16 @@ namespace Duende.IdentityServer.Services.KeyManagement
     /// </summary>
     public class DataProtectionKeyProtector : ISigningKeyProtector
     {
+        private readonly KeyManagementOptions _options;
         private readonly IDataProtector _dataProtectionProvider;
 
         /// <summary>
         /// Constructor for DataProtectionKeyProtector.
         /// </summary>
         /// <param name="dataProtectionProvider"></param>
-        public DataProtectionKeyProtector(IDataProtectionProvider dataProtectionProvider)
+        public DataProtectionKeyProtector(KeyManagementOptions options, IDataProtectionProvider dataProtectionProvider)
         {
+            _options = options;
             _dataProtectionProvider = dataProtectionProvider.CreateProtector(nameof(DataProtectionKeyProtector));
         }
 
@@ -31,7 +34,10 @@ namespace Duende.IdentityServer.Services.KeyManagement
         public SerializedKey Protect(RsaKeyContainer key)
         {
             var data = KeySerializer.Serialize(key);
-            data = _dataProtectionProvider.Protect(data);
+            //if (_options.DataProtectKeys)
+            {
+                data = _dataProtectionProvider.Protect(data);
+            }
             return new SerializedKey(key, key.KeyType, data);
         }
 

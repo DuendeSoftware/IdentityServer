@@ -38,6 +38,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <returns></returns>
         public async Task<SigningCredentials> GetSigningCredentialsAsync()
         {
+            if (!_options.Enabled)
+            {
+                return null;
+            }
+
             var container = await _keyManager.GetCurrentKeyAsync();
             var key = container.ToSecurityKey();
             var credential = new SigningCredentials(key, GetRsaSigningAlgorithmValue(_options.SigningAlgorithm));
@@ -50,6 +55,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <returns></returns>
         public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
         {
+            if (!_options.Enabled)
+            {
+                return Enumerable.Empty<SecurityKeyInfo>();
+            }
+            
             var containers = await _keyManager.GetAllKeysAsync();
             var keys = containers.Select(x => x.ToSecurityKey());
             return keys.Select(x => new SecurityKeyInfo { Key = x, SigningAlgorithm = GetRsaSigningAlgorithmValue(_options.SigningAlgorithm) });

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -10,6 +10,7 @@ using System;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Extensions;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace Duende.IdentityServer.Services
 {
@@ -40,7 +41,17 @@ namespace Duende.IdentityServer.Services
             {
                 if (allowedAlgorithms.IsNullOrEmpty())
                 {
-                    return await _signingCredentialStores.First().GetSigningCredentialsAsync();
+                    var list = _signingCredentialStores.ToList();
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        var key = await list[i].GetSigningCredentialsAsync();
+                        if (key != null)
+                        {
+                            return key;
+                        }
+                    }
+
+                    throw new InvalidOperationException($"No signing credential registered.");
                 }
 
                 var credential = (await GetAllSigningCredentialsAsync()).FirstOrDefault(c => allowedAlgorithms.Contains(c.Algorithm));
@@ -62,7 +73,11 @@ namespace Duende.IdentityServer.Services
 
             foreach (var store in _signingCredentialStores)
             {
-                credentials.Add(await store.GetSigningCredentialsAsync());
+                var signingKey = await store.GetSigningCredentialsAsync();
+                if (signingKey != null)
+                {
+                    credentials.Add(signingKey);
+                }
             }
 
             return credentials;
@@ -75,7 +90,11 @@ namespace Duende.IdentityServer.Services
 
             foreach (var store in _validationKeysStores)
             {
-                keys.AddRange(await store.GetValidationKeysAsync());
+                var validationKeys = await store.GetValidationKeysAsync();
+                if (validationKeys.Any())
+                {
+                    keys.AddRange(validationKeys);
+                }
             }
 
             return keys;

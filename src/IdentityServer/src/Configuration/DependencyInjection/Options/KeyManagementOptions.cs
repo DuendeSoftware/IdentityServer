@@ -13,6 +13,11 @@ namespace Duende.IdentityServer.Configuration
     public class KeyManagementOptions
     {
         /// <summary>
+        /// Specifies if key management should be enabled. Defaults to true.
+        /// </summary>
+        public bool Enabled { get; set; } = true;
+
+        /// <summary>
         /// Size, in bits, of kids.
         /// Defaults to 128.
         /// </summary>
@@ -72,9 +77,15 @@ namespace Duende.IdentityServer.Configuration
 
         /// <summary>
         /// Automatically delete retired keys.
-        /// Defaults to false.
+        /// Defaults to true.
         /// </summary>
-        public bool DeleteRetiredKeys { get; set; }
+        public bool DeleteRetiredKeys { get; set; } = true;
+
+        /// <summary>
+        /// Automatically protect keys in the storage using data protection.
+        /// Defaults to true.
+        /// </summary>
+        public bool DataProtectKeys { get; set; } = true;
 
         /// <summary>
         /// The signing algorithm to use.
