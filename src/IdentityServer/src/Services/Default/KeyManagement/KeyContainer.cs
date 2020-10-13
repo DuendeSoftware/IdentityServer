@@ -11,7 +11,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
     /// <summary>
     /// Container class for key.
     /// </summary>
-    public abstract class KeyContainer : KeyMetadata
+    public abstract class KeyContainer
     {
         /// <summary>
         /// Constructor for KeyContainer.
@@ -27,10 +27,21 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <param name="created"></param>
         /// <param name="keyType"></param>
         public KeyContainer(string id, DateTime created, KeyType keyType)
-            : base(id, created)
         {
+            Id = id;
+            Created = created;
             KeyType = keyType;
         }
+
+        /// <summary>
+        /// Key identifier.
+        /// </summary>
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Date key was created.
+        /// </summary>
+        public DateTime Created { get; set; }
 
         /// <summary>
         /// Key type.

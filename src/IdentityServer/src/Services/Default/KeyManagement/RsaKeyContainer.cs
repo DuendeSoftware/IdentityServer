@@ -16,7 +16,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <summary>
         /// Constructor for RsaKeyContainer.
         /// </summary>
-        public RsaKeyContainer()
+        public RsaKeyContainer() : base()
         {
         }
 

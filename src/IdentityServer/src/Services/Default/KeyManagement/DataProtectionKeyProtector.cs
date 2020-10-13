@@ -5,6 +5,7 @@
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.DataProtection;
+using System;
 
 namespace Duende.IdentityServer.Services.KeyManagement
 {
@@ -38,7 +39,14 @@ namespace Duende.IdentityServer.Services.KeyManagement
             {
                 data = _dataProtectionProvider.Protect(data);
             }
-            return new SerializedKey(key, key.KeyType, data);
+            
+            return new SerializedKey
+            {
+                Created = DateTime.UtcNow,
+                Id = key.Id,
+                KeyType = key.KeyType,
+                Data = data
+            };
         }
 
         /// <summary>

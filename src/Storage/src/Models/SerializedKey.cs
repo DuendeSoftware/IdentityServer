@@ -1,32 +1,30 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using System;
+
 namespace Duende.IdentityServer.Models
 {
     /// <summary>
     /// Serialized key.
     /// </summary>
-    public class SerializedKey : KeyMetadata
+    public class SerializedKey
     {
         /// <summary>
-        /// Constructor for SerializedKey.
+        /// Version number of seralized key.
         /// </summary>
-        public SerializedKey()
-        {
-        }
+        public int Version { get; set; }
+        
+        /// <summary>
+        /// Key identifier.
+        /// </summary>
+        public string Id { get; set; }
 
         /// <summary>
-        /// Constructor for SerializedKey.
+        /// Date key was created.
         /// </summary>
-        /// <param name="metadata"></param>
-        /// <param name="keyType"></param>
-        /// <param name="data"></param>
-        public SerializedKey(KeyMetadata metadata, KeyType keyType, string data) : base(metadata)
-        {
-            KeyType = keyType;
-            Data = data;
-        }
-
+        public DateTime Created { get; set; }
+        
         /// <summary>
         /// The key type.
         /// </summary>

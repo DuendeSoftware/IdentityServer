@@ -3,6 +3,7 @@
 
 
 using Duende.IdentityServer.Models;
+using System;
 
 namespace Duende.IdentityServer.Services.KeyManagement
 {
@@ -18,7 +19,13 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <returns></returns>
         public SerializedKey Protect(RsaKeyContainer key)
         {
-            return new SerializedKey(key, key.KeyType, KeySerializer.Serialize(key));
+            return new SerializedKey
+            {
+                Id = key.Id,
+                KeyType = key.KeyType,
+                Created = DateTime.UtcNow,
+                Data = KeySerializer.Serialize(key),
+            };
         }
 
         /// <summary>

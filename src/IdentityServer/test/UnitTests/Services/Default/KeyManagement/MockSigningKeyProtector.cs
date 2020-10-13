@@ -2,6 +2,7 @@
 
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services.KeyManagement;
+using System;
 
 namespace UnitTests.Services.Default.KeyManagement
 {
@@ -12,7 +13,13 @@ namespace UnitTests.Services.Default.KeyManagement
         public SerializedKey Protect(RsaKeyContainer key)
         {
             ProtectWasCalled = true;
-            return new SerializedKey(key, key.KeyType, KeySerializer.Serialize(key));
+            return new SerializedKey
+            {
+                Id = key.Id,
+                KeyType = key.KeyType,
+                Created = DateTime.UtcNow,
+                Data = KeySerializer.Serialize(key),
+            };
         }
 
         public RsaKeyContainer Unprotect(SerializedKey key)
