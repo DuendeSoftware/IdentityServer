@@ -199,19 +199,20 @@ namespace Duende.IdentityServer.Validation
                 if (!Constants.Filters.JwtRequestClaimTypesFilter.Contains(key))
                 {
                     var value = token.Payload[key];
+                    payload.Add(key, value.ToString());
 
-                    switch (value)
-                    {
-                        case string s:
-                            payload.Add(key, s);
-                            break;
-                        case JObject jobj:
-                            payload.Add(key, jobj.ToString(Formatting.None));
-                            break;
-                        case JArray jarr:
-                            payload.Add(key, jarr.ToString(Formatting.None));
-                            break;
-                    }
+                    // switch (value)
+                    // {
+                    //     case string s:
+                    //         payload.Add(key, s);
+                    //         break;
+                    //     case JObject jobj:
+                    //         payload.Add(key, jobj.ToString(Formatting.None));
+                    //         break;
+                    //     case JArray jarr:
+                    //         payload.Add(key, jarr.ToString(Formatting.None));
+                    //         break;
+                    // }
                 }
             }
 

@@ -484,7 +484,7 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.Should().BeNull();
         }
 
-        [Fact(Skip = "Revisit for .NET 5")]
+        [Fact]
         [Trait("Category", Category)]
         public async Task authorize_should_accept_complex_objects_in_request_object()
         {
