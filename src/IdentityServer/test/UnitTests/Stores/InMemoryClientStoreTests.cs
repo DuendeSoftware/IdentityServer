@@ -9,7 +9,7 @@ using Duende.IdentityServer.Stores;
 using Xunit;
 using FluentAssertions;
 
-namespace IdentityServer.UnitTests.Stores
+namespace UnitTests.Stores
 {
     public class InMemoryClientStoreTests
     {

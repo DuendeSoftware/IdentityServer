@@ -18,7 +18,7 @@ using UnitTests.Common;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace IdentityServer.UnitTests.ResponseHandling
+namespace UnitTests.ResponseHandling
 {
     public class DeviceAuthorizationResponseGeneratorTests
     {

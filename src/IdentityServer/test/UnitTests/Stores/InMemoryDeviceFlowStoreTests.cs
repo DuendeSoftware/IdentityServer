@@ -11,7 +11,7 @@ using Duende.IdentityServer.Stores;
 using FluentAssertions;
 using Xunit;
 
-namespace IdentityServer.UnitTests.Stores
+namespace UnitTests.Stores
 {
     public class InMemoryDeviceFlowStoreTests
     {
