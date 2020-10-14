@@ -9,10 +9,14 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
+
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Duende.IdentityServer.Services
 {
@@ -69,10 +73,41 @@ namespace Duende.IdentityServer.Services
         /// </returns>
         public virtual async Task<string> CreateTokenAsync(Token token)
         {
+#if NET5_0
+            return await CreateJsonWebTokenAsync(token);
+#elif NETCOREAPP3_1
             var header = await CreateHeaderAsync(token);
             var payload = await CreatePayloadAsync(token);
 
             return await CreateJwtAsync(new JwtSecurityToken(header, payload));
+#endif
+
+        }
+
+        private async Task<string> CreateJsonWebTokenAsync(Token token)
+        {
+            var payload = token.CreateJwtPayloadDictionary(Options, Clock, Logger);
+            var json = JsonSerializer.Serialize(payload);
+            
+            var credential = await Keys.GetSigningCredentialsAsync(token.AllowedSigningAlgorithms);
+
+            if (credential == null)
+            {
+                throw new InvalidOperationException("No signing credential is configured. Can't create JWT token");
+            }
+
+            var additionalHeaderElements = new Dictionary<string, object>();
+            
+            if (token.Type == IdentityServerConstants.TokenTypes.AccessToken)
+            {
+                if (Options.AccessTokenJwtType.IsPresent())
+                {
+                    additionalHeaderElements.Add("typ", Options.AccessTokenJwtType);
+                }
+            }
+
+            var handler = new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false };
+            return handler.CreateToken(json, credential, additionalHeaderElements);
         }
 
         /// <summary>
