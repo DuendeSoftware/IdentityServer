@@ -73,14 +73,14 @@ namespace Duende.IdentityServer.Services
         /// </returns>
         public virtual async Task<string> CreateTokenAsync(Token token)
         {
-#if NET5_0
+// #if NET5_0
             return await CreateJsonWebTokenAsync(token);
-#elif NETCOREAPP3_1
-            var header = await CreateHeaderAsync(token);
-            var payload = await CreatePayloadAsync(token);
-
-            return await CreateJwtAsync(new JwtSecurityToken(header, payload));
-#endif
+// #elif NETCOREAPP3_1
+//             var header = await CreateHeaderAsync(token);
+//             var payload = await CreatePayloadAsync(token);
+//
+//             return await CreateJwtAsync(new JwtSecurityToken(header, payload));
+// #endif
 
         }
 
