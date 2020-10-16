@@ -124,8 +124,9 @@ namespace Duende.IdentityServer.Services
                 claims.Add(new Claim(JwtClaimTypes.Nonce, request.Nonce));
             }
 
+            // todo: cleanup
             // add iat claim
-            claims.Add(new Claim(JwtClaimTypes.IssuedAt, Clock.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
+            //claims.Add(new Claim(JwtClaimTypes.IssuedAt, Clock.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
 
             // add at_hash claim
             if (request.AccessTokenToHash.IsPresent())
@@ -202,10 +203,6 @@ namespace Duende.IdentityServer.Services
                 claims.Add(new Claim(JwtClaimTypes.SessionId, request.ValidatedRequest.SessionId));
             }
             
-            // iat claim as required by JWT profile
-            claims.Add(new Claim(JwtClaimTypes.IssuedAt, Clock.UtcNow.ToUnixTimeSeconds().ToString(),
-                ClaimValueTypes.Integer64));
-
             var issuer = ContextAccessor.HttpContext.GetIdentityServerIssuerUri();
             var token = new Token(OidcConstants.TokenTypes.AccessToken)
             {

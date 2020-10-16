@@ -174,12 +174,12 @@ namespace Duende.IdentityServer.Extensions
                 // set issuer
                 payload.Add(JwtClaimTypes.Issuer, token.Issuer);
 
-                // set times (nbf, exp) - what about iat?
+                // set times (nbf, exp, iat)
                 var now = clock.UtcNow.ToUnixTimeSeconds();
                 var exp = now + token.Lifetime;
-
-                //payload.Add(JwtClaimTypes.IssuedAt, now);
+                
                 payload.Add(JwtClaimTypes.NotBefore, now);
+                payload.Add(JwtClaimTypes.IssuedAt, now);
                 payload.Add(JwtClaimTypes.Expiration, exp);
 
                 // add audience claim(s)
