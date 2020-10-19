@@ -27,6 +27,19 @@ namespace IdentityServerHost.Configuration
                         "resource1.scope1", "resource2.scope1", IdentityServerConstants.LocalApi.ScopeName
                     }
                 },
+                
+                new Client
+                {
+                    ClientId = "client.reference",
+                    ClientSecrets = { new Secret("secret".Sha256()) },
+                    AllowedGrantTypes = GrantTypes.ClientCredentials,
+                    AllowedScopes =
+                    {
+                        "resource1.scope1", "resource2.scope1", IdentityServerConstants.LocalApi.ScopeName
+                    },
+                    
+                    AccessTokenType = AccessTokenType.Reference
+                },
 
                 ///////////////////////////////////////////
                 // Console Structured Scope Sample

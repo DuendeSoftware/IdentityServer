@@ -77,16 +77,6 @@ namespace IdentityServerHost
                 .AddScopeParser<ParameterizedScopeParser>()
                 .AddMutualTlsSecretValidators();
 
-            // use this for persisted grants store
-            // var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-            // const string connectionString = "DataSource=identityserver.db";
-            // builder.AddOperationalStore(options =>
-            // {
-            //     options.ConfigureDbContext = b => b.UseSqlite(connectionString,
-            //         sql => sql.MigrationsAssembly(migrationsAssembly));
-            // });
-                
-
             services.AddExternalIdentityProviders();
 
             services.AddAuthentication()
@@ -108,9 +98,6 @@ namespace IdentityServerHost
 
         public void Configure(IApplicationBuilder app)
         {
-            // use this for persisted grants store
-            // app.InitializePersistedGrantsStore();
-            
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
@@ -161,15 +148,6 @@ namespace IdentityServerHost
                 key,
                 IdentityServerConstants.ECDsaSigningAlgorithm.ES256);
         }
-
-        // use this for persisted grants store
-        // public static void InitializePersistedGrantsStore(this IApplicationBuilder app)
-        // {
-        //     using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-        //     {
-        //         serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-        //     }
-        // }
     }
 
     public static class ServiceExtensions

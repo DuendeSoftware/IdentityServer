@@ -13,14 +13,21 @@ namespace ConsoleClientCredentialsFlowCallingIdentityServerApi
         {
             Console.Title = "Console Client Credentials Flow calling IdentityServer API";
 
-            var response = await RequestTokenAsync();
+            var response = await RequestTokenAsync("client");
+            response.Show();
+
+            Console.ReadLine();
+            await CallServiceAsync(response.AccessToken);
+            
+            Console.ReadLine();
+            response = await RequestTokenAsync("client.reference");
             response.Show();
 
             Console.ReadLine();
             await CallServiceAsync(response.AccessToken);
         }
 
-        static async Task<TokenResponse> RequestTokenAsync()
+        static async Task<TokenResponse> RequestTokenAsync(string clientId)
         {
             var client = new HttpClient();
 
@@ -31,7 +38,7 @@ namespace ConsoleClientCredentialsFlowCallingIdentityServerApi
             {
                 Address = disco.TokenEndpoint,
 
-                ClientId = "client",
+                ClientId = clientId,
                 ClientSecret = "secret",
                 Scope = "IdentityServerApi"
             });
