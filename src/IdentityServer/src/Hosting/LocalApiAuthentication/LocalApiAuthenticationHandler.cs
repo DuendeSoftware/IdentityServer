@@ -80,9 +80,9 @@ namespace Duende.IdentityServer.Hosting.LocalApiAuthentication
 
             _logger.LogTrace("Successfully validated the token.");
 
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(result.Claims, Scheme.Name, JwtClaimTypes.Name, JwtClaimTypes.Role);
-            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-            AuthenticationProperties authenticationProperties = new AuthenticationProperties();
+            var claimsIdentity = new ClaimsIdentity(result.Claims, Scheme.Name, JwtClaimTypes.Name, JwtClaimTypes.Role);
+            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+            var authenticationProperties = new AuthenticationProperties();
 
             if (Options.SaveToken)
             {
@@ -100,7 +100,7 @@ namespace Duende.IdentityServer.Hosting.LocalApiAuthentication
 
             await Events.ClaimsTransformation(claimsTransformationContext);
 
-            AuthenticationTicket authenticationTicket = new AuthenticationTicket(claimsTransformationContext.Principal, authenticationProperties, Scheme.Name);
+            var authenticationTicket = new AuthenticationTicket(claimsTransformationContext.Principal, authenticationProperties, Scheme.Name);
             return AuthenticateResult.Success(authenticationTicket);
         }
     }
