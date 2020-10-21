@@ -11,11 +11,13 @@ namespace Duende.IdentityServer.Services.KeyManagement
     /// </summary>
     public class NopKeyLock : INewKeyLock
     {
+        /// <inheritdoc/>
         public Task LockAsync()
         {
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public void Unlock()
         {
         }

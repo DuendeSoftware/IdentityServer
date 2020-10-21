@@ -19,7 +19,7 @@ namespace Duende.IdentityServer.Extensions
     /// </summary>
     public static class KeyManagementExtensionsExtensions
     {
-        public static RsaSecurityKey CreateRsaSecurityKey(this KeyManagementOptions options)
+        internal static RsaSecurityKey CreateRsaSecurityKey(this KeyManagementOptions options)
         {
             var rsa = RSA.Create();
             RsaSecurityKey key;
@@ -45,22 +45,22 @@ namespace Duende.IdentityServer.Extensions
             return key;
         }
 
-        public static bool IsRetired(this KeyManagementOptions options, TimeSpan diff)
+        internal static bool IsRetired(this KeyManagementOptions options, TimeSpan diff)
         {
             return (diff >= options.KeyRetirement);
         }
 
-        public static bool IsExpired(this KeyManagementOptions options, TimeSpan diff)
+        internal static bool IsExpired(this KeyManagementOptions options, TimeSpan diff)
         {
             return (diff >= options.KeyExpiration);
         }
 
-        public static bool IsWithinInitializationDuration(this KeyManagementOptions options, TimeSpan diff)
+        internal static bool IsWithinInitializationDuration(this KeyManagementOptions options, TimeSpan diff)
         {
             return (diff <= options.InitializationDuration);
         }
 
-        public static TimeSpan GetAge(this ISystemClock clock, DateTime date)
+        internal static TimeSpan GetAge(this ISystemClock clock, DateTime date)
         {
             var now = clock.UtcNow.DateTime;
             if (date > now) now = date;

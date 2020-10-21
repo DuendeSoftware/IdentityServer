@@ -14,11 +14,13 @@ namespace Duende.IdentityServer.Services.KeyManagement
     {
         static SemaphoreSlim __newKeyLock = new SemaphoreSlim(1);
 
+        /// <inheritdoc/>
         public Task LockAsync()
         {
             return __newKeyLock.WaitAsync();
         }
 
+        /// <inheritdoc/>
         public void Unlock()
         {
             __newKeyLock.Release();
