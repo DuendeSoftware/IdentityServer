@@ -3,14 +3,9 @@
 
 
 using Duende.IdentityServer.Configuration;
-using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Duende.IdentityServer.Extensions
 {
@@ -21,28 +16,7 @@ namespace Duende.IdentityServer.Extensions
     {
         internal static RsaSecurityKey CreateRsaSecurityKey(this KeyManagementOptions options)
         {
-            var rsa = RSA.Create();
-            RsaSecurityKey key;
-
-            if (rsa is RSACryptoServiceProvider)
-            {
-                rsa.Dispose();
-                var cng = new RSACng(options.KeySize);
-
-                var parameters = cng.ExportParameters(includePrivateParameters: true);
-                key = new RsaSecurityKey(parameters);
-            }
-            else
-            {
-                rsa.KeySize = options.KeySize;
-                key = new RsaSecurityKey(rsa);
-            }
-
-            // KeyIdSize is in bits, so convert to bytes
-            var size = options.KeyIdSize / 8;
-            key.KeyId = CryptoRandom.CreateUniqueId(size, CryptoRandom.OutputFormat.Hex);
-
-            return key;
+            return CryptoHelper.CreateRsaSecurityKey(options.KeySize);
         }
 
         internal static bool IsRetired(this KeyManagementOptions options, TimeSpan diff)

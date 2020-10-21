@@ -197,9 +197,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddKeyManagement(this IIdentityServerBuilder builder)
         {
-            builder.Services.TryAddTransient<ISigningCredentialStore, KeyManagerKeyStore>();
-            builder.Services.TryAddTransient<IValidationKeysStore, KeyManagerKeyStore>();
-
+            builder.Services.TryAddTransient<IAutomaticKeyManagerKeyStore, AutomaticKeyManagerKeyStore>();
             builder.Services.TryAddTransient<IKeyManager, KeyManager>();
             builder.Services.TryAddTransient<INewKeyLock, DefaultKeyLock>();
             builder.Services.TryAddTransient<ISigningKeyProtector, DataProtectionKeyProtector>();

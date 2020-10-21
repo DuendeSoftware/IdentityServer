@@ -18,15 +18,25 @@ namespace Duende.IdentityServer.Configuration
         public bool Enabled { get; set; } = true;
 
         /// <summary>
-        /// Size, in bits, of kids.
-        /// Defaults to 128.
+        /// The signing algorithm to use.
+        /// Defaults to RS256.
         /// </summary>
-        public int KeyIdSize { get; set; } = 128;
+        public RsaSigningAlgorithm SigningAlgorithm { get; set; } = RsaSigningAlgorithm.RS256;
+
         /// <summary>
-        /// Size, in bits, of RSA keys.
-        /// Defaults to 2048.
+        /// Key size (in bits) of SigningAlgorithm.
         /// </summary>
-        public int KeySize { get; set; } = 2048;
+        public int KeySize => SigningAlgorithm switch
+            {
+                RsaSigningAlgorithm.RS256 => 256 * 8,
+                RsaSigningAlgorithm.RS384 => 384 * 8,
+                RsaSigningAlgorithm.RS512 => 512 * 8,
+
+                RsaSigningAlgorithm.PS256 => 256 * 8,
+                RsaSigningAlgorithm.PS384 => 384 * 8,
+                RsaSigningAlgorithm.PS512 => 512 * 8,
+                _ => throw new ArgumentException("Invalid signing algorithm value", nameof(SigningAlgorithm)),
+            };
 
         /// <summary>
         /// Type of key to use. Defaults to RSA.
@@ -86,12 +96,6 @@ namespace Duende.IdentityServer.Configuration
         /// Defaults to true.
         /// </summary>
         public bool DataProtectKeys { get; set; } = true;
-
-        /// <summary>
-        /// The signing algorithm to use.
-        /// Defaults to RS256.
-        /// </summary>
-        public RsaSigningAlgorithm SigningAlgorithm { get; set; } = RsaSigningAlgorithm.RS256;
 
         internal void Validate()
         {

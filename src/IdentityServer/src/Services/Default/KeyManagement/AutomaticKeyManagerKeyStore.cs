@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,9 +13,34 @@ using Microsoft.IdentityModel.Tokens;
 namespace Duende.IdentityServer.Services.KeyManagement
 {
     /// <summary>
+    /// Store abstraction for automatic key management.
+    /// </summary>
+    public interface IAutomaticKeyManagerKeyStore : IValidationKeysStore, ISigningCredentialStore
+    {
+    }
+
+    /// <summary>
+    /// Empty implementation of IAutomaticKeyManagerKeyStore.
+    /// </summary>
+    public class NopAutomaticKeyManagerKeyStore : IAutomaticKeyManagerKeyStore
+    {
+        /// <inheritdoc/>
+        public Task<SigningCredentials> GetSigningCredentialsAsync()
+        {
+            return Task.FromResult<SigningCredentials>(null);
+        }
+
+        /// <inheritdoc/>
+        public Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
+        {
+            return Task.FromResult(Enumerable.Empty<SecurityKeyInfo>());
+        }
+    }
+
+    /// <summary>
     /// Implementation of IValidationKeysStore and ISigningCredentialStore based on KeyManager.
     /// </summary>
-    public class KeyManagerKeyStore : IValidationKeysStore, ISigningCredentialStore
+    public class AutomaticKeyManagerKeyStore : IAutomaticKeyManagerKeyStore
     {
         private readonly IKeyManager _keyManager;
         private readonly KeyManagementOptions _options;
@@ -26,16 +50,13 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// </summary>
         /// <param name="keyManager"></param>
         /// <param name="options"></param>
-        public KeyManagerKeyStore(IKeyManager keyManager, KeyManagementOptions options)
+        public AutomaticKeyManagerKeyStore(IKeyManager keyManager, KeyManagementOptions options)
         {
             _keyManager = keyManager;
             _options = options;
         }
 
-        /// <summary>
-        /// Returns the current signing key.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public async Task<SigningCredentials> GetSigningCredentialsAsync()
         {
             if (!_options.Enabled)
@@ -45,14 +66,12 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             var container = await _keyManager.GetCurrentKeyAsync();
             var key = container.ToSecurityKey();
-            var credential = new SigningCredentials(key, GetRsaSigningAlgorithmValue(_options.SigningAlgorithm));
+            // todo: fix alg from instance, not from options
+            var credential = new SigningCredentials(key, CryptoHelper.GetRsaSigningAlgorithmValue(_options.SigningAlgorithm));
             return credential;
         }
 
-        /// <summary>
-        /// Returns all the validation keys.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
         {
             if (!_options.Enabled)
@@ -62,22 +81,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
             
             var containers = await _keyManager.GetAllKeysAsync();
             var keys = containers.Select(x => x.ToSecurityKey());
-            return keys.Select(x => new SecurityKeyInfo { Key = x, SigningAlgorithm = GetRsaSigningAlgorithmValue(_options.SigningAlgorithm) });
-        }
-
-        internal static string GetRsaSigningAlgorithmValue(IdentityServerConstants.RsaSigningAlgorithm value)
-        {
-            return value switch
-            {
-                IdentityServerConstants.RsaSigningAlgorithm.RS256 => SecurityAlgorithms.RsaSha256,
-                IdentityServerConstants.RsaSigningAlgorithm.RS384 => SecurityAlgorithms.RsaSha384,
-                IdentityServerConstants.RsaSigningAlgorithm.RS512 => SecurityAlgorithms.RsaSha512,
-
-                IdentityServerConstants.RsaSigningAlgorithm.PS256 => SecurityAlgorithms.RsaSsaPssSha256,
-                IdentityServerConstants.RsaSigningAlgorithm.PS384 => SecurityAlgorithms.RsaSsaPssSha384,
-                IdentityServerConstants.RsaSigningAlgorithm.PS512 => SecurityAlgorithms.RsaSsaPssSha512,
-                _ => throw new ArgumentException("Invalid RSA signing algorithm value", nameof(value)),
-            };
+            // todo: fix alg from instance, not from options
+            return keys.Select(x => new SecurityKeyInfo { Key = x, SigningAlgorithm = CryptoHelper.GetRsaSigningAlgorithmValue(_options.SigningAlgorithm) });
         }
     }
 }

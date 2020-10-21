@@ -16,6 +16,7 @@ using Duende.IdentityServer.Validation;
 using UnitTests.Common;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
+using Duende.IdentityServer.Services.KeyManagement;
 
 namespace UnitTests.Validation.Setup
 {
@@ -145,8 +146,11 @@ namespace UnitTests.Validation.Setup
         {
             return new DefaultTokenCreationService(
                 new StubClock(),
-                new DefaultKeyMaterialService(new IValidationKeysStore[] { },
-                    new ISigningCredentialStore[] { new InMemorySigningCredentialsStore(TestCert.LoadSigningCredentials()) }),
+                new DefaultKeyMaterialService(
+                    new IValidationKeysStore[] { },
+                    new ISigningCredentialStore[] { new InMemorySigningCredentialsStore(TestCert.LoadSigningCredentials()) },
+                    new NopAutomaticKeyManagerKeyStore()
+                ),
                 options ?? TestIdentityServerOptions.Create(),
                 TestLogger.Create<DefaultTokenCreationService>());
         }
@@ -289,7 +293,11 @@ namespace UnitTests.Validation.Setup
                 referenceTokenStore: store,
                 refreshTokenStore: refreshTokenStore,
                 customValidator: new DefaultCustomTokenValidator(),
-                    keys: new DefaultKeyMaterialService(new[] { new InMemoryValidationKeysStore(new[] { keyInfo }) }, Enumerable.Empty<ISigningCredentialStore>()),
+                    keys: new DefaultKeyMaterialService(
+                        new[] { new InMemoryValidationKeysStore(new[] { keyInfo }) }, 
+                        Enumerable.Empty<ISigningCredentialStore>(),
+                        new NopAutomaticKeyManagerKeyStore()
+                    ),
                 logger: logger,
                 options: options,
                 context: context);
