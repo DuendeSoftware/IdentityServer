@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Services.KeyManagement
 {
     /// <summary>
-    /// Interface to model loading teh current singing key, as well as all keys used in OIDC discovery.
+    /// Interface to model loading the current singing key, as well as all keys used in OIDC discovery.
     /// </summary>
     public interface IKeyManager
     {

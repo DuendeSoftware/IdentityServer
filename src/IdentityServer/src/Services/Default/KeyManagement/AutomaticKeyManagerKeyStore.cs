@@ -20,9 +20,9 @@ namespace Duende.IdentityServer.Services.KeyManagement
     }
 
     /// <summary>
-    /// Empty implementation of IAutomaticKeyManagerKeyStore.
+    /// Empty implementation of IAutomaticKeyManagerKeyStore (for testing).
     /// </summary>
-    public class NopAutomaticKeyManagerKeyStore : IAutomaticKeyManagerKeyStore
+    internal class NopAutomaticKeyManagerKeyStore : IAutomaticKeyManagerKeyStore
     {
         /// <inheritdoc/>
         public Task<SigningCredentials> GetSigningCredentialsAsync()
