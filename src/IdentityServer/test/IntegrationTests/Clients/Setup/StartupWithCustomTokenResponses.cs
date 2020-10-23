@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -26,6 +26,7 @@ namespace IntegrationTests.Clients.Setup
                     RaiseInformationEvents = true,
                     RaiseSuccessEvents = true
                 };
+                options.KeyManagement.Enabled = false;
             });
 
             builder.AddInMemoryClients(Clients.Get());
