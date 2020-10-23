@@ -28,6 +28,7 @@ namespace IntegrationTests.Clients.Setup
                     RaiseInformationEvents = true,
                     RaiseSuccessEvents = true
                 };
+                options.KeyManagement.Enabled = false;
             });
 
             builder.AddInMemoryClients(Clients.Get());

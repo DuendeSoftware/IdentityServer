@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -10,6 +10,7 @@ using System;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Services.KeyManagement;
 
 namespace Duende.IdentityServer.Services
 {
@@ -21,16 +22,22 @@ namespace Duende.IdentityServer.Services
     {
         private readonly IEnumerable<ISigningCredentialStore> _signingCredentialStores;
         private readonly IEnumerable<IValidationKeysStore> _validationKeysStores;
+        private readonly IAutomaticKeyManagerKeyStore _keyManagerKeyStore;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultKeyMaterialService"/> class.
         /// </summary>
         /// <param name="validationKeysStores">The validation keys stores.</param>
         /// <param name="signingCredentialStores">The signing credential store.</param>
-        public DefaultKeyMaterialService(IEnumerable<IValidationKeysStore> validationKeysStores, IEnumerable<ISigningCredentialStore> signingCredentialStores)
+        /// <param name="keyManagerKeyStore">The store for automatic key management.</param>
+        public DefaultKeyMaterialService(
+            IEnumerable<IValidationKeysStore> validationKeysStores, 
+            IEnumerable<ISigningCredentialStore> signingCredentialStores,
+            IAutomaticKeyManagerKeyStore keyManagerKeyStore)
         {
             _signingCredentialStores = signingCredentialStores;
             _validationKeysStores = validationKeysStores;
+            _keyManagerKeyStore = keyManagerKeyStore;
         }
 
         /// <inheritdoc/>
@@ -40,7 +47,23 @@ namespace Duende.IdentityServer.Services
             {
                 if (allowedAlgorithms.IsNullOrEmpty())
                 {
-                    return await _signingCredentialStores.First().GetSigningCredentialsAsync();
+                    var automaticKey = await _keyManagerKeyStore.GetSigningCredentialsAsync();
+                    if (automaticKey != null)
+                    {
+                        return automaticKey;
+                    }
+
+                    var list = _signingCredentialStores.ToList();
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        var key = await list[i].GetSigningCredentialsAsync();
+                        if (key != null)
+                        {
+                            return key;
+                        }
+                    }
+
+                    throw new InvalidOperationException($"No signing credential registered.");
                 }
 
                 var credential = (await GetAllSigningCredentialsAsync()).FirstOrDefault(c => allowedAlgorithms.Contains(c.Algorithm));
@@ -60,9 +83,19 @@ namespace Duende.IdentityServer.Services
         {
             var credentials = new List<SigningCredentials>();
 
+            var automaticSigningKey = await _keyManagerKeyStore.GetSigningCredentialsAsync();
+            if (automaticSigningKey != null)
+            {
+                credentials.Add(automaticSigningKey);
+            }
+
             foreach (var store in _signingCredentialStores)
             {
-                credentials.Add(await store.GetSigningCredentialsAsync());
+                var signingKey = await store.GetSigningCredentialsAsync();
+                if (signingKey != null)
+                {
+                    credentials.Add(signingKey);
+                }
             }
 
             return credentials;
@@ -73,9 +106,19 @@ namespace Duende.IdentityServer.Services
         {
             var keys = new List<SecurityKeyInfo>();
 
+            var automaticSigningKeys = await _keyManagerKeyStore.GetValidationKeysAsync();
+            if (automaticSigningKeys?.Any() == true)
+            {
+                keys.AddRange(automaticSigningKeys);
+            }
+
             foreach (var store in _validationKeysStores)
             {
-                keys.AddRange(await store.GetValidationKeysAsync());
+                var validationKeys = await store.GetValidationKeysAsync();
+                if (validationKeys.Any())
+                {
+                    keys.AddRange(validationKeys);
+                }
             }
 
             return keys;

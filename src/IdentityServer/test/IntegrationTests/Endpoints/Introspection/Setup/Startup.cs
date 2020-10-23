@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -16,6 +16,7 @@ namespace IntegrationTests.Endpoints.Introspection.Setup
             {
                 options.IssuerUri = "https://idsvr4";
                 options.Endpoints.EnableAuthorizeEndpoint = false;
+                options.KeyManagement.Enabled = false;
             });
 
             builder.AddInMemoryClients(Clients.Get());

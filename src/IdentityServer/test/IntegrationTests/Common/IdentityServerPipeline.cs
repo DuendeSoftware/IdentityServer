@@ -135,6 +135,7 @@ namespace IntegrationTests.Common
                     RaiseInformationEvents = true,
                     RaiseSuccessEvents = true
                 };
+                options.KeyManagement.Enabled = false;
             })
             .AddInMemoryClients(Clients)
             .AddInMemoryIdentityResources(IdentityScopes)

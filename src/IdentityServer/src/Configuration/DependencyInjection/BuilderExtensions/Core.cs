@@ -26,6 +26,9 @@ using static Duende.IdentityServer.Constants;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting.FederatedSignOut;
 using Duende.IdentityServer.Services.Default;
+using Duende.IdentityServer.Services.KeyManagement;
+using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -174,7 +177,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddTransient<IBackChannelLogoutService, DefaultBackChannelLogoutService>();
             builder.Services.TryAddTransient<IResourceValidator, DefaultResourceValidator>();
             builder.Services.TryAddTransient<IScopeParser, DefaultScopeParser>();
-
+            
             builder.AddJwtRequestUriHttpClient();
             builder.AddBackChannelLogoutHttpClient();
 
@@ -183,6 +186,26 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.TryAddTransient<IDeviceFlowThrottlingService, DistributedDeviceFlowThrottlingService>();
             builder.Services.AddDistributedMemoryCache();
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds key management services.
+        /// </summary>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddKeyManagement(this IIdentityServerBuilder builder)
+        {
+            builder.Services.TryAddTransient<IAutomaticKeyManagerKeyStore, AutomaticKeyManagerKeyStore>();
+            builder.Services.TryAddTransient<IKeyManager, KeyManager>();
+            builder.Services.TryAddTransient<INewKeyLock, DefaultKeyLock>();
+            builder.Services.TryAddTransient<ISigningKeyProtector, DataProtectionKeyProtector>();
+            builder.Services.TryAddTransient<ISigningKeyStoreCache, NopKeyStoreCache>();
+            builder.Services.TryAddTransient(provider => provider.GetRequiredService<IdentityServerOptions>().KeyManagement);
+
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "keys");
+            builder.Services.TryAddSingleton<ISigningKeyStore>(x => new FileSystemKeyStore(path, x.GetRequiredService<ILogger<FileSystemKeyStore>>()));
 
             return builder;
         }

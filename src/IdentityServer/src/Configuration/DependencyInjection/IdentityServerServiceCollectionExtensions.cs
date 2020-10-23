@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -41,6 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddCoreServices()
                 .AddDefaultEndpoints()
                 .AddPluggableServices()
+                .AddKeyManagement()
                 .AddValidators()
                 .AddResponseGenerators()
                 .AddDefaultSecretParsers()
