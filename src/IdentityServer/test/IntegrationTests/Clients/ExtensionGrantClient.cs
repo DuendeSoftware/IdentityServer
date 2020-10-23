@@ -64,11 +64,6 @@ namespace IntegrationTests.Clients
 
             var payload = GetPayload(response);
 
-            var unixNow = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var exp = Int64.Parse(payload["exp"].ToString());
-            exp.Should().BeLessThan(unixNow + 3605);
-            exp.Should().BeGreaterThan(unixNow + 3595);
-
             payload.Count().Should().Be(12);
             payload.Should().Contain("iss", "https://idsvr4");
             payload.Should().Contain("client_id", "client.custom");
