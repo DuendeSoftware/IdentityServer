@@ -9,10 +9,14 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
+
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Duende.IdentityServer.Services
 {
@@ -69,18 +73,53 @@ namespace Duende.IdentityServer.Services
         /// </returns>
         public virtual async Task<string> CreateTokenAsync(Token token)
         {
-            var header = await CreateHeaderAsync(token);
             var payload = await CreatePayloadAsync(token);
+            var headerElements = await CreateHeaderElementsAsync(token);
 
-            return await CreateJwtAsync(new JwtSecurityToken(header, payload));
+            return await CreateJwtAsync(token, payload, headerElements);
         }
 
         /// <summary>
-        /// Creates the JWT header
+        /// Creates the JWT payload
         /// </summary>
-        /// <param name="token">The token.</param>
-        /// <returns>The JWT header</returns>
-        protected virtual async Task<JwtHeader> CreateHeaderAsync(Token token)
+        /// <param name="token"></param>
+        /// <returns></returns>
+        protected virtual Task<string> CreatePayloadAsync(Token token)
+        {
+            var payload = token.CreateJwtPayloadDictionary(Options, Clock, Logger);
+            return Task.FromResult(JsonSerializer.Serialize(payload));
+        }
+
+        /// <summary>
+        /// Creates additional JWT header elements
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        protected virtual Task<Dictionary<string, object>> CreateHeaderElementsAsync(Token token)
+        {
+            var additionalHeaderElements = new Dictionary<string, object>();
+            
+            if (token.Type == IdentityServerConstants.TokenTypes.AccessToken)
+            {
+                if (Options.AccessTokenJwtType.IsPresent())
+                {
+                    additionalHeaderElements.Add("typ", Options.AccessTokenJwtType);
+                }
+            }
+
+            return Task.FromResult(additionalHeaderElements);
+        }
+
+        /// <summary>
+        /// Creates JWT token
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="payload"></param>
+        /// <param name="headerElements"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        protected virtual async Task<string> CreateJwtAsync(Token token, string payload,
+            Dictionary<string, object> headerElements)
         {
             var credential = await Keys.GetSigningCredentialsAsync(token.AllowedSigningAlgorithms);
 
@@ -89,51 +128,8 @@ namespace Duende.IdentityServer.Services
                 throw new InvalidOperationException("No signing credential is configured. Can't create JWT token");
             }
 
-            var header = new JwtHeader(credential);
-
-            // emit x5t claim for backwards compatibility with v4 of MS JWT library
-            if (credential.Key is X509SecurityKey x509Key)
-            {
-                var cert = x509Key.Certificate;
-                if (Clock.UtcNow.UtcDateTime > cert.NotAfter)
-                {
-                    Logger.LogWarning("Certificate {subjectName} has expired on {expiration}", cert.Subject, cert.NotAfter.ToString(CultureInfo.InvariantCulture));
-                }
-
-                header["x5t"] = Base64Url.Encode(cert.GetCertHash());
-            }
-
-            if (token.Type == IdentityServerConstants.TokenTypes.AccessToken)
-            {
-                if (Options.AccessTokenJwtType.IsPresent())
-                {
-                    header["typ"] = Options.AccessTokenJwtType;
-                }
-            }
-
-            return header;
-        }
-
-        /// <summary>
-        /// Creates the JWT payload
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <returns>The JWT payload</returns>
-        protected virtual Task<JwtPayload> CreatePayloadAsync(Token token)
-        {
-            var payload = token.CreateJwtPayload(Clock, Options, Logger);
-            return Task.FromResult(payload);
-        }
-
-        /// <summary>
-        /// Applies the signature to the JWT
-        /// </summary>
-        /// <param name="jwt">The JWT object.</param>
-        /// <returns>The signed JWT</returns>
-        protected virtual Task<string> CreateJwtAsync(JwtSecurityToken jwt)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            return Task.FromResult(handler.WriteToken(jwt));
+            var handler = new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false };
+            return handler.CreateToken(payload, credential, headerElements);
         }
     }
 }

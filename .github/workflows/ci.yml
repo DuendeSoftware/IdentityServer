@@ -20,6 +20,16 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
     steps:
     - uses: actions/checkout@af513c7a016048ae468971c52ed77d9562c7c819
+    
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.100-rc.2.20479.15'
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+
     - run: dotnet --info
     
     - if: contains(matrix.runs-on, 'macOS') || contains(matrix.runs-on, 'ubuntu')

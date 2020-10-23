@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Builder
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Builder
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
 
             var logger = loggerFactory.CreateLogger("Duende.IdentityServer.Startup");
-            logger.LogInformation("Starting Duende IdentityServer version {version}", typeof(Duende.IdentityServer.Hosting.IdentityServerMiddleware).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
+            logger.LogInformation("Starting Duende IdentityServer version {version} ({netversion})", typeof(Duende.IdentityServer.Hosting.IdentityServerMiddleware).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, RuntimeInformation.FrameworkDescription);
 
             var scopeFactory = app.ApplicationServices.GetService<IServiceScopeFactory>();
 

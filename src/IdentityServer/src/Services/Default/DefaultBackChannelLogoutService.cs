@@ -164,7 +164,6 @@ namespace Duende.IdentityServer.Services
             {
                 new Claim(JwtClaimTypes.Subject, request.SubjectId),
                 new Claim(JwtClaimTypes.Audience, request.ClientId),
-                new Claim(JwtClaimTypes.IssuedAt, Clock.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
                 new Claim(JwtClaimTypes.JwtId, CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)),
                 new Claim(JwtClaimTypes.Events, json, IdentityServerConstants.ClaimValueTypes.Json)
             };

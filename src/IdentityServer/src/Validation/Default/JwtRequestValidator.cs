@@ -14,8 +14,6 @@ using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -199,19 +197,7 @@ namespace Duende.IdentityServer.Validation
                 if (!Constants.Filters.JwtRequestClaimTypesFilter.Contains(key))
                 {
                     var value = token.Payload[key];
-
-                    switch (value)
-                    {
-                        case string s:
-                            payload.Add(key, s);
-                            break;
-                        case JObject jobj:
-                            payload.Add(key, jobj.ToString(Formatting.None));
-                            break;
-                        case JArray jarr:
-                            payload.Add(key, jarr.ToString(Formatting.None));
-                            break;
-                    }
+                    payload.Add(key, value.ToString());
                 }
             }
 

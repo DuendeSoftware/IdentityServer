@@ -16,7 +16,7 @@ using FluentAssertions;
 using UnitTests.Common;
 using Xunit;
 
-namespace IdentityServer.UnitTests.ResponseHandling
+namespace UnitTests.ResponseHandling
 {
     public class UserInfoResponseGeneratorTests
     {

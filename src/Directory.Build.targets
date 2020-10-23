@@ -1,11 +1,21 @@
 <Project>
 
   <PropertyGroup>
+    <IdentityServerVersion>5.0.0-*</IdentityServerVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'netstandard2.0'">
     <FrameworkVersion>3.1.0</FrameworkVersion>
     <ExtensionsVersion>3.1.0</ExtensionsVersion>
     <EntityFrameworkVersion>3.1.0</EntityFrameworkVersion>
-    
-    <IdentityServerVersion>5.0.0-*</IdentityServerVersion>
+    <WilsonVersion>5.6.0</WilsonVersion>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0'">
+    <FrameworkVersion>5.0.0-rc.2.*</FrameworkVersion>
+    <ExtensionsVersion>5.0.0-rc.2.*</ExtensionsVersion>
+    <EntityFrameworkVersion>5.0.0-rc.2.*</EntityFrameworkVersion>
+    <WilsonVersion>6.8.0</WilsonVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,9 +50,8 @@
     
     <!--misc -->
     <PackageReference Update="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="5.6.0" />
-    <PackageReference Update="System.IdentityModel.Tokens.Jwt" Version="[5.6.0,6.0)" />
-    <PackageReference Update="System.Security.Principal.Windows" Version="4.7.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(WilsonVersion)" />
+    <PackageReference Update="System.IdentityModel.Tokens.Jwt" Version="$(WilsonVersion)" />
     <PackageReference Update="AutoMapper" Version="[10.0.0,11.0)" />
     
     <!--microsoft asp.net core -->
