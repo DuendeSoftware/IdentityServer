@@ -212,4 +212,4 @@ workspace.xml
 
 src/IdentityServer4/host/identityserver.db
 tempkey.jwk
-src/IdentityServer/host/keys/is-signing-key-*.json
+keys
