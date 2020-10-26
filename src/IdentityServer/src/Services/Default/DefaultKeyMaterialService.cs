@@ -31,7 +31,7 @@ namespace Duende.IdentityServer.Services
         /// <param name="signingCredentialStores">The signing credential store.</param>
         /// <param name="keyManagerKeyStore">The store for automatic key management.</param>
         public DefaultKeyMaterialService(
-            IEnumerable<IValidationKeysStore> validationKeysStores, 
+            IEnumerable<IValidationKeysStore> validationKeysStores,
             IEnumerable<ISigningCredentialStore> signingCredentialStores,
             IAutomaticKeyManagerKeyStore keyManagerKeyStore)
         {
@@ -43,39 +43,36 @@ namespace Duende.IdentityServer.Services
         /// <inheritdoc/>
         public async Task<SigningCredentials> GetSigningCredentialsAsync(IEnumerable<string> allowedAlgorithms = null)
         {
-            if (_signingCredentialStores.Any())
+            if (allowedAlgorithms.IsNullOrEmpty())
             {
-                if (allowedAlgorithms.IsNullOrEmpty())
+                var automaticKey = await _keyManagerKeyStore.GetSigningCredentialsAsync();
+                if (automaticKey != null)
                 {
-                    var automaticKey = await _keyManagerKeyStore.GetSigningCredentialsAsync();
-                    if (automaticKey != null)
-                    {
-                        return automaticKey;
-                    }
-
-                    var list = _signingCredentialStores.ToList();
-                    for (var i = 0; i < list.Count; i++)
-                    {
-                        var key = await list[i].GetSigningCredentialsAsync();
-                        if (key != null)
-                        {
-                            return key;
-                        }
-                    }
-
-                    throw new InvalidOperationException($"No signing credential registered.");
+                    return automaticKey;
                 }
 
-                var credential = (await GetAllSigningCredentialsAsync()).FirstOrDefault(c => allowedAlgorithms.Contains(c.Algorithm));
-                if (credential is null)
+                var list = _signingCredentialStores.ToList();
+                for (var i = 0; i < list.Count; i++)
                 {
-                    throw new InvalidOperationException($"No signing credential for algorithms ({allowedAlgorithms.ToSpaceSeparatedString()}) registered.");
+                    var key = await list[i].GetSigningCredentialsAsync();
+                    if (key != null)
+                    {
+                        return key;
+                    }
                 }
 
-                return credential;
+                throw new InvalidOperationException($"No signing credential registered.");
             }
 
-            return null;
+            var credential =
+                (await GetAllSigningCredentialsAsync()).FirstOrDefault(c => allowedAlgorithms.Contains(c.Algorithm));
+            if (credential is null)
+            {
+                throw new InvalidOperationException(
+                    $"No signing credential for algorithms ({allowedAlgorithms.ToSpaceSeparatedString()}) registered.");
+            }
+
+            return credential;
         }
 
         /// <inheritdoc/>
