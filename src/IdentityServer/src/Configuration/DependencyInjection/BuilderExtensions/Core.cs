@@ -204,8 +204,11 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddTransient<ISigningKeyStoreCache, NopKeyStoreCache>();
             builder.Services.TryAddTransient(provider => provider.GetRequiredService<IdentityServerOptions>().KeyManagement);
 
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "keys");
-            builder.Services.TryAddSingleton<ISigningKeyStore>(x => new FileSystemKeyStore(path, x.GetRequiredService<ILogger<FileSystemKeyStore>>()));
+            builder.Services.TryAddSingleton<ISigningKeyStore>(x =>
+            {
+                var opts = x.GetRequiredService<IdentityServerOptions>();
+                return new FileSystemKeyStore(opts.KeyManagement.KeyPath, x.GetRequiredService<ILogger<FileSystemKeyStore>>());
+            });
 
             return builder;
         }

@@ -3,6 +3,7 @@
 
 using Duende.IdentityServer.Models;
 using System;
+using System.IO;
 using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Configuration
@@ -96,6 +97,12 @@ namespace Duende.IdentityServer.Configuration
         /// Defaults to true.
         /// </summary>
         public bool DataProtectKeys { get; set; } = true;
+
+        /// <summary>
+        /// Path for storing keys when using the default file system store.
+        /// Defaults to the "keys" directory relative to the hosting application.
+        /// </summary>
+        public string KeyPath { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), "keys");
 
         internal void Validate()
         {
