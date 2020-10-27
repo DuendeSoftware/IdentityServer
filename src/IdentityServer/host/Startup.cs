@@ -66,7 +66,7 @@ namespace IdentityServerHost
                 .AddInMemoryIdentityResources(Resources.IdentityResources)
                 .AddInMemoryApiScopes(Resources.ApiScopes)
                 .AddInMemoryApiResources(Resources.ApiResources)
-                .AddSigningCredential()
+                //.AddStaticSigningCredential()
                 .AddExtensionGrantValidator<Extensions.ExtensionGrantValidator>()
                 .AddExtensionGrantValidator<Extensions.NoSubjectExtensionGrantValidator>()
                 .AddJwtBearerClientAuthentication()
@@ -125,7 +125,7 @@ namespace IdentityServerHost
 
     public static class BuilderExtensions
     {
-        public static IIdentityServerBuilder AddSigningCredential(this IIdentityServerBuilder builder)
+        public static IIdentityServerBuilder AddStaticSigningCredential(this IIdentityServerBuilder builder)
         {
             // create random RS256 key
             //builder.AddDeveloperSigningCredential();
