@@ -16,6 +16,14 @@ namespace Duende.IdentityServer.Models
         /// <summary>
         /// RSA key contained in a self-signed X509 certificate.
         /// </summary>
-        X509
+        RSA_X509,
+        /// <summary>
+        /// EC key.
+        /// </summary>
+        EC,
+        /// <summary>
+        /// EC key contained in a self-signed X509 certificate.
+        /// </summary>
+        EC_X509
     }
 }
