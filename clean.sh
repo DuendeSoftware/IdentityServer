@@ -1,3 +1,3 @@
-git clean -xdf -e samples -e src/IdentityServer4/.vs -e .idea
+git clean -xdf
 
 ./clean_cache.sh
