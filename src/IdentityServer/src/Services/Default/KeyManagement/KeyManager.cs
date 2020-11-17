@@ -106,7 +106,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
 
             // ensure we have at least one active signing key
-            var activeKey = GetActiveSigningKey(keys);
+            var activeKey = GetCurrentSigningKey(keys);
 
             // if we loaded from cache, see if DB has updated key
             if (activeKey == null && cached)
@@ -139,7 +139,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
                     if (activeKey == null)
                     {
-                        activeKey = GetActiveSigningKey(keys);
+                        activeKey = GetCurrentSigningKey(keys);
                     }
                     if (rotationRequired)
                     {
@@ -153,7 +153,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
                         if (activeKey == null)
                         {
-                            activeKey = GetActiveSigningKey(keys);
+                            activeKey = GetCurrentSigningKey(keys);
                         }
                         if (rotationRequired)
                         {
@@ -379,12 +379,12 @@ namespace Duende.IdentityServer.Services.KeyManagement
             // explicitly cache here since we didn't when we loaded above
             await CacheKeysAsync(keys);
 
-            var activeKey = GetActiveSigningKey(keys);
+            var activeKey = GetCurrentSigningKey(keys);
 
             return (keys, activeKey);
         }
 
-        internal RsaKeyContainer GetActiveSigningKey(IEnumerable<RsaKeyContainer> keys)
+        internal RsaKeyContainer GetCurrentSigningKey(IEnumerable<RsaKeyContainer> keys)
         {
             if (keys == null || !keys.Any()) return null;
 
@@ -392,14 +392,14 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             var ignoreActivation = false;
             // look for keys past activity delay
-            var activeKey = GetActiveSigningKeyInternal(keys, ignoreActivation);
+            var activeKey = GetCurrentSigningKeyInternal(keys, ignoreActivation);
             if (activeKey == null)
             {
                 ignoreActivation = true;
                 _logger.LogDebug("No active signing key found (respecting the activation delay).");
                 
                 // none, so check if any of the keys were recently created
-                activeKey = GetActiveSigningKeyInternal(keys, ignoreActivation);
+                activeKey = GetCurrentSigningKeyInternal(keys, ignoreActivation);
 
                 if (activeKey == null)
                 {
@@ -416,11 +416,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return activeKey;
         }
 
-        internal RsaKeyContainer GetActiveSigningKeyInternal(IEnumerable<RsaKeyContainer> keys, bool ignoreActivationDelay = false)
+        internal RsaKeyContainer GetCurrentSigningKeyInternal(IEnumerable<RsaKeyContainer> keys, bool ignoreActivationDelay = false)
         {
             if (keys == null) return null;
 
-            keys = keys.Where(key => CanBeUsedAsDefaultSigningKey(key, ignoreActivationDelay)).ToArray();
+            keys = keys.Where(key => CanBeUsedAsCurrentSigningKey(key, ignoreActivationDelay)).ToArray();
             if (!keys.Any())
             {
                 return null;
@@ -436,7 +436,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal bool CanBeUsedAsDefaultSigningKey(RsaKeyContainer key, bool ignoreActiveDelay = false)
+        internal bool CanBeUsedAsCurrentSigningKey(RsaKeyContainer key, bool ignoreActiveDelay = false)
         {
             if (key == null) return false;
 
@@ -516,7 +516,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             if (keys == null || !keys.Any()) return true;
 
-            var activeKey = GetActiveSigningKey(keys);
+            var activeKey = GetCurrentSigningKey(keys);
             if (activeKey == null) return true;
 
             // rotation is needed if: 1) if there are no other keys next in line (meaning younger).
