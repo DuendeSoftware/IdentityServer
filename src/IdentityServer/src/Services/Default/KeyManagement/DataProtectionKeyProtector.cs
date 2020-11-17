@@ -28,12 +28,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
             _dataProtectionProvider = dataProtectionProvider.CreateProtector(nameof(DataProtectionKeyProtector));
         }
 
-        /// <summary>
-        /// Protects KeyContainer.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public SerializedKey Protect(RsaKeyContainer key)
+        /// <inheritdoc/>
+        public SerializedKey Protect(KeyContainer key)
         {
             var data = KeySerializer.Serialize(key);
             
@@ -53,12 +49,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
             };
         }
 
-        /// <summary>
-        /// Unprotects KeyContainer.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public RsaKeyContainer Unprotect(SerializedKey key)
+        /// <inheritdoc/>
+        public KeyContainer Unprotect(SerializedKey key)
         {
             var data = key.DataProtected ? 
                 _dataProtectionProvider.Unprotect(key.Data) : 

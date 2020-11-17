@@ -259,7 +259,7 @@ namespace UnitTests.Services.Default.KeyManagement
         public async Task GetAllKeysInternalAsync_should_use_the_cache()
         {
             var key = CreateKey();
-            _mockKeyStoreCache.Cache = new List<RsaKeyContainer>()
+            _mockKeyStoreCache.Cache = new List<KeyContainer>()
             {
                 key
             };

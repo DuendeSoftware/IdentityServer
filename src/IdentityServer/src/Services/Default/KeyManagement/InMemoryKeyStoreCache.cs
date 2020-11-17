@@ -19,7 +19,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         private object _lock = new object();
 
         private DateTime _expires = DateTime.MinValue;
-        private IEnumerable<RsaKeyContainer> _cache;
+        private IEnumerable<KeyContainer> _cache;
 
         /// <summary>
         /// Constructor for InMemoryKeyStoreCache.
@@ -34,10 +34,10 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// Returns cached keys.
         /// </summary>
         /// <returns></returns>
-        public Task<IEnumerable<RsaKeyContainer>> GetKeysAsync()
+        public Task<IEnumerable<KeyContainer>> GetKeysAsync()
         {
             DateTime expires;
-            IEnumerable<RsaKeyContainer> keys;
+            IEnumerable<KeyContainer> keys;
 
             lock (_lock)
             {
@@ -50,7 +50,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 return Task.FromResult(keys);
             }
 
-            return Task.FromResult<IEnumerable<RsaKeyContainer>>(null);
+            return Task.FromResult<IEnumerable<KeyContainer>>(null);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <param name="keys"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        public Task StoreKeysAsync(IEnumerable<RsaKeyContainer> keys, TimeSpan duration)
+        public Task StoreKeysAsync(IEnumerable<KeyContainer> keys, TimeSpan duration)
         {
             lock (_lock)
             {

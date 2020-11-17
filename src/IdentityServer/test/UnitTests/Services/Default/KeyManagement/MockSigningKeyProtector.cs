@@ -10,7 +10,7 @@ namespace UnitTests.Services.Default.KeyManagement
     {
         public bool ProtectWasCalled { get; set; }
 
-        public SerializedKey Protect(RsaKeyContainer key)
+        public SerializedKey Protect(KeyContainer key)
         {
             ProtectWasCalled = true;
             return new SerializedKey
@@ -23,7 +23,7 @@ namespace UnitTests.Services.Default.KeyManagement
             };
         }
 
-        public RsaKeyContainer Unprotect(SerializedKey key)
+        public KeyContainer Unprotect(SerializedKey key)
         {
             return KeySerializer.Deserialize<RsaKeyContainer>(key.Data);
         }

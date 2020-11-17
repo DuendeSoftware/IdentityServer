@@ -67,7 +67,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// Returns the current signing key.
         /// </summary>
         /// <returns></returns>
-        public async Task<RsaKeyContainer> GetCurrentKeyAsync()
+        public async Task<KeyContainer> GetCurrentKeyAsync()
         {
             _logger.LogDebug("Getting the current key.");
 
@@ -85,7 +85,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<RsaKeyContainer>> GetAllKeysAsync()
+        public async Task<IEnumerable<KeyContainer>> GetAllKeysAsync()
         {
             _logger.LogDebug("Getting all the keys.");
 
@@ -95,7 +95,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
 
 
-        internal async Task<(IEnumerable<RsaKeyContainer>, RsaKeyContainer)> GetAllKeysInternalAsync()
+        internal async Task<(IEnumerable<KeyContainer>, KeyContainer)> GetAllKeysInternalAsync()
         {
             var cached = true;
             var keys = await GetKeysFromCacheAsync();
@@ -200,7 +200,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return (keys, activeKey);
         }
 
-        internal async Task<IEnumerable<RsaKeyContainer>> GetKeysFromCacheAsync()
+        internal async Task<IEnumerable<KeyContainer>> GetKeysFromCacheAsync()
         {
             var cachedKeys = await _cache.GetKeysAsync();
             if (cachedKeys != null)
@@ -213,7 +213,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return Enumerable.Empty<RsaKeyContainer>();
         }
 
-        internal bool AreAllKeysWithinInitializationDuration(IEnumerable<RsaKeyContainer> keys)
+        internal bool AreAllKeysWithinInitializationDuration(IEnumerable<KeyContainer> keys)
         {
             // the expired check will include retired keys
             keys = FilterExpiredKeys(keys);
@@ -229,7 +229,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal async Task<IEnumerable<RsaKeyContainer>> FilterAndDeleteRetiredKeysAsync(IEnumerable<RsaKeyContainer> keys)
+        internal async Task<IEnumerable<KeyContainer>> FilterAndDeleteRetiredKeysAsync(IEnumerable<KeyContainer> keys)
         {
             var retired = keys
                 .Where(x =>
@@ -260,7 +260,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
         }
 
-        internal IEnumerable<RsaKeyContainer> FilterExpiredKeys(IEnumerable<RsaKeyContainer> keys)
+        internal IEnumerable<KeyContainer> FilterExpiredKeys(IEnumerable<KeyContainer> keys)
         {
             var result = keys
                 .Where(x =>
@@ -273,7 +273,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal async Task CacheKeysAsync(IEnumerable<RsaKeyContainer> keys)
+        internal async Task CacheKeysAsync(IEnumerable<KeyContainer> keys)
         {
             if (keys?.Any() == true)
             {
@@ -302,7 +302,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
         }
 
-        internal async Task<IEnumerable<RsaKeyContainer>> GetKeysFromStoreAsync(bool cache = true)
+        internal async Task<IEnumerable<KeyContainer>> GetKeysFromStoreAsync(bool cache = true)
         {
             var protectedKeys = await _store.LoadKeysAsync();
             if (protectedKeys != null && protectedKeys.Any())
@@ -344,10 +344,10 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             _logger.LogInformation("No keys returned from store.");
 
-            return Enumerable.Empty<RsaKeyContainer>();
+            return Enumerable.Empty<KeyContainer>();
         }
 
-        internal async Task<(IEnumerable<RsaKeyContainer>, RsaKeyContainer)> CreateNewKeyAndAddToCacheAsync()
+        internal async Task<(IEnumerable<KeyContainer>, KeyContainer)> CreateNewKeyAndAddToCacheAsync()
         {
             var newKey = await CreateAndStoreNewKeyAsync();
             
@@ -384,7 +384,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return (keys, activeKey);
         }
 
-        internal RsaKeyContainer GetCurrentSigningKey(IEnumerable<RsaKeyContainer> keys)
+        internal KeyContainer GetCurrentSigningKey(IEnumerable<KeyContainer> keys)
         {
             if (keys == null || !keys.Any()) return null;
 
@@ -416,7 +416,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return activeKey;
         }
 
-        internal RsaKeyContainer GetCurrentSigningKeyInternal(IEnumerable<RsaKeyContainer> keys, bool ignoreActivationDelay = false)
+        internal KeyContainer GetCurrentSigningKeyInternal(IEnumerable<KeyContainer> keys, bool ignoreActivationDelay = false)
         {
             if (keys == null) return null;
 
@@ -436,7 +436,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal bool CanBeUsedAsCurrentSigningKey(RsaKeyContainer key, bool ignoreActiveDelay = false)
+        internal bool CanBeUsedAsCurrentSigningKey(KeyContainer key, bool ignoreActiveDelay = false)
         {
             if (key == null) return false;
 
@@ -493,7 +493,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return true;
         }
 
-        internal async Task<RsaKeyContainer> CreateAndStoreNewKeyAsync()
+        internal async Task<KeyContainer> CreateAndStoreNewKeyAsync()
         {
             _logger.LogDebug("Creating new key.");
 
@@ -512,7 +512,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return container;
         }
 
-        internal bool IsKeyRotationRequired(IEnumerable<RsaKeyContainer> keys)
+        internal bool IsKeyRotationRequired(IEnumerable<KeyContainer> keys)
         {
             if (keys == null || !keys.Any()) return true;
 

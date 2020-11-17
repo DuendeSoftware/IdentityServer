@@ -9,19 +9,19 @@ namespace UnitTests.Services.Default.KeyManagement
 {
     class MockSigningKeyStoreCache : ISigningKeyStoreCache
     {
-        public List<RsaKeyContainer> Cache { get; set; } = new List<RsaKeyContainer>();
+        public List<KeyContainer> Cache { get; set; } = new List<KeyContainer>();
 
         public bool GetKeysAsyncWasCalled { get; set; }
         public bool StoreKeysAsyncWasCalled { get; set; }
         public TimeSpan StoreKeysAsyncDuration { get; set; }
 
-        public Task<IEnumerable<RsaKeyContainer>> GetKeysAsync()
+        public Task<IEnumerable<KeyContainer>> GetKeysAsync()
         {
             GetKeysAsyncWasCalled = true;
             return Task.FromResult(Cache.AsEnumerable());
         }
 
-        public Task StoreKeysAsync(IEnumerable<RsaKeyContainer> keys, TimeSpan duration)
+        public Task StoreKeysAsync(IEnumerable<KeyContainer> keys, TimeSpan duration)
         {
             StoreKeysAsyncWasCalled = true;
             StoreKeysAsyncDuration = duration;

@@ -12,17 +12,17 @@ namespace Duende.IdentityServer.Services.KeyManagement
     public interface ISigningKeyProtector
     {
         /// <summary>
-        /// Protects RsaKeyContainer.
+        /// Protects KeyContainer.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        SerializedKey Protect(RsaKeyContainer key);
+        SerializedKey Protect(KeyContainer key);
 
         /// <summary>
-        /// Unprotects RsaKeyContainer.
+        /// Unprotects KeyContainer.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        RsaKeyContainer Unprotect(SerializedKey key);
+        KeyContainer Unprotect(SerializedKey key);
     }
 }

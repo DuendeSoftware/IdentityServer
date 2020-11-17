@@ -17,7 +17,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// Returns cached keys.
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<RsaKeyContainer>> GetKeysAsync();
+        Task<IEnumerable<KeyContainer>> GetKeysAsync();
 
         /// <summary>
         /// Caches keys for duration.
@@ -25,6 +25,6 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <param name="keys"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        Task StoreKeysAsync(IEnumerable<RsaKeyContainer> keys, TimeSpan duration);
+        Task StoreKeysAsync(IEnumerable<KeyContainer> keys, TimeSpan duration);
     }
 }
