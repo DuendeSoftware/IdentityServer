@@ -21,16 +21,17 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// </summary>
         public X509KeyContainer()
         {
+            HasX509Certificate = true;
         }
 
         /// <summary>
         /// Constructor for RsaKeyContainer.
         /// </summary>
-        public X509KeyContainer(RsaSecurityKey key, DateTime created, TimeSpan certAge, string issuer = "OP")
-            : base(key, created)
+        public X509KeyContainer(RsaSecurityKey key, string signingAlgorithm, DateTime created, TimeSpan certAge, string issuer = "OP")
+            : base(key, signingAlgorithm, created)
         {
-            KeyType = Duende.IdentityServer.Models.KeyType.X509;
-
+            HasX509Certificate = true;
+            
             var distinguishedName = new X500DistinguishedName($"CN={issuer}");
             var rsa = RSA.Create(Parameters);
 

@@ -16,7 +16,7 @@ namespace Duende.IdentityServer.Extensions
     {
         internal static RsaSecurityKey CreateRsaSecurityKey(this KeyManagementOptions options)
         {
-            return CryptoHelper.CreateRsaSecurityKey(options.KeySize);
+            return CryptoHelper.CreateRsaSecurityKey(options.RsaKeySize);
         }
 
         internal static bool IsRetired(this KeyManagementOptions options, TimeSpan diff)

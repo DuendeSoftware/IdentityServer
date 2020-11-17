@@ -26,9 +26,14 @@ namespace Duende.IdentityServer.Models
         public DateTime Created { get; set; }
         
         /// <summary>
-        /// The key type.
+        /// The signing algorithm.
         /// </summary>
-        public KeyType KeyType { get; set; }
+        public string SigningAlgorithm { get; set; }
+
+        /// <summary>
+        /// Contains X509 certificate.
+        /// </summary>
+        public bool IsX509Certificate { get; set; }
 
         /// <summary>
         /// Serialized data for key.

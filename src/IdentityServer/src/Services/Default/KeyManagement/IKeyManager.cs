@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Services.KeyManagement
 {
     /// <summary>
-    /// Interface to model loading the current singing key, as well as all keys used in OIDC discovery.
+    /// Interface to model loading the keys.
     /// </summary>
     public interface IKeyManager
     {
         /// <summary>
-        /// Returns the current signing key.
+        /// Returns the current signing keys.
         /// </summary>
         /// <returns></returns>
         Task<RsaKeyContainer> GetCurrentKeyAsync();
+        
+        //Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync();
 
         /// <summary>
         /// Returns all the validation keys.

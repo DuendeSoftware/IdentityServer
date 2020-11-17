@@ -16,7 +16,8 @@ namespace UnitTests.Services.Default.KeyManagement
             return new SerializedKey
             {
                 Id = key.Id,
-                KeyType = key.KeyType,
+                SigningAlgorithm = key.SigningAlgorithm,
+                IsX509Certificate = key.HasX509Certificate,
                 Created = DateTime.UtcNow,
                 Data = KeySerializer.Serialize(key),
             };

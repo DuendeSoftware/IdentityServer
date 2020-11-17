@@ -29,7 +29,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         }
 
         /// <summary>
-        /// Protects RsaKeyContainer.
+        /// Protects KeyContainer.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -46,14 +46,15 @@ namespace Duende.IdentityServer.Services.KeyManagement
             {
                 Created = DateTime.UtcNow,
                 Id = key.Id,
-                KeyType = key.KeyType,
+                SigningAlgorithm = key.SigningAlgorithm,
+                IsX509Certificate = key.HasX509Certificate,
                 Data = data,
                 DataProtected = _options.DataProtectKeys,
             };
         }
 
         /// <summary>
-        /// Unprotects RsaKeyContainer.
+        /// Unprotects KeyContainer.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -62,12 +63,10 @@ namespace Duende.IdentityServer.Services.KeyManagement
             var data = key.DataProtected ? 
                 _dataProtectionProvider.Unprotect(key.Data) : 
                 key.Data;
-            
-            var item = KeySerializer.Deserialize<RsaKeyContainer>(data);
-            if (item.KeyType == KeyType.X509)
-            {
-                item = KeySerializer.Deserialize<X509KeyContainer>(data);
-            }
+
+            var item = key.IsX509Certificate ?
+                KeySerializer.Deserialize<X509KeyContainer>(data) :
+                KeySerializer.Deserialize<RsaKeyContainer>(data);
 
             return item;
         }

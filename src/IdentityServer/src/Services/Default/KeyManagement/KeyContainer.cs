@@ -3,7 +3,6 @@
 
 
 using System;
-using Duende.IdentityServer.Models;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Services.KeyManagement
@@ -25,12 +24,12 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// </summary>
         /// <param name="id"></param>
         /// <param name="created"></param>
-        /// <param name="keyType"></param>
-        public KeyContainer(string id, DateTime created, KeyType keyType)
+        /// <param name="signingAlgorithm"></param>
+        public KeyContainer(string id, string signingAlgorithm, DateTime created)
         {
             Id = id;
+            SigningAlgorithm = signingAlgorithm;
             Created = created;
-            KeyType = keyType;
         }
 
         /// <summary>
@@ -39,14 +38,19 @@ namespace Duende.IdentityServer.Services.KeyManagement
         public string Id { get; set; }
 
         /// <summary>
+        /// The signing algorithm this key supports.
+        /// </summary>
+        public string SigningAlgorithm { get; set; }
+
+        /// <summary>
+        /// Indicates if key is contained in X509 certificate.
+        /// </summary>
+        public bool HasX509Certificate { get; set; }
+        
+        /// <summary>
         /// Date key was created.
         /// </summary>
         public DateTime Created { get; set; }
-
-        /// <summary>
-        /// Key type.
-        /// </summary>
-        public KeyType KeyType { get; set; }
 
         /// <summary>
         /// Creates AsymmetricSecurityKey.

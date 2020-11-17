@@ -17,6 +17,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
     /// </summary>
     public interface IAutomaticKeyManagerKeyStore : IValidationKeysStore, ISigningCredentialStore
     {
+        /// <summary>
+        /// Gets all the signing credentials.
+        /// </summary>
+        /// <returns></returns>
+        Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync();
     }
 
     /// <summary>
@@ -28,6 +33,12 @@ namespace Duende.IdentityServer.Services.KeyManagement
         public Task<SigningCredentials> GetSigningCredentialsAsync()
         {
             return Task.FromResult<SigningCredentials>(null);
+        }
+
+        /// <inheritdoc/>
+        public Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync()
+        {
+            return Task.FromResult(Enumerable.Empty<SigningCredentials>());
         }
 
         /// <inheritdoc/>
@@ -66,11 +77,16 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             var container = await _keyManager.GetCurrentKeyAsync();
             var key = container.ToSecurityKey();
-            // todo: fix alg from instance, not from options
-            var credential = new SigningCredentials(key, CryptoHelper.GetRsaSigningAlgorithmValue(_options.SigningAlgorithm));
+            var credential = new SigningCredentials(key, _options.DefaultSigningAlgorithm);
             return credential;
         }
 
+        /// <inheritdoc/>
+        public Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync()
+        {
+            return Task.FromResult(Enumerable.Empty<SigningCredentials>());
+        }
+        
         /// <inheritdoc/>
         public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
         {
@@ -81,8 +97,18 @@ namespace Duende.IdentityServer.Services.KeyManagement
             
             var containers = await _keyManager.GetAllKeysAsync();
             var keys = containers.Select(x => x.ToSecurityKey());
-            // todo: fix alg from instance, not from options
-            return keys.Select(x => new SecurityKeyInfo { Key = x, SigningAlgorithm = CryptoHelper.GetRsaSigningAlgorithmValue(_options.SigningAlgorithm) });
+
+            var list = new List<SecurityKeyInfo>();
+            foreach(var alg in _options.AllowedSigningAlgorithms)
+            {
+                list.AddRange(keys.Select(x =>
+                    new SecurityKeyInfo
+                    {
+                        Key = x,
+                        SigningAlgorithm = alg
+                    }));
+            }
+            return list;
         }
     }
 }

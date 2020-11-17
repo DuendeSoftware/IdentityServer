@@ -23,8 +23,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <summary>
         /// Constructor for RsaKeyContainer.
         /// </summary>
-        public RsaKeyContainer(RsaSecurityKey key, DateTime created)
-            : base(key.KeyId, created, Duende.IdentityServer.Models.KeyType.RSA)
+        public RsaKeyContainer(RsaSecurityKey key, string signingAlgorithm, DateTime created)
+            : base(key.KeyId, signingAlgorithm, created)
         {
             if (key.Rsa != null)
             {

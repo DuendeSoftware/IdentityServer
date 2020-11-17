@@ -1,9 +1,10 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Duende.IdentityServer.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Configuration
@@ -19,30 +20,30 @@ namespace Duende.IdentityServer.Configuration
         public bool Enabled { get; set; } = true;
 
         /// <summary>
-        /// The signing algorithm to use.
-        /// Defaults to RS256.
+        /// Key size (in bits) of RSA keys. Defaults to 2048.
         /// </summary>
-        public RsaSigningAlgorithm SigningAlgorithm { get; set; } = RsaSigningAlgorithm.RS256;
+        public int RsaKeySize { get; set; } = 2048;
 
         /// <summary>
-        /// Key size (in bits) of SigningAlgorithm.
+        /// The signing algorightms allowed. 
+        /// If none are specified, then "RS256" will be used as the default.
+        /// The first in the collection will be used as the default. 
         /// </summary>
-        public int KeySize => SigningAlgorithm switch
-            {
-                RsaSigningAlgorithm.RS256 => 256 * 8,
-                RsaSigningAlgorithm.RS384 => 384 * 8,
-                RsaSigningAlgorithm.RS512 => 512 * 8,
+        public IEnumerable<string> AllowedSigningAlgorithms { get; set; } = Enumerable.Empty<string>();
 
-                RsaSigningAlgorithm.PS256 => 256 * 8,
-                RsaSigningAlgorithm.PS384 => 384 * 8,
-                RsaSigningAlgorithm.PS512 => 512 * 8,
-                _ => throw new ArgumentException("Invalid signing algorithm value", nameof(SigningAlgorithm)),
-            };
+        internal string DefaultSigningAlgorithm => AllowedSigningAlgorithms.First();
+        
+        internal IEnumerable<string> RsaSigningAlgorithms => AllowedSigningAlgorithms.Where(x => x.StartsWith("R") || x.StartsWith("P"));
+        internal IEnumerable<string> EcSigningAlgorithms => AllowedSigningAlgorithms.Where(x => x.StartsWith("E"));
+        
+        internal bool RsaKeyEnabled => RsaSigningAlgorithms.Any();
+        internal bool EcKeyEnabled => EcSigningAlgorithms.Any();
 
         /// <summary>
-        /// Type of key to use. Defaults to RSA.
+        /// Wrap keys in X509 certificates. Defaults to false.
         /// </summary>
-        public KeyType KeyType { get; set; } = KeyType.RSA;
+        public bool WrapKeysInX509Certificate { get; set; }
+
 
         /// <summary>
         /// When no keys have been created yet, this is the window of time considered to be an initialization 
@@ -106,6 +107,22 @@ namespace Duende.IdentityServer.Configuration
 
         internal void Validate()
         {
+            if (AllowedSigningAlgorithms?.Any() != true)
+            {
+                AllowedSigningAlgorithms = new[] { "RS256" };
+            }
+            else
+            {
+                AllowedSigningAlgorithms = AllowedSigningAlgorithms.Distinct().ToArray();
+            }
+            
+            var invalid = AllowedSigningAlgorithms.Where(x => !SupportedSigningAlgorithms.Contains(x)).ToArray();
+            if (invalid.Any())
+            {
+                var values = invalid.Aggregate((x, y) => $"{x}, {y}");
+                throw new Exception($"Invalid signing algorithm(s): '{values}'.");
+            }
+
             if (InitializationDuration < TimeSpan.Zero) throw new Exception("InitializationDuration must be greater than or equal zero.");
             if (InitializationSynchronizationDelay < TimeSpan.Zero) throw new Exception("InitializationSynchronizationDelay must be greater than or equal zero.");
 

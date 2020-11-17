@@ -41,16 +41,16 @@ namespace UnitTests.Services.Default.KeyManagement
                 new LoggerFactory().CreateLogger<KeyManager>());
         }
 
-        RsaKeyContainer CreateKey(TimeSpan? age = null, KeyType keyType = KeyType.RSA)
+        RsaKeyContainer CreateKey(TimeSpan? age = null, string alg = "RS256", bool x509 = false)
         {
             var key = _options.CreateRsaSecurityKey();
 
             var date = _mockClock.UtcNow.DateTime;
             if (age.HasValue) date = date.Subtract(age.Value);
 
-            var container = keyType == KeyType.RSA ?
-                new RsaKeyContainer(key, date) :
-                new X509KeyContainer(key, date, _options.KeyRetirement);
+            var container = x509 ?
+                new X509KeyContainer(key, alg, date, _options.KeyRetirement) :
+                new RsaKeyContainer(key, alg, date);
             
             return container;
         }
@@ -678,18 +678,18 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public void GetActiveSigningKeyInternal_should_return_a_matching_key_type()
         {
-            var rsaKey1 = CreateKey(_options.KeyActivationDelay.Add(TimeSpan.FromSeconds(10)), KeyType.RSA);
-            var x509Key1 = CreateKey(_options.KeyActivationDelay.Add(TimeSpan.FromSeconds(20)), KeyType.X509);
+            var rsaKey1 = CreateKey(_options.KeyActivationDelay.Add(TimeSpan.FromSeconds(10)));
+            var x509Key1 = CreateKey(_options.KeyActivationDelay.Add(TimeSpan.FromSeconds(20)), x509: true);
 
             {
-                _options.KeyType = KeyType.RSA;
+                _options.WrapKeysInX509Certificate = false;
                 var key = _subject.GetActiveSigningKeyInternal(new[] { rsaKey1, x509Key1 });
 
                 key.Should().NotBeNull();
-                key.Id.Should().Be(rsaKey1.Id);
+                key.Id.Should().Be(x509Key1.Id);
             }
             {
-                _options.KeyType = KeyType.X509;
+                _options.WrapKeysInX509Certificate = true;
                 var key = _subject.GetActiveSigningKeyInternal(new[] { rsaKey1, x509Key1 });
 
                 key.Should().NotBeNull();
@@ -697,9 +697,9 @@ namespace UnitTests.Services.Default.KeyManagement
             }
 
             {
-                var rsaKey2 = CreateKey(_options.KeyActivationDelay.Add(TimeSpan.FromSeconds(30)), KeyType.RSA);
+                var rsaKey2 = CreateKey(_options.KeyActivationDelay.Add(TimeSpan.FromSeconds(30)));
                 
-                _options.KeyType = KeyType.RSA;
+                _options.WrapKeysInX509Certificate = false;
                 var key = _subject.GetActiveSigningKeyInternal(new[] { rsaKey1, x509Key1, rsaKey2 });
 
                 key.Should().NotBeNull();
@@ -715,7 +715,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(-TimeSpan.FromSeconds(1));
 
-                var result = _subject.CanBeUsedForSigning(key);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key);
 
                 result.Should().BeFalse();
             }
@@ -723,7 +723,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(TimeSpan.FromSeconds(1));
 
-                var result = _subject.CanBeUsedForSigning(key);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key);
 
                 result.Should().BeFalse();
             }
@@ -731,7 +731,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyActivationDelay.Subtract(TimeSpan.FromSeconds(1)));
 
-                var result = _subject.CanBeUsedForSigning(key);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key);
 
                 result.Should().BeFalse();
             }
@@ -743,7 +743,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyActivationDelay);
 
-                var result = _subject.CanBeUsedForSigning(key);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key);
 
                 result.Should().BeTrue();
             }
@@ -751,7 +751,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyActivationDelay.Add(TimeSpan.FromSeconds(1)));
 
-                var result = _subject.CanBeUsedForSigning(key);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key);
 
                 result.Should().BeTrue();
             }
@@ -759,7 +759,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyExpiration.Subtract(TimeSpan.FromSeconds(1)));
 
-                var result = _subject.CanBeUsedForSigning(key);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key);
 
                 result.Should().BeTrue();
             }
@@ -767,7 +767,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyExpiration);
 
-                var result = _subject.CanBeUsedForSigning(key);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key);
 
                 result.Should().BeTrue();
             }
@@ -779,7 +779,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyExpiration.Add(TimeSpan.FromSeconds(1)));
 
-                var result = _subject.CanBeUsedForSigning(key);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key);
 
                 result.Should().BeFalse();
             }
@@ -791,7 +791,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(-TimeSpan.FromSeconds(1));
 
-                var result = _subject.CanBeUsedForSigning(key, true);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key, true);
 
                 result.Should().BeTrue();
             }
@@ -799,7 +799,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(TimeSpan.FromSeconds(1));
 
-                var result = _subject.CanBeUsedForSigning(key, true);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key, true);
 
                 result.Should().BeTrue();
             }
@@ -807,7 +807,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyActivationDelay.Subtract(TimeSpan.FromSeconds(1)));
 
-                var result = _subject.CanBeUsedForSigning(key, true);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key, true);
 
                 result.Should().BeTrue();
             }
@@ -819,7 +819,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyActivationDelay);
 
-                var result = _subject.CanBeUsedForSigning(key, true);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key, true);
 
                 result.Should().BeTrue();
             }
@@ -827,7 +827,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyActivationDelay.Add(TimeSpan.FromSeconds(1)));
 
-                var result = _subject.CanBeUsedForSigning(key, true);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key, true);
 
                 result.Should().BeTrue();
             }
@@ -835,7 +835,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyExpiration.Subtract(TimeSpan.FromSeconds(1)));
 
-                var result = _subject.CanBeUsedForSigning(key, true);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key, true);
 
                 result.Should().BeTrue();
             }
@@ -843,7 +843,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyExpiration);
 
-                var result = _subject.CanBeUsedForSigning(key);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key);
 
                 result.Should().BeTrue();
             }
@@ -855,7 +855,7 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var key = CreateKey(_options.KeyExpiration.Add(TimeSpan.FromSeconds(1)));
 
-                var result = _subject.CanBeUsedForSigning(key, true);
+                var result = _subject.CanBeUsedAsDefaultSigningKey(key, true);
 
                 result.Should().BeFalse();
             }

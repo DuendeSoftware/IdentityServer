@@ -84,10 +84,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return key;
         }
 
-        /// <summary>
-        /// Returns all the validation keys.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public async Task<IEnumerable<RsaKeyContainer>> GetAllKeysAsync()
         {
             _logger.LogDebug("Getting all the keys.");
@@ -95,6 +92,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
             var (keys, _) = await GetAllKeysInternalAsync();
             return keys;
         }
+
+
 
         internal async Task<(IEnumerable<RsaKeyContainer>, RsaKeyContainer)> GetAllKeysInternalAsync()
         {
@@ -261,7 +260,6 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
         }
 
-
         internal IEnumerable<RsaKeyContainer> FilterExpiredKeys(IEnumerable<RsaKeyContainer> keys)
         {
             var result = keys
@@ -422,7 +420,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             if (keys == null) return null;
 
-            keys = keys.Where(key => CanBeUsedForSigning(key, ignoreActivationDelay)).ToArray();
+            keys = keys.Where(key => CanBeUsedAsDefaultSigningKey(key, ignoreActivationDelay)).ToArray();
             if (!keys.Any())
             {
                 return null;
@@ -438,13 +436,19 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal bool CanBeUsedForSigning(RsaKeyContainer key, bool ignoreActiveDelay = false)
+        internal bool CanBeUsedAsDefaultSigningKey(RsaKeyContainer key, bool ignoreActiveDelay = false)
         {
             if (key == null) return false;
 
-            if (key.KeyType != _options.KeyType)
+            if (!_options.AllowedSigningAlgorithms.Contains(key.SigningAlgorithm))
             {
-                _logger.LogTrace("Key {kid} is of type {kty} but server configured for {configuredKty}", key.Id, key.KeyType, _options.KeyType);
+                _logger.LogTrace("Key {kid} signing algorithm not allowed by server options.", key.Id);
+                return false;
+            }
+
+            if (_options.WrapKeysInX509Certificate && !key.HasX509Certificate)
+            {
+                _logger.LogTrace("Server configured to wrap keys in X509 certs, but key {kid} is not wrapped in cert.", key.Id);
                 return false;
             }
 
@@ -493,12 +497,12 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             _logger.LogDebug("Creating new key.");
 
-            var rsa = _options.CreateRsaSecurityKey();
+            var rsa = CryptoHelper.CreateRsaSecurityKey(_options.RsaKeySize);
             var now = _clock.UtcNow.DateTime;
             var iss = _httpContextAccessor?.HttpContext?.GetIdentityServerIssuerUri();
-            var container = _options.KeyType == KeyType.RSA ?
-                new RsaKeyContainer(rsa, now) :
-                new X509KeyContainer(rsa, now, _options.KeyRetirement, iss);
+            var container = _options.WrapKeysInX509Certificate ?
+                new X509KeyContainer(rsa, _options.DefaultSigningAlgorithm, now, _options.KeyRetirement, iss) :
+                new RsaKeyContainer(rsa, _options.DefaultSigningAlgorithm, now);
 
             var key = _protector.Protect(container);
             await _store.StoreKeyAsync(key);
