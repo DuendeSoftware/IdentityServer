@@ -75,16 +75,23 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 return null;
             }
 
-            var container = await _keyManager.GetCurrentKeyAsync();
-            var key = container.ToSecurityKey();
-            var credential = new SigningCredentials(key, _options.DefaultSigningAlgorithm);
+            var credentials = await GetAllSigningCredentialsAsync();
+            var alg = _options.AllowedSigningAlgorithms.FirstOrDefault();
+            var credential = credentials.FirstOrDefault(x => alg == x.Algorithm);
             return credential;
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync()
+        public async Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync()
         {
-            return Task.FromResult(Enumerable.Empty<SigningCredentials>());
+            if (!_options.Enabled)
+            {
+                return Enumerable.Empty<SigningCredentials>();
+            }
+
+            var keyContainers = await _keyManager.GetCurrentKeysAsync();
+            var credentials = keyContainers.Select(x => new SigningCredentials(x.ToSecurityKey(), x.SigningAlgorithm));
+            return credentials;
         }
         
         /// <inheritdoc/>
@@ -96,19 +103,12 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
             
             var containers = await _keyManager.GetAllKeysAsync();
-            var keys = containers.Select(x => x.ToSecurityKey());
-
-            var list = new List<SecurityKeyInfo>();
-            foreach(var alg in _options.AllowedSigningAlgorithms)
+            var keys = containers.Select(x => new SecurityKeyInfo
             {
-                list.AddRange(keys.Select(x =>
-                    new SecurityKeyInfo
-                    {
-                        Key = x,
-                        SigningAlgorithm = alg
-                    }));
-            }
-            return list;
+                Key = x.ToSecurityKey(),
+                SigningAlgorithm = x.SigningAlgorithm
+            });
+            return keys.ToArray();
         }
     }
 }

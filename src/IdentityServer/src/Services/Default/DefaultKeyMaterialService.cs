@@ -80,10 +80,10 @@ namespace Duende.IdentityServer.Services
         {
             var credentials = new List<SigningCredentials>();
 
-            var automaticSigningKey = await _keyManagerKeyStore.GetSigningCredentialsAsync();
-            if (automaticSigningKey != null)
+            var automaticSigningKeys = await _keyManagerKeyStore.GetAllSigningCredentialsAsync();
+            if (automaticSigningKeys != null)
             {
-                credentials.Add(automaticSigningKey);
+                credentials.AddRange(automaticSigningKeys);
             }
 
             foreach (var store in _signingCredentialStores)

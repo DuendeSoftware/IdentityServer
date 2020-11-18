@@ -15,9 +15,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// Returns the current signing keys.
         /// </summary>
         /// <returns></returns>
-        Task<KeyContainer> GetCurrentKeyAsync();
-        
-        //Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync();
+        Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync();
 
         /// <summary>
         /// Returns all the validation keys.
