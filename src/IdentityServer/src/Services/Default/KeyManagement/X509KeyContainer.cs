@@ -33,10 +33,9 @@ namespace Duende.IdentityServer.Services.KeyManagement
             HasX509Certificate = true;
             
             var distinguishedName = new X500DistinguishedName($"CN={issuer}");
-            var rsa = RSA.Create(key.Parameters);
 
             var request = new CertificateRequest(
-              distinguishedName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+              distinguishedName, key.Rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
             request.CertificateExtensions.Add(
                 new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
