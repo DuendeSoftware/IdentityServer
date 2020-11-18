@@ -56,11 +56,20 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 _dataProtectionProvider.Unprotect(key.Data) : 
                 key.Data;
 
-            var item = key.IsX509Certificate ?
-                KeySerializer.Deserialize<X509KeyContainer>(data) :
-                KeySerializer.Deserialize<RsaKeyContainer>(data);
+            if (key.SigningAlgorithm.StartsWith("R") || key.SigningAlgorithm.StartsWith("P"))
+            {
+                return key.IsX509Certificate ?
+                    KeySerializer.Deserialize<X509KeyContainer>(data) :
+                    (KeyContainer)KeySerializer.Deserialize<RsaKeyContainer>(data);
+            }
+            else if (key.SigningAlgorithm.StartsWith("E"))
+            {
+                return key.IsX509Certificate ?
+                    KeySerializer.Deserialize<X509KeyContainer>(data) :
+                    (KeyContainer) KeySerializer.Deserialize<EcKeyContainer>(data);
+            }
 
-            return item;
+            throw new Exception("Invalid SigningAlgorithm");
         }
     }
 }

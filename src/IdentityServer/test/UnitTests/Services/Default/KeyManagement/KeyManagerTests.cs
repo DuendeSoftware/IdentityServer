@@ -41,7 +41,7 @@ namespace UnitTests.Services.Default.KeyManagement
                 new LoggerFactory().CreateLogger<KeyManager>());
         }
 
-        RsaKeyContainer CreateKey(TimeSpan? age = null, string alg = "RS256", bool x509 = false)
+        KeyContainer CreateKey(TimeSpan? age = null, string alg = "RS256", bool x509 = false)
         {
             var key = _options.CreateRsaSecurityKey();
 
@@ -50,7 +50,7 @@ namespace UnitTests.Services.Default.KeyManagement
 
             var container = x509 ?
                 new X509KeyContainer(key, alg, date, _options.KeyRetirement) :
-                new RsaKeyContainer(key, alg, date);
+                (KeyContainer)new RsaKeyContainer(key, alg, date);
             
             return container;
         }
@@ -914,7 +914,7 @@ namespace UnitTests.Services.Default.KeyManagement
         public void IsKeyRotationRequired_when_no_active_key_should_be_true()
         {
             {
-                var keys = new RsaKeyContainer[] {
+                var keys = new KeyContainer[] {
                     CreateKey(_options.KeyRetirement.Add(TimeSpan.FromDays(1))),
                 };
                 var result = _subject.IsKeyRotationRequired(keys);

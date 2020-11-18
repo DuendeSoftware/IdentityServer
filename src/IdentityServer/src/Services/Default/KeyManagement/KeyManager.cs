@@ -271,20 +271,25 @@ namespace Duende.IdentityServer.Services.KeyManagement
             if (alg.StartsWith("R") || alg.StartsWith("P"))
             {
                 var rsa = CryptoHelper.CreateRsaSecurityKey(_options.RsaKeySize);
+                
                 container = _options.WrapKeysInX509Certificate ?
                     new X509KeyContainer(rsa, alg, now, _options.KeyRetirement, iss) :
-                    new RsaKeyContainer(rsa, alg, now);
+                    (KeyContainer)new RsaKeyContainer(rsa, alg, now);
             }
             else if (alg.StartsWith("E"))
             {
-                //var ec = CryptoHelper.CreateECDsaSecurityKey(
-                //  alg == "ES256" ? "P-256" :
-                //      alg == "ES384" ? "P-384" :
-                //          alg == "ES512" ? "P-512" : throw new Exception($"Invalid alg: {alg}"));
+                var curve = alg switch
+                {
+                    "ES256" => "P-256",
+                    "ES384" => "P-384",
+                    "ES512" => "P-521",
+                    _ => throw new Exception("Invalid SigningAlgorithm")
+                };
 
-                //container = _options.WrapKeysInX509Certificate ?
-                //    new X509KeyContainer(ec, _options.DefaultSigningAlgorithm, now, _options.KeyRetirement, iss) :
-                //    new RsaKeyContainer(ec, _options.DefaultSigningAlgorithm, now);
+                var ec = CryptoHelper.CreateECDsaSecurityKey(curve);
+                container = _options.WrapKeysInX509Certificate ?
+                    new X509KeyContainer(ec, alg, now, _options.KeyRetirement, iss) :
+                    (KeyContainer) new EcKeyContainer(ec, _options.DefaultSigningAlgorithm, now);
             }
             else
             {
