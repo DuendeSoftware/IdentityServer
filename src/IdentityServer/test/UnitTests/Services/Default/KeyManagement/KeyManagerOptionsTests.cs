@@ -62,9 +62,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(0),
-                    KeyExpiration = TimeSpan.FromMinutes(2),
-                    KeyRetirement = TimeSpan.FromMinutes(3)
+                    KeyPropagationTime = TimeSpan.FromMinutes(0),
+                    RotationInterval = TimeSpan.FromMinutes(2),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(1)
                 };
 
                 Action a = () => subject.Validate();
@@ -73,9 +73,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = -TimeSpan.FromMinutes(1),
-                    KeyExpiration = TimeSpan.FromMinutes(2),
-                    KeyRetirement = TimeSpan.FromMinutes(3)
+                    KeyPropagationTime = -TimeSpan.FromMinutes(1),
+                    RotationInterval = TimeSpan.FromMinutes(2),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(1)
                 };
 
                 Action a = () => subject.Validate();
@@ -89,9 +89,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(1),
-                    KeyExpiration = TimeSpan.FromMinutes(0),
-                    KeyRetirement = TimeSpan.FromMinutes(3)
+                    KeyPropagationTime = TimeSpan.FromMinutes(1),
+                    RotationInterval = TimeSpan.FromMinutes(0),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(3)
                 };
 
                 Action a = () => subject.Validate();
@@ -100,9 +100,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(1),
-                    KeyExpiration = -TimeSpan.FromMinutes(1),
-                    KeyRetirement = TimeSpan.FromMinutes(3)
+                    KeyPropagationTime = TimeSpan.FromMinutes(1),
+                    RotationInterval = -TimeSpan.FromMinutes(1),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(2)
                 };
 
                 Action a = () => subject.Validate();
@@ -116,9 +116,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(1),
-                    KeyExpiration = TimeSpan.FromMinutes(2),
-                    KeyRetirement = TimeSpan.FromMinutes(0)
+                    KeyPropagationTime = TimeSpan.FromMinutes(1),
+                    RotationInterval = TimeSpan.FromMinutes(2),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(0)
                 };
 
                 Action a = () => subject.Validate();
@@ -127,9 +127,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(1),
-                    KeyExpiration = TimeSpan.FromMinutes(2),
-                    KeyRetirement = -TimeSpan.FromMinutes(1)
+                    KeyPropagationTime = TimeSpan.FromMinutes(1),
+                    RotationInterval = TimeSpan.FromMinutes(2),
+                    MaxiumTokenLifetime = -TimeSpan.FromMinutes(1)
                 };
 
                 Action a = () => subject.Validate();
@@ -143,9 +143,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(1),
-                    KeyExpiration = TimeSpan.FromMinutes(1),
-                    KeyRetirement = TimeSpan.FromMinutes(10)
+                    KeyPropagationTime = TimeSpan.FromMinutes(1),
+                    RotationInterval = TimeSpan.FromMinutes(1),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(10)
                 };
 
                 Action a = () => subject.Validate();
@@ -155,9 +155,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(2),
-                    KeyExpiration = TimeSpan.FromMinutes(1),
-                    KeyRetirement = TimeSpan.FromMinutes(10)
+                    KeyPropagationTime = TimeSpan.FromMinutes(2),
+                    RotationInterval = TimeSpan.FromMinutes(1),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(10)
                 };
 
                 Action a = () => subject.Validate();
@@ -167,9 +167,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(1),
-                    KeyExpiration = TimeSpan.FromMinutes(2),
-                    KeyRetirement = TimeSpan.FromMinutes(10)
+                    KeyPropagationTime = TimeSpan.FromMinutes(1),
+                    RotationInterval = TimeSpan.FromMinutes(2),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(10)
                 };
 
                 Action a = () => subject.Validate();
@@ -183,9 +183,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(1),
-                    KeyExpiration = TimeSpan.FromMinutes(10),
-                    KeyRetirement = TimeSpan.FromMinutes(10),
+                    KeyPropagationTime = TimeSpan.FromMinutes(1),
+                    RotationInterval = TimeSpan.FromMinutes(10),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(0),
                 };
 
                 Action a = () => subject.Validate();
@@ -195,9 +195,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(1),
-                    KeyExpiration = TimeSpan.FromMinutes(10),
-                    KeyRetirement = TimeSpan.FromMinutes(9),
+                    KeyPropagationTime = TimeSpan.FromMinutes(1),
+                    RotationInterval = TimeSpan.FromMinutes(10),
+                    MaxiumTokenLifetime = -TimeSpan.FromMinutes(1),
                 };
 
                 Action a = () => subject.Validate();
@@ -207,9 +207,9 @@ namespace UnitTests.Services.Default.KeyManagement
             {
                 var subject = new KeyManagementOptions
                 {
-                    KeyActivationDelay = TimeSpan.FromMinutes(1),
-                    KeyExpiration = TimeSpan.FromMinutes(10),
-                    KeyRetirement = TimeSpan.FromMinutes(20),
+                    KeyPropagationTime = TimeSpan.FromMinutes(1),
+                    RotationInterval = TimeSpan.FromMinutes(10),
+                    MaxiumTokenLifetime = TimeSpan.FromMinutes(20),
                 };
 
                 Action a = () => subject.Validate();

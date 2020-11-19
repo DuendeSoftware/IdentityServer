@@ -21,12 +21,12 @@ namespace Duende.IdentityServer.Extensions
 
         internal static bool IsRetired(this KeyManagementOptions options, TimeSpan age)
         {
-            return (age >= options.KeyRetirement);
+            return (age >= options.KeyRetirementAge);
         }
 
         internal static bool IsExpired(this KeyManagementOptions options, TimeSpan age)
         {
-            return (age >= options.KeyExpiration);
+            return (age >= options.RotationInterval);
         }
 
         internal static bool IsWithinInitializationDuration(this KeyManagementOptions options, TimeSpan age)

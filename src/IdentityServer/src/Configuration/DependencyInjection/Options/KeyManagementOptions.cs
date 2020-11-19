@@ -70,22 +70,27 @@ namespace Duende.IdentityServer.Configuration
         public TimeSpan KeyCacheDuration { get; set; } = TimeSpan.FromHours(24);
 
         /// <summary>
-        /// Time expected to propigate new keys to all servers, and time expected all clients to refresh discovery.
+        /// Time expected to propagate new keys to all servers, and time expected all clients to refresh discovery.
         /// Defaults to 14 days.
         /// </summary>
-        public TimeSpan KeyActivationDelay { get; set; } = TimeSpan.FromDays(14);
+        public TimeSpan KeyPropagationTime { get; set; } = TimeSpan.FromDays(14);
         
         /// <summary>
         /// Age at which keys will no longer be used for signing, but will still be used in discovery for validation.
         /// Defaults to 90 days.
         /// </summary>
-        public TimeSpan KeyExpiration { get; set; } = TimeSpan.FromDays(90);
+        public TimeSpan RotationInterval { get; set; } = TimeSpan.FromDays(90);
 
         /// <summary>
-        /// Age at which keys will no longer be used in discovery. they can be deleted at this point.
-        /// Defaults to 180 days.
+        /// Maxiumum lifetime of any token to be validated by discovery.
+        /// This affects the duration a key appears in discovery after it is no longer active (post-rotation).
+        /// Defaults to 14 days.
         /// </summary>
-        public TimeSpan KeyRetirement { get; set; } = TimeSpan.FromDays(180);
+        public TimeSpan MaxiumTokenLifetime { get; set; } = TimeSpan.FromDays(14);
+
+
+        internal TimeSpan KeyRetirementAge => RotationInterval + MaxiumTokenLifetime;
+
 
         /// <summary>
         /// Automatically delete retired keys.
@@ -123,18 +128,17 @@ namespace Duende.IdentityServer.Configuration
                 throw new Exception($"Invalid signing algorithm(s): '{values}'.");
             }
 
-            if (InitializationDuration < TimeSpan.Zero) throw new Exception("InitializationDuration must be greater than or equal zero.");
-            if (InitializationSynchronizationDelay < TimeSpan.Zero) throw new Exception("InitializationSynchronizationDelay must be greater than or equal zero.");
+            if (InitializationDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationDuration) + " must be greater than or equal zero.");
+            if (InitializationSynchronizationDelay < TimeSpan.Zero) throw new Exception(nameof(InitializationSynchronizationDelay) + " must be greater than or equal zero.");
 
-            if (InitializationKeyCacheDuration < TimeSpan.Zero) throw new Exception("InitializationKeyCacheDuration must be greater than or equal zero.");
-            if (KeyCacheDuration < TimeSpan.Zero) throw new Exception("KeyCacheDuration must be greater than or equal zero.");
+            if (InitializationKeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationKeyCacheDuration) + " must be greater than or equal zero.");
+            if (KeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(KeyCacheDuration) + " must be greater than or equal zero.");
 
-            if (KeyActivationDelay <= TimeSpan.Zero) throw new Exception("KeyActivationDelay must be greater than zero.");
-            if (KeyExpiration <= TimeSpan.Zero) throw new Exception("KeyExpiration must be greater than zero.");
-            if (KeyRetirement <= TimeSpan.Zero) throw new Exception("KeyRetirement must be greater than zero.");
+            if (KeyPropagationTime <= TimeSpan.Zero) throw new Exception(nameof(KeyPropagationTime) + " must be greater than zero.");
+            if (RotationInterval <= TimeSpan.Zero) throw new Exception(nameof(RotationInterval) + " must be greater than zero.");
+            if (MaxiumTokenLifetime <= TimeSpan.Zero) throw new Exception(nameof(MaxiumTokenLifetime) + " must be greater than zero.");
 
-            if (KeyExpiration <= KeyActivationDelay) throw new Exception("KeyExpiration must be longer than KeyActivationDelay.");
-            if (KeyRetirement <= KeyExpiration) throw new Exception("KeyRetirement must be longer than KeyExpiration.");
+            if (RotationInterval <= KeyPropagationTime) throw new Exception(nameof(RotationInterval) + " must be longer than " + nameof(KeyPropagationTime));
         }
     }
 }

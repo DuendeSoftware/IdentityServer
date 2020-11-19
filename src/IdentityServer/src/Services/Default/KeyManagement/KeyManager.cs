@@ -76,8 +76,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 foreach (var key in currentKeys)
                 {
                     var age = _clock.GetAge(key.Created);
-                    var expiresIn = _options.KeyExpiration.Subtract(age);
-                    var retiresIn = _options.KeyRetirement.Subtract(age);
+                    var expiresIn = _options.RotationInterval.Subtract(age);
+                    var retiresIn = _options.KeyRetirementAge.Subtract(age);
                     _logger.LogInformation("Active signing key found with kid {kid}. Expires in {KeyExpiration}. Retires in {KeyRetirement}", key.Id, expiresIn, retiresIn);
                 }
             }
@@ -242,12 +242,12 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 // if no younger keys, then check if we're nearing the expiration of active key
                 // and see if that's within the window of activation delay.
                 var age = _clock.GetAge(activeKey.Created);
-                var diff = _options.KeyExpiration.Subtract(age);
-                var needed = (diff <= _options.KeyActivationDelay);
+                var diff = _options.RotationInterval.Subtract(age);
+                var needed = (diff <= _options.KeyPropagationTime);
 
                 if (!needed)
                 {
-                    _logger.LogDebug("Key rotation not required for alg {alg}; New key expected to be created in {KeyRotiation}", item.Key, diff.Subtract(_options.KeyActivationDelay));
+                    _logger.LogDebug("Key rotation not required for alg {alg}; New key expected to be created in {KeyRotiation}", item.Key, diff.Subtract(_options.KeyPropagationTime));
                 }
                 else
                 {
@@ -273,7 +273,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 var rsa = CryptoHelper.CreateRsaSecurityKey(_options.RsaKeySize);
                 
                 container = _options.WrapKeysInX509Certificate ?
-                    new X509KeyContainer(rsa, alg, now, _options.KeyRetirement, iss) :
+                    new X509KeyContainer(rsa, alg, now, _options.KeyRetirementAge, iss) :
                     (KeyContainer)new RsaKeyContainer(rsa, alg, now);
             }
             else if (alg.StartsWith("E"))
@@ -288,7 +288,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
                 var ec = CryptoHelper.CreateECDsaSecurityKey(curve);
                 container = _options.WrapKeysInX509Certificate ?
-                    new X509KeyContainer(ec, alg, now, _options.KeyRetirement, iss) :
+                    new X509KeyContainer(ec, alg, now, _options.KeyRetirementAge, iss) :
                     (KeyContainer) new EcKeyContainer(ec, _options.DefaultSigningAlgorithm, now);
             }
             else
@@ -652,7 +652,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             if (!ignoreActiveDelay)
             {
                 _logger.LogTrace("Checking if key with kid {kid} is active (respecting activation delay).", key.Id);
-                start = start.Add(_options.KeyActivationDelay);
+                start = start.Add(_options.KeyPropagationTime);
             }
             else
             {
@@ -666,7 +666,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
 
             // expired key check
-            var end = key.Created.Add(_options.KeyExpiration);
+            var end = key.Created.Add(_options.RotationInterval);
             if (end < now)
             {
                 _logger.LogTrace("Key with kid {kid} is inactive: the current time is past its expiration.", key.Id);
