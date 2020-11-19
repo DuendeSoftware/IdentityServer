@@ -76,7 +76,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
 
             var credentials = await GetAllSigningCredentialsAsync();
-            var alg = _options.AllowedSigningAlgorithms.FirstOrDefault();
+            var alg = _options.DefaultSigningAlgorithm;
             var credential = credentials.FirstOrDefault(x => alg == x.Algorithm);
             return credential;
         }

@@ -18,10 +18,12 @@ namespace UnitTests.Services.Default.KeyManagement
     {
         KeyManager _subject;
 
+        SigningAlgorithmOptions _rsaOptions = new SigningAlgorithmOptions("RS256");
+
         KeyManagementOptions _options = new KeyManagementOptions()
         {
             // just to speed up the tests
-            InitializationSynchronizationDelay = TimeSpan.FromSeconds(1)
+            InitializationSynchronizationDelay = TimeSpan.FromSeconds(1),
         };
 
         MockSigningKeyStore _mockKeyStore = new MockSigningKeyStore();
@@ -31,6 +33,8 @@ namespace UnitTests.Services.Default.KeyManagement
 
         public KeyManagerTests()
         {
+            _options.AllowedSigningAlgorithms = new[] { _rsaOptions };
+
             _subject = new KeyManager(
                 _options,
                 _mockKeyStore, 
@@ -702,14 +706,14 @@ namespace UnitTests.Services.Default.KeyManagement
             var x509Key1 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(20)), x509: true);
 
             {
-                _options.WrapKeysInX509Certificate = false;
+                _rsaOptions.UseX509Certificate = false;
                 var key = _subject.GetCurrentSigningKeyInternal(new[] { rsaKey1, x509Key1 });
 
                 key.Should().NotBeNull();
                 key.Id.Should().Be(x509Key1.Id);
             }
             {
-                _options.WrapKeysInX509Certificate = true;
+                _rsaOptions.UseX509Certificate = true;
                 var key = _subject.GetCurrentSigningKeyInternal(new[] { rsaKey1, x509Key1 });
 
                 key.Should().NotBeNull();
@@ -718,8 +722,8 @@ namespace UnitTests.Services.Default.KeyManagement
 
             {
                 var rsaKey2 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(30)));
-                
-                _options.WrapKeysInX509Certificate = false;
+
+                _rsaOptions.UseX509Certificate = false;
                 var key = _subject.GetCurrentSigningKeyInternal(new[] { rsaKey1, x509Key1, rsaKey2 });
 
                 key.Should().NotBeNull();
@@ -886,7 +890,7 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public async Task CreateAndStoreNewKeyAsync_should_create_and_store_and_return_key()
         {
-            var result = await _subject.CreateAndStoreNewKeyAsync("RS256");
+            var result = await _subject.CreateAndStoreNewKeyAsync(_rsaOptions);
 
             _mockKeyProtector.ProtectWasCalled.Should().BeTrue();
             _mockKeyStore.Keys.Count.Should().Be(1);

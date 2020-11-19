@@ -208,8 +208,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             var groupedKeys = allKeys.GroupBy(x => x.Algorithm);
             
-            var success = groupedKeys.Count() == _options.AllowedSigningAlgorithms.Count() &&
-                groupedKeys.All(x => _options.AllowedSigningAlgorithms.Contains(x.Key));
+            var success = groupedKeys.Count() == _options.AllowedSigningAlgorithmNames.Count() &&
+                groupedKeys.All(x => _options.AllowedSigningAlgorithmNames.Contains(x.Key));
 
             if (!success)
             {
@@ -259,7 +259,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return false;
         }
 
-        internal async Task<KeyContainer> CreateAndStoreNewKeyAsync(string alg)
+        internal async Task<KeyContainer> CreateAndStoreNewKeyAsync(SigningAlgorithmOptions alg)
         {
             _logger.LogDebug("Creating new key.");
 
@@ -268,28 +268,20 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             KeyContainer container = null;
 
-            if (alg.StartsWith("R") || alg.StartsWith("P"))
+            if (alg.IsRsaKey)
             {
                 var rsa = CryptoHelper.CreateRsaSecurityKey(_options.RsaKeySize);
                 
-                container = _options.WrapKeysInX509Certificate ?
-                    new X509KeyContainer(rsa, alg, now, _options.KeyRetirementAge, iss) :
-                    (KeyContainer)new RsaKeyContainer(rsa, alg, now);
+                container = alg.UseX509Certificate ?
+                    new X509KeyContainer(rsa, alg.Name, now, _options.KeyRetirementAge, iss) :
+                    (KeyContainer)new RsaKeyContainer(rsa, alg.Name, now);
             }
-            else if (alg.StartsWith("E"))
+            else if (alg.IsEcKey)
             {
-                var curve = alg switch
-                {
-                    "ES256" => "P-256",
-                    "ES384" => "P-384",
-                    "ES512" => "P-521",
-                    _ => throw new Exception("Invalid SigningAlgorithm")
-                };
-
-                var ec = CryptoHelper.CreateECDsaSecurityKey(curve);
+                var ec = CryptoHelper.CreateECDsaSecurityKey(CryptoHelper.GetCurveNameFromSigningAlgorithm(alg.Name));
                 // X509 certs don't currently work with EC keys.
                 container = //_options.WrapKeysInX509Certificate ? //new X509KeyContainer(ec, alg, now, _options.KeyRetirementAge, iss) :
-                    (KeyContainer) new EcKeyContainer(ec, alg, now);
+                    (KeyContainer) new EcKeyContainer(ec, alg.Name, now);
             }
             else
             {
@@ -467,7 +459,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 }
 
                 // only use keys that are allowed
-                keys = keys.Where(x => _options.AllowedSigningAlgorithms.Contains(x.Algorithm)).ToArray();
+                keys = keys.Where(x => _options.AllowedSigningAlgorithmNames.Contains(x.Algorithm)).ToArray();
                 if (_logger.IsEnabled(LogLevel.Trace) && keys.Any())
                 {
                     var ids = keys.Select(x => x.Id).ToArray();
@@ -540,8 +532,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             signingKeys = GetCurrentSigningKeys(keys);
             
-            var success = signingKeys.Count() == _options.AllowedSigningAlgorithms.Count() &&
-                signingKeys.All(x => _options.AllowedSigningAlgorithms.Contains(x.Algorithm));
+            var success = signingKeys.Count() == _options.AllowedSigningAlgorithmNames.Count() &&
+                signingKeys.All(x => _options.AllowedSigningAlgorithmNames.Contains(x.Algorithm));
             
             return success;
         }
@@ -630,13 +622,14 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             if (key == null) return false;
 
-            if (!_options.AllowedSigningAlgorithms.Contains(key.Algorithm))
+            var alg = _options.AllowedSigningAlgorithms.SingleOrDefault(x => x.Name == key.Algorithm);
+            if (alg == null)
             {
-                _logger.LogTrace("Key {kid} signing algorithm not allowed by server options.", key.Id);
+                _logger.LogTrace("Key {kid} signing algorithm {alg} not allowed by server options.", key.Id, key.Algorithm);
                 return false;
             }
 
-            if (_options.WrapKeysInX509Certificate && !key.HasX509Certificate)
+            if (alg.UseX509Certificate && !key.HasX509Certificate)
             {
                 _logger.LogTrace("Server configured to wrap keys in X509 certs, but key {kid} is not wrapped in cert.", key.Id);
                 return false;

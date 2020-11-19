@@ -25,25 +25,14 @@ namespace Duende.IdentityServer.Configuration
         public int RsaKeySize { get; set; } = 2048;
 
         /// <summary>
-        /// The signing algorightms allowed. 
+        /// The signing algorithms allowed. 
         /// If none are specified, then "RS256" will be used as the default.
         /// The first in the collection will be used as the default. 
         /// </summary>
-        public IEnumerable<string> AllowedSigningAlgorithms { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<SigningAlgorithmOptions> AllowedSigningAlgorithms { get; set; } = Enumerable.Empty<SigningAlgorithmOptions>();
 
-        internal string DefaultSigningAlgorithm => AllowedSigningAlgorithms.First();
-        
-        internal IEnumerable<string> RsaSigningAlgorithms => AllowedSigningAlgorithms.Where(x => x.StartsWith("R") || x.StartsWith("P"));
-        internal IEnumerable<string> EcSigningAlgorithms => AllowedSigningAlgorithms.Where(x => x.StartsWith("E"));
-        
-        internal bool RsaKeyEnabled => RsaSigningAlgorithms.Any();
-        internal bool EcKeyEnabled => EcSigningAlgorithms.Any();
-
-        /// <summary>
-        /// Wrap keys in X509 certificates. Defaults to false.
-        /// </summary>
-        public bool WrapKeysInX509Certificate { get; set; }
-
+        internal string DefaultSigningAlgorithm => AllowedSigningAlgorithms.First().Name;
+        internal IEnumerable<string> AllowedSigningAlgorithmNames => AllowedSigningAlgorithms.Select(x => x.Name);
 
         /// <summary>
         /// When no keys have been created yet, this is the window of time considered to be an initialization 
@@ -114,22 +103,20 @@ namespace Duende.IdentityServer.Configuration
         {
             if (AllowedSigningAlgorithms?.Any() != true)
             {
-                AllowedSigningAlgorithms = new[] { "RS256" };
+                AllowedSigningAlgorithms = new[] { new SigningAlgorithmOptions("RS256") };
             }
             else
             {
-                var origAlgs = AllowedSigningAlgorithms;
-                var count = AllowedSigningAlgorithms.Count();
-                AllowedSigningAlgorithms = AllowedSigningAlgorithms.Distinct().ToArray();
-
-                if (count != AllowedSigningAlgorithms.Count())
+                var group = AllowedSigningAlgorithms.GroupBy(x => x.Name);
+                var dups = group.Where(x => x.Count() > 1);
+                if (dups.Any())
                 {
-                    var dups = origAlgs.GroupBy(x => x).Where(x => x.Count() > 1).Select(x => x.Key).Aggregate((x, y) => $"{x}, {y}");
-                    throw new Exception($"Duplicate signing algorithms not allowed: '{dups}'.");
+                    var names = dups.Select(x => x.Key).Aggregate((x, y) => $"{x}, {y}");
+                    throw new Exception($"Duplicate signing algorithms not allowed: '{names}'.");
                 }
             }
-            
-            var invalid = AllowedSigningAlgorithms.Where(x => !SupportedSigningAlgorithms.Contains(x)).ToArray();
+
+            var invalid = AllowedSigningAlgorithmNames.Where(x => !SupportedSigningAlgorithms.Contains(x)).ToArray();
             if (invalid.Any())
             {
                 var values = invalid.Aggregate((x, y) => $"{x}, {y}");
@@ -148,5 +135,32 @@ namespace Duende.IdentityServer.Configuration
 
             if (RotationInterval <= KeyPropagationTime) throw new Exception(nameof(RotationInterval) + " must be longer than " + nameof(KeyPropagationTime));
         }
+    }
+
+    /// <summary>
+    /// Class to configure signing algorithm.
+    /// </summary>
+    public class SigningAlgorithmOptions
+    {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public SigningAlgorithmOptions(string name)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+        }
+
+        /// <summary>
+        /// The algorithm name.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Indicates if a X509 certificate is to be used to contain the key. Defaults to false.
+        /// </summary>
+        public bool UseX509Certificate { get; set; }
+
+        internal bool IsRsaKey => Name.StartsWith("R") || Name.StartsWith("P");
+        internal bool IsEcKey => Name.StartsWith("E");
     }
 }
