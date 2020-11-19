@@ -90,7 +90,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
 
             var keyContainers = await _keyManager.GetCurrentKeysAsync();
-            var credentials = keyContainers.Select(x => new SigningCredentials(x.ToSecurityKey(), x.SigningAlgorithm));
+            var credentials = keyContainers.Select(x => new SigningCredentials(x.ToSecurityKey(), x.Algorithm));
             return credentials;
         }
         
@@ -106,7 +106,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             var keys = containers.Select(x => new SecurityKeyInfo
             {
                 Key = x.ToSecurityKey(),
-                SigningAlgorithm = x.SigningAlgorithm
+                SigningAlgorithm = x.Algorithm
             });
             return keys.ToArray();
         }

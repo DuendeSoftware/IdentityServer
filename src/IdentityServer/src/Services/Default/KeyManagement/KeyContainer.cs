@@ -22,13 +22,10 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <summary>
         /// Constructor for RsaKeyContainer.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="created"></param>
-        /// <param name="signingAlgorithm"></param>
-        public KeyContainer(string id, string signingAlgorithm, DateTime created)
+        public KeyContainer(string id, string algorithm, DateTime created)
         {
             Id = id;
-            SigningAlgorithm = signingAlgorithm;
+            Algorithm = algorithm;
             Created = created;
         }
 
@@ -38,9 +35,9 @@ namespace Duende.IdentityServer.Services.KeyManagement
         public string Id { get; set; }
 
         /// <summary>
-        /// The signing algorithm this key supports.
+        /// The algorithm this key supports.
         /// </summary>
-        public string SigningAlgorithm { get; set; }
+        public string Algorithm { get; set; }
 
         /// <summary>
         /// Indicates if key is contained in X509 certificate.

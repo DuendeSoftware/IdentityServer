@@ -118,7 +118,15 @@ namespace Duende.IdentityServer.Configuration
             }
             else
             {
+                var origAlgs = AllowedSigningAlgorithms;
+                var count = AllowedSigningAlgorithms.Count();
                 AllowedSigningAlgorithms = AllowedSigningAlgorithms.Distinct().ToArray();
+
+                if (count != AllowedSigningAlgorithms.Count())
+                {
+                    var dups = origAlgs.GroupBy(x => x).Where(x => x.Count() > 1).Select(x => x.Key).Aggregate((x, y) => $"{x}, {y}");
+                    throw new Exception($"Duplicate signing algorithms not allowed: '{dups}'.");
+                }
             }
             
             var invalid = AllowedSigningAlgorithms.Where(x => !SupportedSigningAlgorithms.Contains(x)).ToArray();
@@ -128,11 +136,11 @@ namespace Duende.IdentityServer.Configuration
                 throw new Exception($"Invalid signing algorithm(s): '{values}'.");
             }
 
-            if (InitializationDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationDuration) + " must be greater than or equal zero.");
-            if (InitializationSynchronizationDelay < TimeSpan.Zero) throw new Exception(nameof(InitializationSynchronizationDelay) + " must be greater than or equal zero.");
+            if (InitializationDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationDuration) + " must be greater than or equal to zero.");
+            if (InitializationSynchronizationDelay < TimeSpan.Zero) throw new Exception(nameof(InitializationSynchronizationDelay) + " must be greater than or equal to zero.");
 
-            if (InitializationKeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationKeyCacheDuration) + " must be greater than or equal zero.");
-            if (KeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(KeyCacheDuration) + " must be greater than or equal zero.");
+            if (InitializationKeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationKeyCacheDuration) + " must be greater than or equal to zero.");
+            if (KeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(KeyCacheDuration) + " must be greater than or equal to zero.");
 
             if (KeyPropagationTime <= TimeSpan.Zero) throw new Exception(nameof(KeyPropagationTime) + " must be greater than zero.");
             if (RotationInterval <= TimeSpan.Zero) throw new Exception(nameof(RotationInterval) + " must be greater than zero.");

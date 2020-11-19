@@ -26,9 +26,9 @@ namespace Duende.IdentityServer.Models
         public DateTime Created { get; set; }
         
         /// <summary>
-        /// The signing algorithm.
+        /// The algorithm.
         /// </summary>
-        public string SigningAlgorithm { get; set; }
+        public string Algorithm { get; set; }
 
         /// <summary>
         /// Contains X509 certificate.

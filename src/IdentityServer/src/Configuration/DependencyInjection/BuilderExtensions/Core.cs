@@ -201,7 +201,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddTransient<IKeyManager, KeyManager>();
             builder.Services.TryAddTransient<INewKeyLock, DefaultKeyLock>();
             builder.Services.TryAddTransient<ISigningKeyProtector, DataProtectionKeyProtector>();
-            builder.Services.TryAddTransient<ISigningKeyStoreCache, NopKeyStoreCache>();
+            builder.Services.TryAddSingleton<ISigningKeyStoreCache, InMemoryKeyStoreCache>();
             builder.Services.TryAddTransient(provider => provider.GetRequiredService<IdentityServerOptions>().KeyManagement);
 
             builder.Services.TryAddSingleton<ISigningKeyStore>(x =>

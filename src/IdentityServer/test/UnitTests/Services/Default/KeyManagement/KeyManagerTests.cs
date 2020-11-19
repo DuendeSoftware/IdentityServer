@@ -892,7 +892,7 @@ namespace UnitTests.Services.Default.KeyManagement
             _mockKeyStore.Keys.Count.Should().Be(1);
             _mockKeyStore.Keys.Single().Id.Should().Be(result.Id);
             result.Created.Should().Be(_mockClock.UtcNow.DateTime);
-            result.SigningAlgorithm.Should().Be("RS256");
+            result.Algorithm.Should().Be("RS256");
         }
 
         // IsKeyRotationRequired

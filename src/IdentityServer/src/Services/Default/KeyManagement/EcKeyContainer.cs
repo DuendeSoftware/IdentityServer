@@ -24,8 +24,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <summary>
         /// Constructor for EcKeyContainer.
         /// </summary>
-        public EcKeyContainer(ECDsaSecurityKey key, string signingAlgorithm, DateTime created)
-            : base(key.KeyId, signingAlgorithm, created)
+        public EcKeyContainer(ECDsaSecurityKey key, string algorithm, DateTime created)
+            : base(key.KeyId, algorithm, created)
         {
             var parameters = key.ECDsa.ExportParameters(includePrivateParameters: true);
             D = parameters.D;
@@ -45,7 +45,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <inheritdoc/>
         public override AsymmetricSecurityKey ToSecurityKey()
         {
-            var curve = SigningAlgorithm switch
+            var curve = Algorithm switch
             {
                 "ES256" => "P-256",
                 "ES384" => "P-384",

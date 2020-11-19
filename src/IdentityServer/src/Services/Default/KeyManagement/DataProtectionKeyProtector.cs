@@ -42,7 +42,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             {
                 Created = DateTime.UtcNow,
                 Id = key.Id,
-                SigningAlgorithm = key.SigningAlgorithm,
+                Algorithm = key.Algorithm,
                 IsX509Certificate = key.HasX509Certificate,
                 Data = data,
                 DataProtected = _options.DataProtectKeys,
@@ -56,20 +56,22 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 _dataProtectionProvider.Unprotect(key.Data) : 
                 key.Data;
 
-            if (key.SigningAlgorithm.StartsWith("R") || key.SigningAlgorithm.StartsWith("P"))
+            if (key.IsX509Certificate)
             {
-                return key.IsX509Certificate ?
-                    KeySerializer.Deserialize<X509KeyContainer>(data) :
-                    (KeyContainer)KeySerializer.Deserialize<RsaKeyContainer>(data);
-            }
-            else if (key.SigningAlgorithm.StartsWith("E"))
-            {
-                return key.IsX509Certificate ?
-                    KeySerializer.Deserialize<X509KeyContainer>(data) :
-                    (KeyContainer) KeySerializer.Deserialize<EcKeyContainer>(data);
+                return KeySerializer.Deserialize<X509KeyContainer>(data);
             }
 
-            throw new Exception("Invalid SigningAlgorithm");
+            if (key.Algorithm.StartsWith("R") || key.Algorithm.StartsWith("P"))
+            {
+                return KeySerializer.Deserialize<RsaKeyContainer>(data);
+            }
+            
+            if (key.Algorithm.StartsWith("E"))
+            {
+                return KeySerializer.Deserialize<EcKeyContainer>(data);
+            }
+
+            throw new Exception($"Invalid Algorithm: {key.Algorithm} for kid: {key.Id}");
         }
     }
 }

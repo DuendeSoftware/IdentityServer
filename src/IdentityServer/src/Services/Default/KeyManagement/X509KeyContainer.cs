@@ -27,8 +27,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <summary>
         /// Constructor for X509KeyContainer.
         /// </summary>
-        public X509KeyContainer(RsaSecurityKey key, string signingAlgorithm, DateTime created, TimeSpan certAge, string issuer = "OP")
-            : base(key.KeyId, signingAlgorithm, created)
+        public X509KeyContainer(RsaSecurityKey key, string algorithm, DateTime created, TimeSpan certAge, string issuer = "OP")
+            : base(key.KeyId, algorithm, created)
         {
             HasX509Certificate = true;
             
@@ -54,8 +54,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <summary>
         /// Constructor for X509KeyContainer.
         /// </summary>
-        public X509KeyContainer(ECDsaSecurityKey key, string signingAlgorithm, DateTime created, TimeSpan certAge, string issuer = "OP")
-            : base(key.KeyId, signingAlgorithm, created)
+        public X509KeyContainer(ECDsaSecurityKey key, string algorithm, DateTime created, TimeSpan certAge, string issuer = "OP")
+            : base(key.KeyId, algorithm, created)
         {
             HasX509Certificate = true;
 

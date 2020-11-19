@@ -206,7 +206,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             if (allKeys == null || !allKeys.Any()) return true;
 
-            var groupedKeys = allKeys.GroupBy(x => x.SigningAlgorithm);
+            var groupedKeys = allKeys.GroupBy(x => x.Algorithm);
             
             var success = groupedKeys.Count() == _options.AllowedSigningAlgorithms.Count() &&
                 groupedKeys.All(x => _options.AllowedSigningAlgorithms.Contains(x.Key));
@@ -287,9 +287,9 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 };
 
                 var ec = CryptoHelper.CreateECDsaSecurityKey(curve);
-                container = _options.WrapKeysInX509Certificate ?
-                    new X509KeyContainer(ec, alg, now, _options.KeyRetirementAge, iss) :
-                    (KeyContainer) new EcKeyContainer(ec, _options.DefaultSigningAlgorithm, now);
+                // X509 certs don't currently work with EC keys.
+                container = //_options.WrapKeysInX509Certificate ? //new X509KeyContainer(ec, alg, now, _options.KeyRetirementAge, iss) :
+                    (KeyContainer) new EcKeyContainer(ec, alg, now);
             }
             else
             {
@@ -319,6 +319,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
         internal bool AreAllKeysWithinInitializationDuration(IEnumerable<KeyContainer> keys)
         {
+            if (_options.InitializationDuration == TimeSpan.Zero)
+            {
+                return false;
+            }
+
             // the expired check will also filter retired keys
             keys = FilterExpiredKeys(keys);
 
@@ -462,7 +467,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 }
 
                 // only use keys that are allowed
-                keys = keys.Where(x => _options.AllowedSigningAlgorithms.Contains(x.SigningAlgorithm)).ToArray();
+                keys = keys.Where(x => _options.AllowedSigningAlgorithms.Contains(x.Algorithm)).ToArray();
                 if (_logger.IsEnabled(LogLevel.Trace) && keys.Any())
                 {
                     var ids = keys.Select(x => x.Id).ToArray();
@@ -536,7 +541,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             signingKeys = GetCurrentSigningKeys(keys);
             
             var success = signingKeys.Count() == _options.AllowedSigningAlgorithms.Count() &&
-                signingKeys.All(x => _options.AllowedSigningAlgorithms.Contains(x.SigningAlgorithm));
+                signingKeys.All(x => _options.AllowedSigningAlgorithms.Contains(x.Algorithm));
             
             return success;
         }
@@ -551,7 +556,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             _logger.LogDebug("Looking for active signing keys.");
 
             var list = new List<KeyContainer>();
-            var groupedKeys = keys.GroupBy(x => x.SigningAlgorithm);
+            var groupedKeys = keys.GroupBy(x => x.Algorithm);
             foreach (var item in groupedKeys)
             {
                 _logger.LogDebug("Looking for an active signing key for alg {alg}.", item.Key);
@@ -625,7 +630,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             if (key == null) return false;
 
-            if (!_options.AllowedSigningAlgorithms.Contains(key.SigningAlgorithm))
+            if (!_options.AllowedSigningAlgorithms.Contains(key.Algorithm))
             {
                 _logger.LogTrace("Key {kid} signing algorithm not allowed by server options.", key.Id);
                 return false;
