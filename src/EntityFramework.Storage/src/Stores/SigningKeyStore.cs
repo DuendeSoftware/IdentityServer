@@ -54,7 +54,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             {
                 Id = key.Id,
                 Version = key.Version,
-                SigningAlgorithm = key.Algorithm,
+                Algorithm = key.Algorithm,
                 Data = key.Data,
                 DataProtected = key.DataProtected,
                 IsX509Certificate = key.IsX509Certificate
@@ -72,7 +72,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             {
                 Id = key.Id,
                 Version = key.Version,
-                Algorithm = key.SigningAlgorithm,
+                Algorithm = key.Algorithm,
                 Data = key.Data,
                 DataProtected = key.DataProtected,
                 IsX509Certificate = key.IsX509Certificate
