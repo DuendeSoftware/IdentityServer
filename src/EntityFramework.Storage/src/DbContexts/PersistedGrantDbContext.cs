@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -69,6 +69,14 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// The device codes.
         /// </value>
         public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the keys.
+        /// </summary>
+        /// <value>
+        /// The keys.
+        /// </value>
+        public DbSet<Key> Keys { get; set; }
 
         /// <summary>
         /// Saves the changes.

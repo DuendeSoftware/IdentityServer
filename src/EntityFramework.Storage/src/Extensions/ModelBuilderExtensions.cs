@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -170,6 +170,13 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
 
                 codes.HasIndex(x => x.DeviceCode).IsUnique();
                 codes.HasIndex(x => x.Expiration);
+            });
+
+            modelBuilder.Entity<Key>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+                entity.Property(x => x.Algorithm).HasMaxLength(100).IsRequired();
+                entity.Property(x => x.Data).IsRequired();
             });
         }
 
