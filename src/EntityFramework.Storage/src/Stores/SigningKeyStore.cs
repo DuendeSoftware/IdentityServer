@@ -53,6 +53,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             return entities.Select(key => new SerializedKey
             {
                 Id = key.Id,
+                Created = key.Created,
                 Version = key.Version,
                 Algorithm = key.Algorithm,
                 Data = key.Data,
@@ -71,6 +72,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             var entity = new Key
             {
                 Id = key.Id,
+                Created = key.Created,
                 Version = key.Version,
                 Algorithm = key.Algorithm,
                 Data = key.Data,
