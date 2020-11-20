@@ -62,7 +62,7 @@ namespace Duende.IdentityServer.Configuration
         /// Time expected to propagate new keys to all servers, and time expected all clients to refresh discovery.
         /// Defaults to 14 days.
         /// </summary>
-        public TimeSpan KeyPropagationTime { get; set; } = TimeSpan.FromDays(14);
+        public TimeSpan PropagationTime { get; set; } = TimeSpan.FromDays(14);
         
         /// <summary>
         /// Age at which keys will no longer be used for signing, but will still be used in discovery for validation.
@@ -71,14 +71,13 @@ namespace Duende.IdentityServer.Configuration
         public TimeSpan RotationInterval { get; set; } = TimeSpan.FromDays(90);
 
         /// <summary>
-        /// Maxiumum lifetime of any token to be validated by discovery.
-        /// This affects the duration a key appears in discovery after it is no longer active (post-rotation).
+        /// Duration for keys to remain in discovery after rotation.
         /// Defaults to 14 days.
         /// </summary>
-        public TimeSpan MaxiumTokenLifetime { get; set; } = TimeSpan.FromDays(14);
+        public TimeSpan RetentionDuration { get; set; } = TimeSpan.FromDays(14);
 
 
-        internal TimeSpan KeyRetirementAge => RotationInterval + MaxiumTokenLifetime;
+        internal TimeSpan KeyRetirementAge => RotationInterval + RetentionDuration;
 
 
         /// <summary>
@@ -129,11 +128,11 @@ namespace Duende.IdentityServer.Configuration
             if (InitializationKeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationKeyCacheDuration) + " must be greater than or equal to zero.");
             if (KeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(KeyCacheDuration) + " must be greater than or equal to zero.");
 
-            if (KeyPropagationTime <= TimeSpan.Zero) throw new Exception(nameof(KeyPropagationTime) + " must be greater than zero.");
+            if (PropagationTime <= TimeSpan.Zero) throw new Exception(nameof(PropagationTime) + " must be greater than zero.");
             if (RotationInterval <= TimeSpan.Zero) throw new Exception(nameof(RotationInterval) + " must be greater than zero.");
-            if (MaxiumTokenLifetime <= TimeSpan.Zero) throw new Exception(nameof(MaxiumTokenLifetime) + " must be greater than zero.");
+            if (RetentionDuration <= TimeSpan.Zero) throw new Exception(nameof(RetentionDuration) + " must be greater than zero.");
 
-            if (RotationInterval <= KeyPropagationTime) throw new Exception(nameof(RotationInterval) + " must be longer than " + nameof(KeyPropagationTime));
+            if (RotationInterval <= PropagationTime) throw new Exception(nameof(RotationInterval) + " must be longer than " + nameof(PropagationTime));
         }
     }
 

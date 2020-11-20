@@ -95,7 +95,7 @@ namespace Duende.IdentityServer
             public const string DeviceCodeValidation = "DeviceCodeValidation";
         }
 
-        public static IEnumerable<string> SupportedSigningAlgorithms = new List<string>
+        public readonly static IEnumerable<string> SupportedSigningAlgorithms = new List<string>
         {
             SecurityAlgorithms.RsaSha256,
             SecurityAlgorithms.RsaSha384,

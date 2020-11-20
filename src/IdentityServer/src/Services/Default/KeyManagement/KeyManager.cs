@@ -78,7 +78,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                     var age = _clock.GetAge(key.Created);
                     var expiresIn = _options.RotationInterval.Subtract(age);
                     var retiresIn = _options.KeyRetirementAge.Subtract(age);
-                    _logger.LogInformation("Active signing key found with kid {kid}. Expires in {KeyExpiration}. Retires in {KeyRetirement}", key.Id, expiresIn, retiresIn);
+                    _logger.LogInformation("Active signing key found with kid {kid} for alg {alg}. Expires in {KeyExpiration}. Retires in {KeyRetirement}", key.Id, key.Algorithm, expiresIn, retiresIn);
                 }
             }
 
@@ -243,11 +243,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 // and see if that's within the window of activation delay.
                 var age = _clock.GetAge(activeKey.Created);
                 var diff = _options.RotationInterval.Subtract(age);
-                var needed = (diff <= _options.KeyPropagationTime);
+                var needed = (diff <= _options.PropagationTime);
 
                 if (!needed)
                 {
-                    _logger.LogDebug("Key rotation not required for alg {alg}; New key expected to be created in {KeyRotiation}", item.Key, diff.Subtract(_options.KeyPropagationTime));
+                    _logger.LogDebug("Key rotation not required for alg {alg}; New key expected to be created in {KeyRotiation}", item.Key, diff.Subtract(_options.PropagationTime));
                 }
                 else
                 {
@@ -650,7 +650,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             if (!ignoreActiveDelay)
             {
                 _logger.LogTrace("Checking if key with kid {kid} is active (respecting activation delay).", key.Id);
-                start = start.Add(_options.KeyPropagationTime);
+                start = start.Add(_options.PropagationTime);
             }
             else
             {

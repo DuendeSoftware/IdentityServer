@@ -79,7 +79,7 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public void ctor_should_validate_options()
         {
-            _options.KeyPropagationTime = TimeSpan.Zero;
+            _options.PropagationTime = TimeSpan.Zero;
 
             Action a = () =>
             {
@@ -100,7 +100,7 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public async Task GetCurrentKeysAsync_should_return_key()
         {
-            var id = CreateAndStoreKey(_options.KeyPropagationTime.Add(TimeSpan.FromHours(1)));
+            var id = CreateAndStoreKey(_options.PropagationTime.Add(TimeSpan.FromHours(1)));
 
             var keys = await _subject.GetCurrentKeysAsync();
             var key = keys.Single();
@@ -112,7 +112,7 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public async Task GetAllKeysInternalAsync_when_valid_key_exists_should_use_key()
         {
-            var id = CreateAndStoreKey(_options.KeyPropagationTime.Add(TimeSpan.FromHours(1)));
+            var id = CreateAndStoreKey(_options.PropagationTime.Add(TimeSpan.FromHours(1)));
 
             var (allKeys, signgingKeys) = await _subject.GetAllKeysInternalAsync();
 
@@ -318,7 +318,7 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public async Task GetAllKeysInternalAsync_when_key_rotation_is_not_needed_should_not_create_new_key()
         {
-            var key1 = CreateAndStoreKey(_options.RotationInterval.Subtract(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(1))));
+            var key1 = CreateAndStoreKey(_options.RotationInterval.Subtract(_options.PropagationTime.Add(TimeSpan.FromSeconds(1))));
 
             var (allKeys, signgingKeys) = await _subject.GetAllKeysInternalAsync();
 
@@ -456,9 +456,9 @@ namespace UnitTests.Services.Default.KeyManagement
             var key1 = CreateKey(_options.KeyRetirementAge.Add(TimeSpan.FromSeconds(1)));
             var key2 = CreateKey(_options.KeyRetirementAge);
             var key3 = CreateKey(_options.KeyRetirementAge.Subtract(TimeSpan.FromSeconds(1)));
-            var key4 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(1)));
-            var key5 = CreateKey(_options.KeyPropagationTime);
-            var key6 = CreateKey(_options.KeyPropagationTime.Subtract(TimeSpan.FromSeconds(1)));
+            var key4 = CreateKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(1)));
+            var key5 = CreateKey(_options.PropagationTime);
+            var key6 = CreateKey(_options.PropagationTime.Subtract(TimeSpan.FromSeconds(1)));
 
             var result = await _subject.FilterAndDeleteRetiredKeysAsync(new[] { key1, key2, key3, key4, key5, key6 });
 
@@ -473,9 +473,9 @@ namespace UnitTests.Services.Default.KeyManagement
             var key1 = CreateAndStoreKey(_options.KeyRetirementAge.Add(TimeSpan.FromSeconds(1)));
             var key2 = CreateAndStoreKey(_options.KeyRetirementAge);
             var key3 = CreateAndStoreKey(_options.KeyRetirementAge.Subtract(TimeSpan.FromSeconds(1)));
-            var key4 = CreateAndStoreKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(1)));
-            var key5 = CreateAndStoreKey(_options.KeyPropagationTime);
-            var key6 = CreateAndStoreKey(_options.KeyPropagationTime.Subtract(TimeSpan.FromSeconds(1)));
+            var key4 = CreateAndStoreKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(1)));
+            var key5 = CreateAndStoreKey(_options.PropagationTime);
+            var key6 = CreateAndStoreKey(_options.PropagationTime.Subtract(TimeSpan.FromSeconds(1)));
 
             var keys = await _subject.GetAllKeysAsync();
 
@@ -491,9 +491,9 @@ namespace UnitTests.Services.Default.KeyManagement
             var key1 = CreateAndStoreKey(_options.KeyRetirementAge.Add(TimeSpan.FromSeconds(1)));
             var key2 = CreateAndStoreKey(_options.KeyRetirementAge);
             var key3 = CreateAndStoreKey(_options.KeyRetirementAge.Subtract(TimeSpan.FromSeconds(1)));
-            var key4 = CreateAndStoreKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(1)));
-            var key5 = CreateAndStoreKey(_options.KeyPropagationTime);
-            var key6 = CreateAndStoreKey(_options.KeyPropagationTime.Subtract(TimeSpan.FromSeconds(1)));
+            var key4 = CreateAndStoreKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(1)));
+            var key5 = CreateAndStoreKey(_options.PropagationTime);
+            var key6 = CreateAndStoreKey(_options.PropagationTime.Subtract(TimeSpan.FromSeconds(1)));
 
             var keys = await _subject.GetAllKeysAsync();
 
@@ -509,9 +509,9 @@ namespace UnitTests.Services.Default.KeyManagement
             var key1 = CreateKey(_options.RotationInterval.Add(TimeSpan.FromSeconds(1)));
             var key2 = CreateKey(_options.RotationInterval);
             var key3 = CreateKey(_options.RotationInterval.Subtract(TimeSpan.FromSeconds(1)));
-            var key4 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(1)));
-            var key5 = CreateKey(_options.KeyPropagationTime);
-            var key6 = CreateKey(_options.KeyPropagationTime.Subtract(TimeSpan.FromSeconds(1)));
+            var key4 = CreateKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(1)));
+            var key5 = CreateKey(_options.PropagationTime);
+            var key6 = CreateKey(_options.PropagationTime.Subtract(TimeSpan.FromSeconds(1)));
 
             var result = _subject.FilterExpiredKeys(new[] { key1, key2, key3, key4, key5, key6 });
 
@@ -539,8 +539,8 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public async Task CacheKeysAsync_should_store_keys_in_cache_with_normal_cache_duration()
         {
-            var key1 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromMinutes(5)));
-            var key2 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromMinutes(10)));
+            var key1 = CreateKey(_options.PropagationTime.Add(TimeSpan.FromMinutes(5)));
+            var key2 = CreateKey(_options.PropagationTime.Add(TimeSpan.FromMinutes(10)));
 
             await _subject.CacheKeysAsync(new[] { key1, key2 });
 
@@ -613,7 +613,7 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public async Task CreateNewKeyAndAddToCacheAsync_when_existing_keys_should_store_and_return_active_key()
         {
-            var key1 = CreateCacheAndStoreKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(1)));
+            var key1 = CreateCacheAndStoreKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(1)));
 
             var (allKeys, signingKeys) = await _subject.CreateNewKeysAndAddToCacheAsync();
             var key = signingKeys.Single();
@@ -688,9 +688,9 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public void GetCurrentSigningKeyInternal_should_return_the_oldest_active_key()
         {
-            var key1 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(10)));
-            var key2 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(5)));
-            var key3 = CreateKey(_options.KeyPropagationTime.Add(-TimeSpan.FromSeconds(5)));
+            var key1 = CreateKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(10)));
+            var key2 = CreateKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(5)));
+            var key3 = CreateKey(_options.PropagationTime.Add(-TimeSpan.FromSeconds(5)));
             var key4 = CreateKey(_options.RotationInterval.Add(TimeSpan.FromSeconds(5)));
 
             var key = _subject.GetCurrentSigningKeyInternal(new[] { key1, key2, key3, key4 });
@@ -702,8 +702,8 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public void GetCurrentSigningKeyInternal_should_return_a_matching_key_type()
         {
-            var rsaKey1 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(10)));
-            var x509Key1 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(20)), x509: true);
+            var rsaKey1 = CreateKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(10)));
+            var x509Key1 = CreateKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(20)), x509: true);
 
             {
                 _rsaOptions.UseX509Certificate = false;
@@ -721,7 +721,7 @@ namespace UnitTests.Services.Default.KeyManagement
             }
 
             {
-                var rsaKey2 = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(30)));
+                var rsaKey2 = CreateKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(30)));
 
                 _rsaOptions.UseX509Certificate = false;
                 var key = _subject.GetCurrentSigningKeyInternal(new[] { rsaKey1, x509Key1, rsaKey2 });
@@ -753,7 +753,7 @@ namespace UnitTests.Services.Default.KeyManagement
             }
 
             {
-                var key = CreateKey(_options.KeyPropagationTime.Subtract(TimeSpan.FromSeconds(1)));
+                var key = CreateKey(_options.PropagationTime.Subtract(TimeSpan.FromSeconds(1)));
 
                 var result = _subject.CanBeUsedAsCurrentSigningKey(key);
 
@@ -765,7 +765,7 @@ namespace UnitTests.Services.Default.KeyManagement
         public void CanBeUsedForSigning_key_created_after_active_delay_should_be_used_for_signing()
         {
             {
-                var key = CreateKey(_options.KeyPropagationTime);
+                var key = CreateKey(_options.PropagationTime);
 
                 var result = _subject.CanBeUsedAsCurrentSigningKey(key);
 
@@ -773,7 +773,7 @@ namespace UnitTests.Services.Default.KeyManagement
             }
 
             {
-                var key = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(1)));
+                var key = CreateKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(1)));
 
                 var result = _subject.CanBeUsedAsCurrentSigningKey(key);
 
@@ -829,7 +829,7 @@ namespace UnitTests.Services.Default.KeyManagement
             }
 
             {
-                var key = CreateKey(_options.KeyPropagationTime.Subtract(TimeSpan.FromSeconds(1)));
+                var key = CreateKey(_options.PropagationTime.Subtract(TimeSpan.FromSeconds(1)));
 
                 var result = _subject.CanBeUsedAsCurrentSigningKey(key, true);
 
@@ -841,7 +841,7 @@ namespace UnitTests.Services.Default.KeyManagement
         public void CanBeUsedForSigning_ignoring_activity_delay_key_created_after_active_delay_should_be_used_for_signing()
         {
             {
-                var key = CreateKey(_options.KeyPropagationTime);
+                var key = CreateKey(_options.PropagationTime);
 
                 var result = _subject.CanBeUsedAsCurrentSigningKey(key, true);
 
@@ -849,7 +849,7 @@ namespace UnitTests.Services.Default.KeyManagement
             }
 
             {
-                var key = CreateKey(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(1)));
+                var key = CreateKey(_options.PropagationTime.Add(TimeSpan.FromSeconds(1)));
 
                 var result = _subject.CanBeUsedAsCurrentSigningKey(key, true);
 
@@ -939,7 +939,7 @@ namespace UnitTests.Services.Default.KeyManagement
         public void IsKeyRotationRequired_when_active_key_is_not_about_to_expire_should_be_false()
         {
             var keys = new[] {
-                CreateKey(_options.RotationInterval.Subtract(_options.KeyPropagationTime.Add(TimeSpan.FromSeconds(1)))),
+                CreateKey(_options.RotationInterval.Subtract(_options.PropagationTime.Add(TimeSpan.FromSeconds(1)))),
             };
 
             var result = _subject.IsKeyRotationRequired(keys);
@@ -959,7 +959,7 @@ namespace UnitTests.Services.Default.KeyManagement
             }
             {
                 var keys = new[] {
-                CreateKey(_options.RotationInterval.Subtract(_options.KeyPropagationTime)),
+                CreateKey(_options.RotationInterval.Subtract(_options.PropagationTime)),
                 };
 
                 var result = _subject.IsKeyRotationRequired(keys);
@@ -981,7 +981,7 @@ namespace UnitTests.Services.Default.KeyManagement
             }
             {
                 var keys = new[] {
-                    CreateKey(_options.KeyPropagationTime), // active key not about to expire
+                    CreateKey(_options.PropagationTime), // active key not about to expire
                     CreateKey() // very new key
                 };
 
