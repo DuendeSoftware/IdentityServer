@@ -132,6 +132,12 @@ namespace Duende.IdentityServer.Configuration
             if (RotationInterval <= TimeSpan.Zero) throw new Exception(nameof(RotationInterval) + " must be greater than zero.");
             if (RetentionDuration <= TimeSpan.Zero) throw new Exception(nameof(RetentionDuration) + " must be greater than zero.");
 
+            if (KeyCacheDuration >= PropagationTime)
+            {
+                // todo: error, or just calculate it?
+                KeyCacheDuration = PropagationTime / 2;
+            }
+
             if (RotationInterval <= PropagationTime) throw new Exception(nameof(RotationInterval) + " must be longer than " + nameof(PropagationTime));
         }
     }
