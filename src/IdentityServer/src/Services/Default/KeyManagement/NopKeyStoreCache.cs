@@ -17,9 +17,9 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// Returns null.
         /// </summary>
         /// <returns></returns>
-        public Task<IEnumerable<RsaKeyContainer>> GetKeysAsync()
+        public Task<IEnumerable<KeyContainer>> GetKeysAsync()
         {
-            return Task.FromResult<IEnumerable<RsaKeyContainer>>(null);
+            return Task.FromResult<IEnumerable<KeyContainer>>(null);
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <param name="keys"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        public Task StoreKeysAsync(IEnumerable<RsaKeyContainer> keys, TimeSpan duration)
+        public Task StoreKeysAsync(IEnumerable<KeyContainer> keys, TimeSpan duration)
         {
             return Task.CompletedTask;
         }

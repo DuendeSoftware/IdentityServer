@@ -34,7 +34,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             {
                 if (_keyManagerOptions == null) throw new System.Exception("KeyManagerOptions not configured.");
 
-                var keyMaxAge = (int)_keyManagerOptions.KeyRetirement.TotalSeconds;
+                var keyMaxAge = (int)_keyManagerOptions.KeyRetirementAge.TotalSeconds;
                 var accessTokenAge = context.Client.AccessTokenLifetime;
                 if (keyMaxAge < accessTokenAge)
                 {

@@ -112,6 +112,20 @@ namespace Duende.IdentityServer.Configuration
         }
 
         /// <summary>
+        /// Returns the matching curve name for signing algorithm.
+        /// </summary>
+        internal static string GetCurveNameFromSigningAlgorithm(string alg)
+        {
+            return alg switch
+            {
+                "ES256" => "P-256",
+                "ES384" => "P-384",
+                "ES512" => "P-521",
+                _ => null
+            };
+        }
+
+        /// <summary>
         /// Return the matching RFC 7518 crv value for curve
         /// </summary>
         internal static string GetCrvValueFromCurve(ECCurve curve)

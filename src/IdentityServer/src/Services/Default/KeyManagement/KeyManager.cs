@@ -13,6 +13,7 @@ using Duende.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Services.KeyManagement
 {
@@ -63,32 +64,29 @@ namespace Duende.IdentityServer.Services.KeyManagement
             _httpContextAccessor = httpContextAccessor;
         }
 
-        /// <summary>
-        /// Returns the current signing key.
-        /// </summary>
-        /// <returns></returns>
-        public async Task<RsaKeyContainer> GetCurrentKeyAsync()
+        /// <inheritdoc />
+        public async Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync()
         {
             _logger.LogDebug("Getting the current key.");
 
-            var (_, key) = await GetAllKeysInternalAsync();
+            var (_, currentKeys) = await GetAllKeysInternalAsync();
 
             if (_logger.IsEnabled(LogLevel.Information))
             {
-                var age = _clock.GetAge(key.Created);
-                var expiresIn = _options.KeyExpiration.Subtract(age);
-                var retiresIn = _options.KeyRetirement.Subtract(age);
-                _logger.LogInformation("Active signing key found with kid {kid}. Expires in {KeyExpiration}. Retires in {KeyRetirement}", key.Id, expiresIn, retiresIn);
+                foreach (var key in currentKeys)
+                {
+                    var age = _clock.GetAge(key.Created);
+                    var expiresIn = _options.RotationInterval.Subtract(age);
+                    var retiresIn = _options.KeyRetirementAge.Subtract(age);
+                    _logger.LogInformation("Active signing key found with kid {kid} for alg {alg}. Expires in {KeyExpiration}. Retires in {KeyRetirement}", key.Id, key.Algorithm, expiresIn, retiresIn);
+                }
             }
 
-            return key;
+            return currentKeys;
         }
 
-        /// <summary>
-        /// Returns all the validation keys.
-        /// </summary>
-        /// <returns></returns>
-        public async Task<IEnumerable<RsaKeyContainer>> GetAllKeysAsync()
+        /// <inheritdoc />
+        public async Task<IEnumerable<KeyContainer>> GetAllKeysAsync()
         {
             _logger.LogDebug("Getting all the keys.");
 
@@ -96,7 +94,9 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return keys;
         }
 
-        internal async Task<(IEnumerable<RsaKeyContainer>, RsaKeyContainer)> GetAllKeysInternalAsync()
+
+
+        internal async Task<(IEnumerable<KeyContainer> allKeys, IEnumerable<KeyContainer> signingKeys)> GetAllKeysInternalAsync()
         {
             var cached = true;
             var keys = await GetKeysFromCacheAsync();
@@ -106,19 +106,20 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 keys = await GetKeysFromStoreAsync();
             }
 
-            // ensure we have at least one active signing key
-            var activeKey = GetActiveSigningKey(keys);
+            // ensure we have all of our active signing keys
+            IEnumerable<KeyContainer> signingKeys;
+            var signingKeysSuccess = TryGetAllCurrentSigningKeys(keys, out signingKeys);
 
             // if we loaded from cache, see if DB has updated key
-            if (activeKey == null && cached)
+            if (!signingKeysSuccess && cached)
             {
-                _logger.LogDebug("Failed to find an active signing key, reloading keys from database.");
+                _logger.LogDebug("Not all signing keys current in cache, reloading keys from database.");
             }
 
             var rotationRequired = false;
             
             // if we don't have an active key, then a new one is about to be created so don't bother running this check
-            if (activeKey != null)
+            if (signingKeysSuccess)
             {
                 rotationRequired = IsKeyRotationRequired(keys);
                 if (rotationRequired && cached)
@@ -127,7 +128,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 }
             }
 
-            if (activeKey == null || rotationRequired)
+            if (!signingKeysSuccess || rotationRequired)
             {
                 _logger.LogDebug("Entering new key lock.");
 
@@ -138,42 +139,42 @@ namespace Duende.IdentityServer.Services.KeyManagement
                     // check if another thread did the work already
                     keys = await GetKeysFromCacheAsync();
 
-                    if (activeKey == null)
+                    if (!signingKeysSuccess)
                     {
-                        activeKey = GetActiveSigningKey(keys);
+                        signingKeysSuccess = TryGetAllCurrentSigningKeys(keys, out signingKeys);
                     }
                     if (rotationRequired)
                     {
                         rotationRequired = IsKeyRotationRequired(keys);
                     }
 
-                    if (activeKey == null || rotationRequired)
+                    if (!signingKeysSuccess || rotationRequired)
                     {
                         // still need to do the work, but check if another server did the work already
                         keys = await GetKeysFromStoreAsync();
 
-                        if (activeKey == null)
+                        if (!signingKeysSuccess)
                         {
-                            activeKey = GetActiveSigningKey(keys);
+                            signingKeysSuccess = TryGetAllCurrentSigningKeys(keys, out signingKeys); 
                         }
                         if (rotationRequired)
                         {
                             rotationRequired = IsKeyRotationRequired(keys);
                         }
 
-                        if (activeKey == null || rotationRequired)
+                        if (!signingKeysSuccess || rotationRequired)
                         {
-                            if (activeKey == null)
+                            if (!signingKeysSuccess)
                             {
-                                _logger.LogDebug("No active key; new key creation required.");
+                                _logger.LogDebug("No active keys; new key creation required.");
                             }
                             else
                             {
                                 _logger.LogDebug("Approaching key retirement; new key creation required.");
                             }
 
-                            // now we know we need to create the new key
-                            (keys, activeKey) = await CreateNewKeyAndAddToCacheAsync();
+                            // now we know we need to create new keys
+                            (keys, signingKeys) = await CreateNewKeysAndAddToCacheAsync();
                         }
                         else
                         {
@@ -192,16 +193,110 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 }
             }
 
-            if (activeKey == null)
+            if (!signingKeys.Any())
             {
-                _logger.LogError("Failed to create and then load new key.");
-                throw new Exception("Failed to create and then load new key.");
+                _logger.LogError("Failed to create and then load new keys.");
+                throw new Exception("Failed to create and then load new keys.");
             }
 
-            return (keys, activeKey);
+            return (keys, signingKeys);
         }
 
-        internal async Task<IEnumerable<RsaKeyContainer>> GetKeysFromCacheAsync()
+        internal bool IsKeyRotationRequired(IEnumerable<KeyContainer> allKeys)
+        {
+            if (allKeys == null || !allKeys.Any()) return true;
+
+            var groupedKeys = allKeys.GroupBy(x => x.Algorithm);
+            
+            var success = groupedKeys.Count() == _options.AllowedSigningAlgorithmNames.Count() &&
+                groupedKeys.All(x => _options.AllowedSigningAlgorithmNames.Contains(x.Key));
+
+            if (!success)
+            {
+                return true;
+            }
+            
+            foreach(var item in groupedKeys)
+            {
+                var keys = item.AsEnumerable();
+                var activeKey = GetCurrentSigningKey(keys);
+
+                if (activeKey == null)
+                {
+                    return true;
+                }
+
+                // rotation is needed if: 1) if there are no other keys next in line (meaning younger).
+                // and 2) the current activiation key is near expiration (using the delay timeout)
+
+                // get younger keys (which will also filter active key)
+                keys = keys.Where(x => x.Created > activeKey.Created).ToArray();
+
+                if (keys.Any())
+                {
+                    // there are younger keys, then they might also be within the window of the key activiation delay
+                    // so find the youngest one and treat that one as if it's the active key.
+                    activeKey = keys.OrderByDescending(x => x.Created).First();
+                }
+
+                // if no younger keys, then check if we're nearing the expiration of active key
+                // and see if that's within the window of activation delay.
+                var age = _clock.GetAge(activeKey.Created);
+                var diff = _options.RotationInterval.Subtract(age);
+                var needed = (diff <= _options.PropagationTime);
+
+                if (!needed)
+                {
+                    _logger.LogDebug("Key rotation not required for alg {alg}; New key expected to be created in {KeyRotiation}", item.Key, diff.Subtract(_options.PropagationTime));
+                }
+                else
+                {
+                    _logger.LogDebug("Key rotation required now for alg {alg}.", item.Key);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        internal async Task<KeyContainer> CreateAndStoreNewKeyAsync(SigningAlgorithmOptions alg)
+        {
+            _logger.LogDebug("Creating new key.");
+
+            var now = _clock.UtcNow.DateTime;
+            var iss = _httpContextAccessor?.HttpContext?.GetIdentityServerIssuerUri();
+
+            KeyContainer container = null;
+
+            if (alg.IsRsaKey)
+            {
+                var rsa = CryptoHelper.CreateRsaSecurityKey(_options.RsaKeySize);
+                
+                container = alg.UseX509Certificate ?
+                    new X509KeyContainer(rsa, alg.Name, now, _options.KeyRetirementAge, iss) :
+                    (KeyContainer)new RsaKeyContainer(rsa, alg.Name, now);
+            }
+            else if (alg.IsEcKey)
+            {
+                var ec = CryptoHelper.CreateECDsaSecurityKey(CryptoHelper.GetCurveNameFromSigningAlgorithm(alg.Name));
+                // X509 certs don't currently work with EC keys.
+                container = //_options.WrapKeysInX509Certificate ? //new X509KeyContainer(ec, alg, now, _options.KeyRetirementAge, iss) :
+                    (KeyContainer) new EcKeyContainer(ec, alg.Name, now);
+            }
+            else
+            {
+                throw new Exception($"Invalid alg '{alg}'");
+            }
+
+            var key = _protector.Protect(container);
+            await _store.StoreKeyAsync(key);
+
+            _logger.LogInformation("Created and stored new key with kid {kid}.", container.Id);
+
+            return container;
+        }
+        
+        internal async Task<IEnumerable<KeyContainer>> GetKeysFromCacheAsync()
         {
             var cachedKeys = await _cache.GetKeysAsync();
             if (cachedKeys != null)
@@ -211,16 +306,20 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
 
             _logger.LogDebug("Cache miss when loading all keys.");
-            return Enumerable.Empty<RsaKeyContainer>();
+            return Enumerable.Empty<KeyContainer>();
         }
 
-        internal bool AreAllKeysWithinInitializationDuration(IEnumerable<RsaKeyContainer> keys)
+        internal bool AreAllKeysWithinInitializationDuration(IEnumerable<KeyContainer> keys)
         {
-            // the expired check will include retired keys
+            if (_options.InitializationDuration == TimeSpan.Zero)
+            {
+                return false;
+            }
+
+            // the expired check will also filter retired keys
             keys = FilterExpiredKeys(keys);
 
-            var result = keys
-                .All(x =>
+            var result = keys.All(x =>
                 {
                     var age = _clock.GetAge(x.Created);
                     var isNew = _options.IsWithinInitializationDuration(age);
@@ -230,7 +329,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal async Task<IEnumerable<RsaKeyContainer>> FilterAndDeleteRetiredKeysAsync(IEnumerable<RsaKeyContainer> keys)
+        internal async Task<IEnumerable<KeyContainer>> FilterAndDeleteRetiredKeysAsync(IEnumerable<KeyContainer> keys)
         {
             var retired = keys
                 .Where(x =>
@@ -241,12 +340,26 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 })
                 .ToArray();
 
-            if (_options.DeleteRetiredKeys && retired.Any())
+            if (retired.Any())
             {
-                await DeleteKeysAsync(retired.Select(x => x.Id));
+                if (_logger.IsEnabled(LogLevel.Trace))
+                {
+                    var ids = retired.Select(x => x.Id).ToArray();
+                    _logger.LogTrace("Filtered retired keys from store: {kids}", ids.Aggregate((x, y) => $"{x},{y}"));
+                }
+
+                if (_options.DeleteRetiredKeys)
+                {
+                    var ids = retired.Select(x => x.Id).ToArray();
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.LogDebug("Deleting retired keys from store: {kids}", ids.Aggregate((x, y) => $"{x},{y}"));
+                    }
+                    await DeleteKeysAsync(ids);
+                }
             }
 
-            var result = keys.Except(retired);
+            var result = keys.Except(retired).ToArray();
             return result;
         }
 
@@ -256,13 +369,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             foreach (var key in keys)
             {
-                _logger.LogDebug("Deleting retired key: {kid}.", key);
                 await _store.DeleteKeyAsync(key);
             }
         }
 
-
-        internal IEnumerable<RsaKeyContainer> FilterExpiredKeys(IEnumerable<RsaKeyContainer> keys)
+        internal IEnumerable<KeyContainer> FilterExpiredKeys(IEnumerable<KeyContainer> keys)
         {
             var result = keys
                 .Where(x =>
@@ -275,7 +386,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal async Task CacheKeysAsync(IEnumerable<RsaKeyContainer> keys)
+        internal async Task CacheKeysAsync(IEnumerable<KeyContainer> keys)
         {
             if (keys?.Any() == true)
             {
@@ -304,33 +415,57 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
         }
 
-        internal async Task<IEnumerable<RsaKeyContainer>> GetKeysFromStoreAsync(bool cache = true)
+        internal async Task<IEnumerable<KeyContainer>> GetKeysFromStoreAsync(bool cache = true)
         {
+            _logger.LogDebug("Loading keys from store.");
+            
             var protectedKeys = await _store.LoadKeysAsync();
             if (protectedKeys != null && protectedKeys.Any())
             {
                 var keys = protectedKeys.Select(x =>
-                    {
-                        try
-                        {
-                            var key = _protector.Unprotect(x);
-                            if (key == null)
-                            {
-                                _logger.LogWarning("Key with kid {kid} failed to unprotect.", x.Id);
-                            }
-                            return key;
-                        }
-                        catch(Exception ex)
-                        {
-                            _logger.LogError(ex, "Error unprotecting key with kid {kid}.", x?.Id);
-                        }
-                        return null;
-                    })
+                      {
+                          try
+                          {
+                              var key = _protector.Unprotect(x);
+                              if (key == null)
+                              {
+                                  _logger.LogWarning("Key with kid {kid} failed to unprotect.", x.Id);
+                              }
+                              return key;
+                          }
+                          catch (Exception ex)
+                          {
+                              _logger.LogError(ex, "Error unprotecting key with kid {kid}.", x?.Id);
+                          }
+                          return null;
+                      })
                     .Where(x => x != null)
-                    .ToArray().AsEnumerable();
+                    .ToArray()
+                    .AsEnumerable();
+
+                if (_logger.IsEnabled(LogLevel.Trace) && keys.Any())
+                {
+                    var ids = keys.Select(x => x.Id).ToArray();
+                    _logger.LogTrace("Loaded keys from store: {kids}", ids.Aggregate((x, y) => $"{x},{y}"));
+                }
 
                 // retired keys are those that are beyond inclusion, thus we act as if they don't exist.
                 keys = await FilterAndDeleteRetiredKeysAsync(keys);
+                
+                if (_logger.IsEnabled(LogLevel.Trace) && keys.Any())
+                {
+                    var ids = keys.Select(x => x.Id).ToArray();
+                    _logger.LogTrace("Remaining keys after filter: {kids}", ids.Aggregate((x, y) => $"{x},{y}"));
+                }
+
+                // only use keys that are allowed
+                keys = keys.Where(x => _options.AllowedSigningAlgorithmNames.Contains(x.Algorithm)).ToArray();
+                if (_logger.IsEnabled(LogLevel.Trace) && keys.Any())
+                {
+                    var ids = keys.Select(x => x.Id).ToArray();
+                    _logger.LogTrace("Keys with allowed alg from store: {kids}", ids.Aggregate((x, y) => $"{x},{y}"));
+                }
+
                 if (keys.Any())
                 {
                     _logger.LogDebug("Keys successfully returned from store.");
@@ -346,23 +481,30 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             _logger.LogInformation("No keys returned from store.");
 
-            return Enumerable.Empty<RsaKeyContainer>();
+            return Enumerable.Empty<KeyContainer>();
         }
 
-        internal async Task<(IEnumerable<RsaKeyContainer>, RsaKeyContainer)> CreateNewKeyAndAddToCacheAsync()
-        {
-            var newKey = await CreateAndStoreNewKeyAsync();
-            
-            var keys = await _cache.GetKeysAsync() ?? Enumerable.Empty<RsaKeyContainer>();
-            keys = keys.Append(newKey);
 
+
+
+        internal async Task<(IEnumerable<KeyContainer> allKeys, IEnumerable<KeyContainer> activeKeys)> CreateNewKeysAndAddToCacheAsync()
+        {
+            var keys = new List<KeyContainer>();
+            keys.AddRange(await _cache.GetKeysAsync() ?? Enumerable.Empty<KeyContainer>());
+
+            foreach (var alg in _options.AllowedSigningAlgorithms)
+            {
+                var newKey = await CreateAndStoreNewKeyAsync(alg);
+                keys.Add(newKey);
+            }
+            
             if (AreAllKeysWithinInitializationDuration(keys))
             {
                 // this is meant to allow multiple servers that all start at the same time to have some 
                 // time to complete writing their newly created keys to the store. then when all load
                 // each other's keys, they should all agree on the oldest key based on created time.
                 // it's intended to address the scenario where two servers start, server1 creates a key whose
-                // time is earlier than server 2, but server1 is slow to write the key to the store.
+                // time is earlier than server2, but server1 is slow to write the key to the store.
                 // we don't want server2 to only see server2's key, as it's newer.
                 if (_options.InitializationSynchronizationDelay > TimeSpan.Zero)
                 {
@@ -375,33 +517,71 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 }
 
                 // reload in case other new keys were recently created
-                keys = await GetKeysFromStoreAsync(false);
+                keys = new List<KeyContainer>(await GetKeysFromStoreAsync(false));
             }
 
             // explicitly cache here since we didn't when we loaded above
             await CacheKeysAsync(keys);
 
-            var activeKey = GetActiveSigningKey(keys);
+            var activeKeys = GetCurrentSigningKeys(keys);
 
-            return (keys, activeKey);
+            return (keys, activeKeys);
         }
 
-        internal RsaKeyContainer GetActiveSigningKey(IEnumerable<RsaKeyContainer> keys)
+        internal bool TryGetAllCurrentSigningKeys(IEnumerable<KeyContainer> keys, out IEnumerable<KeyContainer> signingKeys)
+        {
+            signingKeys = GetCurrentSigningKeys(keys);
+            
+            var success = signingKeys.Count() == _options.AllowedSigningAlgorithmNames.Count() &&
+                signingKeys.All(x => _options.AllowedSigningAlgorithmNames.Contains(x.Algorithm));
+            
+            return success;
+        }
+
+        internal IEnumerable<KeyContainer> GetCurrentSigningKeys(IEnumerable<KeyContainer> keys)
+        {
+            if (keys == null || !keys.Any())
+            {
+                return Enumerable.Empty<KeyContainer>();
+            }
+
+            _logger.LogDebug("Looking for active signing keys.");
+
+            var list = new List<KeyContainer>();
+            var groupedKeys = keys.GroupBy(x => x.Algorithm);
+            foreach (var item in groupedKeys)
+            {
+                _logger.LogDebug("Looking for an active signing key for alg {alg}.", item.Key);
+                
+                var activeKey = GetCurrentSigningKey(item);
+                if (activeKey != null)
+                {
+                    _logger.LogDebug("Found active signing key for alg {alg} with kid {kid}.", item.Key, activeKey.Id);
+                    list.Add(activeKey);
+                }
+                else
+                {
+                    _logger.LogDebug("Failed to find active signing key for alg {alg}.", item.Key);
+                }
+            }
+
+            return list;
+        }
+
+        internal KeyContainer GetCurrentSigningKey(IEnumerable<KeyContainer> keys)
         {
             if (keys == null || !keys.Any()) return null;
 
-            _logger.LogDebug("Looking for an active signing key.");
-
             var ignoreActivation = false;
             // look for keys past activity delay
-            var activeKey = GetActiveSigningKeyInternal(keys, ignoreActivation);
+            var activeKey = GetCurrentSigningKeyInternal(keys, ignoreActivation);
             if (activeKey == null)
             {
                 ignoreActivation = true;
                 _logger.LogDebug("No active signing key found (respecting the activation delay).");
-                
+
                 // none, so check if any of the keys were recently created
-                activeKey = GetActiveSigningKeyInternal(keys, ignoreActivation);
+                activeKey = GetCurrentSigningKeyInternal(keys, ignoreActivation);
 
                 if (activeKey == null)
                 {
@@ -412,17 +592,17 @@ namespace Duende.IdentityServer.Services.KeyManagement
             if (activeKey != null && _logger.IsEnabled(LogLevel.Debug))
             {
                 var delay = ignoreActivation ? "(ignoring the activation delay)" : "(respecting the activation delay)";
-                _logger.LogDebug("Active signing key found " + delay + ".  with kid: {kid}.", activeKey.Id);
+                _logger.LogDebug("Active signing key found " + delay + " with kid: {kid}.", activeKey.Id);
             }
 
             return activeKey;
         }
 
-        internal RsaKeyContainer GetActiveSigningKeyInternal(IEnumerable<RsaKeyContainer> keys, bool ignoreActivationDelay = false)
+        internal KeyContainer GetCurrentSigningKeyInternal(IEnumerable<KeyContainer> keys, bool ignoreActivationDelay = false)
         {
             if (keys == null) return null;
 
-            keys = keys.Where(key => CanBeUsedForSigning(key, ignoreActivationDelay)).ToArray();
+            keys = keys.Where(key => CanBeUsedAsCurrentSigningKey(key, ignoreActivationDelay)).ToArray();
             if (!keys.Any())
             {
                 return null;
@@ -438,13 +618,20 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal bool CanBeUsedForSigning(RsaKeyContainer key, bool ignoreActiveDelay = false)
+        internal bool CanBeUsedAsCurrentSigningKey(KeyContainer key, bool ignoreActiveDelay = false)
         {
             if (key == null) return false;
 
-            if (key.KeyType != _options.KeyType)
+            var alg = _options.AllowedSigningAlgorithms.SingleOrDefault(x => x.Name == key.Algorithm);
+            if (alg == null)
             {
-                _logger.LogTrace("Key {kid} is of type {kty} but server configured for {configuredKty}", key.Id, key.KeyType, _options.KeyType);
+                _logger.LogTrace("Key {kid} signing algorithm {alg} not allowed by server options.", key.Id, key.Algorithm);
+                return false;
+            }
+
+            if (alg.UseX509Certificate && !key.HasX509Certificate)
+            {
+                _logger.LogTrace("Server configured to wrap keys in X509 certs, but key {kid} is not wrapped in cert.", key.Id);
                 return false;
             }
 
@@ -463,7 +650,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             if (!ignoreActiveDelay)
             {
                 _logger.LogTrace("Checking if key with kid {kid} is active (respecting activation delay).", key.Id);
-                start = start.Add(_options.KeyActivationDelay);
+                start = start.Add(_options.PropagationTime);
             }
             else
             {
@@ -477,7 +664,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
 
             // expired key check
-            var end = key.Created.Add(_options.KeyExpiration);
+            var end = key.Created.Add(_options.RotationInterval);
             if (end < now)
             {
                 _logger.LogTrace("Key with kid {kid} is inactive: the current time is past its expiration.", key.Id);
@@ -487,59 +674,6 @@ namespace Duende.IdentityServer.Services.KeyManagement
             _logger.LogTrace("Key with kid {kid} is active.", key.Id);
 
             return true;
-        }
-
-        internal async Task<RsaKeyContainer> CreateAndStoreNewKeyAsync()
-        {
-            _logger.LogDebug("Creating new key.");
-
-            var rsa = _options.CreateRsaSecurityKey();
-            var now = _clock.UtcNow.DateTime;
-            var iss = _httpContextAccessor?.HttpContext?.GetIdentityServerIssuerUri();
-            var container = _options.KeyType == KeyType.RSA ?
-                new RsaKeyContainer(rsa, now) :
-                new X509KeyContainer(rsa, now, _options.KeyRetirement, iss);
-
-            var key = _protector.Protect(container);
-            await _store.StoreKeyAsync(key);
-
-            _logger.LogInformation("Created and stored new key with kid {kid}.", container.Id);
-
-            return container;
-        }
-
-        internal bool IsKeyRotationRequired(IEnumerable<RsaKeyContainer> keys)
-        {
-            if (keys == null || !keys.Any()) return true;
-
-            var activeKey = GetActiveSigningKey(keys);
-            if (activeKey == null) return true;
-
-            // rotation is needed if: 1) if there are no other keys next in line (meaning younger).
-            // and 2) the current activiation key is near expiration (using the delay timeout)
-
-            // get younger keys (which will also filter active key)
-            keys = keys.Where(x => x.Created > activeKey.Created).ToArray();
-
-            if (keys.Any())
-            {
-                // there are younger keys, then they might also be within the window of the key activiation delay
-                // so find the youngest one and treat that one as if it's the active key.
-                activeKey = keys.OrderByDescending(x => x.Created).First();
-            }
-
-            // if no younger keys, then check if we're nearing the expiration of active key
-            // and see if that's within the window of activation delay.
-            var age = _clock.GetAge(activeKey.Created);
-            var diff = _options.KeyExpiration.Subtract(age);
-            var needed = (diff <= _options.KeyActivationDelay);
-
-            if (!needed)
-            {
-                _logger.LogDebug("New key expected to be created in {KeyRotiation}", diff.Subtract(_options.KeyActivationDelay));
-            }
-
-            return needed;
         }
     }
 }

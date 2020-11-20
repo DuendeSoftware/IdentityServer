@@ -1,8 +1,10 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Duende.IdentityServer.Models;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Configuration
@@ -18,30 +20,19 @@ namespace Duende.IdentityServer.Configuration
         public bool Enabled { get; set; } = true;
 
         /// <summary>
-        /// The signing algorithm to use.
-        /// Defaults to RS256.
+        /// Key size (in bits) of RSA keys. Defaults to 2048.
         /// </summary>
-        public RsaSigningAlgorithm SigningAlgorithm { get; set; } = RsaSigningAlgorithm.RS256;
+        public int RsaKeySize { get; set; } = 2048;
 
         /// <summary>
-        /// Key size (in bits) of SigningAlgorithm.
+        /// The signing algorithms allowed. 
+        /// If none are specified, then "RS256" will be used as the default.
+        /// The first in the collection will be used as the default. 
         /// </summary>
-        public int KeySize => SigningAlgorithm switch
-            {
-                RsaSigningAlgorithm.RS256 => 256 * 8,
-                RsaSigningAlgorithm.RS384 => 384 * 8,
-                RsaSigningAlgorithm.RS512 => 512 * 8,
+        public IEnumerable<SigningAlgorithmOptions> AllowedSigningAlgorithms { get; set; } = Enumerable.Empty<SigningAlgorithmOptions>();
 
-                RsaSigningAlgorithm.PS256 => 256 * 8,
-                RsaSigningAlgorithm.PS384 => 384 * 8,
-                RsaSigningAlgorithm.PS512 => 512 * 8,
-                _ => throw new ArgumentException("Invalid signing algorithm value", nameof(SigningAlgorithm)),
-            };
-
-        /// <summary>
-        /// Type of key to use. Defaults to RSA.
-        /// </summary>
-        public KeyType KeyType { get; set; } = KeyType.RSA;
+        internal string DefaultSigningAlgorithm => AllowedSigningAlgorithms.First().Name;
+        internal IEnumerable<string> AllowedSigningAlgorithmNames => AllowedSigningAlgorithms.Select(x => x.Name);
 
         /// <summary>
         /// When no keys have been created yet, this is the window of time considered to be an initialization 
@@ -68,22 +59,26 @@ namespace Duende.IdentityServer.Configuration
         public TimeSpan KeyCacheDuration { get; set; } = TimeSpan.FromHours(24);
 
         /// <summary>
-        /// Time expected to propigate new keys to all servers, and time expected all clients to refresh discovery.
+        /// Time expected to propagate new keys to all servers, and time expected all clients to refresh discovery.
         /// Defaults to 14 days.
         /// </summary>
-        public TimeSpan KeyActivationDelay { get; set; } = TimeSpan.FromDays(14);
+        public TimeSpan PropagationTime { get; set; } = TimeSpan.FromDays(14);
         
         /// <summary>
         /// Age at which keys will no longer be used for signing, but will still be used in discovery for validation.
         /// Defaults to 90 days.
         /// </summary>
-        public TimeSpan KeyExpiration { get; set; } = TimeSpan.FromDays(90);
+        public TimeSpan RotationInterval { get; set; } = TimeSpan.FromDays(90);
 
         /// <summary>
-        /// Age at which keys will no longer be used in discovery. they can be deleted at this point.
-        /// Defaults to 180 days.
+        /// Duration for keys to remain in discovery after rotation.
+        /// Defaults to 14 days.
         /// </summary>
-        public TimeSpan KeyRetirement { get; set; } = TimeSpan.FromDays(180);
+        public TimeSpan RetentionDuration { get; set; } = TimeSpan.FromDays(14);
+
+
+        internal TimeSpan KeyRetirementAge => RotationInterval + RetentionDuration;
+
 
         /// <summary>
         /// Automatically delete retired keys.
@@ -97,20 +92,74 @@ namespace Duende.IdentityServer.Configuration
         /// </summary>
         public bool DataProtectKeys { get; set; } = true;
 
+        /// <summary>
+        /// Path for storing keys when using the default file system store.
+        /// Defaults to the "keys" directory relative to the hosting application.
+        /// </summary>
+        public string KeyPath { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), "keys");
+
         internal void Validate()
         {
-            if (InitializationDuration < TimeSpan.Zero) throw new Exception("InitializationDuration must be greater than or equal zero.");
-            if (InitializationSynchronizationDelay < TimeSpan.Zero) throw new Exception("InitializationSynchronizationDelay must be greater than or equal zero.");
+            if (AllowedSigningAlgorithms?.Any() != true)
+            {
+                AllowedSigningAlgorithms = new[] { new SigningAlgorithmOptions("RS256") };
+            }
+            else
+            {
+                var group = AllowedSigningAlgorithms.GroupBy(x => x.Name);
+                var dups = group.Where(x => x.Count() > 1);
+                if (dups.Any())
+                {
+                    var names = dups.Select(x => x.Key).Aggregate((x, y) => $"{x}, {y}");
+                    throw new Exception($"Duplicate signing algorithms not allowed: '{names}'.");
+                }
+            }
 
-            if (InitializationKeyCacheDuration < TimeSpan.Zero) throw new Exception("InitializationKeyCacheDuration must be greater than or equal zero.");
-            if (KeyCacheDuration < TimeSpan.Zero) throw new Exception("KeyCacheDuration must be greater than or equal zero.");
+            var invalid = AllowedSigningAlgorithmNames.Where(x => !SupportedSigningAlgorithms.Contains(x)).ToArray();
+            if (invalid.Any())
+            {
+                var values = invalid.Aggregate((x, y) => $"{x}, {y}");
+                throw new Exception($"Invalid signing algorithm(s): '{values}'.");
+            }
 
-            if (KeyActivationDelay <= TimeSpan.Zero) throw new Exception("KeyActivationDelay must be greater than zero.");
-            if (KeyExpiration <= TimeSpan.Zero) throw new Exception("KeyExpiration must be greater than zero.");
-            if (KeyRetirement <= TimeSpan.Zero) throw new Exception("KeyRetirement must be greater than zero.");
+            if (InitializationDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationDuration) + " must be greater than or equal to zero.");
+            if (InitializationSynchronizationDelay < TimeSpan.Zero) throw new Exception(nameof(InitializationSynchronizationDelay) + " must be greater than or equal to zero.");
 
-            if (KeyExpiration <= KeyActivationDelay) throw new Exception("KeyExpiration must be longer than KeyActivationDelay.");
-            if (KeyRetirement <= KeyExpiration) throw new Exception("KeyRetirement must be longer than KeyExpiration.");
+            if (InitializationKeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationKeyCacheDuration) + " must be greater than or equal to zero.");
+            if (KeyCacheDuration < TimeSpan.Zero) throw new Exception(nameof(KeyCacheDuration) + " must be greater than or equal to zero.");
+
+            if (PropagationTime <= TimeSpan.Zero) throw new Exception(nameof(PropagationTime) + " must be greater than zero.");
+            if (RotationInterval <= TimeSpan.Zero) throw new Exception(nameof(RotationInterval) + " must be greater than zero.");
+            if (RetentionDuration <= TimeSpan.Zero) throw new Exception(nameof(RetentionDuration) + " must be greater than zero.");
+
+            if (RotationInterval <= PropagationTime) throw new Exception(nameof(RotationInterval) + " must be longer than " + nameof(PropagationTime));
         }
+    }
+
+    /// <summary>
+    /// Class to configure signing algorithm.
+    /// </summary>
+    public class SigningAlgorithmOptions
+    {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public SigningAlgorithmOptions(string name)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+        }
+
+        /// <summary>
+        /// The algorithm name.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Indicates if a X509 certificate is to be used to contain the key. Defaults to false.
+        /// </summary>
+        public bool UseX509Certificate { get; set; }
+
+        internal bool IsRsaKey => Name.StartsWith("R") || Name.StartsWith("P");
+        internal bool IsEcKey => Name.StartsWith("E");
     }
 }

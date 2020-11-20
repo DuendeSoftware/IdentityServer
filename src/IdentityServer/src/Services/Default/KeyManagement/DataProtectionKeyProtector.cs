@@ -28,12 +28,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
             _dataProtectionProvider = dataProtectionProvider.CreateProtector(nameof(DataProtectionKeyProtector));
         }
 
-        /// <summary>
-        /// Protects RsaKeyContainer.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public SerializedKey Protect(RsaKeyContainer key)
+        /// <inheritdoc/>
+        public SerializedKey Protect(KeyContainer key)
         {
             var data = KeySerializer.Serialize(key);
             
@@ -46,30 +42,36 @@ namespace Duende.IdentityServer.Services.KeyManagement
             {
                 Created = DateTime.UtcNow,
                 Id = key.Id,
-                KeyType = key.KeyType,
+                Algorithm = key.Algorithm,
+                IsX509Certificate = key.HasX509Certificate,
                 Data = data,
                 DataProtected = _options.DataProtectKeys,
             };
         }
 
-        /// <summary>
-        /// Unprotects RsaKeyContainer.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public RsaKeyContainer Unprotect(SerializedKey key)
+        /// <inheritdoc/>
+        public KeyContainer Unprotect(SerializedKey key)
         {
             var data = key.DataProtected ? 
                 _dataProtectionProvider.Unprotect(key.Data) : 
                 key.Data;
-            
-            var item = KeySerializer.Deserialize<RsaKeyContainer>(data);
-            if (item.KeyType == KeyType.X509)
+
+            if (key.IsX509Certificate)
             {
-                item = KeySerializer.Deserialize<X509KeyContainer>(data);
+                return KeySerializer.Deserialize<X509KeyContainer>(data);
             }
 
-            return item;
+            if (key.Algorithm.StartsWith("R") || key.Algorithm.StartsWith("P"))
+            {
+                return KeySerializer.Deserialize<RsaKeyContainer>(data);
+            }
+            
+            if (key.Algorithm.StartsWith("E"))
+            {
+                return KeySerializer.Deserialize<EcKeyContainer>(data);
+            }
+
+            throw new Exception($"Invalid Algorithm: {key.Algorithm} for kid: {key.Id}");
         }
     }
 }

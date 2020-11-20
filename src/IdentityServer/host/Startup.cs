@@ -21,6 +21,7 @@ using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.HttpOverrides;
 using IdentityServerHost.Quickstart.UI;
+using Duende.IdentityServer.Configuration;
 
 namespace IdentityServerHost
 {
@@ -54,13 +55,6 @@ namespace IdentityServerHost
                     options.MutualTls.Enabled = true;
                     options.MutualTls.DomainName = "mtls";
                     //options.MutualTls.AlwaysEmitConfirmationClaim = true;
-
-                    options.KeyManagement.InitializationDuration = TimeSpan.Zero;
-
-                    //options.KeyManagement.Enabled = false;
-                    //options.KeyManagement.KeyActivationDelay = TimeSpan.FromSeconds(10);
-                    //options.KeyManagement.KeyExpiration = options.KeyManagement.KeyActivationDelay * 2;
-                    //options.KeyManagement.KeyRetirement = options.KeyManagement.KeyActivationDelay * 3;
                 })
                 .AddInMemoryClients(Clients.Get())
                 .AddInMemoryIdentityResources(Resources.IdentityResources)
