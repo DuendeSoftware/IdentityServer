@@ -7,6 +7,7 @@ namespace build
 {
     internal static class Program
     {
+        private const string solution = "Duende.IdentityServer.sln";
         private const string packOutput = "./artifacts";
         private const string envVarMissing = " environment variable is missing. Aborting.";
 
@@ -31,12 +32,12 @@ namespace build
 
             Target(Targets.CleanBuildOutput, () =>
             {
-                Run("dotnet", "clean -c Release -v m --nologo");
+                Run("dotnet", $"clean {solution} -c Release -v m --nologo");
             });
 
             Target(Targets.Build, DependsOn(Targets.CleanBuildOutput), () =>
             {
-                Run("dotnet", "build -c Release --nologo");
+                Run("dotnet", $"build {solution} -c Release --nologo");
             });
 
             Target(Targets.SignBinary, DependsOn(Targets.Build, Targets.RestoreTools), () =>
@@ -46,7 +47,7 @@ namespace build
 
             Target(Targets.Test, DependsOn(Targets.Build), () =>
             {
-                Run("dotnet", "test -c Release --no-build --nologo");
+                Run("dotnet", $"test {solution} -c Release --no-build --nologo");
             });
 
             Target(Targets.CleanPackOutput, () =>
