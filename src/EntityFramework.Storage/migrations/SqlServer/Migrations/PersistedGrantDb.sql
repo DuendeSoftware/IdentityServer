@@ -30,8 +30,8 @@ CREATE TABLE [Keys] (
     [Created] datetime2 NOT NULL,
     [Algorithm] nvarchar(100) NOT NULL,
     [IsX509Certificate] bit NOT NULL,
-    [Data] nvarchar(max) NOT NULL,
     [DataProtected] bit NOT NULL,
+    [Data] nvarchar(max) NOT NULL,
     CONSTRAINT [PK_Keys] PRIMARY KEY ([Id])
 );
 
@@ -74,7 +74,7 @@ CREATE INDEX [IX_PersistedGrants_SubjectId_SessionId_Type] ON [PersistedGrants] 
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20201120205004_Grants', N'3.1.0');
+VALUES (N'20201123190949_Grants', N'3.1.0');
 
 GO
 

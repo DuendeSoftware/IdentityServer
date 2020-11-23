@@ -35,8 +35,8 @@ namespace SqlServer.Migrations.PersistedGrantDb
                     Created = table.Column<DateTime>(nullable: false),
                     Algorithm = table.Column<string>(maxLength: 100, nullable: false),
                     IsX509Certificate = table.Column<bool>(nullable: false),
-                    Data = table.Column<string>(nullable: false),
-                    DataProtected = table.Column<bool>(nullable: false)
+                    DataProtected = table.Column<bool>(nullable: false),
+                    Data = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {

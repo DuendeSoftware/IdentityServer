@@ -17,7 +17,7 @@ namespace Duende.IdentityServer.EntityFramework.Entities
         public DateTime Created { get; set; }
         public string Algorithm { get; set; }
         public bool IsX509Certificate { get; set; }
-        public string Data { get; set; }
         public bool DataProtected { get; set; }
+        public string Data { get; set; }
     }
 }
