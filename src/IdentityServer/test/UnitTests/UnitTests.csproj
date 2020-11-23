@@ -28,4 +28,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Duende.IdentityServer.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="MinVer" Version="2.3.1" />
+  </ItemGroup>
 </Project>
