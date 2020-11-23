@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -14,7 +14,7 @@ namespace ConsoleHost
     {
         static void Main(string[] args)
         {
-            var connectionString = "server=(localdb)\\mssqllocaldb;database=IdentityServer4.EntityFramework-4.0.0;trusted_connection=yes;";
+            var connectionString = "server=(localdb)\\mssqllocaldb;database=Duende.EntityFramework-5.0.0;trusted_connection=yes;";
 
             var services = new ServiceCollection();
             services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Trace));

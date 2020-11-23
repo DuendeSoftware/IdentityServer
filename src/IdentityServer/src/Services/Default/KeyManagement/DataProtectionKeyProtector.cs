@@ -40,6 +40,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             
             return new SerializedKey
             {
+                Version = 1,
                 Created = DateTime.UtcNow,
                 Id = key.Id,
                 Algorithm = key.Algorithm,

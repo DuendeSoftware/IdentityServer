@@ -27,6 +27,23 @@ namespace SqlServer.Migrations.PersistedGrantDb
                 });
 
             migrationBuilder.CreateTable(
+                name: "Keys",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    Version = table.Column<int>(nullable: false),
+                    Created = table.Column<DateTime>(nullable: false),
+                    Algorithm = table.Column<string>(maxLength: 100, nullable: false),
+                    IsX509Certificate = table.Column<bool>(nullable: false),
+                    DataProtected = table.Column<bool>(nullable: false),
+                    Data = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Keys", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PersistedGrants",
                 columns: table => new
                 {
@@ -77,6 +94,9 @@ namespace SqlServer.Migrations.PersistedGrantDb
         {
             migrationBuilder.DropTable(
                 name: "DeviceCodes");
+
+            migrationBuilder.DropTable(
+                name: "Keys");
 
             migrationBuilder.DropTable(
                 name: "PersistedGrants");
