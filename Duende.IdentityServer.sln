@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer.IntegrationT
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hosts", "hosts", "{82C80BEB-73A0-4B96-83A4-7C69792CF010}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host", "hosts\main\Host.csproj", "{7DB9D734-1D15-4A7B-BAEF-416301DCC6DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host.Main", "hosts\main\Host.Main.csproj", "{7DB9D734-1D15-4A7B-BAEF-416301DCC6DE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duende.IdentityServer.AspNetIdentity", "src\AspNetIdentity\Duende.IdentityServer.AspNetIdentity.csproj", "{67B2A6B5-31B0-4CD3-8EE4-A4B0BDEA0BD3}"
 EndProject
@@ -30,6 +30,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Storage.UnitTests", "test\EntityFramework.Storage.UnitTests\EntityFramework.Storage.UnitTests.csproj", "{3A72EDFA-1E19-46E6-B983-ECF3EFBF192E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Storage.IntegrationTests", "test\EntityFramework.Storage.IntegrationTests\EntityFramework.Storage.IntegrationTests.csproj", "{6D14B6B6-8F3F-472A-91BE-7E0303BA4592}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host.AspNetIdentity", "hosts\AspNetIdentity\Host.AspNetIdentity.csproj", "{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,7 @@ Global
 		{0772AE76-46E3-42A2-AA2F-B8EB56B4EB0D} = {DF26567D-46BB-4720-8610-EC3D6AB9793C}
 		{3A72EDFA-1E19-46E6-B983-ECF3EFBF192E} = {DF26567D-46BB-4720-8610-EC3D6AB9793C}
 		{6D14B6B6-8F3F-472A-91BE-7E0303BA4592} = {DF26567D-46BB-4720-8610-EC3D6AB9793C}
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B} = {82C80BEB-73A0-4B96-83A4-7C69792CF010}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4FEBAA3A-EBF6-4F47-BD44-A8556C14E9F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -189,5 +192,17 @@ Global
 		{6D14B6B6-8F3F-472A-91BE-7E0303BA4592}.Release|x64.Build.0 = Release|Any CPU
 		{6D14B6B6-8F3F-472A-91BE-7E0303BA4592}.Release|x86.ActiveCfg = Release|Any CPU
 		{6D14B6B6-8F3F-472A-91BE-7E0303BA4592}.Release|x86.Build.0 = Release|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Debug|x64.Build.0 = Debug|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Debug|x86.Build.0 = Debug|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Release|x64.ActiveCfg = Release|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Release|x64.Build.0 = Release|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Release|x86.ActiveCfg = Release|Any CPU
+		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
