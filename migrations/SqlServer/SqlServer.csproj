@@ -12,5 +12,20 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\EntityFramework.Storage\Duende.IdentityServer.EntityFramework.Storage.csproj" />
   </ItemGroup>
-  
+
+    <ItemGroup>
+        <Compile Include="..\..\hosts\Configuration\Clients.cs">
+            <Link>Configuration\Clients.cs</Link>
+        </Compile>
+        <Compile Include="..\..\hosts\Configuration\ClientsConsole.cs">
+            <Link>Configuration\ClientsConsole.cs</Link>
+        </Compile>
+        <Compile Include="..\..\hosts\Configuration\ClientsWeb.cs">
+            <Link>Configuration\ClientsWeb.cs</Link>
+        </Compile>
+        <Compile Include="..\..\hosts\Configuration\Resources.cs">
+            <Link>Configuration\Resources.cs</Link>
+        </Compile>
+    </ItemGroup>
+
 </Project>
