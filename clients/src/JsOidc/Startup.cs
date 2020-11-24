@@ -1,17 +1,28 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 
 namespace JsOidc
 {
     public class Startup
     {
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public void ConfigureServices(IServiceCollection services)
         {
+                        services.AddCors(options =>
+                        {
+                            options.AddPolicy(name: MyAllowSpecificOrigins,
+                                              builder =>
+                                              {
+                                                  builder.WithOrigins("https://localhost:5001/");
+                                              });
+                        });
         }
 
         public void Configure(IApplicationBuilder app)
         {
             app.UseDefaultFiles();
+
 
             // enable to test w/ CSP
             //app.Use(async (ctx, next) =>
@@ -29,6 +40,8 @@ namespace JsOidc
             //});
 
             app.UseStaticFiles();
+            app.UseCors(MyAllowSpecificOrigins);
+
         }
     }
 }

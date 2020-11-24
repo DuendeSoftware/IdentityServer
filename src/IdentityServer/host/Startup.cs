@@ -84,6 +84,7 @@ namespace IdentityServerHost
 
                 return Task.FromResult(principal);
             });
+            services.AddCors();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -102,6 +103,11 @@ namespace IdentityServerHost
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseCors(x => x
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .SetIsOriginAllowed(origin => true) // allow any origin
+            .AllowCredentials()); // allow credentials
             app.UseIdentityServer();
 
             app.UseAuthorization();
