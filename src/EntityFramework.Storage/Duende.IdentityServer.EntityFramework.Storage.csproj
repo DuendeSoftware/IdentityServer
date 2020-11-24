@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Duende.IdentityServer.EntityFramework.Storage</PackageId>
+    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    
+    <Description>EntityFramework persistence layer for Duende IdentityServer</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
+  </ItemGroup>
+
+</Project>

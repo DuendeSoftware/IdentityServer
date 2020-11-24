@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <PackageId>Duende.IdentityServer</PackageId>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <Description>OpenID Connect and OAuth 2.0 Framework for ASP.NET Core</Description>
+    
+    <AssemblyName>Duende.IdentityServer</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="IdentityModel" />
+      
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
+  </ItemGroup>
+</Project>
