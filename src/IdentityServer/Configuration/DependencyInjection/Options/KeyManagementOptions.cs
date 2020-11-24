@@ -29,10 +29,10 @@ namespace Duende.IdentityServer.Configuration
         /// If none are specified, then "RS256" will be used as the default.
         /// The first in the collection will be used as the default. 
         /// </summary>
-        public IEnumerable<SigningAlgorithmOptions> AllowedSigningAlgorithms { get; set; } = Enumerable.Empty<SigningAlgorithmOptions>();
+        public IEnumerable<SigningAlgorithmOptions> SigningAlgorithms { get; set; } = Enumerable.Empty<SigningAlgorithmOptions>();
 
-        internal string DefaultSigningAlgorithm => AllowedSigningAlgorithms.First().Name;
-        internal IEnumerable<string> AllowedSigningAlgorithmNames => AllowedSigningAlgorithms.Select(x => x.Name);
+        internal string DefaultSigningAlgorithm => SigningAlgorithms.First().Name;
+        internal IEnumerable<string> AllowedSigningAlgorithmNames => SigningAlgorithms.Select(x => x.Name);
 
         /// <summary>
         /// When no keys have been created yet, this is the window of time considered to be an initialization 
@@ -100,13 +100,13 @@ namespace Duende.IdentityServer.Configuration
 
         internal void Validate()
         {
-            if (AllowedSigningAlgorithms?.Any() != true)
+            if (SigningAlgorithms?.Any() != true)
             {
-                AllowedSigningAlgorithms = new[] { new SigningAlgorithmOptions("RS256") };
+                SigningAlgorithms = new[] { new SigningAlgorithmOptions("RS256") };
             }
             else
             {
-                var group = AllowedSigningAlgorithms.GroupBy(x => x.Name);
+                var group = SigningAlgorithms.GroupBy(x => x.Name);
                 var dups = group.Where(x => x.Count() > 1);
                 if (dups.Any())
                 {

@@ -33,7 +33,7 @@ namespace UnitTests.Services.Default.KeyManagement
 
         public KeyManagerTests()
         {
-            _options.AllowedSigningAlgorithms = new[] { _rsaOptions };
+            _options.SigningAlgorithms = new[] { _rsaOptions };
 
             _subject = new KeyManager(
                 _options,
