@@ -1,9 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <IdentityServerVersion>5.0.0-*</IdentityServerVersion>
-  </PropertyGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'netstandard2.0'">
     <FrameworkVersion>3.1.0</FrameworkVersion>
     <ExtensionsVersion>3.1.0</ExtensionsVersion>
@@ -19,6 +15,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--our stuff -->
+    <PackageReference Update="IdentityModel" Version="4.5.0" />
+
     <!--build related-->
     <PackageReference Include="MinVer" Version="2.3.0" PrivateAssets="All" />
     <PackageReference Update="SimpleExec" Version="6.2.0" />
@@ -30,15 +29,6 @@
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.2.0" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.1" PrivateAssets="All" />
-
-    <!--our stuff -->
-    <PackageReference Update="IdentityModel" Version="4.4.0" />
-
-    <PackageReference Update="Duende.IdentityServer" Version="$(IdentityServerVersion)" />
-    <PackageReference Update="Duende.IdentityServer.AspNetIdentity" Version="$(IdentityServerVersion)" />
-    <PackageReference Update="Duende.IdentityServer.Storage" Version="$(IdentityServerVersion)" />
-    <PackageReference Update="Duende.IdentityServer.EntityFramework.Storage" Version="$(IdentityServerVersion)" />
-    <PackageReference Update="Duende.IdentityServer.EntityFramework" Version="$(IdentityServerVersion)" />
 
     <!--microsoft extensions -->
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="$(ExtensionsVersion)" />
