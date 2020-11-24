@@ -1,4 +1,4 @@
-﻿/// <reference path="libs/oidc-client.js" />
+/// <reference path="libs/oidc-client.js" />
 
 var config = {
     authority: "https://localhost:5001/",
@@ -8,7 +8,7 @@ var config = {
 
     // if we choose to use popup window instead for logins
     popup_redirect_uri: window.location.origin + "/popup.html",
-    popupWindowFeatures: "menubar=yes,location=yes,toolbar=yes,width=1200,height=800,left=100,top=100;resizable=yes",
+    popupWindowFeatures: "hidden=yes,menubar=no,location=no,toolbar=no,width=1200,height=800,left=100,top=100;resizable=yes",
 
     // these two will be done dynamically from the buttons clicked, but are
     // needed if you want to use the silent_renew
@@ -120,6 +120,7 @@ document.querySelector(".renew").addEventListener("click", renewToken, false);
 document.querySelector(".call").addEventListener("click", callApi, false);
 document.querySelector(".revoke").addEventListener("click", revoke, false);
 document.querySelector(".logout").addEventListener("click", logout, false);
+document.defaultView.addEventListener("load", renewToken, false);
 
 
 function log(data) {

@@ -145,6 +145,12 @@ namespace Duende.IdentityServer.ResponseHandling
                 
                 isActive = isActiveCtx.IsActive;
             }
+            if ((!isAuthenticated || !isActive ) && request.DisplayMode== "popup")
+            {
+                var redirect = new Uri(request.RedirectUri);
+                var closePopupUri = request.RedirectUri.Replace(redirect.PathAndQuery, "/popup.html#");
+                return new InteractionResponse { RedirectUrl = closePopupUri };
+            }
 
             if (!isAuthenticated || !isActive)
             {

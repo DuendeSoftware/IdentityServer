@@ -721,7 +721,7 @@ namespace Duende.IdentityServer.Validation
                 {
                     request.DisplayMode = display;
                 }
-
+                //return Invalid(request, description: "Unsupported display mode");
                 _logger.LogDebug("Unsupported display mode - ignored: " + display);
             }
 
