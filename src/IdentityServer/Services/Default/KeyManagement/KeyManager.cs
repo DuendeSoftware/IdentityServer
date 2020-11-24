@@ -492,7 +492,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             var keys = new List<KeyContainer>();
             keys.AddRange(await _cache.GetKeysAsync() ?? Enumerable.Empty<KeyContainer>());
 
-            foreach (var alg in _options.AllowedSigningAlgorithms)
+            foreach (var alg in _options.SigningAlgorithms)
             {
                 var newKey = await CreateAndStoreNewKeyAsync(alg);
                 keys.Add(newKey);
@@ -622,7 +622,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             if (key == null) return false;
 
-            var alg = _options.AllowedSigningAlgorithms.SingleOrDefault(x => x.Name == key.Algorithm);
+            var alg = _options.SigningAlgorithms.SingleOrDefault(x => x.Name == key.Algorithm);
             if (alg == null)
             {
                 _logger.LogTrace("Key {kid} signing algorithm {alg} not allowed by server options.", key.Id, key.Algorithm);
