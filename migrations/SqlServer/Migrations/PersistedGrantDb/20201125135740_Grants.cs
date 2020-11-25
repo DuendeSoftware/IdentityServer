@@ -33,6 +33,7 @@ namespace SqlServer.Migrations.PersistedGrantDb
                     Id = table.Column<string>(nullable: false),
                     Version = table.Column<int>(nullable: false),
                     Created = table.Column<DateTime>(nullable: false),
+                    Use = table.Column<string>(nullable: true),
                     Algorithm = table.Column<string>(maxLength: 100, nullable: false),
                     IsX509Certificate = table.Column<bool>(nullable: false),
                     DataProtected = table.Column<bool>(nullable: false),
@@ -73,6 +74,11 @@ namespace SqlServer.Migrations.PersistedGrantDb
                 name: "IX_DeviceCodes_Expiration",
                 table: "DeviceCodes",
                 column: "Expiration");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Keys_Use",
+                table: "Keys",
+                column: "Use");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PersistedGrants_Expiration",

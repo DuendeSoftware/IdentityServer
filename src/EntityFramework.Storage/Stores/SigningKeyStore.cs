@@ -21,6 +21,8 @@ namespace Duende.IdentityServer.EntityFramework.Stores
     /// <seealso cref="ISigningKeyStore" />
     public class SigningKeyStore : ISigningKeyStore
     {
+        const string Use = "signing";
+
         /// <summary>
         /// The DbContext.
         /// </summary>
@@ -49,7 +51,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <returns></returns>
         public async Task<IEnumerable<SerializedKey>> LoadKeysAsync()
         {
-            var entities = await Context.Keys.ToArrayAsync();
+            var entities = await Context.Keys.Where(x => x.Use == Use).ToArrayAsync();
             return entities.Select(key => new SerializedKey
             {
                 Id = key.Id,
@@ -72,6 +74,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             var entity = new Key
             {
                 Id = key.Id,
+                Use = Use,
                 Created = key.Created,
                 Version = key.Version,
                 Algorithm = key.Algorithm,
@@ -90,7 +93,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <returns></returns>
         public async Task DeleteKeyAsync(string id)
         {
-            var item = await Context.Keys.FirstOrDefaultAsync(x => x.Id == id);
+            var item = await Context.Keys.FirstOrDefaultAsync(x => x.Use == Use && x.Id == id);
             if (item != null)
             {
                 try

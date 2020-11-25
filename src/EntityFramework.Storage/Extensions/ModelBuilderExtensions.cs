@@ -175,6 +175,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
             modelBuilder.Entity<Key>(entity =>
             {
                 entity.HasKey(x => x.Id);
+                entity.HasIndex(x => x.Use);
                 entity.Property(x => x.Algorithm).HasMaxLength(100).IsRequired();
                 entity.Property(x => x.Data).IsRequired();
             });

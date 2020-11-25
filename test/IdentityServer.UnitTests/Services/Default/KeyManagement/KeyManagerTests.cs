@@ -654,7 +654,7 @@ namespace UnitTests.Services.Default.KeyManagement
         [Fact]
         public async Task CreateNewKeyAndAddToCacheAsync_when_keys_are_old_should_not_delay_for_initialization_and_synchronization_delay()
         {
-            _options.InitializationSynchronizationDelay = TimeSpan.FromSeconds(5);
+            _options.InitializationSynchronizationDelay = TimeSpan.FromMinutes(1);
 
             var key1 = CreateCacheAndStoreKey(_options.InitializationDuration.Add(TimeSpan.FromSeconds(1)));
 

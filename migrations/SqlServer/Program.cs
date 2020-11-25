@@ -11,7 +11,8 @@ namespace SqlServer
     {
         public static void Main(string[] args)
         {
-            // todo: add seed data
+            var host = BuildWebHost(args);
+            SeedData.EnsureSeedData(host.Services);
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
