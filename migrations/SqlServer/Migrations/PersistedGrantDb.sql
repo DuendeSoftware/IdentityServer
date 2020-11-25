@@ -28,6 +28,7 @@ CREATE TABLE [Keys] (
     [Id] nvarchar(450) NOT NULL,
     [Version] int NOT NULL,
     [Created] datetime2 NOT NULL,
+    [Use] nvarchar(450) NULL,
     [Algorithm] nvarchar(100) NOT NULL,
     [IsX509Certificate] bit NOT NULL,
     [DataProtected] bit NOT NULL,
@@ -61,6 +62,10 @@ CREATE INDEX [IX_DeviceCodes_Expiration] ON [DeviceCodes] ([Expiration]);
 
 GO
 
+CREATE INDEX [IX_Keys_Use] ON [Keys] ([Use]);
+
+GO
+
 CREATE INDEX [IX_PersistedGrants_Expiration] ON [PersistedGrants] ([Expiration]);
 
 GO
@@ -74,7 +79,7 @@ CREATE INDEX [IX_PersistedGrants_SubjectId_SessionId_Type] ON [PersistedGrants] 
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20201123190949_Grants', N'3.1.0');
+VALUES (N'20201125135740_Grants', N'3.1.0');
 
 GO
 

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SqlServer.Migrations.PersistedGrantDb
 {
     [DbContext(typeof(PersistedGrantDbContext))]
-    [Migration("20201123190949_Grants")]
+    [Migration("20201125135740_Grants")]
     partial class Grants
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -94,10 +94,15 @@ namespace SqlServer.Migrations.PersistedGrantDb
                     b.Property<bool>("IsX509Certificate")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Use")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("Version")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Use");
 
                     b.ToTable("Keys");
                 });
