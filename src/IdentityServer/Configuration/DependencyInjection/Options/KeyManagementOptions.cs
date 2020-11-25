@@ -40,12 +40,14 @@ namespace Duende.IdentityServer.Configuration
         /// Defaults to 5 minutes.
         /// </summary>
         public TimeSpan InitializationDuration { get; set; } = TimeSpan.FromMinutes(5);
+        
         /// <summary>
         /// Delay used when re-loading from the store when the initialization period. It allows
         /// other servers more time to write new keys so other servers can include them.
         /// Defaults to 5 seconds.
         /// </summary>
         public TimeSpan InitializationSynchronizationDelay { get; set; } = TimeSpan.FromSeconds(5);
+        
         /// <summary>
         /// Cache duration when within the initialization period.
         /// Defaults to 1 minute.
