@@ -51,7 +51,7 @@ namespace ConsoleIntrospectionClient
             {
                 Address = disco.IntrospectionEndpoint,
 
-                ClientId = "api1",
+                ClientId = "resource1",
                 ClientSecret = "secret",
                 Token = accessToken
             });
