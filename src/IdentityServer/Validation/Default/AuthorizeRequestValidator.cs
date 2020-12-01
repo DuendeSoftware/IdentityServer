@@ -133,6 +133,8 @@ namespace Duende.IdentityServer.Validation
 
             _logger.LogTrace("Authorize request protocol validation successful");
 
+            LicenseValidator.ValidateClient(request.ClientId);
+
             return Valid(request);
         }
 

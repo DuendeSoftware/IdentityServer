@@ -140,5 +140,10 @@ namespace Duende.IdentityServer.Configuration
         /// Gets or sets the signing key management options.
         /// </summary>
         public KeyManagementOptions KeyManagement { get; set; } = new KeyManagementOptions();
+
+        /// <summary>
+        /// Gets or sets the license key.
+        /// </summary>
+        public string LicenseKey { get; set; }
     }
 }

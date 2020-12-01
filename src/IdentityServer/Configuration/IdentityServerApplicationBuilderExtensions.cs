@@ -6,6 +6,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -63,6 +64,10 @@ namespace Microsoft.AspNetCore.Builder
             {
                 var serviceProvider = scope.ServiceProvider;
 
+                var options = serviceProvider.GetRequiredService<IdentityServerOptions>();
+                LicenseValidator.Initalize(loggerFactory, options);
+                LicenseValidator.ValidateLicense();
+
                 TestService(serviceProvider, typeof(IPersistedGrantStore), logger, "No storage mechanism for grants specified. Use the 'AddInMemoryPersistedGrants' extension method to register a development version.");
                 TestService(serviceProvider, typeof(IClientStore), logger, "No storage mechanism for clients specified. Use the 'AddInMemoryClients' extension method to register a development version.");
                 TestService(serviceProvider, typeof(IResourceStore), logger, "No storage mechanism for resources specified. Use the 'AddInMemoryIdentityResources' or 'AddInMemoryApiResources' extension method to register a development version.");
@@ -73,7 +78,6 @@ namespace Microsoft.AspNetCore.Builder
                     logger.LogInformation("You are using the in-memory version of the persisted grant store. This will store consent decisions, authorization codes, refresh and reference tokens in memory only. If you are using any of those features in production, you want to switch to a different store implementation.");
                 }
 
-                var options = serviceProvider.GetRequiredService<IdentityServerOptions>();
                 ValidateOptions(options, logger);
 
                 ValidateAsync(serviceProvider, logger).GetAwaiter().GetResult();
