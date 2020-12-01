@@ -29,26 +29,13 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 ContractResolver = new InclusiveContractResolver()
             };
 
-        public static string Serialize<T>(T item, bool encode = true)
+        public static string Serialize<T>(T item)
         {
-            var json = JsonConvert.SerializeObject(item, _settings);
-            var result = json;
-            if (encode)
-            {
-                var bytes = Encoding.UTF8.GetBytes(json);
-                result = Base64Url.Encode(bytes);
-            }
-            return result;
+            return JsonConvert.SerializeObject(item, _settings);
         }
 
-        public static T Deserialize<T>(string data, bool decode = true)
+        public static T Deserialize<T>(string json)
         {
-            var json = data;
-            if (decode)
-            {
-                var bytes = Base64Url.Decode(data);
-                json = Encoding.UTF8.GetString(bytes);
-            }
             return JsonConvert.DeserializeObject<T>(json, _settings);
         }
     }
