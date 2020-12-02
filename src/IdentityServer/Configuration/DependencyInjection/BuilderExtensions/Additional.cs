@@ -171,6 +171,20 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Adds a signing key store.
+        /// </summary>
+        /// <typeparam name="T">The type of the concrete store that is registered in DI.</typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <returns>The builder.</returns>
+        public static IIdentityServerBuilder AddSigningKeyStore<T>(this IIdentityServerBuilder builder)
+            where T : class, ISigningKeyStore
+        {
+            builder.Services.AddTransient<ISigningKeyStore, T>();
+
+            return builder;
+        }
+
+        /// <summary>
         /// Adds a CORS policy service.
         /// </summary>
         /// <typeparam name="T">The type of the concrete scope store class that is registered in DI.</typeparam>

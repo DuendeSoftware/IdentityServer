@@ -100,9 +100,10 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             builder.Services.AddOperationalDbContext<TContext>(storeOptionsAction);
 
-            builder.Services.AddTransient<ISigningKeyStore, SigningKeyStore>();
-            builder.Services.AddTransient<IPersistedGrantStore, PersistedGrantStore>();
-            builder.Services.AddTransient<IDeviceFlowStore, DeviceFlowStore>();
+            builder.AddSigningKeyStore<SigningKeyStore>();
+            builder.AddPersistedGrantStore<PersistedGrantStore>();
+            builder.AddDeviceFlowStore<DeviceFlowStore>();
+            
             builder.Services.AddSingleton<IHostedService, TokenCleanupHost>();
 
             return builder;

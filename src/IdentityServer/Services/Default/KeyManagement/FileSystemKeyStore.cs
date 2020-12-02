@@ -19,7 +19,6 @@ namespace Duende.IdentityServer.Services.KeyManagement
     {
         const string KeyFilePrefix = "is-signing-key-";
         const string KeyFileExtension = ".json";
-        const bool EncodeJson = false;
 
         private readonly DirectoryInfo _directory;
         private readonly ILogger<FileSystemKeyStore> _logger;
@@ -67,7 +66,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                     using (var reader = new StreamReader(file.OpenRead()))
                     {
                         var json = await reader.ReadToEndAsync();
-                        var item = KeySerializer.Deserialize<SerializedKey>(json, EncodeJson);
+                        var item = KeySerializer.Deserialize<SerializedKey>(json);
                         list.Add(item);
                     }
                 }
@@ -87,7 +86,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <returns></returns>
         public Task StoreKeyAsync(SerializedKey key)
         {
-            var json = KeySerializer.Serialize(key, EncodeJson);
+            var json = KeySerializer.Serialize(key);
 
             var path = Path.Combine(_directory.FullName, KeyFilePrefix + key.Id + KeyFileExtension);
             File.WriteAllText(path, json, Encoding.UTF8);
