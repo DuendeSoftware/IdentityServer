@@ -7,11 +7,14 @@ using Duende.IdentityServer.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.IO;
 
 namespace Duende.IdentityServer.Validation
 {
     internal class LicenseValidator
     {
+        const string LicenseFileName = "Duende_IdentityServer_License.txt";
+
         static ILogger _logger;
         static IdentityServerOptions _options;
         static License _license;
@@ -21,15 +24,25 @@ namespace Duende.IdentityServer.Validation
 
         public static void Initalize(ILoggerFactory loggerFactory, IdentityServerOptions options)
         {
-            _logger = loggerFactory.CreateLogger<LicenseValidator>();
+            _logger = loggerFactory.CreateLogger("Duende.IdentityServer");
             _options = options;
-            _license = ParseLicenseKey(options.LicenseKey);
+
+            var key = options.LicenseKey ?? LoadFromFile();
+            _license = ParseLicenseKey(key);
+        }
+
+        private static string LoadFromFile()
+        {
+            var path = Path.Combine(Directory.GetCurrentDirectory(), LicenseFileName);
+            return File.ReadAllText(path);
         }
 
         private static License ParseLicenseKey(string licenseKey)
         {
+            return System.Text.Json.JsonSerializer.Deserialize<License>(licenseKey);
+            
             //return null;
-            return new License { Edition = "Starter", ClientLimit = 5, IssuerLimit = 1 };
+            //return new License { Edition = "Starter", ClientLimit = 5, IssuerLimit = 1 };
             //return new License { Edition = "Enterprise", ClientLimit = 15 };
             //return new License { Edition = "Enterprise", Expiration = DateTime.UtcNow.AddHours(1) };
         }
@@ -44,7 +57,7 @@ namespace Duende.IdentityServer.Validation
             }
             else
             {
-                if (_options.KeyManagement.Enabled && !_license.IsBusiness)
+                if (_options.KeyManagement.Enabled && !_license.KeyManagement)
                 {
                     errors.Add("You have automatic key management enabled, yet you do not have the valid license for that feature of Duende IdentityServer.");
                 }
@@ -103,13 +116,9 @@ namespace Duende.IdentityServer.Validation
 
     internal class License
     {
-        public string Edition { get; set; }
-        public bool IsEnterprise => "enterprise".Equals(Edition, StringComparison.OrdinalIgnoreCase);
-        public bool IsBusiness => IsEnterprise || "business".Equals(Edition, StringComparison.OrdinalIgnoreCase);
-
+        public DateTime? Expiration { get; set; }
         public int? ClientLimit { get; set; }
         public int? IssuerLimit { get; set; }
-
-        public DateTime? Expiration { get; set; }
+        public bool KeyManagement { get; set; }
     }
 }
