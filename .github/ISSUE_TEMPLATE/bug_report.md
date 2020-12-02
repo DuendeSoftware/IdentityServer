@@ -21,10 +21,10 @@ Steps to reproduce the behavior.
 
 A clear and concise description of what you expected to happen.
 
-**Log output**
+**Log output/exception with stacktrace**
 
 ```
-log output
+data
 ```
 
 **Additional context**
