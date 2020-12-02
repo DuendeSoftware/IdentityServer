@@ -34,11 +34,18 @@ namespace Duende.IdentityServer.Validation
         private static string LoadFromFile()
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), LicenseFileName);
-            return File.ReadAllText(path);
+            if (File.Exists(path))
+            {
+                return File.ReadAllText(path);
+            }
+
+            return null;
         }
 
         private static License ParseLicenseKey(string licenseKey)
         {
+            if (String.IsNullOrWhiteSpace(licenseKey)) return null;
+
             return System.Text.Json.JsonSerializer.Deserialize<License>(licenseKey);
             
             //return null;
