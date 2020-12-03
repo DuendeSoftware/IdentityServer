@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +26,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <summary>
         /// The DbContext.
         /// </summary>
-        protected readonly PersistedGrantDbContext Context;
+        protected readonly IPersistedGrantDbContext Context;
 
         /// <summary>
         /// The logger.
@@ -39,7 +39,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public SigningKeyStore(PersistedGrantDbContext context, ILogger<SigningKeyStore> logger)
+        public SigningKeyStore(IPersistedGrantDbContext context, ILogger<SigningKeyStore> logger)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
@@ -103,7 +103,14 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    Context.Entry(item).State = EntityState.Detached;
+                    // hack line to prevent DbContext from throwing again later because of a lingering 'deleted' entity in the DbContext
+                    Context.Keys.Add(item);
+                    // then we re-remove so we don't end up with an accidental new entry in the DB for the record we wanted to delete
+                    Context.Keys.Remove(item);
+                    // if we have the DbCOntext directly, we could do this instead:
+                    //Context.Entry(item).State = EntityState.Detached;
+                    // todo: address the lack of access to the DbContext via the interface abstraction
+                    
                     // already deleted, so we can eat this exception
                     Logger.LogDebug("Concurrency exception caught deleting key id {kid}", id);
                 }
