@@ -101,16 +101,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                     Context.Keys.Remove(item);
                     await Context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
-                    // hack line to prevent DbContext from throwing again later because of a lingering 'deleted' entity in the DbContext
-                    Context.Keys.Add(item);
-                    // then we re-remove so we don't end up with an accidental new entry in the DB for the record we wanted to delete
-                    Context.Keys.Remove(item);
-                    // if we have the DbCOntext directly, we could do this instead:
-                    //Context.Entry(item).State = EntityState.Detached;
-                    // todo: address the lack of access to the DbContext via the interface abstraction
-                    
+                    foreach(var entity in ex.Entries)
+                    {
+                        entity.State = EntityState.Detached;
+                    }
+
                     // already deleted, so we can eat this exception
                     Logger.LogDebug("Concurrency exception caught deleting key id {kid}", id);
                 }
