@@ -26,7 +26,6 @@ namespace IdentityServerHost
             var connectionString = _config.GetConnectionString("db");
 
             services.AddIdentityServer()
-                .AddDeveloperSigningCredential()
                 .AddTestUsers(TestUsers.Users)
                 // this adds the config data from DB (clients, resources, CORS)
                 .AddConfigurationStore(options =>
