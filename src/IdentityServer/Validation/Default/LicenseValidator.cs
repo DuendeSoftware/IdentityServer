@@ -13,7 +13,7 @@ namespace Duende.IdentityServer.Validation
 {
     internal class LicenseValidator
     {
-        const string LicenseFileName = "Duende_IdentityServer_License.txt";
+        const string LicenseFileName = "Duende_IdentityServer_License.key";
 
         static ILogger _logger;
         static IdentityServerOptions _options;
@@ -127,5 +127,6 @@ namespace Duende.IdentityServer.Validation
         public int? ClientLimit { get; set; }
         public int? IssuerLimit { get; set; }
         public bool KeyManagement { get; set; }
+        public bool ResourceIsolation { get; set; }
     }
 }
