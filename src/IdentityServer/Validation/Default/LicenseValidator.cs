@@ -8,6 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.IO;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
+using System.Security.Claims;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -28,7 +32,7 @@ namespace Duende.IdentityServer.Validation
             _options = options;
 
             var key = options.LicenseKey ?? LoadFromFile();
-            _license = ParseLicenseKey(key);
+            _license = ValidateKey(key);
         }
 
         private static string LoadFromFile()
@@ -36,22 +40,10 @@ namespace Duende.IdentityServer.Validation
             var path = Path.Combine(Directory.GetCurrentDirectory(), LicenseFileName);
             if (File.Exists(path))
             {
-                return File.ReadAllText(path);
+                return File.ReadAllText(path).Trim();
             }
 
             return null;
-        }
-
-        private static License ParseLicenseKey(string licenseKey)
-        {
-            if (String.IsNullOrWhiteSpace(licenseKey)) return null;
-
-            return System.Text.Json.JsonSerializer.Deserialize<License>(licenseKey);
-            
-            //return null;
-            //return new License { Edition = "Starter", ClientLimit = 5, IssuerLimit = 1 };
-            //return new License { Edition = "Enterprise", ClientLimit = 15 };
-            //return new License { Edition = "Enterprise", Expiration = DateTime.UtcNow.AddHours(1) };
         }
 
         public static void ValidateLicense()
@@ -64,10 +56,21 @@ namespace Duende.IdentityServer.Validation
             }
             else
             {
+                if (_license.Expiration.HasValue)
+                {
+                    var diff = DateTime.UtcNow.Date.Subtract(_license.Expiration.Value.Date).TotalDays;
+                    if (diff > 0)
+                    {
+                        errors.Add($"Your license for Duende IdentityServer expired {diff} days ago.");
+                    }
+                }
+
                 if (_options.KeyManagement.Enabled && !_license.KeyManagement)
                 {
-                    errors.Add("You have automatic key management enabled, yet you do not have the valid license for that feature of Duende IdentityServer.");
+                    errors.Add("You have automatic key management enabled, yet you do not have a valid license for that feature of Duende IdentityServer.");
                 }
+
+                // todo: add resource isolation check here
             }
 
             if (errors.Count > 0)
@@ -81,11 +84,11 @@ namespace Duende.IdentityServer.Validation
             {
                 if (_license.Expiration.HasValue)
                 {
-                    _logger.LogInformation("You have a valid license for Duende IdentityServer which expires on {expiration}.", _license.Expiration.Value.ToLongDateString());
+                    _logger.LogInformation("You have a valid license key for Duende IdentityServer which expires on {expiration}.", _license.Expiration.Value.ToLongDateString());
                 }
                 else
                 {
-                    _logger.LogInformation("You have a valid license for Duende IdentityServer.");
+                    _logger.LogInformation("You have a valid license key for Duende IdentityServer.");
                 }
             }
         }
@@ -119,14 +122,94 @@ namespace Duende.IdentityServer.Validation
                 }
             }
         }
+
+        internal static License ValidateKey(string licenseKey)
+        {
+            if (!String.IsNullOrWhiteSpace(licenseKey))
+            {
+                var handler = new JwtSecurityTokenHandler();
+
+                try
+                {
+                    var rsa = new RSAParameters
+                    {
+                        Exponent = Convert.FromBase64String("AQAB"),
+                        Modulus = Convert.FromBase64String("tAHAfvtmGBng322TqUXF/Aar7726jFELj73lywuCvpGsh3JTpImuoSYsJxy5GZCRF7ppIIbsJBmWwSiesYfxWxBsfnpOmAHU3OTMDt383mf0USdqq/F0yFxBL9IQuDdvhlPfFcTrWEL0U2JsAzUjt9AfsPHNQbiEkOXlIwtNkqMP2naynW8y4WbaGG1n2NohyN6nfNb42KoNSR83nlbBJSwcc3heE3muTt3ZvbpguanyfFXeoP6yyqatnymWp/C0aQBEI5kDahOU641aDiSagG7zX1WaF9+hwfWCbkMDKYxeSWUkQOUOdfUQ89CQS5wrLpcU0D0xf7/SrRdY2TRHvQ=="),
+                    };
+
+                    var key = new RsaSecurityKey(rsa)
+                    {
+                        KeyId = "IdentityServerLicensekey/7ceadbb78130469e8806891025414f16"
+                    };
+
+                    var parms = new TokenValidationParameters
+                    {
+                        ValidIssuer = "https://duendesoftware.com",
+                        ValidAudience = "IdentityServer",
+                        IssuerSigningKey = key,
+                        ValidateLifetime = false
+                    };
+
+                    var validateResult = handler.ValidateToken(licenseKey, parms, out _);
+                    return new License(validateResult);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error validating Duende IdentityServer license key");
+                }
+            }
+
+            return null;
+        }
     }
 
     internal class License
     {
+        public License(ClaimsPrincipal claims)
+        {
+            CompanyName = claims.FindFirst("company_name")?.Value;
+            ContactInfo = claims.FindFirst("contact_info")?.Value;
+
+            if (Int64.TryParse(claims.FindFirst("exp")?.Value, out var exp))
+            {
+                var expDate = DateTimeOffset.FromUnixTimeSeconds(exp);
+                Expiration = expDate.UtcDateTime;
+            }
+            
+            Edition = claims.FindFirst("edition")?.Value;
+            IsEnterprise = "enterprise".Equals(Edition, StringComparison.OrdinalIgnoreCase);
+            IsBusiness = IsEnterprise || "business".Equals(Edition, StringComparison.OrdinalIgnoreCase);
+
+            KeyManagement = IsBusiness || claims.HasClaim("feature", "key_management");
+            ResourceIsolation = IsEnterprise || claims.HasClaim("feature", "resource_isolation");
+
+            if (!IsEnterprise)
+            {
+                if (Int32.TryParse(claims.FindFirst("client_limit")?.Value, out var clientLimit))
+                {
+                    ClientLimit = clientLimit;
+                }
+
+                if (Int32.TryParse(claims.FindFirst("issuer_limit")?.Value, out var issuerLimit))
+                {
+                    IssuerLimit = issuerLimit;
+                }
+            }
+        }
+
+        public string CompanyName { get; set; }
+        public string ContactInfo { get; set; }
+        
         public DateTime? Expiration { get; set; }
+        
+        public string Edition { get; set; }
+        public bool IsEnterprise { get; set; }
+        public bool IsBusiness { get; set; }
+
         public int? ClientLimit { get; set; }
         public int? IssuerLimit { get; set; }
+        
         public bool KeyManagement { get; set; }
-        public bool ResourceIsolation { get; set; }
+        public bool ResourceIsolation { get; set; } 
     }
 }
