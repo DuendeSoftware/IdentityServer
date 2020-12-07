@@ -75,20 +75,25 @@ namespace Duende.IdentityServer.Validation
 
             if (errors.Count > 0)
             {
-                foreach(var err in errors)
+                foreach (var err in errors)
                 {
                     _logger.LogWarning(err);
+                }
+                
+                if (_license != null)
+                {
+                    _logger.LogError("Please contact {licenceContact} from {licenseCompany} to obtain a valid license for Duende IdentityServer.", _license.ContactInfo, _license.CompanyName);
                 }
             }
             else
             {
                 if (_license.Expiration.HasValue)
                 {
-                    _logger.LogInformation("You have a valid license key for Duende IdentityServer which expires on {expiration}.", _license.Expiration.Value.ToLongDateString());
+                    _logger.LogInformation("You have a valid license key for Duende IdentityServer for use at {licenseCompany}. The license expires on {licenseExpiration}.", _license.CompanyName, _license.Expiration.Value.ToLongDateString());
                 }
                 else
                 {
-                    _logger.LogInformation("You have a valid license key for Duende IdentityServer.");
+                    _logger.LogInformation("You have a valid license key for Duende IdentityServer for use at {licenseCompany}.", _license.CompanyName);
                 }
             }
         }
