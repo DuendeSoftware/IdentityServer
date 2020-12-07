@@ -21,6 +21,7 @@ namespace Duende.IdentityServer.ResponseHandling
         public int AccessTokenLifetime { get; set; }
         public string Code { get; set; }
         public string SessionState { get; set; }
+        public string Issuer { get; set; }
 
         public string Error { get; set; }
         public string ErrorDescription { get; set; }

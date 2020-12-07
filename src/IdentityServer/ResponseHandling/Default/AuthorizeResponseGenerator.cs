@@ -14,6 +14,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.ResponseHandling
 {
@@ -23,6 +24,11 @@ namespace Duende.IdentityServer.ResponseHandling
     /// <seealso cref="IAuthorizeResponseGenerator" />
     public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     {
+        /// <summary>
+        /// The HTTP context accessor
+        /// </summary>
+        protected readonly IHttpContextAccessor HttpContextAccessor;
+
         /// <summary>
         /// The token service
         /// </summary>
@@ -57,6 +63,7 @@ namespace Duende.IdentityServer.ResponseHandling
         /// Initializes a new instance of the <see cref="AuthorizeResponseGenerator"/> class.
         /// </summary>
         /// <param name="clock">The clock.</param>
+        /// <param name="httpContextAccessor">The HTTP context accessor</param>
         /// <param name="logger">The logger.</param>
         /// <param name="tokenService">The token service.</param>
         /// <param name="keyMaterialService"></param>
@@ -67,9 +74,11 @@ namespace Duende.IdentityServer.ResponseHandling
             ITokenService tokenService,
             IKeyMaterialService keyMaterialService,
             IAuthorizationCodeStore authorizationCodeStore,
+            IHttpContextAccessor httpContextAccessor,
             ILogger<AuthorizeResponseGenerator> logger,
             IEventService events)
         {
+            HttpContextAccessor = httpContextAccessor;
             Clock = clock;
             TokenService = tokenService;
             KeyMaterialService = keyMaterialService;
@@ -135,6 +144,7 @@ namespace Duende.IdentityServer.ResponseHandling
 
             var response = new AuthorizeResponse
             {
+                Issuer = HttpContextAccessor.HttpContext.GetIdentityServerIssuerUri(),
                 Request = request,
                 Code = id,
                 SessionState = request.GenerateSessionStateValue()
