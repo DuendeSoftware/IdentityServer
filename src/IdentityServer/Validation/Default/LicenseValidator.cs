@@ -46,13 +46,17 @@ namespace Duende.IdentityServer.Validation
             return null;
         }
 
+        // todo: check this periodcally?
         public static void ValidateLicense()
         {
             var errors = new List<string>();
 
             if (_license == null)
             {
-                errors.Add("You do not have a valid license key for Duende IdentityServer.");
+                // todo: more wording on license options? URL to license details?
+                // error? or info?
+                _logger.LogWarning("You do not have a valid license key for Duende IdentityServer.");
+                return;
             }
             else
             {
@@ -67,7 +71,7 @@ namespace Duende.IdentityServer.Validation
 
                 if (_options.KeyManagement.Enabled && !_license.KeyManagement)
                 {
-                    errors.Add("You have automatic key management enabled, yet you do not have a valid license for that feature of Duende IdentityServer.");
+                    errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer.");
                 }
 
                 // todo: add resource isolation check here
@@ -77,7 +81,7 @@ namespace Duende.IdentityServer.Validation
             {
                 foreach (var err in errors)
                 {
-                    _logger.LogWarning(err);
+                    _logger.LogError(err);
                 }
                 
                 if (_license != null)
@@ -107,7 +111,7 @@ namespace Duende.IdentityServer.Validation
                     _clientIds.TryAdd(clientId, 1);
                     if (_clientIds.Count > _license.ClientLimit)
                     {
-                        _logger.LogWarning("Your license for Duende IdentityServer only permits {clientLimit} number of clients. You have processed requests for {clientCount}.", _license.ClientLimit, _clientIds.Count);
+                        _logger.LogError("Your license for Duende IdentityServer only permits {clientLimit} number of clients. You have processed requests for {clientCount}.", _license.ClientLimit, _clientIds.Count);
                     }
                 }
             }
@@ -122,7 +126,7 @@ namespace Duende.IdentityServer.Validation
                     _issuers.TryAdd(iss, 1);
                     if (_issuers.Count > _license.IssuerLimit)
                     {
-                        _logger.LogWarning("Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}.", _license.IssuerLimit, _issuers.Count);
+                        _logger.LogError("Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}.", _license.IssuerLimit, _issuers.Count);
                     }
                 }
             }
@@ -160,7 +164,7 @@ namespace Duende.IdentityServer.Validation
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error validating Duende IdentityServer license key");
+                    _logger.LogCritical(ex, "Error validating Duende IdentityServer license key");
                 }
             }
 
