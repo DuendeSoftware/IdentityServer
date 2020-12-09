@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Services;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -579,17 +580,37 @@ namespace Duende.IdentityServer.Validation
             }
 
             //////////////////////////////////////////////////////////
+            // check for resource indicators
+            //////////////////////////////////////////////////////////
+            // todo: new constant for OidcConstants.AuthorizeRequest
+            var resourceIndicators = request.Raw.GetValues("resource") ?? Enumerable.Empty<string>();
+            if (!AreValidUris(resourceIndicators))
+            {
+                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator is not a valid URI");
+            }
+            request.RequestedResources = resourceIndicators.ToList();
+
+            //////////////////////////////////////////////////////////
             // check if scopes are valid/supported and check for resource scopes
             //////////////////////////////////////////////////////////
             var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = request.Client,
-                Scopes = request.RequestedScopes
+                Scopes = request.RequestedScopes,
+                ResourceIndicators = request.RequestedResources
             });
 
             if (!validatedResources.Succeeded)
             {
-                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope");
+                if (validatedResources.InvalidResourceIndicators.Any())
+                {
+                    return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator");
+                }
+
+                if (validatedResources.InvalidScopes.Any())
+                {
+                    return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope");
+                }
             }
 
             if (validatedResources.Resources.IdentityResources.Any() && !request.IsOpenIdRequest)
@@ -640,6 +661,22 @@ namespace Duende.IdentityServer.Validation
             request.ValidatedResources = validatedResources;
 
             return Valid(request);
+        }
+
+        private bool AreValidUris(IEnumerable<string> list)
+        {
+            if (list != null)
+            {
+                foreach (var item in list)
+                { 
+                    if (!Uri.TryCreate(item, UriKind.Absolute, out _))
+                    {
+                        _logger.LogDebug("Value {uri} is not a valid URI format.", item);
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         private async Task<AuthorizeRequestValidationResult> ValidateOptionalParametersAsync(ValidatedAuthorizeRequest request)

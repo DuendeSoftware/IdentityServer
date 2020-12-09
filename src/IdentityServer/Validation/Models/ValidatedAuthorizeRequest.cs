@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -53,6 +53,11 @@ namespace Duende.IdentityServer.Validation
         /// </value>
         // todo: consider replacing with extension method to access Raw collection; would neeed to be done wholesale for all props.
         public List<string> RequestedScopes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the requested resources.
+        /// </summary>
+        public List<string> RequestedResources { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether consent was shown.

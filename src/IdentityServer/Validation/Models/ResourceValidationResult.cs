@@ -44,7 +44,7 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// Indicates if the result was successful.
         /// </summary>
-        public bool Succeeded => ParsedScopes.Any() && !InvalidScopes.Any();
+        public bool Succeeded => ParsedScopes.Any() && !InvalidScopes.Any() && !InvalidResourceIndicators.Any();
 
         /// <summary>
         /// The resources of the result.
@@ -60,6 +60,11 @@ namespace Duende.IdentityServer.Validation
         /// The original (raw) scope values represented by the validated result.
         /// </summary>
         public IEnumerable<string> RawScopeValues => ParsedScopes.Select(x => x.RawValue);
+
+        /// <summary>
+        /// The requested resource indicators that are invalid.
+        /// </summary>
+        public ICollection<string> InvalidResourceIndicators { get; set; } = new HashSet<string>();
 
         /// <summary>
         /// The requested scopes that are invalid.
