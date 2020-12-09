@@ -42,9 +42,8 @@ namespace UnitTests.Validation
             new ApiResource
             {
                 Name = "resource2",
-                Enabled = false,
-                Scopes = { "disabled" }
-            }
+                Scopes = { "disabled_scope" }
+            },
         };
 
         private List<ApiScope> _scopes = new List<ApiScope> {
@@ -56,7 +55,12 @@ namespace UnitTests.Validation
             new ApiScope
             {
                 Name = "scope2"
-            }
+            },
+            new ApiScope
+            {
+                Name = "disabled_scope",
+                Enabled = false,
+            },
         };
 
         private Client _restrictedClient = new Client
@@ -64,79 +68,31 @@ namespace UnitTests.Validation
             ClientId = "restricted",
 
             AllowedScopes = new List<string>
-                {
-                    "openid",
-                    "scope1",
-                    "disabled"
-                }
+            {
+                "openid",
+                "scope1",
+                "disabled_scope"
+            }
         };
 
-        private IResourceStore _store;
+        private IResourceStore _subject;
 
         public ResourceValidation()
         {
-            _store = new InMemoryResourcesStore(_identityResources, _apiResources, _scopes);
+            _subject = new InMemoryResourcesStore(_identityResources, _apiResources, _scopes);
         }
 
-        [Fact]
-        [Trait("Category", Category)]
-        public void Parse_Scopes_with_Empty_Scope_List()
-        {
-            var scopes = string.Empty.ParseScopesString();
-
-            scopes.Should().BeNull();
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public void Parse_Scopes_with_Sorting()
-        {
-            var scopes = "scope3 scope2 scope1".ParseScopesString();
-
-            scopes.Count.Should().Be(3);
-
-            scopes[0].Should().Be("scope1");
-            scopes[1].Should().Be("scope2");
-            scopes[2].Should().Be("scope3");
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public void Parse_Scopes_with_Extra_Spaces()
-        {
-            var scopes = "   scope3     scope2     scope1   ".ParseScopesString();
-
-            scopes.Count.Should().Be(3);
-
-            scopes[0].Should().Be("scope1");
-            scopes[1].Should().Be("scope2");
-            scopes[2].Should().Be("scope3");
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public void Parse_Scopes_with_Duplicate_Scope()
-        {
-            var scopes = "scope2 scope1 scope2".ParseScopesString();
-
-            scopes.Count.Should().Be(2);
-
-            scopes[0].Should().Be("scope1");
-            scopes[1].Should().Be("scope2");
-        }
+        // scope validation
 
         [Fact]
         [Trait("Category", Category)]
         public async Task Only_Offline_Access_Requested()
         {
-            var scopes = "offline_access".ParseScopesString();
-
-
-            var validator = Factory.CreateResourceValidator(_store);
+            var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _restrictedClient,
-                Scopes = scopes
+                Scopes = new[] { "offline_access" }
             });
 
             result.Succeeded.Should().BeFalse();
@@ -147,13 +103,11 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task All_Scopes_Valid()
         {
-            var scopes = "openid scope1".ParseScopesString();
-
-            var validator = Factory.CreateResourceValidator(_store);
+            var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _restrictedClient,
-                Scopes = scopes
+                Scopes = new[] { "openid", "scope1" }
             });
 
             result.Succeeded.Should().BeTrue();
@@ -165,13 +119,11 @@ namespace UnitTests.Validation
         public async Task Invalid_Scope()
         {
             {
-                var scopes = "openid email scope1 unknown".ParseScopesString();
-
-                var validator = Factory.CreateResourceValidator(_store);
+                var validator = Factory.CreateResourceValidator(_subject);
                 var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
                 {
                     Client = _restrictedClient,
-                    Scopes = scopes
+                    Scopes = new[] { "openid", "email", "scope1", "unknown" }
                 });
 
                 result.Succeeded.Should().BeFalse();
@@ -179,26 +131,22 @@ namespace UnitTests.Validation
                 result.InvalidScopes.Should().Contain("email");
             }
             {
-                var scopes = "openid scope1 scope2".ParseScopesString();
-
-                var validator = Factory.CreateResourceValidator(_store);
+                var validator = Factory.CreateResourceValidator(_subject);
                 var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
                 {
                     Client = _restrictedClient,
-                    Scopes = scopes
+                    Scopes = new[] { "openid", "scope1", "scope2" }
                 });
 
                 result.Succeeded.Should().BeFalse();
                 result.InvalidScopes.Should().Contain("scope2");
             }
             {
-                var scopes = "openid email scope1".ParseScopesString();
-
-                var validator = Factory.CreateResourceValidator(_store);
+                var validator = Factory.CreateResourceValidator(_subject);
                 var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
                 {
                     Client = _restrictedClient,
-                    Scopes = scopes
+                    Scopes = new[] { "openid", "email", "scope1" }
                 });
 
                 result.Succeeded.Should().BeFalse();
@@ -210,30 +158,26 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task Disabled_Scope()
         {
-            var scopes = "openid scope1 disabled".ParseScopesString();
-
-            var validator = Factory.CreateResourceValidator(_store);
+            var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _restrictedClient,
-                Scopes = scopes
+                Scopes = new[] { "openid", "scope1", "disabled_scope" }
             });
 
             result.Succeeded.Should().BeFalse();
-            result.InvalidScopes.Should().Contain("disabled");
+            result.InvalidScopes.Should().Contain("disabled_scope");
         }
 
         [Fact]
         [Trait("Category", Category)]
         public async Task All_Scopes_Allowed_For_Restricted_Client()
         {
-            var scopes = "openid scope1".ParseScopesString();
-
-            var validator = Factory.CreateResourceValidator(_store);
+            var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _restrictedClient,
-                Scopes = scopes
+                Scopes = new[] { "openid", "scope1" }
             });
 
             result.Succeeded.Should().BeTrue();
@@ -244,13 +188,11 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task Restricted_Scopes()
         {
-            var scopes = "openid email scope1 scope2".ParseScopesString();
-
-            var validator = Factory.CreateResourceValidator(_store);
+            var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _restrictedClient,
-                Scopes = scopes
+                Scopes = new[] { "openid", "email", "scope1", "scope2" }
             });
 
             result.Succeeded.Should().BeFalse();
@@ -262,13 +204,11 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task Contains_Resource_and_Identity_Scopes()
         {
-            var scopes = "openid scope1".ParseScopesString();
-
-            var validator = Factory.CreateResourceValidator(_store);
+            var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _restrictedClient,
-                Scopes = scopes
+                Scopes = new[] { "openid", "scope1" }
             });
 
             result.Succeeded.Should().BeTrue();
@@ -280,13 +220,11 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task Contains_Resource_Scopes_Only()
         {
-            var scopes = "scope1".ParseScopesString();
-
-            var validator = Factory.CreateResourceValidator(_store);
+            var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _restrictedClient,
-                Scopes = scopes
+                Scopes = new[] { "scope1" }
             });
 
             result.Succeeded.Should().BeTrue();
@@ -298,13 +236,11 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task Contains_Identity_Scopes_Only()
         {
-            var scopes = "openid".ParseScopesString();
-
-            var validator = Factory.CreateResourceValidator(_store);
+            var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _restrictedClient,
-                Scopes = scopes
+                Scopes = new[] { "openid" }
             });
 
             result.Succeeded.Should().BeTrue();
@@ -322,7 +258,7 @@ namespace UnitTests.Validation
             _scopes.Clear();
             _scopes.Add(new ApiScope("s"));
 
-            var validator = Factory.CreateResourceValidator(_store);
+            var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = new Client { AllowedScopes = { "s" } },
@@ -335,5 +271,6 @@ namespace UnitTests.Validation
             result.RawScopeValues.Count().Should().Be(1);
             result.RawScopeValues.Should().BeEquivalentTo(new[] { "s" });
         }
+
     }
 }
