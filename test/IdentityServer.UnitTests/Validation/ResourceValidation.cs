@@ -36,12 +36,12 @@ namespace UnitTests.Validation
         {
             new ApiResource
             {
-                Name = "api",
-                Scopes = { "resource1", "resource2" }
+                Name = "resource1",
+                Scopes = { "scope1", "scope2" }
             },
             new ApiResource
             {
-                Name = "disabled_api",
+                Name = "resource2",
                 Enabled = false,
                 Scopes = { "disabled" }
             }
@@ -50,12 +50,12 @@ namespace UnitTests.Validation
         private List<ApiScope> _scopes = new List<ApiScope> {
             new ApiScope
             {
-                Name = "resource1",
+                Name = "scope1",
                 Required = true
             },
             new ApiScope
             {
-                Name = "resource2"
+                Name = "scope2"
             }
         };
 
@@ -66,7 +66,7 @@ namespace UnitTests.Validation
             AllowedScopes = new List<string>
                 {
                     "openid",
-                    "resource1",
+                    "scope1",
                     "disabled"
                 }
         };
@@ -147,7 +147,7 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task All_Scopes_Valid()
         {
-            var scopes = "openid resource1".ParseScopesString();
+            var scopes = "openid scope1".ParseScopesString();
 
             var validator = Factory.CreateResourceValidator(_store);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -165,7 +165,7 @@ namespace UnitTests.Validation
         public async Task Invalid_Scope()
         {
             {
-                var scopes = "openid email resource1 unknown".ParseScopesString();
+                var scopes = "openid email scope1 unknown".ParseScopesString();
 
                 var validator = Factory.CreateResourceValidator(_store);
                 var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -179,7 +179,7 @@ namespace UnitTests.Validation
                 result.InvalidScopes.Should().Contain("email");
             }
             {
-                var scopes = "openid resource1 resource2".ParseScopesString();
+                var scopes = "openid scope1 scope2".ParseScopesString();
 
                 var validator = Factory.CreateResourceValidator(_store);
                 var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -189,10 +189,10 @@ namespace UnitTests.Validation
                 });
 
                 result.Succeeded.Should().BeFalse();
-                result.InvalidScopes.Should().Contain("resource2");
+                result.InvalidScopes.Should().Contain("scope2");
             }
             {
-                var scopes = "openid email resource1".ParseScopesString();
+                var scopes = "openid email scope1".ParseScopesString();
 
                 var validator = Factory.CreateResourceValidator(_store);
                 var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -210,7 +210,7 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task Disabled_Scope()
         {
-            var scopes = "openid resource1 disabled".ParseScopesString();
+            var scopes = "openid scope1 disabled".ParseScopesString();
 
             var validator = Factory.CreateResourceValidator(_store);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -227,7 +227,7 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task All_Scopes_Allowed_For_Restricted_Client()
         {
-            var scopes = "openid resource1".ParseScopesString();
+            var scopes = "openid scope1".ParseScopesString();
 
             var validator = Factory.CreateResourceValidator(_store);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -244,7 +244,7 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public async Task Restricted_Scopes()
         {
-            var scopes = "openid email resource1 resource2".ParseScopesString();
+            var scopes = "openid email scope1 scope2".ParseScopesString();
 
             var validator = Factory.CreateResourceValidator(_store);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -255,14 +255,14 @@ namespace UnitTests.Validation
 
             result.Succeeded.Should().BeFalse();
             result.InvalidScopes.Should().Contain("email");
-            result.InvalidScopes.Should().Contain("resource2");
+            result.InvalidScopes.Should().Contain("scope2");
         }
 
         [Fact]
         [Trait("Category", Category)]
         public async Task Contains_Resource_and_Identity_Scopes()
         {
-            var scopes = "openid resource1".ParseScopesString();
+            var scopes = "openid scope1".ParseScopesString();
 
             var validator = Factory.CreateResourceValidator(_store);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -273,14 +273,14 @@ namespace UnitTests.Validation
 
             result.Succeeded.Should().BeTrue();
             result.Resources.IdentityResources.SelectMany(x => x.Name).Should().Contain("openid");
-            result.Resources.ApiScopes.Select(x => x.Name).Should().Contain("resource1");
+            result.Resources.ApiScopes.Select(x => x.Name).Should().Contain("scope1");
         }
 
         [Fact]
         [Trait("Category", Category)]
         public async Task Contains_Resource_Scopes_Only()
         {
-            var scopes = "resource1".ParseScopesString();
+            var scopes = "scope1".ParseScopesString();
 
             var validator = Factory.CreateResourceValidator(_store);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -291,7 +291,7 @@ namespace UnitTests.Validation
 
             result.Succeeded.Should().BeTrue();
             result.Resources.IdentityResources.Should().BeEmpty();
-            result.Resources.ApiScopes.Select(x => x.Name).Should().Contain("resource1");
+            result.Resources.ApiScopes.Select(x => x.Name).Should().Contain("scope1");
         }
 
         [Fact]
@@ -317,23 +317,23 @@ namespace UnitTests.Validation
         public async Task Scope_matches_multipls_apis_should_succeed()
         {
             _apiResources.Clear();
-            _apiResources.Add(new ApiResource { Name = "api1", Scopes = { "resource" } });
-            _apiResources.Add(new ApiResource { Name = "api2", Scopes = { "resource" } });
+            _apiResources.Add(new ApiResource { Name = "r1", Scopes = { "s" } });
+            _apiResources.Add(new ApiResource { Name = "r2", Scopes = { "s" } });
             _scopes.Clear();
-            _scopes.Add(new ApiScope("resource"));
+            _scopes.Add(new ApiScope("s"));
 
             var validator = Factory.CreateResourceValidator(_store);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
-                Client = new Client { AllowedScopes = { "resource" } },
-                Scopes = new[] { "resource" }
+                Client = new Client { AllowedScopes = { "s" } },
+                Scopes = new[] { "s" }
             });
 
             result.Succeeded.Should().BeTrue();
             result.Resources.ApiResources.Count.Should().Be(2);
-            result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "api1", "api2" });
+            result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "r1", "r2" });
             result.RawScopeValues.Count().Should().Be(1);
-            result.RawScopeValues.Should().BeEquivalentTo(new[] { "resource" });
+            result.RawScopeValues.Should().BeEquivalentTo(new[] { "s" });
         }
     }
 }
