@@ -104,7 +104,7 @@ namespace Duende.IdentityServer.Validation
             }
 
             // scope, scope restrictions and plausability
-            var scopeResult = await ValidateScopeAsync(request);
+            var scopeResult = await ValidateScopeAndResourceAsync(request);
             if (scopeResult.IsError)
             {
                 return scopeResult;
@@ -540,7 +540,7 @@ namespace Duende.IdentityServer.Validation
             return Valid(request);
         }
 
-        private async Task<AuthorizeRequestValidationResult> ValidateScopeAsync(ValidatedAuthorizeRequest request)
+        private async Task<AuthorizeRequestValidationResult> ValidateScopeAndResourceAsync(ValidatedAuthorizeRequest request)
         {
             //////////////////////////////////////////////////////////
             // scope must be present
@@ -579,16 +579,18 @@ namespace Duende.IdentityServer.Validation
                 }
             }
 
+
             //////////////////////////////////////////////////////////
             // check for resource indicators
             //////////////////////////////////////////////////////////
             // todo: new constant for OidcConstants.AuthorizeRequest
             var resourceIndicators = request.Raw.GetValues("resource") ?? Enumerable.Empty<string>();
-            if (!AreValidUris(resourceIndicators))
+            if (!AreValidResourceIndicatorFormat(resourceIndicators))
             {
-                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator is not a valid URI");
+                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
             }
             request.RequestedResources = resourceIndicators.ToList();
+
 
             //////////////////////////////////////////////////////////
             // check if scopes are valid/supported and check for resource scopes
@@ -663,7 +665,7 @@ namespace Duende.IdentityServer.Validation
             return Valid(request);
         }
 
-        private bool AreValidUris(IEnumerable<string> list)
+        private bool AreValidResourceIndicatorFormat(IEnumerable<string> list)
         {
             if (list != null)
             {
@@ -671,11 +673,18 @@ namespace Duende.IdentityServer.Validation
                 { 
                     if (!Uri.TryCreate(item, UriKind.Absolute, out _))
                     {
-                        _logger.LogDebug("Value {uri} is not a valid URI format.", item);
+                        _logger.LogDebug("Resource indicator {resource} is not a valid URI.", item);
+                        return false;
+                    }
+
+                    if (item.Contains("#"))
+                    {
+                        _logger.LogDebug("Resource indicator {resource} must not contain a fragment component.", item);
                         return false;
                     }
                 }
             }
+
             return true;
         }
 

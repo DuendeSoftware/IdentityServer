@@ -102,6 +102,23 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
 
         [Fact]
         [Trait("Category", Category)]
+        public async Task fragment_in_resourceindicator_should_fail()
+        {
+            var parameters = new NameValueCollection();
+            parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "client1");
+            parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid scope1");
+            parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "https://client1");
+            parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Code);
+            parameters.Add("resource", "http://resource1#fragment");
+
+            var result = await _subject.ValidateAsync(parameters);
+
+            result.IsError.Should().BeTrue();
+            result.Error.Should().Be("invalid_target");
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
         public async Task multiple_uri_resourceindicators_should_succeed()
         {
             var parameters = new NameValueCollection();
