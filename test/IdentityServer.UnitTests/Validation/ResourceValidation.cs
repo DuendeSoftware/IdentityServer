@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using UnitTests.Validation.Setup;
@@ -17,7 +16,7 @@ namespace UnitTests.Validation
 {
     public class ResourceValidation
     {
-        private const string Category = "Resource Validation";
+        private const string Category = "Scope and Resource Validation";
 
         private List<IdentityResource> _identityResources = new List<IdentityResource>
         {
@@ -214,6 +213,7 @@ namespace UnitTests.Validation
             result.Succeeded.Should().BeTrue();
             result.Resources.IdentityResources.SelectMany(x => x.Name).Should().Contain("openid");
             result.Resources.ApiScopes.Select(x => x.Name).Should().Contain("scope1");
+            result.Resources.ApiResources.Select(x => x.Name).Should().Contain("resource1");
         }
 
         [Fact]
@@ -230,6 +230,7 @@ namespace UnitTests.Validation
             result.Succeeded.Should().BeTrue();
             result.Resources.IdentityResources.Should().BeEmpty();
             result.Resources.ApiScopes.Select(x => x.Name).Should().Contain("scope1");
+            result.Resources.ApiResources.Select(x => x.Name).Should().Contain("resource1");
         }
 
         [Fact]
@@ -246,6 +247,7 @@ namespace UnitTests.Validation
             result.Succeeded.Should().BeTrue();
             result.Resources.IdentityResources.SelectMany(x => x.Name).Should().Contain("openid");
             result.Resources.ApiResources.Should().BeEmpty();
+            result.Resources.ApiResources.Should().BeEmpty();
         }
 
         [Fact]
@@ -255,6 +257,7 @@ namespace UnitTests.Validation
             _apiResources.Clear();
             _apiResources.Add(new ApiResource { Name = "r1", Scopes = { "s" } });
             _apiResources.Add(new ApiResource { Name = "r2", Scopes = { "s" } });
+            _apiResources.Add(new ApiResource { Name = "r3", Scopes = { "s" }, Enabled = false });
             _scopes.Clear();
             _scopes.Add(new ApiScope("s"));
 
