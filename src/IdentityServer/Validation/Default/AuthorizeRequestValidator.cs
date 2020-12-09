@@ -103,7 +103,7 @@ namespace Duende.IdentityServer.Validation
                 return mandatoryResult;
             }
 
-            // scope, scope restrictions and plausability
+            // scope, scope restrictions and plausability, and resource indicators
             var scopeResult = await ValidateScopeAndResourceAsync(request);
             if (scopeResult.IsError)
             {
@@ -581,7 +581,7 @@ namespace Duende.IdentityServer.Validation
 
 
             //////////////////////////////////////////////////////////
-            // check for resource indicators
+            // check for resource indicators and valid format
             //////////////////////////////////////////////////////////
             // todo: new constant for OidcConstants.AuthorizeRequest
             var resourceIndicators = request.Raw.GetValues("resource") ?? Enumerable.Empty<string>();
