@@ -59,8 +59,18 @@ namespace UnitTests.Validation
             var result = await validator.ValidateAccessTokenAsync(handle);
 
             result.IsError.Should().BeFalse();
-            result.Claims.Count().Should().Be(8);
+            result.Claims.Count().Should().Be(9);
             result.Claims.First(c => c.Type == JwtClaimTypes.ClientId).Value.Should().Be("roclient");
+
+            var claimTypes = result.Claims.Select(c => c.Type).ToList();
+            claimTypes.Should().Contain("iss");
+            claimTypes.Should().Contain("aud");
+            claimTypes.Should().Contain("iat");
+            claimTypes.Should().Contain("nbf");
+            claimTypes.Should().Contain("exp");
+            claimTypes.Should().Contain("client_id");
+            claimTypes.Should().Contain("sub");
+            claimTypes.Should().Contain("scope");
         }
 
         [Fact]
