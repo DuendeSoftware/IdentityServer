@@ -28,7 +28,7 @@ namespace Duende.IdentityServer.Stores
             var apiResources = await store.FindApiResourcesByScopeNameAsync(scopeNames);
             var scopes = await store.FindApiScopesByNameAsync(scopeNames);
 
-            Validate(identity, apiResources, scopes);
+            ValidateNameUniqueness(identity, apiResources, scopes);
 
             var resources = new Resources(identity, apiResources, scopes)
             {
@@ -38,7 +38,7 @@ namespace Duende.IdentityServer.Stores
             return resources;
         }
 
-        private static void Validate(IEnumerable<IdentityResource> identity, IEnumerable<ApiResource> apiResources, IEnumerable<ApiScope> apiScopes)
+        private static void ValidateNameUniqueness(IEnumerable<IdentityResource> identity, IEnumerable<ApiResource> apiResources, IEnumerable<ApiScope> apiScopes)
         {
             // attempt to detect invalid configuration. this is about the only place
             // we can do this, since it's hard to get the values in the store.
@@ -121,7 +121,7 @@ namespace Duende.IdentityServer.Stores
         public static async Task<Resources> GetAllEnabledResourcesAsync(this IResourceStore store)
         {
             var resources = await store.GetAllResourcesAsync();
-            Validate(resources.IdentityResources, resources.ApiResources, resources.ApiScopes);
+            ValidateNameUniqueness(resources.IdentityResources, resources.ApiResources, resources.ApiScopes);
 
             return resources.FilterEnabled();
         }
@@ -135,6 +135,14 @@ namespace Duende.IdentityServer.Stores
         public static async Task<IEnumerable<IdentityResource>> FindEnabledIdentityResourcesByScopeAsync(this IResourceStore store, IEnumerable<string> scopeNames)
         {
             return (await store.FindIdentityResourcesByScopeNameAsync(scopeNames)).Where(x => x.Enabled).ToArray();
+        }
+
+        /// <summary>
+        /// Finds the enabled API resources by name.
+        /// </summary>
+        public static async Task<IEnumerable<ApiResource>> FindEnabledApiResourcesByNameAsync(this IResourceStore store, IEnumerable<string> resourceNames)
+        {
+            return (await store.FindApiResourcesByNameAsync(resourceNames)).Where(x => x.Enabled).ToArray();
         }
     }
 }

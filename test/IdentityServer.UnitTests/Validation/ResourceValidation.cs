@@ -43,6 +43,17 @@ namespace UnitTests.Validation
                 Name = "resource2",
                 Scopes = { "disabled_scope" }
             },
+            new ApiResource
+            {
+                Name = "resource3",
+                Scopes = { "scope3" }
+            },
+            new ApiResource
+            {
+                Name = "isolated1",
+                RequireResourceIndicator = true,
+                Scopes = { "scope1" }
+            },
         };
 
         private List<ApiScope> _scopes = new List<ApiScope> {
@@ -54,6 +65,14 @@ namespace UnitTests.Validation
             new ApiScope
             {
                 Name = "scope2"
+            },
+            new ApiScope
+            {
+                Name = "scope3"
+            },
+            new ApiScope
+            {
+                Name = "scope4"
             },
             new ApiScope
             {
@@ -71,6 +90,18 @@ namespace UnitTests.Validation
                 "openid",
                 "scope1",
                 "disabled_scope"
+            }
+        };
+        private Client _resourceClient = new Client
+        {
+            ClientId = "resource_client",
+
+            AllowedScopes = new List<string>
+            {
+                "scope1",
+                "scope2",
+                "scope3",
+                "scope4",
             }
         };
 
@@ -211,9 +242,9 @@ namespace UnitTests.Validation
             });
 
             result.Succeeded.Should().BeTrue();
-            result.Resources.IdentityResources.SelectMany(x => x.Name).Should().Contain("openid");
-            result.Resources.ApiScopes.Select(x => x.Name).Should().Contain("scope1");
-            result.Resources.ApiResources.Select(x => x.Name).Should().Contain("resource1");
+            result.Resources.IdentityResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "openid" });
+            result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope1" });
+            result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "resource1" });
         }
 
         [Fact]
@@ -230,7 +261,7 @@ namespace UnitTests.Validation
             result.Succeeded.Should().BeTrue();
             result.Resources.IdentityResources.Should().BeEmpty();
             result.Resources.ApiScopes.Select(x => x.Name).Should().Contain("scope1");
-            result.Resources.ApiResources.Select(x => x.Name).Should().Contain("resource1");
+            result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "resource1" });
         }
 
         [Fact]
@@ -275,5 +306,56 @@ namespace UnitTests.Validation
             result.RawScopeValues.Should().BeEquivalentTo(new[] { "s" });
         }
 
+        // resource indicators
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task resource_indicator_should_include_all_apis_that_match_scope()
+        {
+            var validator = Factory.CreateResourceValidator(_subject);
+            var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+            {
+                Client = _resourceClient,
+                Scopes = new[] { "scope1" },
+                ResourceIndicators = new[] { "isolated1" }
+            });
+
+            result.Succeeded.Should().BeTrue();
+            result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "resource1", "isolated1" });
+            result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope1" });
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task no_resource_indicator_should_exclude_apis_marked_as_isolated()
+        {
+            var validator = Factory.CreateResourceValidator(_subject);
+            var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+            {
+                Client = _resourceClient,
+                Scopes = new[] { "scope1" },
+            });
+
+            result.Succeeded.Should().BeTrue();
+            result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "resource1" });
+            result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope1" });
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task invalid_resource_should_fail()
+        {
+            var validator = Factory.CreateResourceValidator(_subject);
+            var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+            {
+                Client = _resourceClient,
+                Scopes = new[] { "scope1" },
+                ResourceIndicators = new[] { "invalid" }
+            });
+
+            result.Succeeded.Should().BeFalse();
+            result.InvalidScopes.Should().BeEmpty();
+            result.InvalidResourceIndicators.Should().BeEquivalentTo(new[] { "invalid" });
+        }
     }
 }

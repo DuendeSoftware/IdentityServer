@@ -38,10 +38,28 @@ namespace Duende.IdentityServer.Validation
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
-            var parsedScopesResult = _scopeParser.ParseScopeValues(request.Scopes);
-
             var result = new ResourceValidationResult();
-            
+
+            var resourceIndicatorsApiResources = Enumerable.Empty<ApiResource>();
+            if (request.ResourceIndicators?.Any() == true)
+            {
+                resourceIndicatorsApiResources = await _store.FindEnabledApiResourcesByNameAsync(request.ResourceIndicators);
+
+                var apiResourceNamesFound = resourceIndicatorsApiResources.Select(x => x.Name);
+                var notFoundApiResources = request.ResourceIndicators.Except(apiResourceNamesFound);
+                if (notFoundApiResources.Any())
+                {
+                    foreach (var notFound in notFoundApiResources)
+                    {
+                        _logger.LogError("Invalid resource identifier {resource}. Either resource is not found, not enabled, or is not marked as isolated.", notFound);
+                        result.InvalidResourceIndicators.Add(notFound);
+                    }
+
+                    return result;
+                }
+            }
+
+            var parsedScopesResult = _scopeParser.ParseScopeValues(request.Scopes);
             if (!parsedScopesResult.Succeeded)
             {
                 foreach (var invalidScope in parsedScopesResult.Errors)
@@ -54,20 +72,41 @@ namespace Duende.IdentityServer.Validation
             }
 
             var scopeNames = parsedScopesResult.ParsedScopes.Select(x => x.ParsedName).Distinct().ToArray();
-            var resourcesFromStore = await _store.FindEnabledResourcesByScopeAsync(scopeNames);
+            var scopeResourcesFromStore = await _store.FindEnabledResourcesByScopeAsync(scopeNames);
 
-            foreach (var scope in parsedScopesResult.ParsedScopes)
+            if (resourceIndicatorsApiResources.Any())
             {
-                await ValidateScopeAsync(request.Client, resourcesFromStore, scope, result);
+                // todo: need a unit test
+                // this combines the resources based on resource identifier, and the resources based on scope
+                foreach(var resource in resourceIndicatorsApiResources)
+                {
+                    if (scopeResourcesFromStore.ApiResources.Any(x => x.Name == resource.Name))
+                    {
+                        scopeResourcesFromStore.ApiResources.Add(resource);
+                    }
+                }
+            }
+            else
+            {
+                // no resource indicators, so filter all API resources marked as isolated
+                scopeResourcesFromStore.ApiResources = scopeResourcesFromStore.ApiResources.Where(x => !x.RequireResourceIndicator).ToHashSet();
             }
 
-            if (result.InvalidScopes.Count > 0)
+            
+            foreach (var scope in parsedScopesResult.ParsedScopes)
+            {
+                await ValidateScopeAsync(request.Client, scopeResourcesFromStore, scope, result);
+            }
+
+            
+            if (result.InvalidScopes.Count > 0 || result.InvalidResourceIndicators.Count > 0)
             {
                 result.Resources.IdentityResources.Clear();
                 result.Resources.ApiResources.Clear();
                 result.Resources.ApiScopes.Clear();
                 result.ParsedScopes.Clear();
             }
+
 
             return result;
         }
@@ -81,9 +120,9 @@ namespace Duende.IdentityServer.Validation
         /// <param name="result"></param>
         /// <returns></returns>
         protected virtual async Task ValidateScopeAsync(
-            Client client, 
-            Resources resourcesFromStore, 
-            ParsedScopeValue requestedScope, 
+            Client client,
+            Resources resourcesFromStore,
+            ParsedScopeValue requestedScope,
             ResourceValidationResult result)
         {
             if (requestedScope.ParsedName == IdentityServerConstants.StandardScopes.OfflineAccess)

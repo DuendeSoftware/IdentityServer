@@ -77,6 +77,12 @@ namespace Duende.IdentityServer.Models
         }
 
         /// <summary>
+        /// Indicates if this API resource requires the resource indicator to request it, 
+        /// and expects access tokens issued to it will only ever contain this API resource as the audience.
+        /// </summary>
+        public bool RequireResourceIndicator { get; set; }
+
+        /// <summary>
         /// The API secret is used for the introspection endpoint. The API can authenticate with introspection using the API name and secret.
         /// </summary>
         public ICollection<Secret> ApiSecrets { get; set; } = new HashSet<Secret>();
