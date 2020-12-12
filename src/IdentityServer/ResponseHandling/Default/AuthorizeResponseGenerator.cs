@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -163,6 +163,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.Subject,
+                    // implicit responses do not allow resource indicator, so no resource indicator filtering needed here
                     ValidatedResources = request.ValidatedResources,
 
                     ValidatedRequest = request
@@ -251,6 +252,7 @@ namespace Duende.IdentityServer.ResponseHandling
 
                 IsOpenId = request.IsOpenIdRequest,
                 RequestedScopes = request.ValidatedResources.RawScopeValues,
+                RequestedResourceIndicators = request.RequestedResourceIndiators,
                 RedirectUri = request.RedirectUri,
                 Nonce = request.Nonce,
                 StateHash = stateHash,

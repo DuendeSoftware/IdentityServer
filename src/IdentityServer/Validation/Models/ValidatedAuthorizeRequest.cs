@@ -55,9 +55,9 @@ namespace Duende.IdentityServer.Validation
         public List<string> RequestedScopes { get; set; }
 
         /// <summary>
-        /// Gets or sets the requested resources.
+        /// Gets or sets the requested resource indicators.
         /// </summary>
-        public List<string> RequestedResources { get; set; }
+        public IEnumerable<string> RequestedResourceIndiators { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether consent was shown.

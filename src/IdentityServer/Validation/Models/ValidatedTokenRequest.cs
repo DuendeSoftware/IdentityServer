@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -19,7 +19,7 @@ namespace Duende.IdentityServer.Validation
         /// The type of the grant.
         /// </value>
         public string GrantType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the scopes.
         /// </summary>
@@ -27,6 +27,11 @@ namespace Duende.IdentityServer.Validation
         /// The scopes.
         /// </value>
         public IEnumerable<string> RequestedScopes { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the resource indicator.
+        /// </summary>
+        public string RequestedResourceIndicator { get; set; }
 
         /// <summary>
         /// Gets or sets the username used in the request.

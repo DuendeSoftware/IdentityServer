@@ -28,13 +28,20 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
 
         private readonly List<Client> _clients = new List<Client>()
         {
-            new Client{ 
+            new Client{
                 ClientId = "client1",
                 RequirePkce = false,
                 AllowedGrantTypes = GrantTypes.Code,
                 AllowedScopes = { "openid", "scope1" },
                 RedirectUris = { "https://client1" },
-            }
+            },
+            new Client{
+                ClientId = "client2",
+                AllowedGrantTypes = GrantTypes.Implicit,
+                AllowedScopes = { "scope1" },
+                AllowAccessTokensViaBrowser = true,
+                RedirectUris = { "https://client2" },
+            },
         };
 
         public Authorize_ProtocolValidation_Resources()
@@ -64,7 +71,7 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
             var result = await _subject.ValidateAsync(parameters);
 
             result.IsError.Should().Be(false);
-            result.ValidatedRequest.RequestedResources.Should().BeEmpty();
+            result.ValidatedRequest.RequestedResourceIndiators.Should().BeEmpty();
         }
 
         [Fact]
@@ -102,6 +109,23 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
 
         [Fact]
         [Trait("Category", Category)]
+        public async Task implicit_request_with_resourceindicator_should_fail()
+        {
+            var parameters = new NameValueCollection();
+            parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "client2");
+            parameters.Add(OidcConstants.AuthorizeRequest.Scope, "scope1");
+            parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "https://client2");
+            parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Token);
+            parameters.Add("resource", "http://resource1");
+
+            var result = await _subject.ValidateAsync(parameters);
+
+            result.IsError.Should().BeTrue();
+            result.Error.Should().Be("invalid_target");
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
         public async Task fragment_in_resourceindicator_should_fail()
         {
             var parameters = new NameValueCollection();
@@ -133,7 +157,7 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
             var result = await _subject.ValidateAsync(parameters);
 
             result.IsError.Should().BeFalse();
-            result.ValidatedRequest.RequestedResources.Should()
+            result.ValidatedRequest.RequestedResourceIndiators.Should()
                 .BeEquivalentTo(new[] { "urn:test1", "http://resource1", "http://resource2" });
         }
         

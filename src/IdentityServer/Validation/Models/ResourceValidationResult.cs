@@ -3,6 +3,7 @@
 
 
 using Duende.IdentityServer.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -55,7 +56,7 @@ namespace Duende.IdentityServer.Validation
         /// The parsed scopes represented by the result.
         /// </summary>
         public ICollection<ParsedScopeValue> ParsedScopes { get; set; } = new HashSet<ParsedScopeValue>();
-
+        
         /// <summary>
         /// The original (raw) scope values represented by the validated result.
         /// </summary>
@@ -96,6 +97,31 @@ namespace Duende.IdentityServer.Validation
                 OfflineAccess = offline
             };
             
+            return new ResourceValidationResult()
+            {
+                Resources = resources,
+                ParsedScopes = parsedScopesToKeep
+            };
+        }
+
+        /// <summary>
+        /// Filters the result by the resource indicator for issuing access tokens.
+        /// </summary>
+        public ResourceValidationResult FilterByResourceIndicator(string resourceIndicator)
+        {
+            var apiResourcesToKeep = String.IsNullOrWhiteSpace(resourceIndicator) ?
+                Resources.ApiResources.Where(x => !x.RequireResourceIndicator) :
+                Resources.ApiResources.Where(x => x.Name == resourceIndicator);
+
+            var scopeNamesToKeep = apiResourcesToKeep.SelectMany(x => x.Scopes);
+            var apiScopesToKeep = Resources.ApiScopes.Where(x => scopeNamesToKeep.Contains(x.Name));
+            var parsedScopesToKeep = ParsedScopes.Where(x => scopeNamesToKeep.Contains(x.ParsedName)).ToArray();
+
+            var resources = new Resources(Resources.IdentityResources, apiResourcesToKeep, apiScopesToKeep)
+            {
+                OfflineAccess = Resources.OfflineAccess,
+            };
+
             return new ResourceValidationResult()
             {
                 Resources = resources,

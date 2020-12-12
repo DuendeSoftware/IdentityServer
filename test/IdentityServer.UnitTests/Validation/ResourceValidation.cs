@@ -357,5 +357,22 @@ namespace UnitTests.Validation
             result.InvalidScopes.Should().BeEmpty();
             result.InvalidResourceIndicators.Should().BeEquivalentTo(new[] { "invalid" });
         }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task scope_not_in_resource_should_fail()
+        {
+            var validator = Factory.CreateResourceValidator(_subject);
+            var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+            {
+                Client = _resourceClient,
+                Scopes = new[] { "scope1" },
+                ResourceIndicators = new[] { "resource3" }
+            });
+
+            result.Succeeded.Should().BeFalse();
+            result.InvalidScopes.Should().BeEmpty();
+            result.InvalidResourceIndicators.Should().BeEquivalentTo(new[] { "resource3" });
+        }
     }
 }

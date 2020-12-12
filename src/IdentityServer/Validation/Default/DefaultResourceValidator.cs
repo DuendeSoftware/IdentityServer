@@ -40,25 +40,6 @@ namespace Duende.IdentityServer.Validation
 
             var result = new ResourceValidationResult();
 
-            var resourceIndicatorsApiResources = Enumerable.Empty<ApiResource>();
-            if (request.ResourceIndicators?.Any() == true)
-            {
-                resourceIndicatorsApiResources = await _store.FindEnabledApiResourcesByNameAsync(request.ResourceIndicators);
-
-                var apiResourceNamesFound = resourceIndicatorsApiResources.Select(x => x.Name);
-                var notFoundApiResources = request.ResourceIndicators.Except(apiResourceNamesFound);
-                if (notFoundApiResources.Any())
-                {
-                    foreach (var notFound in notFoundApiResources)
-                    {
-                        _logger.LogError("Invalid resource identifier {resource}. Either resource is not found, not enabled, or is not marked as isolated.", notFound);
-                        result.InvalidResourceIndicators.Add(notFound);
-                    }
-
-                    return result;
-                }
-            }
-
             var parsedScopesResult = _scopeParser.ParseScopeValues(request.Scopes);
             if (!parsedScopesResult.Succeeded)
             {
@@ -72,18 +53,28 @@ namespace Duende.IdentityServer.Validation
             }
 
             var scopeNames = parsedScopesResult.ParsedScopes.Select(x => x.ParsedName).Distinct().ToArray();
+            // todo: this API might want to pass resource indicators to better filter
             var scopeResourcesFromStore = await _store.FindEnabledResourcesByScopeAsync(scopeNames);
 
-            if (resourceIndicatorsApiResources.Any())
+            if (request.ResourceIndicators?.Any() == true)
             {
-                // todo: need a unit test
-                // this combines the resources based on resource identifier, and the resources based on scope
-                foreach(var resource in resourceIndicatorsApiResources)
+                // remove isolated API resources not included in the requested resource indicators
+                scopeResourcesFromStore.ApiResources = scopeResourcesFromStore.ApiResources
+                    .Where(x => !x.RequireResourceIndicator || request.ResourceIndicators.Contains(x.Name))
+                    .ToHashSet();
+
+                // find requested resource indicators not matched by scope
+                var matchedApiNames = scopeResourcesFromStore.ApiResources.Select(x => x.Name).ToArray();
+                var invalidRequestedResourceIndicators = request.ResourceIndicators.Except(matchedApiNames);
+                if (invalidRequestedResourceIndicators.Any())
                 {
-                    if (scopeResourcesFromStore.ApiResources.Any(x => x.Name == resource.Name))
+                    foreach(var invalid in invalidRequestedResourceIndicators)
                     {
-                        scopeResourcesFromStore.ApiResources.Add(resource);
+                        _logger.LogError("Invalid resource identifier {resource}. It is either not found, not enabled, or does not support any of the requested scopes.", invalid);
+                        result.InvalidResourceIndicators.Add(invalid);
                     }
+
+                    return result;
                 }
             }
             else

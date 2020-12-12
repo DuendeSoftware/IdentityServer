@@ -66,7 +66,7 @@ namespace Duende.IdentityServer.Validation
                 Subject = subject ?? Principal.Anonymous,
                 Raw = parameters ?? throw new ArgumentNullException(nameof(parameters))
             };
-            
+
             // load client_id
             // client_id must always be present on the request
             var loadClientResult = await LoadClientAsync(request);
@@ -273,9 +273,9 @@ namespace Duende.IdentityServer.Validation
                 foreach (var key in jwtRequestValidationResult.Payload.Keys)
                 {
                     if (ignoreKeys.Contains(key)) continue;
-                    
+
                     var value = jwtRequestValidationResult.Payload[key];
-                    
+
                     var qsValue = request.Raw.Get(key);
                     if (qsValue != null)
                     {
@@ -589,8 +589,14 @@ namespace Duende.IdentityServer.Validation
             {
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
             }
-            request.RequestedResources = resourceIndicators.ToList();
 
+            // we don't want to allow resource indicators when "token" is requested to authorize endpoint
+            if (request.GrantType == GrantType.Implicit && resourceIndicators.Any())
+            {
+                // todo: correct error?
+                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicators not allowed for response_type 'token'.");
+            }
+            request.RequestedResourceIndiators = resourceIndicators;
 
             //////////////////////////////////////////////////////////
             // check if scopes are valid/supported and check for resource scopes
@@ -599,7 +605,7 @@ namespace Duende.IdentityServer.Validation
             {
                 Client = request.Client,
                 Scopes = request.RequestedScopes,
-                ResourceIndicators = request.RequestedResources
+                ResourceIndicators = resourceIndicators
             });
 
             if (!validatedResources.Succeeded)
@@ -670,7 +676,7 @@ namespace Duende.IdentityServer.Validation
             if (list != null)
             {
                 foreach (var item in list)
-                { 
+                {
                     if (!Uri.TryCreate(item, UriKind.Absolute, out _))
                     {
                         _logger.LogDebug("Resource indicator {resource} is not a valid URI.", item);
