@@ -301,6 +301,29 @@ namespace Duende.IdentityServer.Validation
                 return Invalid(OidcConstants.TokenErrors.InvalidRequest);
             }
 
+            //////////////////////////////////////////////////////////
+            // check for resource indicators and validity
+            //////////////////////////////////////////////////////////
+            // todo: new constant for OidcConstants.AuthorizeRequest
+            var resourceIndicators = parameters.GetValues("resource") ?? Enumerable.Empty<string>();
+            if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
+            }
+            
+            if (resourceIndicators.Count() > 1)
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Multiple resource indicators not supported on token endpoint.");
+            }
+            
+            var resourceIndicator = resourceIndicators.SingleOrDefault();
+            if (!String.IsNullOrWhiteSpace(resourceIndicator) && !_validatedRequest.AuthorizationCode.RequestedResourceIndicators.Contains(resourceIndicator))
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original authorize request.");
+            }
+            
+            _validatedRequest.RequestedResourceIndicator = resourceIndicator;
+
             /////////////////////////////////////////////
             // validate PKCE parameters
             /////////////////////////////////////////////

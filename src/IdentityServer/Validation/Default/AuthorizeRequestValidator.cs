@@ -585,7 +585,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // todo: new constant for OidcConstants.AuthorizeRequest
             var resourceIndicators = request.Raw.GetValues("resource") ?? Enumerable.Empty<string>();
-            if (!AreValidResourceIndicatorFormat(resourceIndicators))
+            if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
             {
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
             }
@@ -669,29 +669,6 @@ namespace Duende.IdentityServer.Validation
             request.ValidatedResources = validatedResources;
 
             return Valid(request);
-        }
-
-        private bool AreValidResourceIndicatorFormat(IEnumerable<string> list)
-        {
-            if (list != null)
-            {
-                foreach (var item in list)
-                {
-                    if (!Uri.TryCreate(item, UriKind.Absolute, out _))
-                    {
-                        _logger.LogDebug("Resource indicator {resource} is not a valid URI.", item);
-                        return false;
-                    }
-
-                    if (item.Contains("#"))
-                    {
-                        _logger.LogDebug("Resource indicator {resource} must not contain a fragment component.", item);
-                        return false;
-                    }
-                }
-            }
-
-            return true;
         }
 
         private async Task<AuthorizeRequestValidationResult> ValidateOptionalParametersAsync(ValidatedAuthorizeRequest request)

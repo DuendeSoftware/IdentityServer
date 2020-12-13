@@ -3,6 +3,7 @@
 
 
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -274,6 +275,30 @@ namespace Duende.IdentityServer.Extensions
             }
 
             return "****" + last4Chars;
+        }
+
+
+        public static bool AreValidResourceIndicatorFormat(this IEnumerable<string> list, ILogger logger)
+        {
+            if (list != null)
+            {
+                foreach (var item in list)
+                {
+                    if (!Uri.TryCreate(item, UriKind.Absolute, out _))
+                    {
+                        logger.LogDebug("Resource indicator {resource} is not a valid URI.", item);
+                        return false;
+                    }
+
+                    if (item.Contains("#"))
+                    {
+                        logger.LogDebug("Resource indicator {resource} must not contain a fragment component.", item);
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }
