@@ -25,6 +25,7 @@ namespace UnitTests.Validation.Setup
                     },
 
                     AllowedGrantTypes = GrantTypes.Code,
+                    AllowOfflineAccess = true,
                     AllowedScopes = { "openid", "profile", "resource", "resource2" },
 
                     RequireConsent = false,

@@ -115,6 +115,13 @@ namespace Duende.IdentityServer.Validation
 
             var scopeNamesToKeep = apiResourcesToKeep.SelectMany(x => x.Scopes);
             var apiScopesToKeep = Resources.ApiScopes.Where(x => scopeNamesToKeep.Contains(x.Name));
+
+            if (resourceIndicator == null)
+            {
+                // no resource indicator, so we also keep identity scopes (e.g. since we need those for userinfo)
+                scopeNamesToKeep = scopeNamesToKeep.Union(Resources.IdentityResources.Select(x => x.Name));
+            }
+
             var parsedScopesToKeep = ParsedScopes.Where(x => scopeNamesToKeep.Contains(x.ParsedName)).ToArray();
 
             var resources = new Resources(Resources.IdentityResources, apiResourcesToKeep, apiScopesToKeep)

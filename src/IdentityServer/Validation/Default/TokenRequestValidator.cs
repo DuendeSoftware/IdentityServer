@@ -147,6 +147,28 @@ namespace Duende.IdentityServer.Validation
 
             _validatedRequest.GrantType = grantType;
 
+            //////////////////////////////////////////////////////////
+            // check for resource indicator and basic formatting
+            //////////////////////////////////////////////////////////
+            // todo: new constant for OidcConstants.AuthorizeRequest
+            var resourceIndicators = parameters.GetValues("resource") ?? Enumerable.Empty<string>();
+            if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
+            }
+            
+            if (resourceIndicators.Count() > 1)
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Multiple resource indicators not supported on token endpoint.");
+            }
+
+            _validatedRequest.RequestedResourceIndicator = resourceIndicators.SingleOrDefault();
+
+
+            //////////////////////////////////////////////////////////
+            // run specific logic for grants
+            //////////////////////////////////////////////////////////
+
             switch (grantType)
             {
                 case OidcConstants.GrantTypes.AuthorizationCode:
@@ -302,27 +324,37 @@ namespace Duende.IdentityServer.Validation
             }
 
             //////////////////////////////////////////////////////////
-            // check for resource indicators and validity
+            // resource indicator
             //////////////////////////////////////////////////////////
-            // todo: new constant for OidcConstants.AuthorizeRequest
-            var resourceIndicators = parameters.GetValues("resource") ?? Enumerable.Empty<string>();
-            if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
-            {
-                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
-            }
-            
-            if (resourceIndicators.Count() > 1)
-            {
-                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Multiple resource indicators not supported on token endpoint.");
-            }
-            
-            var resourceIndicator = resourceIndicators.SingleOrDefault();
-            if (!String.IsNullOrWhiteSpace(resourceIndicator) && !_validatedRequest.AuthorizationCode.RequestedResourceIndicators.Contains(resourceIndicator))
+            if (_validatedRequest.RequestedResourceIndicator != null && 
+                !_validatedRequest.AuthorizationCode.RequestedResourceIndicators.Contains(_validatedRequest.RequestedResourceIndicator))
             {
                 return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original authorize request.");
             }
-            
-            _validatedRequest.RequestedResourceIndicator = resourceIndicator;
+
+            //////////////////////////////////////////////////////////
+            // resource and scope validation 
+            //////////////////////////////////////////////////////////
+            var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest { 
+                Client = _validatedRequest.Client,
+                Scopes = _validatedRequest.AuthorizationCode.RequestedScopes,
+                ResourceIndicators = _validatedRequest.AuthorizationCode.RequestedResourceIndicators,
+            });
+
+            if (!validatedResources.Succeeded)
+            {
+                if (validatedResources.InvalidResourceIndicators.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator.");
+                }
+                if (validatedResources.InvalidScopes.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope.");
+                }
+            }
+
+            //_validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
+            _validatedRequest.ValidatedResources = validatedResources;
 
             /////////////////////////////////////////////
             // validate PKCE parameters
@@ -547,6 +579,31 @@ namespace Duende.IdentityServer.Validation
             _validatedRequest.RefreshToken = result.RefreshToken;
             _validatedRequest.RefreshTokenHandle = refreshTokenHandle;
             _validatedRequest.Subject = result.RefreshToken.Subject;
+
+            //////////////////////////////////////////////////////////
+            // resource and scope validation 
+            //////////////////////////////////////////////////////////
+            var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+            {
+                Client = _validatedRequest.Client,
+                Scopes = _validatedRequest.RefreshToken.Scopes,
+                ResourceIndicators = null // todo
+            });
+
+            if (!validatedResources.Succeeded)
+            {
+                if (validatedResources.InvalidResourceIndicators.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator.");
+                }
+                if (validatedResources.InvalidScopes.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope.");
+                }
+            }
+
+            //_validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
+            _validatedRequest.ValidatedResources = validatedResources;
 
             _logger.LogDebug("Validation of refresh token request success");
             // todo: more logging - similar to TokenValidator before

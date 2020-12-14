@@ -172,13 +172,10 @@ namespace Duende.IdentityServer.ResponseHandling
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
 
-                var parsedScopesResult = ScopeParser.ParseScopeValues(request.ValidatedRequest.AuthorizationCode.RequestedScopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.ValidatedRequest.AuthorizationCode.Subject,
-                    ValidatedResources = validatedResources,
+                    ValidatedResources = request.ValidatedRequest.ValidatedResources,
                     Nonce = request.ValidatedRequest.AuthorizationCode.Nonce,
                     AccessTokenToHash = response.AccessToken,
                     StateHash = request.ValidatedRequest.AuthorizationCode.StateHash,
@@ -209,17 +206,12 @@ namespace Duende.IdentityServer.ResponseHandling
             {
                 var subject = request.ValidatedRequest.RefreshToken.Subject;
 
-                // todo: do we want to just parse here and build up validated result
-                // or do we want to fully re-run validation here.
-                var parsedScopesResult = ScopeParser.ParseScopeValues(oldAccessToken.Scopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
                 var creationRequest = new TokenCreationRequest
                 {
                     Subject = subject,
                     Description = request.ValidatedRequest.RefreshToken.Description,
                     ValidatedRequest = request.ValidatedRequest,
-                    ValidatedResources = validatedResources
+                    ValidatedResources = request.ValidatedRequest.ValidatedResources
                 };
 
                 var newAccessToken = await TokenService.CreateAccessTokenAsync(creationRequest);
@@ -372,14 +364,11 @@ namespace Duende.IdentityServer.ResponseHandling
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
 
-                var parsedScopesResult = ScopeParser.ParseScopeValues(request.AuthorizationCode.RequestedScopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
                 tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.AuthorizationCode.Subject,
                     Description = request.AuthorizationCode.Description,
-                    ValidatedResources = validatedResources,
+                    ValidatedResources = request.ValidatedResources,
                     ValidatedRequest = request
                 };
             }
@@ -448,13 +437,10 @@ namespace Duende.IdentityServer.ResponseHandling
             {
                 var oldAccessToken = request.RefreshToken.AccessToken;
 
-                var parsedScopesResult = ScopeParser.ParseScopeValues(oldAccessToken.Scopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.RefreshToken.Subject,
-                    ValidatedResources = validatedResources,
+                    ValidatedResources = request.ValidatedResources,
                     ValidatedRequest = request,
                     AccessTokenToHash = newAccessToken
                 };
