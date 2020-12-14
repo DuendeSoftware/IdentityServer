@@ -29,7 +29,6 @@ namespace Duende.IdentityServer.Validation
         private readonly ICustomTokenRequestValidator _customRequestValidator;
         private readonly IResourceValidator _resourceValidator;
         private readonly IResourceStore _resourceStore;
-        private readonly ITokenValidator _tokenValidator;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IEventService _events;
         private readonly IResourceOwnerPasswordValidator _resourceOwnerValidator;
@@ -52,7 +51,6 @@ namespace Duende.IdentityServer.Validation
         /// <param name="customRequestValidator">The custom request validator.</param>
         /// <param name="resourceValidator">The resource validator.</param>
         /// <param name="resourceStore">The resource store.</param>
-        /// <param name="tokenValidator">The token validator.</param>
         /// <param name="refreshTokenService"></param>
         /// <param name="events">The events.</param>
         /// <param name="clock">The clock.</param>
@@ -66,7 +64,6 @@ namespace Duende.IdentityServer.Validation
             ICustomTokenRequestValidator customRequestValidator,
             IResourceValidator resourceValidator,
             IResourceStore resourceStore,
-            ITokenValidator tokenValidator, 
             IRefreshTokenService refreshTokenService,
             IEventService events, 
             ISystemClock clock, 
@@ -83,7 +80,6 @@ namespace Duende.IdentityServer.Validation
             _customRequestValidator = customRequestValidator;
             _resourceValidator = resourceValidator;
             _resourceStore = resourceStore;
-            _tokenValidator = tokenValidator;
             _refreshTokenService = refreshTokenService;
             _events = events;
         }
