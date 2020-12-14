@@ -616,6 +616,15 @@ namespace Duende.IdentityServer.Validation
             _logger.LogDebug("Start validation of device code request");
 
             /////////////////////////////////////////////
+            // resource indicator not supported for device flow
+            /////////////////////////////////////////////
+            if (_validatedRequest.RequestedResourceIndicator != null)
+            {
+                LogError("Resource indicators not supported for device flow");
+                return Invalid(OidcConstants.TokenErrors.InvalidTarget);
+            }
+
+            /////////////////////////////////////////////
             // check if client is authorized for grant type
             /////////////////////////////////////////////
             if (!_validatedRequest.Client.AllowedGrantTypes.ToList().Contains(GrantType.DeviceFlow))
@@ -646,9 +655,36 @@ namespace Duende.IdentityServer.Validation
             var deviceCodeContext = new DeviceCodeValidationContext { DeviceCode = deviceCode, Request = _validatedRequest };
             await _deviceCodeValidator.ValidateAsync(deviceCodeContext);
 
-            if (deviceCodeContext.Result.IsError) return deviceCodeContext.Result;
+            if (deviceCodeContext.Result.IsError)
+            {
+                return deviceCodeContext.Result;
+            }
 
-            _logger.LogDebug("Validation of authorization code token request success");
+            //////////////////////////////////////////////////////////
+            // scope validation 
+            //////////////////////////////////////////////////////////
+            var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+            {
+                Client = _validatedRequest.Client,
+                Scopes = _validatedRequest.DeviceCode.AuthorizedScopes,
+                ResourceIndicators = null // not supported for device grant
+            });
+
+            if (!validatedResources.Succeeded)
+            {
+                if (validatedResources.InvalidResourceIndicators.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator.");
+                }
+                if (validatedResources.InvalidScopes.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope.");
+                }
+            }
+
+            _validatedRequest.ValidatedResources = validatedResources;
+
+            _logger.LogDebug("Validation of device code token request success");
 
             return Valid();
         }

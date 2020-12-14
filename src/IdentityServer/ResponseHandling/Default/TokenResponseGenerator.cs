@@ -283,14 +283,11 @@ namespace Duende.IdentityServer.ResponseHandling
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
 
-                var parsedScopesResult = ScopeParser.ParseScopeValues(request.ValidatedRequest.DeviceCode.AuthorizedScopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-                
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.ValidatedRequest.DeviceCode.Subject,
-                    ValidatedResources = validatedResources,
                     AccessTokenToHash = response.AccessToken,
+                    ValidatedResources = request.ValidatedRequest.ValidatedResources,
                     ValidatedRequest = request.ValidatedRequest
                 };
 
@@ -386,14 +383,11 @@ namespace Duende.IdentityServer.ResponseHandling
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
 
-                var parsedScopesResult = ScopeParser.ParseScopeValues(request.DeviceCode.AuthorizedScopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
                 tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.DeviceCode.Subject,
                     Description = request.DeviceCode.Description,
-                    ValidatedResources = validatedResources,
+                    ValidatedResources = request.ValidatedResources,
                     ValidatedRequest = request
                 };
             }

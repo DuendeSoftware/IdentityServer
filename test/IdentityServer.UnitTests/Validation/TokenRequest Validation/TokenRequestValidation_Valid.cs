@@ -22,6 +22,7 @@ namespace UnitTests.Validation.TokenRequest_Validation
         private const string Category = "TokenRequest Validation - General - Valid";
 
         private IClientStore _clients = Factory.CreateClientStore();
+        private TestDeviceCodeValidator _mockDeviceCodeValidator = new TestDeviceCodeValidator();
 
         [Fact]
         [Trait("Category", Category)]
@@ -340,7 +341,8 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             var client = await _clients.FindClientByIdAsync("device_flow");
 
-            var validator = Factory.CreateTokenRequestValidator();
+            var validator = Factory.CreateTokenRequestValidator(deviceCodeValidator: _mockDeviceCodeValidator);
+            _mockDeviceCodeValidator.DeviceCodeResult = deviceCode;
 
             var parameters = new NameValueCollection
             {
