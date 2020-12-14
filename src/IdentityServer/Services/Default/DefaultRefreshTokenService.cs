@@ -197,7 +197,14 @@ namespace Duende.IdentityServer.Services
 
             var refreshToken = new RefreshToken
             {
-                CreationTime = Clock.UtcNow.UtcDateTime, Lifetime = lifetime, AccessToken = accessToken
+                Subject = subject,
+                ClientId = client.ClientId,
+                Description = accessToken.Description,
+                Scopes = accessToken.Scopes,
+
+                CreationTime = Clock.UtcNow.UtcDateTime, 
+                Lifetime = lifetime, 
+                AccessToken = accessToken
             };
 
             var handle = await RefreshTokenStore.StoreRefreshTokenAsync(refreshToken);

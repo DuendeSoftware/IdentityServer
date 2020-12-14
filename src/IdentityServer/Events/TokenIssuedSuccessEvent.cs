@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -63,7 +63,7 @@ namespace Duende.IdentityServer.Events
 
             if (GrantType == OidcConstants.GrantTypes.RefreshToken)
             {
-                Scopes = request.ValidatedRequest.RefreshToken.AccessToken.Scopes.ToSpaceSeparatedString();
+                Scopes = request.ValidatedRequest.RefreshToken.Scopes.ToSpaceSeparatedString();
             }
             else if (GrantType == OidcConstants.GrantTypes.AuthorizationCode)
             {

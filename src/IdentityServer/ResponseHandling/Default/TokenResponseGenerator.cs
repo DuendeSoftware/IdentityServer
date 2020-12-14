@@ -429,8 +429,6 @@ namespace Duende.IdentityServer.ResponseHandling
             
             if (request.RefreshToken.Scopes.Contains(OidcConstants.StandardScopes.OpenId))
             {
-                var oldAccessToken = request.RefreshToken.AccessToken;
-
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.RefreshToken.Subject,

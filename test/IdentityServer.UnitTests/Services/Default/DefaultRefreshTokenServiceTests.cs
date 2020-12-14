@@ -517,6 +517,8 @@ namespace UnitTests.Services.Default
 
             var refreshToken = new RefreshToken
             {
+                ClientId = client.ClientId,
+                Subject = new IdentityServerUser("123").CreatePrincipal(),
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -57,9 +57,29 @@ namespace Duende.IdentityServer.Stores
         /// </summary>
         /// <param name="refreshTokenHandle">The refresh token handle.</param>
         /// <returns></returns>
-        public Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle)
+        public async Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle)
         {
-            return GetItemAsync(refreshTokenHandle);
+            var refreshToken = await GetItemAsync(refreshTokenHandle);
+
+            if (refreshToken != null && refreshToken.Version < 5)
+            {
+                var user = new IdentityServerUser(refreshToken.AccessToken.SubjectId);
+                if (refreshToken.AccessToken.Claims != null)
+                {
+                    foreach (var claim in refreshToken.AccessToken.Claims)
+                    {
+                        user.AdditionalClaims.Add(claim);
+                    }
+                }
+
+                refreshToken.Subject = user.CreatePrincipal();
+                refreshToken.ClientId = refreshToken.AccessToken.ClientId;
+                refreshToken.Description = refreshToken.AccessToken.Description;
+                refreshToken.Scopes = refreshToken.AccessToken.Scopes;
+                refreshToken.Version = 5;
+            }
+
+            return refreshToken;
         }
 
         /// <summary>

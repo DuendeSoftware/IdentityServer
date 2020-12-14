@@ -99,10 +99,51 @@ namespace UnitTests.Stores.Default
         }
 
         [Fact]
+        public async Task refresh_token_in_pre_version_5_format_should_deserialize()
+        {
+            var token1 = new RefreshToken()
+            {
+                CreationTime = DateTime.UtcNow,
+                Lifetime = 10,
+                AccessToken = new Token
+                {
+                    ClientId = "client",
+                    Audiences = { "aud" },
+                    CreationTime = DateTime.UtcNow,
+                    Type = "type",
+                    Description = "desc",
+                    Claims = new List<Claim>
+                    {
+                        new Claim("sub", "123"),
+                        new Claim("sid", "sessionid"),
+                        new Claim("scope", "s1"),
+                        new Claim("scope", "s2"),
+                    }
+                },
+                Version = 4
+            };
+
+            var handle = await _refreshTokens.StoreRefreshTokenAsync(token1);
+            var token2 = await _refreshTokens.GetRefreshTokenAsync(handle);
+
+            token2.Version.Should().Be(5);
+
+            token2.ClientId.Should().Be("client");
+            token2.Subject.GetSubjectId().Should().Be("123");
+            token2.SubjectId.Should().Be("123");
+            token2.Description.Should().Be("desc");
+            token2.SessionId.Should().Be("sessionid");
+            token2.Scopes.Should().BeEquivalentTo(new[] { "s1", "s2" });
+        }
+
+        [Fact]
         public async Task StoreRefreshTokenAsync_should_persist_grant()
         {
             var token1 = new RefreshToken()
             {
+                ClientId = "client",
+                Subject = new IdentityServerUser("123").CreatePrincipal(),
+                Scopes = new[] { "foo" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token
@@ -117,7 +158,6 @@ namespace UnitTests.Stores.Default
                         new Claim("scope", "foo")
                     }
                 },
-                Version = 1
             };
 
             var handle = await _refreshTokens.StoreRefreshTokenAsync(token1);
@@ -154,7 +194,6 @@ namespace UnitTests.Stores.Default
                         new Claim("scope", "foo")
                     }
                 },
-                Version = 1
             };
 
 
@@ -169,6 +208,9 @@ namespace UnitTests.Stores.Default
         {
             var token1 = new RefreshToken()
             {
+                ClientId = "client",
+                Subject = new IdentityServerUser("123").CreatePrincipal(),
+                Scopes = new[] { "foo" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token
@@ -183,7 +225,6 @@ namespace UnitTests.Stores.Default
                         new Claim("scope", "foo")
                     }
                 },
-                Version = 1
             };
 
             var handle1 = await _refreshTokens.StoreRefreshTokenAsync(token1);
@@ -349,7 +390,6 @@ namespace UnitTests.Stores.Default
                         new Claim("scope", "baz2")
                     }
                 },
-                Version = 1
             });
 
             await _codes.StoreAuthorizationCodeAsync(new AuthorizationCode()

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
@@ -263,6 +264,9 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             var refreshToken = new RefreshToken
             {
+                ClientId = "roclient",
+                Subject = new IdentityServerUser(subjectClaim.Value).CreatePrincipal(),
+                Scopes = Enumerable.Empty<string>(),
                 AccessToken = new Token("access_token")
                 {
                     Claims = new List<Claim> { subjectClaim },
@@ -297,6 +301,9 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             var refreshToken = new RefreshToken
             {
+                ClientId = "roclient_restricted_refresh",
+                Subject = new IdentityServerUser(subjectClaim.Value).CreatePrincipal(),
+                Scopes = Enumerable.Empty<string>(),
                 AccessToken = new Token("access_token")
                 {
                     Claims = new List<Claim> { subjectClaim },
