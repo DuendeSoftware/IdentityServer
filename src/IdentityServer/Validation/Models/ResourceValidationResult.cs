@@ -96,12 +96,8 @@ namespace Duende.IdentityServer.Validation
             {
                 OfflineAccess = offline
             };
-            
-            return new ResourceValidationResult()
-            {
-                Resources = resources,
-                ParsedScopes = parsedScopesToKeep
-            };
+
+            return new ResourceValidationResult(resources, parsedScopesToKeep);
         }
 
         /// <summary>

@@ -100,20 +100,6 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <summary>
-        /// Creates a resource validation result.
-        /// </summary>
-        /// <param name="store">The store.</param>
-        /// <param name="parsedScopesResult">The parsed scopes.</param>
-        /// <returns></returns>
-        public static async Task<ResourceValidationResult> CreateResourceValidationResult(this IResourceStore store, ParsedScopesResult parsedScopesResult)
-        {
-            var validScopeValues = parsedScopesResult.ParsedScopes;
-            var scopes = validScopeValues.Select(x => x.ParsedName).ToArray();
-            var resources = await store.FindEnabledResourcesByScopeAsync(scopes);
-            return new ResourceValidationResult(resources, validScopeValues);
-        }
-
-        /// <summary>
         /// Gets all enabled resources.
         /// </summary>
         /// <param name="store">The store.</param>
