@@ -55,6 +55,9 @@ namespace SqlServer.Migrations.ConfigurationDb
                     b.Property<bool>("NonEditable")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("RequireResourceIndicator")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("ShowInDiscoveryDocument")
                         .HasColumnType("bit");
 

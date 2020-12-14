@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SqlServer.Migrations.ConfigurationDb
 {
     [DbContext(typeof(ConfigurationDbContext))]
-    [Migration("20201125135748_Configuration")]
+    [Migration("20201214213517_Configuration")]
     partial class Configuration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,6 +55,9 @@ namespace SqlServer.Migrations.ConfigurationDb
                         .HasMaxLength(200);
 
                     b.Property<bool>("NonEditable")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequireResourceIndicator")
                         .HasColumnType("bit");
 
                     b.Property<bool>("ShowInDiscoveryDocument")
