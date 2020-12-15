@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Services;
-using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -583,8 +582,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // check for resource indicators and valid format
             //////////////////////////////////////////////////////////
-            // todo: new constant for OidcConstants.AuthorizeRequest
-            var resourceIndicators = request.Raw.GetValues("resource") ?? Enumerable.Empty<string>();
+            var resourceIndicators = request.Raw.GetValues(OidcConstants.TokenRequest.Resource) ?? Enumerable.Empty<string>();
             if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
             {
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");

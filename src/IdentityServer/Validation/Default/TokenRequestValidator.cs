@@ -146,8 +146,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // check for resource indicator and basic formatting
             //////////////////////////////////////////////////////////
-            // todo: new constant for OidcConstants.AuthorizeRequest
-            var resourceIndicators = parameters.GetValues("resource") ?? Enumerable.Empty<string>();
+            var resourceIndicators = parameters.GetValues(OidcConstants.TokenRequest.Resource) ?? Enumerable.Empty<string>();
             if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
             {
                 return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
