@@ -216,6 +216,7 @@ namespace Duende.IdentityServer.ResponseHandling
             }
             else
             {
+                // todo: do we want a new JTI?
                 accessToken.CreationTime = Clock.UtcNow.UtcDateTime;
                 accessToken.Lifetime = request.ValidatedRequest.AccessTokenLifetime;
             }
