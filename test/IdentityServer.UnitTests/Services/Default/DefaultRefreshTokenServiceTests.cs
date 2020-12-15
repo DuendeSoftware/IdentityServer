@@ -47,7 +47,7 @@ namespace UnitTests.Services.Default
             var client = new Client();
             var accessToken = new Token();
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, accessToken, client);
+            var handle = await _subject.CreateRefreshTokenAsync(new RefreshTokenCreationRequest { Subject = _user, AccessToken = accessToken, Client = client });
 
             (await _store.GetRefreshTokenAsync(handle)).Should().NotBeNull();
         }
@@ -63,7 +63,7 @@ namespace UnitTests.Services.Default
                 AbsoluteRefreshTokenLifetime = 10
             };
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client);
+            var handle = await _subject.CreateRefreshTokenAsync(new RefreshTokenCreationRequest { Subject = _user, AccessToken = new Token(), Client = client });
 
             var refreshToken = (await _store.GetRefreshTokenAsync(handle));
 
@@ -83,7 +83,7 @@ namespace UnitTests.Services.Default
                 AbsoluteRefreshTokenLifetime = 10
             };
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client);
+            var handle = await _subject.CreateRefreshTokenAsync(new RefreshTokenCreationRequest { Subject = _user, AccessToken = new Token(), Client = client });
 
             var refreshToken = (await _store.GetRefreshTokenAsync(handle));
 
@@ -102,7 +102,7 @@ namespace UnitTests.Services.Default
                 SlidingRefreshTokenLifetime = 10
             };
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client);
+            var handle = await _subject.CreateRefreshTokenAsync(new RefreshTokenCreationRequest { Subject = _user, AccessToken = new Token(), Client = client });
 
             var refreshToken = (await _store.GetRefreshTokenAsync(handle));
 

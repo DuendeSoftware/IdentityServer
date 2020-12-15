@@ -133,7 +133,7 @@ namespace UnitTests.Stores.Default
             token2.SubjectId.Should().Be("123");
             token2.Description.Should().Be("desc");
             token2.SessionId.Should().Be("sessionid");
-            token2.Scopes.Should().BeEquivalentTo(new[] { "s1", "s2" });
+            token2.AuthorizedScopes.Should().BeEquivalentTo(new[] { "s1", "s2" });
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace UnitTests.Stores.Default
             {
                 ClientId = "client",
                 Subject = new IdentityServerUser("123").CreatePrincipal(),
-                Scopes = new[] { "foo" },
+                AuthorizedScopes = new[] { "foo" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token
@@ -210,7 +210,7 @@ namespace UnitTests.Stores.Default
             {
                 ClientId = "client",
                 Subject = new IdentityServerUser("123").CreatePrincipal(),
-                Scopes = new[] { "foo" },
+                AuthorizedScopes = new[] { "foo" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token

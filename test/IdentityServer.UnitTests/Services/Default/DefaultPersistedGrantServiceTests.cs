@@ -122,7 +122,7 @@ namespace UnitTests.Services.Default
             {
                 ClientId = "client1",
                 Subject = new IdentityServerUser("123").CreatePrincipal(),
-                Scopes = new[] { "baz1", "baz2" },
+                AuthorizedScopes = new[] { "baz1", "baz2" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token
@@ -143,7 +143,7 @@ namespace UnitTests.Services.Default
             {
                 ClientId = "client1",
                 Subject = new IdentityServerUser("456").CreatePrincipal(),
-                Scopes = new[] { "baz3" },
+                AuthorizedScopes = new[] { "baz3" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token
@@ -163,7 +163,7 @@ namespace UnitTests.Services.Default
             {
                 ClientId = "client2",
                 Subject = new IdentityServerUser("123").CreatePrincipal(),
-                Scopes = new[] { "baz3" },
+                AuthorizedScopes = new[] { "baz3" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token
@@ -299,7 +299,7 @@ namespace UnitTests.Services.Default
             {
                 ClientId = "client1",
                 Subject = new IdentityServerUser("123").CreatePrincipal(),
-                Scopes = new[] { "baz1", "baz2" },
+                AuthorizedScopes = new[] { "baz1", "baz2" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token
@@ -320,7 +320,7 @@ namespace UnitTests.Services.Default
             {
                 ClientId = "client1",
                 Subject = new IdentityServerUser("456").CreatePrincipal(),
-                Scopes = new[] { "baz3" },
+                AuthorizedScopes = new[] { "baz3" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token
@@ -340,7 +340,7 @@ namespace UnitTests.Services.Default
             {
                 ClientId = "client2",
                 Subject = new IdentityServerUser("123").CreatePrincipal(),
-                Scopes = new[] { "baz3" },
+                AuthorizedScopes = new[] { "baz3" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 AccessToken = new Token
@@ -413,7 +413,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client1",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -434,7 +434,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client2",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -455,7 +455,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client3",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session3") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -487,7 +487,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client1",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -508,7 +508,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client2",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -529,7 +529,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client3",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session3") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -561,7 +561,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client1",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -582,7 +582,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client2",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -603,7 +603,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client3",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -624,7 +624,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client1",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session2") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -657,7 +657,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client1",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -678,7 +678,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client2",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -699,7 +699,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client3",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token
@@ -720,7 +720,7 @@ namespace UnitTests.Services.Default
                 {
                     ClientId = "client1",
                     Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session2") } }.CreatePrincipal(),
-                    Scopes = new[] { "baz" },
+                    AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
                     AccessToken = new Token

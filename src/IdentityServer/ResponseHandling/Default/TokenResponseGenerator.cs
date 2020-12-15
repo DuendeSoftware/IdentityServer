@@ -234,7 +234,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
                 RefreshToken = handle,
                 Custom = request.CustomResponse,
-                Scope = request.ValidatedRequest.RefreshToken.Scopes.ToSpaceSeparatedString()
+                Scope = request.ValidatedRequest.RefreshToken.AuthorizedScopes.ToSpaceSeparatedString()
             };
         }
 
@@ -408,7 +408,12 @@ namespace Duende.IdentityServer.ResponseHandling
 
             if (createRefreshToken)
             {
-                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(tokenRequest.Subject, at, request.Client);
+                var rtRequest = new RefreshTokenCreationRequest { 
+                    Subject = tokenRequest.Subject,
+                    AccessToken = at,
+                    Client = request.Client
+                };
+                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(rtRequest);
                 return (accessToken, refreshToken);
             }
 
@@ -427,7 +432,7 @@ namespace Duende.IdentityServer.ResponseHandling
             //var identityResources = await Resources.FindEnabledIdentityResourcesByScopeAsync(request.RefreshToken.Scopes);
             //if (identityResources.Any())
             
-            if (request.RefreshToken.Scopes.Contains(OidcConstants.StandardScopes.OpenId))
+            if (request.RefreshToken.AuthorizedScopes.Contains(OidcConstants.StandardScopes.OpenId))
             {
                 var tokenRequest = new TokenCreationRequest
                 {

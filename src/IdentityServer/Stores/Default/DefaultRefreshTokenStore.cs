@@ -75,7 +75,7 @@ namespace Duende.IdentityServer.Stores
                 refreshToken.Subject = user.CreatePrincipal();
                 refreshToken.ClientId = refreshToken.AccessToken.ClientId;
                 refreshToken.Description = refreshToken.AccessToken.Description;
-                refreshToken.Scopes = refreshToken.AccessToken.Scopes;
+                refreshToken.AuthorizedScopes = refreshToken.AccessToken.Scopes;
                 refreshToken.Version = 5;
             }
 

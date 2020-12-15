@@ -266,7 +266,7 @@ namespace UnitTests.Validation.TokenRequest_Validation
             {
                 ClientId = "roclient",
                 Subject = new IdentityServerUser(subjectClaim.Value).CreatePrincipal(),
-                Scopes = Enumerable.Empty<string>(),
+                AuthorizedScopes = Enumerable.Empty<string>(),
                 AccessToken = new Token("access_token")
                 {
                     Claims = new List<Claim> { subjectClaim },
@@ -303,7 +303,7 @@ namespace UnitTests.Validation.TokenRequest_Validation
             {
                 ClientId = "roclient_restricted_refresh",
                 Subject = new IdentityServerUser(subjectClaim.Value).CreatePrincipal(),
-                Scopes = Enumerable.Empty<string>(),
+                AuthorizedScopes = Enumerable.Empty<string>(),
                 AccessToken = new Token("access_token")
                 {
                     Claims = new List<Claim> { subjectClaim },

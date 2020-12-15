@@ -100,6 +100,6 @@ namespace Duende.IdentityServer.Models
         /// <value>
         /// The scopes.
         /// </value>
-        public IEnumerable<string> Scopes { get; set; }
+        public IEnumerable<string> AuthorizedScopes { get; set; }
     }
 }

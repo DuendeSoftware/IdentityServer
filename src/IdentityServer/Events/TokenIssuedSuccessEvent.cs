@@ -63,7 +63,7 @@ namespace Duende.IdentityServer.Events
 
             if (GrantType == OidcConstants.GrantTypes.RefreshToken)
             {
-                Scopes = request.ValidatedRequest.RefreshToken.Scopes.ToSpaceSeparatedString();
+                Scopes = request.ValidatedRequest.RefreshToken.AuthorizedScopes.ToSpaceSeparatedString();
             }
             else if (GrantType == OidcConstants.GrantTypes.AuthorizationCode)
             {

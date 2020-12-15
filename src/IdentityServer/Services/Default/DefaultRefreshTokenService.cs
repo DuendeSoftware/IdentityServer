@@ -161,15 +161,15 @@ namespace Duende.IdentityServer.Services
         /// <summary>
         /// Creates the refresh token.
         /// </summary>
-        /// <param name="subject">The subject.</param>
-        /// <param name="accessToken">The access token.</param>
-        /// <param name="client">The client.</param>
         /// <returns>
         /// The refresh token handle
         /// </returns>
-        public virtual async Task<string> CreateRefreshTokenAsync(ClaimsPrincipal subject, Token accessToken,
-            Client client)
+        public virtual async Task<string> CreateRefreshTokenAsync(RefreshTokenCreationRequest request)
         {
+            ClaimsPrincipal subject = request.Subject;
+            Token accessToken = request.AccessToken;
+            Client client = request.Client;
+
             Logger.LogDebug("Creating refresh token");
 
             int lifetime;
@@ -200,7 +200,7 @@ namespace Duende.IdentityServer.Services
                 Subject = subject,
                 ClientId = client.ClientId,
                 Description = accessToken.Description,
-                Scopes = accessToken.Scopes,
+                AuthorizedScopes = accessToken.Scopes,
 
                 CreationTime = Clock.UtcNow.UtcDateTime, 
                 Lifetime = lifetime, 

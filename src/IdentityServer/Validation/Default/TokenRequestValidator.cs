@@ -581,7 +581,7 @@ namespace Duende.IdentityServer.Validation
             var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _validatedRequest.Client,
-                Scopes = _validatedRequest.RefreshToken.Scopes,
+                Scopes = _validatedRequest.RefreshToken.AuthorizedScopes,
                 ResourceIndicators = null // todo
             });
 
