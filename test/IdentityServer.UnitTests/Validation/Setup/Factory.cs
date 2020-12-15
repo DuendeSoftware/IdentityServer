@@ -284,7 +284,6 @@ namespace UnitTests.Validation.Setup
                 clock: clock,
                 profile: profile,
                 referenceTokenStore: store,
-                refreshTokenStore: refreshTokenStore,
                 customValidator: new DefaultCustomTokenValidator(),
                     keys: new DefaultKeyMaterialService(
                         new[] { new InMemoryValidationKeysStore(new[] { keyInfo }) }, 

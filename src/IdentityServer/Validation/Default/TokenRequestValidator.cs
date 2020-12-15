@@ -408,9 +408,10 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////
             // check if client is allowed to request scopes
             /////////////////////////////////////////////
-            if (!await ValidateRequestedScopesAsync(parameters, ignoreImplicitIdentityScopes: true, ignoreImplicitOfflineAccess: true))
+            var scopeError = await ValidateRequestedScopesAndResourcesAsync(parameters, ignoreImplicitIdentityScopes: true, ignoreImplicitOfflineAccess: true);
+            if (scopeError != null)
             {
-                return Invalid(OidcConstants.TokenErrors.InvalidScope);
+                return Invalid(scopeError);
             }
 
             if (_validatedRequest.ValidatedResources.Resources.IdentityResources.Any())
@@ -445,9 +446,10 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////
             // check if client is allowed to request scopes
             /////////////////////////////////////////////
-            if (!(await ValidateRequestedScopesAsync(parameters)))
+            var scopeError = await ValidateRequestedScopesAndResourcesAsync(parameters);
+            if (scopeError != null)
             {
-                return Invalid(OidcConstants.TokenErrors.InvalidScope);
+                return Invalid(scopeError);
             }
 
             /////////////////////////////////////////////
@@ -707,9 +709,10 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////
             // check if client is allowed to request scopes
             /////////////////////////////////////////////
-            if (!await ValidateRequestedScopesAsync(parameters))
+            var scopeError = await ValidateRequestedScopesAndResourcesAsync(parameters);
+            if (scopeError != null)
             {
-                return Invalid(OidcConstants.TokenErrors.InvalidScope);
+                return Invalid(scopeError);
             }
 
             /////////////////////////////////////////////
@@ -766,7 +769,7 @@ namespace Duende.IdentityServer.Validation
 
         // todo: do we want to rework the semantics of these ignore params?
         // also seems like other workflows other than CC clients can omit scopes?
-        private async Task<bool> ValidateRequestedScopesAsync(NameValueCollection parameters, bool ignoreImplicitIdentityScopes = false, bool ignoreImplicitOfflineAccess = false)
+        private async Task<string> ValidateRequestedScopesAndResourcesAsync(NameValueCollection parameters, bool ignoreImplicitIdentityScopes = false, bool ignoreImplicitOfflineAccess = false)
         {
             var scopes = parameters.Get(OidcConstants.TokenRequest.Scope);
             if (scopes.IsMissing())
@@ -802,14 +805,14 @@ namespace Duende.IdentityServer.Validation
                 else
                 {
                     LogError("No allowed scopes configured for client", new { clientId = _validatedRequest.Client.ClientId });
-                    return false;
+                    return OidcConstants.TokenErrors.InvalidScope;
                 }
             }
 
             if (scopes.Length > _options.InputLengthRestrictions.Scope)
             {
                 LogError("Scope parameter exceeds max allowed length");
-                return false;
+                return OidcConstants.TokenErrors.InvalidScope;
             }
 
             var requestedScopes = scopes.ParseScopesString();
@@ -817,16 +820,28 @@ namespace Duende.IdentityServer.Validation
             if (requestedScopes == null)
             {
                 LogError("No scopes found in request");
-                return false;
+                return OidcConstants.TokenErrors.InvalidScope;
             }
+
+
+            var resourceIndicators = _validatedRequest.RequestedResourceIndicator == null ? 
+                Enumerable.Empty<string>() : 
+                new[] { _validatedRequest.RequestedResourceIndicator };
 
             var resourceValidationResult = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest { 
                 Client = _validatedRequest.Client,
-                Scopes = requestedScopes
+                Scopes = requestedScopes,
+                ResourceIndicators = resourceIndicators
             });
 
             if (!resourceValidationResult.Succeeded)
             {
+                if (resourceValidationResult.InvalidResourceIndicators.Any())
+                {
+                    LogError("Invalid resource indicator");
+                    return OidcConstants.TokenErrors.InvalidTarget;
+                }
+
                 if (resourceValidationResult.InvalidScopes.Any())
                 {
                     LogError("Invalid scopes requested");
@@ -836,13 +851,13 @@ namespace Duende.IdentityServer.Validation
                     LogError("Invalid scopes for client requested");
                 }
 
-                return false;
+                return OidcConstants.TokenErrors.InvalidScope;
             }
 
             _validatedRequest.RequestedScopes = requestedScopes;
-            _validatedRequest.ValidatedResources = resourceValidationResult;
+            _validatedRequest.ValidatedResources = resourceValidationResult.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
             
-            return true;
+            return null;
         }
 
         private TokenRequestValidationResult ValidateAuthorizationCodeWithProofKeyParameters(string codeVerifier, AuthorizationCode authZcode)
