@@ -118,7 +118,11 @@ namespace Duende.IdentityServer.Validation
                 scopeNamesToKeep = scopeNamesToKeep.Union(Resources.IdentityResources.Select(x => x.Name));
             }
 
-            var parsedScopesToKeep = ParsedScopes.Where(x => scopeNamesToKeep.Contains(x.ParsedName)).ToArray();
+            var parsedScopesToKeep = ParsedScopes.Where(x => scopeNamesToKeep.Contains(x.ParsedName)).ToList();
+            if (Resources.OfflineAccess)
+            {
+                parsedScopesToKeep.Add(new ParsedScopeValue(IdentityServerConstants.StandardScopes.OfflineAccess));
+            }
 
             var resources = new Resources(Resources.IdentityResources, apiResourcesToKeep, apiScopesToKeep)
             {
