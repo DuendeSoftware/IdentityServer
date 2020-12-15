@@ -11,6 +11,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using System;
 
 namespace Duende.IdentityServer.Services
 {
@@ -166,30 +167,26 @@ namespace Duende.IdentityServer.Services
         /// </returns>
         public virtual async Task<string> CreateRefreshTokenAsync(RefreshTokenCreationRequest request)
         {
-            ClaimsPrincipal subject = request.Subject;
-            Token accessToken = request.AccessToken;
-            Client client = request.Client;
-
             Logger.LogDebug("Creating refresh token");
 
             int lifetime;
-            if (client.RefreshTokenExpiration == TokenExpiration.Absolute)
+            if (request.Client.RefreshTokenExpiration == TokenExpiration.Absolute)
             {
                 Logger.LogDebug("Setting an absolute lifetime: {absoluteLifetime}",
-                    client.AbsoluteRefreshTokenLifetime);
-                lifetime = client.AbsoluteRefreshTokenLifetime;
+                    request.Client.AbsoluteRefreshTokenLifetime);
+                lifetime = request.Client.AbsoluteRefreshTokenLifetime;
             }
             else
             {
-                lifetime = client.SlidingRefreshTokenLifetime;
-                if (client.AbsoluteRefreshTokenLifetime > 0 && lifetime > client.AbsoluteRefreshTokenLifetime)
+                lifetime = request.Client.SlidingRefreshTokenLifetime;
+                if (request.Client.AbsoluteRefreshTokenLifetime > 0 && lifetime > request.Client.AbsoluteRefreshTokenLifetime)
                 {
                     Logger.LogWarning(
-                        "Client {clientId}'s configured " + nameof(client.SlidingRefreshTokenLifetime) +
-                        " of {slidingLifetime} exceeds its " + nameof(client.AbsoluteRefreshTokenLifetime) +
+                        "Client {clientId}'s configured " + nameof(request.Client.SlidingRefreshTokenLifetime) +
+                        " of {slidingLifetime} exceeds its " + nameof(request.Client.AbsoluteRefreshTokenLifetime) +
                         " of {absoluteLifetime}. The refresh_token's sliding lifetime will be capped to the absolute lifetime",
-                        client.ClientId, lifetime, client.AbsoluteRefreshTokenLifetime);
-                    lifetime = client.AbsoluteRefreshTokenLifetime;
+                        request.Client.ClientId, lifetime, request.Client.AbsoluteRefreshTokenLifetime);
+                    lifetime = request.Client.AbsoluteRefreshTokenLifetime;
                 }
 
                 Logger.LogDebug("Setting a sliding lifetime: {slidingLifetime}", lifetime);
@@ -197,15 +194,16 @@ namespace Duende.IdentityServer.Services
 
             var refreshToken = new RefreshToken
             {
-                Subject = subject,
-                ClientId = client.ClientId,
-                Description = accessToken.Description,
-                AuthorizedScopes = accessToken.Scopes,
+                Subject = request.Subject,
+                ClientId = request.Client.ClientId,
+                Description = request.Description,
+                AuthorizedScopes = request.AuthorizedScopes,
+                AuthorizedResourceIndicators = request.AuthorizedResourceIndicators,
 
-                CreationTime = Clock.UtcNow.UtcDateTime, 
-                Lifetime = lifetime, 
-                AccessToken = accessToken
+                CreationTime = Clock.UtcNow.UtcDateTime,
+                Lifetime = lifetime,
             };
+            refreshToken.SetAccessToken(request.AccessToken, request.RequestedResourceIndicator);
 
             var handle = await RefreshTokenStore.StoreRefreshTokenAsync(refreshToken);
             return handle;
@@ -214,70 +212,67 @@ namespace Duende.IdentityServer.Services
         /// <summary>
         /// Updates the refresh token.
         /// </summary>
-        /// <param name="handle">The handle.</param>
-        /// <param name="refreshToken">The refresh token.</param>
-        /// <param name="client">The client.</param>
         /// <returns>
         /// The refresh token handle
         /// </returns>
-        public virtual async Task<string> UpdateRefreshTokenAsync(string handle, RefreshToken refreshToken,
-            Client client)
+        public virtual async Task<string> UpdateRefreshTokenAsync(RefreshTokenUpdateRequest request)
         {
             Logger.LogDebug("Updating refresh token");
 
+            var handle = request.Handle;
             bool needsCreate = false;
-            bool needsUpdate = false;
+            bool needsUpdate = request.MustUpdate;
 
-            if (client.RefreshTokenUsage == TokenUsage.OneTimeOnly)
+            if (request.Client.RefreshTokenUsage == TokenUsage.OneTimeOnly)
             {
                 Logger.LogDebug("Token usage is one-time only. Setting current handle as consumed, and generating new handle");
 
                 // flag as consumed
-                if (refreshToken.ConsumedTime == null)
+                if (request.RefreshToken.ConsumedTime == null)
                 {
-                    refreshToken.ConsumedTime = Clock.UtcNow.UtcDateTime;
-                    await RefreshTokenStore.UpdateRefreshTokenAsync(handle, refreshToken);
+                    request.RefreshToken.ConsumedTime = Clock.UtcNow.UtcDateTime;
+                    await RefreshTokenStore.UpdateRefreshTokenAsync(handle, request.RefreshToken);
                 }
 
                 // create new one
                 needsCreate = true;
             }
 
-            if (client.RefreshTokenExpiration == TokenExpiration.Sliding)
+            if (request.Client.RefreshTokenExpiration == TokenExpiration.Sliding)
             {
                 Logger.LogDebug("Refresh token expiration is sliding - extending lifetime");
 
                 // if absolute exp > 0, make sure we don't exceed absolute exp
                 // if absolute exp = 0, allow indefinite slide
-                var currentLifetime = refreshToken.CreationTime.GetLifetimeInSeconds(Clock.UtcNow.UtcDateTime);
+                var currentLifetime = request.RefreshToken.CreationTime.GetLifetimeInSeconds(Clock.UtcNow.UtcDateTime);
                 Logger.LogDebug("Current lifetime: {currentLifetime}", currentLifetime.ToString());
 
-                var newLifetime = currentLifetime + client.SlidingRefreshTokenLifetime;
+                var newLifetime = currentLifetime + request.Client.SlidingRefreshTokenLifetime;
                 Logger.LogDebug("New lifetime: {slidingLifetime}", newLifetime.ToString());
 
                 // zero absolute refresh token lifetime represents unbounded absolute lifetime
                 // if absolute lifetime > 0, cap at absolute lifetime
-                if (client.AbsoluteRefreshTokenLifetime > 0 && newLifetime > client.AbsoluteRefreshTokenLifetime)
+                if (request.Client.AbsoluteRefreshTokenLifetime > 0 && newLifetime > request.Client.AbsoluteRefreshTokenLifetime)
                 {
-                    newLifetime = client.AbsoluteRefreshTokenLifetime;
+                    newLifetime = request.Client.AbsoluteRefreshTokenLifetime;
                     Logger.LogDebug("New lifetime exceeds absolute lifetime, capping it to {newLifetime}",
                         newLifetime.ToString());
                 }
 
-                refreshToken.Lifetime = newLifetime;
+                request.RefreshToken.Lifetime = newLifetime;
                 needsUpdate = true;
             }
 
             if (needsCreate)
             {
                 // set it to null so that we save non-consumed token
-                refreshToken.ConsumedTime = null;
-                handle = await RefreshTokenStore.StoreRefreshTokenAsync(refreshToken);
+                request.RefreshToken.ConsumedTime = null;
+                handle = await RefreshTokenStore.StoreRefreshTokenAsync(request.RefreshToken);
                 Logger.LogDebug("Created refresh token in store");
             }
             else if (needsUpdate)
             {
-                await RefreshTokenStore.UpdateRefreshTokenAsync(handle, refreshToken);
+                await RefreshTokenStore.UpdateRefreshTokenAsync(handle, request.RefreshToken);
                 Logger.LogDebug("Updated refresh token in store");
             }
             else

@@ -2,10 +2,8 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using Duende.IdentityServer.Validation;
 
 namespace Duende.IdentityServer.Models
 {
@@ -39,6 +37,11 @@ namespace Duende.IdentityServer.Models
         /// </summary>
         public IEnumerable<string> AuthorizedResourceIndicators { get; set; }
         
+        /// <summary>
+        /// The requested resource indicator.
+        /// </summary>
+        public string RequestedResourceIndicator { get; set; }
+
         /// <summary>
         /// The access token.
         /// </summary>

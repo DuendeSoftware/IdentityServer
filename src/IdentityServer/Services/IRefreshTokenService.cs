@@ -34,12 +34,9 @@ namespace Duende.IdentityServer.Services
         /// <summary>
         /// Updates the refresh token.
         /// </summary>
-        /// <param name="handle">The handle.</param>
-        /// <param name="refreshToken">The refresh token.</param>
-        /// <param name="client">The client.</param>
         /// <returns>
         /// The refresh token handle
         /// </returns>
-        Task<string> UpdateRefreshTokenAsync(string handle, RefreshToken refreshToken, Client client);
+        Task<string> UpdateRefreshTokenAsync(RefreshTokenUpdateRequest request);
     }
 }

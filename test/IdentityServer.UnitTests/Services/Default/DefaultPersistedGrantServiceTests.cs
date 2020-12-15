@@ -125,19 +125,6 @@ namespace UnitTests.Services.Default
                 AuthorizedScopes = new[] { "baz1", "baz2" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = "client1",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Type = "type",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("sub", "123"),
-                        new Claim("scope", "baz1"),
-                        new Claim("scope", "baz2")
-                    }
-                },
             });
             var handle5 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
             {
@@ -146,18 +133,6 @@ namespace UnitTests.Services.Default
                 AuthorizedScopes = new[] { "baz3" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = "client1",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Type = "type",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("sub", "456"),
-                        new Claim("scope", "baz3")
-                    }
-                },
             });
             var handle6 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
             {
@@ -166,18 +141,6 @@ namespace UnitTests.Services.Default
                 AuthorizedScopes = new[] { "baz3" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = "client2",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Type = "type",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("sub", "123"),
-                        new Claim("scope", "baz3")
-                    }
-                },
             });
 
             var handle7 = await _codes.StoreAuthorizationCodeAsync(new AuthorizationCode()
@@ -302,19 +265,6 @@ namespace UnitTests.Services.Default
                 AuthorizedScopes = new[] { "baz1", "baz2" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = "client1",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Type = "type",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("sub", "123"),
-                        new Claim("scope", "baz1"),
-                        new Claim("scope", "baz2")
-                    }
-                },
             });
             var handle5 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
             {
@@ -323,18 +273,6 @@ namespace UnitTests.Services.Default
                 AuthorizedScopes = new[] { "baz3" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = "client1",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Type = "type",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("sub", "456"),
-                        new Claim("scope", "baz3")
-                    }
-                },
             });
             var handle6 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
             {
@@ -343,18 +281,6 @@ namespace UnitTests.Services.Default
                 AuthorizedScopes = new[] { "baz3" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = "client2",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Type = "type",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("sub", "123"),
-                        new Claim("scope", "baz3")
-                    }
-                },
             });
 
             var handle7 = await _codes.StoreAuthorizationCodeAsync(new AuthorizationCode()
@@ -416,19 +342,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client1",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle2 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -437,19 +350,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client2",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle3 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -458,19 +358,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client3",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session3"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
 
                 await _subject.RemoveAllGrantsAsync("123");
@@ -490,19 +377,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client1",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle2 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -511,19 +385,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client2",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle3 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -532,19 +393,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client3",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session3"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
 
                 await _subject.RemoveAllGrantsAsync("123", "client1");
@@ -564,19 +412,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client1",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle2 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -585,19 +420,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client2",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle3 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -606,19 +428,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client3",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle4 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -627,19 +436,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client1",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session2"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 await _subject.RemoveAllGrantsAsync("123", "client1", "session1");
 
@@ -660,19 +456,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client1",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle2 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -681,19 +464,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client2",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle3 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -702,19 +472,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client3",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session1"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 var handle4 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
@@ -723,19 +480,6 @@ namespace UnitTests.Services.Default
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
-                    AccessToken = new Token
-                    {
-                        ClientId = "client1",
-                        Audiences = { "aud" },
-                        CreationTime = DateTime.UtcNow,
-                        Type = "type",
-                        Claims = new List<Claim>
-                        {
-                            new Claim("sub", "123"),
-                            new Claim("sid", "session2"),
-                            new Claim("scope", "baz")
-                        }
-                    },
                 });
                 await _subject.RemoveAllGrantsAsync("123", sessionId:"session1");
 

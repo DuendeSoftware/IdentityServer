@@ -348,8 +348,7 @@ namespace Duende.IdentityServer.Validation
                 }
             }
 
-            //_validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
-            _validatedRequest.ValidatedResources = validatedResources;
+            _validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
 
             /////////////////////////////////////////////
             // validate PKCE parameters
@@ -582,7 +581,7 @@ namespace Duende.IdentityServer.Validation
             {
                 Client = _validatedRequest.Client,
                 Scopes = _validatedRequest.RefreshToken.AuthorizedScopes,
-                ResourceIndicators = null // todo
+                ResourceIndicators = _validatedRequest.RefreshToken.AuthorizedResourceIndicators
             });
 
             if (!validatedResources.Succeeded)
@@ -597,8 +596,7 @@ namespace Duende.IdentityServer.Validation
                 }
             }
 
-            //_validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
-            _validatedRequest.ValidatedResources = validatedResources;
+            _validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
 
             _logger.LogDebug("Validation of refresh token request success");
             // todo: more logging - similar to TokenValidator before

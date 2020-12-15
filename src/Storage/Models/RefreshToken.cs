@@ -39,12 +39,43 @@ namespace Duende.IdentityServer.Models
         public DateTime? ConsumedTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the access token.
+        /// Obsolete. This property remains to keep backwards compatibility with seralized persisted grants.
         /// </summary>
         /// <value>
         /// The access token.
         /// </value>
+        [Obsolete("Use AccessTokens or Set/GetAccessToken instead.")]
         public Token AccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the resource indicator specific access token.
+        /// </summary>
+        /// <value>
+        /// The access token.
+        /// </value>
+        public Dictionary<string, Token> AccessTokens { get; set; } = new Dictionary<string, Token>();
+
+        /// <summary>
+        /// Returns the access token based on the resource indicator.
+        /// </summary>
+        /// <param name="resourceIndicator"></param>
+        /// <returns></returns>
+        public Token GetAccessToken(string resourceIndicator = null)
+        {
+            AccessTokens.TryGetValue(resourceIndicator ?? String.Empty, out var token);
+            return token;
+        }
+
+        /// <summary>
+        /// Sets the access token based on the resource indicator.
+        /// </summary>
+        /// <param name="resourceIndicator"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public void SetAccessToken(Token token, string resourceIndicator = null)
+        {
+            AccessTokens[resourceIndicator ?? String.Empty] = token;
+        }
 
         /// <summary>
         /// Gets or sets the original subject that requested the token.
@@ -101,5 +132,10 @@ namespace Duende.IdentityServer.Models
         /// The scopes.
         /// </value>
         public IEnumerable<string> AuthorizedScopes { get; set; }
+
+        /// <summary>
+        /// The resource indicators.
+        /// </summary>
+        public IEnumerable<string> AuthorizedResourceIndicators { get; set; }
     }
 }

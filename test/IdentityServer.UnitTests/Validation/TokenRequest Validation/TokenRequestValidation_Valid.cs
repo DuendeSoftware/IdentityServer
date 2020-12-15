@@ -267,14 +267,14 @@ namespace UnitTests.Validation.TokenRequest_Validation
                 ClientId = "roclient",
                 Subject = new IdentityServerUser(subjectClaim.Value).CreatePrincipal(),
                 AuthorizedScopes = Enumerable.Empty<string>(),
-                AccessToken = new Token("access_token")
-                {
-                    Claims = new List<Claim> { subjectClaim },
-                    ClientId = "roclient"
-                },
                 Lifetime = 600,
                 CreationTime = DateTime.UtcNow
             };
+            refreshToken.SetAccessToken(new Token("access_token")
+            {
+                Claims = new List<Claim> { subjectClaim },
+                ClientId = "roclient"
+            });
 
             var grants = Factory.CreateRefreshTokenStore();
             var handle = await grants.StoreRefreshTokenAsync(refreshToken);
@@ -304,12 +304,6 @@ namespace UnitTests.Validation.TokenRequest_Validation
                 ClientId = "roclient_restricted_refresh",
                 Subject = new IdentityServerUser(subjectClaim.Value).CreatePrincipal(),
                 AuthorizedScopes = Enumerable.Empty<string>(),
-                AccessToken = new Token("access_token")
-                {
-                    Claims = new List<Claim> { subjectClaim },
-                    ClientId = "roclient_restricted_refresh"
-                },
-
                 Lifetime = 600,
                 CreationTime = DateTime.UtcNow
             };

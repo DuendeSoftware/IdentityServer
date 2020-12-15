@@ -63,6 +63,7 @@ namespace Duende.IdentityServer.Stores
 
             if (refreshToken != null && refreshToken.Version < 5)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 var user = new IdentityServerUser(refreshToken.AccessToken.SubjectId);
                 if (refreshToken.AccessToken.Claims != null)
                 {
@@ -76,7 +77,10 @@ namespace Duende.IdentityServer.Stores
                 refreshToken.ClientId = refreshToken.AccessToken.ClientId;
                 refreshToken.Description = refreshToken.AccessToken.Description;
                 refreshToken.AuthorizedScopes = refreshToken.AccessToken.Scopes;
+                refreshToken.SetAccessToken(refreshToken.AccessToken);
+                refreshToken.AccessToken = null;
                 refreshToken.Version = 5;
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             return refreshToken;

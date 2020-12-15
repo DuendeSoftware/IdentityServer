@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
@@ -68,7 +69,6 @@ namespace UnitTests.Validation.TokenRequest_Validation
         {
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token") { ClientId = "roclient" },
                 Lifetime = 10,
                 CreationTime = DateTime.UtcNow.AddSeconds(-15)
             };
@@ -97,12 +97,7 @@ namespace UnitTests.Validation.TokenRequest_Validation
         {
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token")
-                {
-                    ClientId = "otherclient",
-                    Lifetime = 600,
-                    CreationTime = DateTime.UtcNow
-                }
+                ClientId = "otherclient"
             };
 
             var grants = Factory.CreateRefreshTokenStore();
@@ -129,10 +124,7 @@ namespace UnitTests.Validation.TokenRequest_Validation
         {
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token")
-                {
-                    ClientId = "roclient_restricted"
-                },
+                ClientId = "roclient_restricted",
                 Lifetime = 600,
                 CreationTime = DateTime.UtcNow
             };
@@ -163,11 +155,8 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token")
-                {
-                    Claims = new List<Claim> { subjectClaim },
-                    ClientId = "roclient"
-                },
+                ClientId = "roclient",
+                Subject = new IdentityServerUser("foo").CreatePrincipal(),
                 Lifetime = 600,
                 CreationTime = DateTime.UtcNow
             };
