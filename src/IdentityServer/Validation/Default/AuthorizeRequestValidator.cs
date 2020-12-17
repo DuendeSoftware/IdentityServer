@@ -596,6 +596,8 @@ namespace Duende.IdentityServer.Validation
                 // todo: correct error?
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicators not allowed for response_type 'token'.");
             }
+            
+            LicenseValidator.ValidateResourceIndicators(resourceIndicators);
             request.RequestedResourceIndiators = resourceIndicators;
 
             //////////////////////////////////////////////////////////

@@ -157,6 +157,7 @@ namespace Duende.IdentityServer.Validation
                 return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Multiple resource indicators not supported on token endpoint.");
             }
 
+            LicenseValidator.ValidateResourceIndicators(resourceIndicators);
             _validatedRequest.RequestedResourceIndicator = resourceIndicators.SingleOrDefault();
 
 
