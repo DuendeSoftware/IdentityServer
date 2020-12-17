@@ -334,6 +334,8 @@ namespace Duende.IdentityServer.Validation
                 Client = _validatedRequest.Client,
                 Scopes = _validatedRequest.AuthorizationCode.RequestedScopes,
                 ResourceIndicators = _validatedRequest.AuthorizationCode.RequestedResourceIndicators,
+                // if we are issuing a refresh token, then we need to allow the non-isolated resource
+                IncludeNonIsolatedApiResources = _validatedRequest.AuthorizationCode.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess)
             });
 
             if (!validatedResources.Succeeded)
@@ -577,13 +579,24 @@ namespace Duende.IdentityServer.Validation
             _validatedRequest.Subject = result.RefreshToken.Subject;
 
             //////////////////////////////////////////////////////////
+            // resource indicator
+            //////////////////////////////////////////////////////////
+            if (_validatedRequest.RequestedResourceIndicator != null &&
+                !_validatedRequest.RefreshToken.AuthorizedResourceIndicators.Contains(_validatedRequest.RequestedResourceIndicator))
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original authorize request.");
+            }
+
+            //////////////////////////////////////////////////////////
             // resource and scope validation 
             //////////////////////////////////////////////////////////
             var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _validatedRequest.Client,
                 Scopes = _validatedRequest.RefreshToken.AuthorizedScopes,
-                ResourceIndicators = _validatedRequest.RefreshToken.AuthorizedResourceIndicators
+                ResourceIndicators = _validatedRequest.RefreshToken.AuthorizedResourceIndicators,
+                // we're issuing refresh token, so we need to allow for non-isolated resource
+                IncludeNonIsolatedApiResources = true,
             });
 
             if (!validatedResources.Succeeded)
@@ -831,7 +844,9 @@ namespace Duende.IdentityServer.Validation
             var resourceValidationResult = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest { 
                 Client = _validatedRequest.Client,
                 Scopes = requestedScopes,
-                ResourceIndicators = resourceIndicators
+                ResourceIndicators = resourceIndicators,
+                // if the client is passing explicit scopes, we want to exclude the non-isolated resource scenaio from validation
+                IncludeNonIsolatedApiResources = parameters.Get(OidcConstants.TokenRequest.Scope).IsMissing()
             });
 
             if (!resourceValidationResult.Succeeded)

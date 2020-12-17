@@ -603,7 +603,8 @@ namespace Duende.IdentityServer.Validation
             {
                 Client = request.Client,
                 Scopes = request.RequestedScopes,
-                ResourceIndicators = resourceIndicators
+                ResourceIndicators = resourceIndicators,
+                IncludeNonIsolatedApiResources = true,
             });
 
             if (!validatedResources.Succeeded)

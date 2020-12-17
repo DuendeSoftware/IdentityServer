@@ -329,14 +329,15 @@ namespace UnitTests.Validation
         
         [Fact]
         [Trait("Category", Category)]
-        public async Task offline_access_should_allow_include_all_resources_that_match_scope()
+        public async Task IncludeNonIsolatedApiResources_should_allow_include_all_resources_that_match_scope()
         {
             var validator = Factory.CreateResourceValidator(_subject);
             var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = _resourceClient,
                 Scopes = new[] { "scope1", "offline_access" },
-                ResourceIndicators = new[] { "isolated1" }
+                ResourceIndicators = new[] { "isolated1" },
+                IncludeNonIsolatedApiResources = true,
             });
 
             result.Succeeded.Should().BeTrue();

@@ -25,7 +25,12 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// The requested resource indicators.
         /// </summary>
-        //todo: add back when we support resource indicators
         public IEnumerable<string> ResourceIndicators { get; set; }
+
+        /// <summary>
+        /// Flag that indicates that validation should allow requested scopes to match non-isolated resources.
+        /// If set to false, then only the scopes that match the exact resource indicators requested will be allowed.
+        /// </summary>
+        public bool IncludeNonIsolatedApiResources { get; set; }
     }
 }
