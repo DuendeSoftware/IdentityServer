@@ -211,6 +211,9 @@ namespace Duende.IdentityServer.Validation
             }
 
             LogSuccess();
+
+            LicenseValidator.ValidateClient(customValidationContext.Result.ValidatedRequest.ClientId);
+
             return customValidationContext.Result;
         }
 

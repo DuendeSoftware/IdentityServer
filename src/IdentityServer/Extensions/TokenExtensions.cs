@@ -35,10 +35,10 @@ namespace Duende.IdentityServer.Extensions
         {
             try
             {
-                var payload = new Dictionary<string, object>();
-
-                // set issuer
-                payload.Add(JwtClaimTypes.Issuer, token.Issuer);
+                var payload = new Dictionary<string, object>
+                {
+                    { JwtClaimTypes.Issuer, token.Issuer }
+                };
 
                 // set times (nbf, exp, iat)
                 var now = clock.UtcNow.ToUnixTimeSeconds();

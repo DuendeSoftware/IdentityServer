@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
@@ -57,8 +58,16 @@ namespace UnitTests.Validation
 
             result.IsError.Should().Be(false);
             result.IsActive.Should().Be(true);
-            result.Claims.Count().Should().Be(5);
+            result.Claims.Count().Should().Be(6);
             result.Token.Should().Be(handle);
+
+            var claimTypes = result.Claims.Select(c => c.Type).ToList();
+            claimTypes.Should().Contain("iss");
+            claimTypes.Should().Contain("scope");
+            claimTypes.Should().Contain("iat");
+            claimTypes.Should().Contain("nbf");
+            claimTypes.Should().Contain("exp");
+            
         }
 
         [Fact]

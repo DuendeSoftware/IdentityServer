@@ -124,10 +124,6 @@ namespace Duende.IdentityServer.Services
                 claims.Add(new Claim(JwtClaimTypes.Nonce, request.Nonce));
             }
 
-            // todo: cleanup
-            // add iat claim
-            //claims.Add(new Claim(JwtClaimTypes.IssuedAt, Clock.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
-
             // add at_hash claim
             if (request.AccessTokenToHash.IsPresent())
             {
