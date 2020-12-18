@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -14,6 +14,7 @@ using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using System.Security.Claims;
 
 namespace UnitTests.Services.Default
 {
@@ -116,7 +117,6 @@ namespace UnitTests.Services.Default
             result.Audiences.Count.Should().Be(0);
         }
 
-
         [Fact]
         public async Task CreateAccessTokenAsync_when_no_session_should_not_include_sid()
         {
@@ -134,6 +134,7 @@ namespace UnitTests.Services.Default
 
             result.Claims.SingleOrDefault(x => x.Type == JwtClaimTypes.SessionId).Should().BeNull();
         }
+        
         [Fact]
         public async Task CreateAccessTokenAsync_when_session_should_include_sid()
         {
@@ -150,6 +151,70 @@ namespace UnitTests.Services.Default
             var result = await _subject.CreateAccessTokenAsync(request);
 
             result.Claims.SingleOrDefault(x => x.Type == JwtClaimTypes.SessionId).Value.Should().Be("123");
+        }
+
+        [Fact]
+        public async Task CreateSecurityTokenAsync_should_include_jti_in_access_tokens()
+        {
+            var token = new Token
+            {
+                Claims = { new Claim("sub", "123") }
+            };
+
+            {
+                token.IncludeJwtId = false;
+                token.Type = OidcConstants.TokenTypes.IdentityToken;
+                var result = await _subject.CreateSecurityTokenAsync(token);
+                _mockTokenCreationService.Token.Claims.Should().NotContain(x => x.Type == "jti");
+            }
+
+            {
+                token.IncludeJwtId = false;
+                token.Type = OidcConstants.TokenTypes.AccessToken;
+                var result = await _subject.CreateSecurityTokenAsync(token);
+                _mockTokenCreationService.Token.Claims.Should().NotContain(x => x.Type == "jti");
+            }
+
+            {
+                token.IncludeJwtId = true;
+                token.Type = OidcConstants.TokenTypes.IdentityToken;
+                var result = await _subject.CreateSecurityTokenAsync(token);
+                _mockTokenCreationService.Token.Claims.Should().NotContain(x => x.Type == "jti");
+            }
+
+            {
+                token.IncludeJwtId = true;
+                token.Type = OidcConstants.TokenTypes.AccessToken;
+                var result = await _subject.CreateSecurityTokenAsync(token);
+                _mockTokenCreationService.Token.Claims.Should().Contain(x => x.Type == "jti");
+            }
+        }
+        [Fact]
+        public async Task CreateSecurityTokenAsync_should_include_jti_access_tokens_for_older_versions()
+        {
+            var token = new Token
+            {
+                Claims = 
+                { 
+                    new Claim("sub", "123") 
+                },
+                Version = 4,
+                Type = OidcConstants.TokenTypes.AccessToken,
+                IncludeJwtId = false,
+            };
+
+            {
+                var result = await _subject.CreateSecurityTokenAsync(token);
+                _mockTokenCreationService.Token.Claims.Should().NotContain(x => x.Type == "jti");
+            }
+
+            {
+                token.Claims.Add(new Claim("jti", "xoxo"));
+                token.Type = OidcConstants.TokenTypes.AccessToken;
+                var result = await _subject.CreateSecurityTokenAsync(token);
+                _mockTokenCreationService.Token.Claims.Should().Contain(x => x.Type == "jti");
+                _mockTokenCreationService.Token.Claims.Single(x => x.Type == "jti").Value.Should().NotBe("xoxo");
+            }
         }
     }
 }
