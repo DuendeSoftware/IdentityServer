@@ -130,7 +130,14 @@ namespace Duende.IdentityServer.Validation
                 }
             }
         }
-        
+
+        public static void ValidateResourceIndicators(string resourceIndicator)
+        {
+            if (_license != null && !String.IsNullOrWhiteSpace(resourceIndicator) && !_license.ResourceIsolation)
+            {
+                _logger.LogError("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.");
+            }
+        }
         public static void ValidateResourceIndicators(IEnumerable<string> resourceIndicators)
         {
             if (_license != null && resourceIndicators?.Any() == true && !_license.ResourceIsolation)

@@ -597,7 +597,6 @@ namespace Duende.IdentityServer.Validation
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicators not allowed for response_type 'token'.");
             }
             
-            LicenseValidator.ValidateResourceIndicators(resourceIndicators);
             request.RequestedResourceIndiators = resourceIndicators;
 
             //////////////////////////////////////////////////////////
@@ -623,6 +622,8 @@ namespace Duende.IdentityServer.Validation
                     return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope");
                 }
             }
+            
+            LicenseValidator.ValidateResourceIndicators(resourceIndicators);
 
             if (validatedResources.Resources.IdentityResources.Any() && !request.IsOpenIdRequest)
             {

@@ -157,7 +157,6 @@ namespace Duende.IdentityServer.Validation
                 return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Multiple resource indicators not supported on token endpoint.");
             }
 
-            LicenseValidator.ValidateResourceIndicators(resourceIndicators);
             _validatedRequest.RequestedResourceIndicator = resourceIndicators.SingleOrDefault();
 
 
@@ -354,6 +353,7 @@ namespace Duende.IdentityServer.Validation
                 }
             }
 
+            LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
             _validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
 
             /////////////////////////////////////////////
@@ -615,6 +615,7 @@ namespace Duende.IdentityServer.Validation
                 }
             }
 
+            LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
             _validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
 
             _logger.LogDebug("Validation of refresh token request success");
@@ -694,6 +695,7 @@ namespace Duende.IdentityServer.Validation
                 }
             }
 
+            LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
             _validatedRequest.ValidatedResources = validatedResources;
 
             _logger.LogDebug("Validation of device code token request success");
@@ -872,8 +874,10 @@ namespace Duende.IdentityServer.Validation
 
                 return OidcConstants.TokenErrors.InvalidScope;
             }
-
+            
             _validatedRequest.RequestedScopes = requestedScopes;
+
+            LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
             _validatedRequest.ValidatedResources = resourceValidationResult.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
             
             return null;
