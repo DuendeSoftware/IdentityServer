@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -10,11 +10,13 @@ namespace UnitTests.Common
 {
     class MockTokenCreationService : ITokenCreationService
     {
-        public string Token { get; set; }
+        public string TokenResult { get; set; }
+        public Token Token { get; set; }
 
         public Task<string> CreateTokenAsync(Token token)
         {
-            return Task.FromResult(Token);
+            Token = token;
+            return Task.FromResult(TokenResult);
         }
     }
 }

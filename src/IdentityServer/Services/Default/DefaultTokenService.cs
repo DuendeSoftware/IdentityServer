@@ -189,11 +189,6 @@ namespace Duende.IdentityServer.Services
                 request.ValidatedResources,
                 request.ValidatedRequest));
 
-            if (request.ValidatedRequest.Client.IncludeJwtId)
-            {
-                claims.Add(new Claim(JwtClaimTypes.JwtId, CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)));
-            }
-
             if (request.ValidatedRequest.SessionId.IsPresent())
             {
                 claims.Add(new Claim(JwtClaimTypes.SessionId, request.ValidatedRequest.SessionId));
@@ -205,6 +200,7 @@ namespace Duende.IdentityServer.Services
                 CreationTime = Clock.UtcNow.UtcDateTime,
                 Issuer = issuer,
                 Lifetime = request.ValidatedRequest.AccessTokenLifetime,
+                IncludeJwtId = request.ValidatedRequest.Client.IncludeJwtId,
                 Claims = claims.Distinct(new ClaimComparer()).ToList(),
                 ClientId = request.ValidatedRequest.Client.ClientId,
                 Description = request.Description,
@@ -257,6 +253,16 @@ namespace Duende.IdentityServer.Services
 
             if (token.Type == OidcConstants.TokenTypes.AccessToken)
             {
+                var currentJwtId = token.Claims.FirstOrDefault(x => x.Type == JwtClaimTypes.JwtId);
+                if (token.IncludeJwtId || (currentJwtId != null && token.Version < 5))
+                {
+                    if (currentJwtId != null)
+                    {
+                        token.Claims.Remove(currentJwtId);
+                    }
+                    token.Claims.Add(new Claim(JwtClaimTypes.JwtId, CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)));
+                }
+                
                 if (token.AccessTokenType == AccessTokenType.Jwt)
                 {
                     Logger.LogTrace("Creating JWT access token");
