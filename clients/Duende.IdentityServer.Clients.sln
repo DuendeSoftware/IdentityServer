@@ -61,6 +61,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourceBasedApi", "src\API
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcJarJwt", "src\MvcJarJwt\MvcJarJwt.csproj", "{C371C605-087E-4523-BF15-DD75241283C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleScopesResources", "src\ConsoleScopesResources\ConsoleScopesResources.csproj", "{68C3A94B-1CE1-4434-A59D-5119AF648C38}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -163,6 +165,10 @@ Global
 		{C371C605-087E-4523-BF15-DD75241283C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C371C605-087E-4523-BF15-DD75241283C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C371C605-087E-4523-BF15-DD75241283C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68C3A94B-1CE1-4434-A59D-5119AF648C38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68C3A94B-1CE1-4434-A59D-5119AF648C38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68C3A94B-1CE1-4434-A59D-5119AF648C38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68C3A94B-1CE1-4434-A59D-5119AF648C38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -195,6 +201,7 @@ Global
 		{215D863E-9D87-42F4-AD17-209C330C6ECB} = {AFE7085F-051E-4829-955F-3426FE643BDD}
 		{933613BD-35B0-4F79-A7A7-02F663C55B61} = {AFE7085F-051E-4829-955F-3426FE643BDD}
 		{C371C605-087E-4523-BF15-DD75241283C3} = {158628D7-8B68-451E-AF22-B64F473C5943}
+		{68C3A94B-1CE1-4434-A59D-5119AF648C38} = {D027D36B-262B-450A-B444-5B7893B5142E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BAD78470-3D66-466E-9C17-2A67F0905B18}
