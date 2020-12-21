@@ -147,5 +147,9 @@ namespace Duende.IdentityServer.Configuration
         /// Options for persisted grants.
         /// </summary>
         public PersistentGrantOptions PersistentGrants { get; set; } = new PersistentGrantOptions();
+
+        /// Gets or sets the license key.
+        /// </summary>
+        public string LicenseKey { get; set; }
     }
 }

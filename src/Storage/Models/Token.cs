@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -104,7 +104,12 @@ namespace Duende.IdentityServer.Models
         /// The description.
         /// </value>
         public string Description { get; set; }
-        
+
+        /// <summary>
+        /// Indicates if the token should have a 'jti' claim value.
+        /// </summary>
+        public bool IncludeJwtId { get; set; }
+
         /// <summary>
         /// Gets or sets the claims.
         /// </summary>
@@ -119,7 +124,7 @@ namespace Duende.IdentityServer.Models
         /// <value>
         /// The version.
         /// </value>
-        public int Version { get; set; } = 4;
+        public int Version { get; set; } = 5;
 
         /// <summary>
         /// Gets the subject identifier.

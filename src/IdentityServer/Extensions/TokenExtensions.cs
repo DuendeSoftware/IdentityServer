@@ -35,10 +35,10 @@ namespace Duende.IdentityServer.Extensions
         {
             try
             {
-                var payload = new Dictionary<string, object>();
-
-                // set issuer
-                payload.Add(JwtClaimTypes.Issuer, token.Issuer);
+                var payload = new Dictionary<string, object>
+                {
+                    { JwtClaimTypes.Issuer, token.Issuer }
+                };
 
                 // set times (nbf, exp, iat)
                 var now = clock.UtcNow.ToUnixTimeSeconds();
@@ -131,22 +131,22 @@ namespace Duende.IdentityServer.Extensions
         
         private static object AddObject(Claim claim)
         {
-            if (claim.Type == ClaimValueTypes.Boolean)
+            if (claim.ValueType == ClaimValueTypes.Boolean)
             {
-                return Boolean.Parse(claim.Value);
+                return bool.Parse(claim.Value);
             }
 
-            if (claim.Type == ClaimValueTypes.Integer || claim.Type == ClaimValueTypes.Integer32)
+            if (claim.ValueType == ClaimValueTypes.Integer || claim.ValueType == ClaimValueTypes.Integer32)
             {
-                return Int32.Parse(claim.Value);
+                return int.Parse(claim.Value);
             }
 
-            if (claim.Type == ClaimValueTypes.Integer64)
+            if (claim.ValueType == ClaimValueTypes.Integer64)
             {
-                return Int64.Parse(claim.Value);
+                return long.Parse(claim.Value);
             }
 
-            if (claim.Type == IdentityServerConstants.ClaimValueTypes.Json)
+            if (claim.ValueType == IdentityServerConstants.ClaimValueTypes.Json)
             {
                 return JsonSerializer.Deserialize<JsonElement>(claim.Value);
             }

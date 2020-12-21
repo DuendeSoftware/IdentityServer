@@ -9,6 +9,7 @@ using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Validation;
 
 namespace Duende.IdentityServer.Hosting
 {
@@ -69,6 +70,8 @@ namespace Duende.IdentityServer.Hosting
                 var endpoint = router.Find(context);
                 if (endpoint != null)
                 {
+                    LicenseValidator.ValidateIssuer(context.GetIdentityServerIssuerUri());
+
                     _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
 
                     var result = await endpoint.ProcessAsync(context);
