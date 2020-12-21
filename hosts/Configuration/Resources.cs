@@ -59,14 +59,14 @@ namespace IdentityServerHost.Configuration
         public static readonly IEnumerable<ApiResource> ApiResources = 
             new[]
             {
-                new ApiResource("resource1", "Resource 1")
+                new ApiResource("urn:resource1", "Resource 1")
                 {
                     ApiSecrets = { new Secret("secret".Sha256()) },
 
                     Scopes = { "resource1.scope1", "resource1.scope2", "shared.scope" }
                 },
                 
-                new ApiResource("resource2", "Resource 2")
+                new ApiResource("urn:resource2", "Resource 2")
                 {
                     ApiSecrets = { new Secret("secret".Sha256()) },
 
@@ -80,7 +80,7 @@ namespace IdentityServerHost.Configuration
                     Scopes = { "resource2.scope1", "resource2.scope2", "shared.scope" }
                 },
                 
-                new ApiResource("resource3", "Resource 3 (isolated)")
+                new ApiResource("urn:resource3", "Resource 3 (isolated)")
                 {
                     ApiSecrets = { new Secret("secret".Sha256()) },
                     

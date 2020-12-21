@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Clients;
@@ -56,6 +57,18 @@ namespace ConsoleScopesResources
                 // no scope
                 "i) no scope".ConsoleYellow();
                 
+                // no scope
+                "j) no scope (resource: resource1)".ConsoleYellow();
+                
+                // no scope
+                "k) no scope (resource: resource3)".ConsoleYellow();
+                
+                // isolated scope without resource parameter
+                "l) resource3.scope1".ConsoleYellow();
+                    
+                // isolated scope without resource parameter
+                "m) resource3.scope1 (resource: resource3)".ConsoleYellow();
+                
                 "\nx) quit".ConsoleYellow();
                 
                 var input = Console.ReadKey();
@@ -98,6 +111,22 @@ namespace ConsoleScopesResources
                         await RequestToken("");
                         break;
                     
+                    case ConsoleKey.J:
+                        await RequestToken("", "urn:resource1");
+                        break;
+                    
+                    case ConsoleKey.K:
+                        await RequestToken("", "urn:resource3");
+                        break;
+                    
+                    case ConsoleKey.L:
+                        await RequestToken("resource3.scope1");
+                        break;
+                    
+                    case ConsoleKey.M:
+                        await RequestToken("resource3.scope1", "urn:resource3");
+                        break;
+                    
                     case ConsoleKey.X:
                         leave = true;
                         break;
@@ -105,21 +134,37 @@ namespace ConsoleScopesResources
             }
         }
         
-        static async Task RequestToken(string scope)
+        static async Task RequestToken(string scope, string resource = null)
         {
             var client = new HttpClient();
             var disco = await Cache.GetAsync();
 
-            var response = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            var request = new ClientCredentialsTokenRequest
             {
                 Address = disco.TokenEndpoint,
                 ClientId = "console.resource.scope",
                 ClientSecret = "secret",
 
                 Scope = scope
-            });
-            
-            if (response.IsError) throw new Exception(response.Error);
+            };
+
+            if (!string.IsNullOrEmpty(resource))
+            {
+                request.Parameters = new Dictionary<string, string>
+                {
+                    { "resource", resource }
+                };
+            }
+
+            var response = await client.RequestClientCredentialsTokenAsync(request);
+
+            if (response.IsError)
+            {
+                Console.WriteLine();
+                Console.WriteLine(response.Error);
+                Console.ReadLine();
+                return;
+            }
 
             Console.WriteLine();
             Console.WriteLine();
