@@ -105,25 +105,29 @@ namespace Duende.IdentityServer.Validation
         /// </summary>
         public ResourceValidationResult FilterByResourceIndicator(string resourceIndicator)
         {
-            var apiResourcesToKeep = String.IsNullOrWhiteSpace(resourceIndicator) ?
+            // filter ApiResources to only the ones allowed by the resource indicator requested
+            var apiResourcesToKeep = (String.IsNullOrWhiteSpace(resourceIndicator) ?
                 Resources.ApiResources.Where(x => !x.RequireResourceIndicator) :
-                Resources.ApiResources.Where(x => x.Name == resourceIndicator);
+                Resources.ApiResources.Where(x => x.Name == resourceIndicator)).ToArray();
+            
+            var apiScopesToKeep = Resources.ApiScopes.AsEnumerable();
+            var parsedScopesToKeep = ParsedScopes;
 
-            var scopeNamesToKeep = apiResourcesToKeep.SelectMany(x => x.Scopes);
-            var apiScopesToKeep = Resources.ApiScopes.Where(x => scopeNamesToKeep.Contains(x.Name));
-
-            if (resourceIndicator == null)
+            if (!String.IsNullOrWhiteSpace(resourceIndicator))
             {
-                // no resource indicator, so we also keep identity scopes (e.g. since we need those for userinfo)
-                scopeNamesToKeep = scopeNamesToKeep.Union(Resources.IdentityResources.Select(x => x.Name));
-            }
+                // filter ApiScopes to only the ones allowed by the ApiResource requested
+                var scopeNamesToKeep = apiResourcesToKeep.SelectMany(x => x.Scopes).ToArray();
+                apiScopesToKeep = Resources.ApiScopes.Where(x => scopeNamesToKeep.Contains(x.Name)).ToArray();
 
-            var parsedScopesToKeep = ParsedScopes.Where(x => scopeNamesToKeep.Contains(x.ParsedName)).ToList();
-            if (Resources.OfflineAccess)
-            {
-                parsedScopesToKeep.Add(new ParsedScopeValue(IdentityServerConstants.StandardScopes.OfflineAccess));
+                // filter ParsedScopes to those matching the apiScopesToKeep
+                var parsedScopesToKeepList = ParsedScopes.Where(x => scopeNamesToKeep.Contains(x.ParsedName)).ToHashSet();
+                if (Resources.OfflineAccess)
+                {
+                    parsedScopesToKeepList.Add(new ParsedScopeValue(IdentityServerConstants.StandardScopes.OfflineAccess));
+                }
+                parsedScopesToKeep = parsedScopesToKeepList;
             }
-
+            
             var resources = new Resources(Resources.IdentityResources, apiResourcesToKeep, apiScopesToKeep)
             {
                 OfflineAccess = Resources.OfflineAccess,
