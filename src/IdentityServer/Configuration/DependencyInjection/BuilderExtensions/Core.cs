@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddRequiredPlatformServices(this IIdentityServerBuilder builder)
         {
-            builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();            
+            builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddOptions();
             builder.Services.AddSingleton(
                 resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value);
@@ -121,6 +121,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddCoreServices(this IIdentityServerBuilder builder)
         {
+            builder.Services.AddTransient<IIssuerNameService, DefaultIssuerNameService>();
             builder.Services.AddTransient<ISecretsListParser, SecretParser>();
             builder.Services.AddTransient<ISecretsListValidator, SecretValidator>();
             builder.Services.AddTransient<ExtensionGrantValidator>();

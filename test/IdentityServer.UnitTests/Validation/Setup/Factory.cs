@@ -29,6 +29,7 @@ namespace UnitTests.Validation.Setup
 
         public static TokenRequestValidator CreateTokenRequestValidator(
             IdentityServerOptions options = null,
+            IIssuerNameService issuerNameService = null,
             IResourceStore resourceStore = null,
             IAuthorizationCodeStore authorizationCodeStore = null,
             IRefreshTokenStore refreshTokenStore = null,
@@ -46,6 +47,11 @@ namespace UnitTests.Validation.Setup
                 options = TestIdentityServerOptions.Create();
             }
 
+            if (issuerNameService == null)
+            {
+                issuerNameService = new TestIssuerNameService(options.IssuerUri);
+            }
+            
             if (resourceStore == null)
             {
                 resourceStore = new InMemoryResourcesStore(TestScopes.GetIdentity(), TestScopes.GetApis(), TestScopes.GetScopes());
@@ -110,6 +116,7 @@ namespace UnitTests.Validation.Setup
 
             return new TokenRequestValidator(
                 options,
+                issuerNameService,
                 authorizationCodeStore,
                 resourceOwnerValidator,
                 profile,
@@ -184,6 +191,7 @@ namespace UnitTests.Validation.Setup
 
         public static AuthorizeRequestValidator CreateAuthorizeRequestValidator(
             IdentityServerOptions options = null,
+            IIssuerNameService issuerNameService = null,
             IResourceStore resourceStore = null,
             IClientStore clients = null,
             IProfileService profile = null,
@@ -196,6 +204,11 @@ namespace UnitTests.Validation.Setup
             if (options == null)
             {
                 options = TestIdentityServerOptions.Create();
+            }
+            
+            if (issuerNameService == null)
+            {
+                issuerNameService = new TestIssuerNameService(options.IssuerUri);
             }
 
             if (resourceStore == null)
@@ -238,6 +251,7 @@ namespace UnitTests.Validation.Setup
 
             return new AuthorizeRequestValidator(
                 options,
+                issuerNameService,
                 clients,
                 customValidator,
                 uriValidator,

@@ -35,6 +35,11 @@ namespace Duende.IdentityServer.Validation
         public Client Client { get; set; }
 
         /// <summary>
+        /// The name of the issuer for the current request
+        /// </summary>
+        public string IssuerName { get; set; }
+
+        /// <summary>
         /// Gets or sets the secret used to authenticate the client.
         /// </summary>
         /// <value>
