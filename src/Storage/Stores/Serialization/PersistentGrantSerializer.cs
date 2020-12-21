@@ -3,8 +3,8 @@
 
 
 using Microsoft.AspNetCore.DataProtection;
-using Newtonsoft.Json;
 using System;
+using System.Text.Json;
 
 namespace Duende.IdentityServer.Stores.Serialization
 {
@@ -25,16 +25,18 @@ namespace Duende.IdentityServer.Stores.Serialization
     /// <seealso cref="IPersistentGrantSerializer" />
     public class PersistentGrantSerializer : IPersistentGrantSerializer
     {
-        private static readonly JsonSerializerSettings _settings;
+        private static readonly JsonSerializerOptions _settings;
 
         private readonly PersistentGrantOptions _options;
         private readonly IDataProtector _provider;
 
         static PersistentGrantSerializer()
         {
-            _settings = new JsonSerializerSettings
+            _settings = new JsonSerializerOptions
             {
-                ContractResolver = new CustomContractResolver()
+                IgnoreReadOnlyFields = true,
+                IgnoreReadOnlyProperties = true,
+                
             };
             _settings.Converters.Add(new ClaimConverter());
             _settings.Converters.Add(new ClaimsPrincipalConverter());
@@ -61,7 +63,7 @@ namespace Duende.IdentityServer.Stores.Serialization
         /// <returns></returns>
         public string Serialize<T>(T value)
         {
-            var payload = JsonConvert.SerializeObject(value, _settings);
+            var payload = JsonSerializer.Serialize(value, _settings);
 
             if (ShouldDataProtect)
             {
@@ -75,7 +77,7 @@ namespace Duende.IdentityServer.Stores.Serialization
                 Payload = payload,
             };
 
-            return JsonConvert.SerializeObject(data, _settings);
+            return JsonSerializer.Serialize(data, _settings);
         }
 
         /// <summary>
@@ -86,11 +88,11 @@ namespace Duende.IdentityServer.Stores.Serialization
         /// <returns></returns>
         public T Deserialize<T>(string json)
         {
-            var container = JsonConvert.DeserializeObject<PersistentGrantDataContainer>(json, _settings);
+            var container = JsonSerializer.Deserialize<PersistentGrantDataContainer>(json, _settings);
             
             if (container.PersistentGrantDataContainerVersion == 0)
             {
-                return JsonConvert.DeserializeObject<T>(json, _settings);
+                return JsonSerializer.Deserialize<T>(json, _settings);
             }
 
             if (container.PersistentGrantDataContainerVersion == 1)
@@ -107,7 +109,7 @@ namespace Duende.IdentityServer.Stores.Serialization
                     payload = _provider.Unprotect(container.Payload);
                 }
 
-                return JsonConvert.DeserializeObject<T>(payload, _settings);
+                return JsonSerializer.Deserialize<T>(payload, _settings);
             }
 
             throw new Exception($"Invalid version in persisted grant data: '{container.PersistentGrantDataContainerVersion}'.");
