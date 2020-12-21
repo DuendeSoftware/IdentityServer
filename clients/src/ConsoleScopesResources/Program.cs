@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -24,10 +24,10 @@ namespace ConsoleScopesResources
                 
                 "Resource setup:\n".ConsoleGreen();
 
-                "resource1: resource1.scope1 resource.scope2 shared.scope".ConsoleGreen();
+                "resource1: resource1.scope1 resource1.scope2 shared.scope".ConsoleGreen();
                 "resource2: resource2.scope1 resource2.scope2 shared.scope\n".ConsoleGreen();
                 "resource3 (isolated): resource3.scope1 resource3.scope2 shared.scope\n".ConsoleGreen();
-                "scopes without resource association: scope3 transaction\n\n".ConsoleGreen();
+                "scopes without resource association: scope3 scope4 transaction\n\n".ConsoleGreen();
                 
                 
                 // scopes without associated resource
