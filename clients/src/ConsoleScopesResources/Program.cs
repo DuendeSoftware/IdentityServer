@@ -69,6 +69,9 @@ namespace ConsoleScopesResources
                 // isolated scope without resource parameter
                 "m) resource3.scope1 (resource: resource3)".ConsoleYellow();
                 
+                // isolated scope without resource parameter
+                "n) resource3.scope1 (resource: resource2)".ConsoleYellow();
+                
                 "\nx) quit".ConsoleYellow();
                 
                 var input = Console.ReadKey();
@@ -125,6 +128,10 @@ namespace ConsoleScopesResources
                     
                     case ConsoleKey.M:
                         await RequestToken("resource3.scope1", "urn:resource3");
+                        break;
+                    
+                    case ConsoleKey.N:
+                        await RequestToken("resource3.scope1", "urn:resource2");
                         break;
                     
                     case ConsoleKey.X:
