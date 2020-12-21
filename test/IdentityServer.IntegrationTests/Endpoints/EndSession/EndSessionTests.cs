@@ -166,17 +166,47 @@ namespace IntegrationTests.Endpoints.EndSession
 
             var response = await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.EndSessionEndpoint +
                 "?id_token_hint=" + id_token +
-                "&post_logout_redirect_uri=https://client2/signout-callback2");
+                "&post_logout_redirect_uri=https://client2/signout-callback2" + 
+                "&ui_locales=fr-FR fr-CA");
 
             _mockPipeline.LogoutWasCalled.Should().BeTrue();
             _mockPipeline.LogoutRequest.Should().NotBeNull();
             _mockPipeline.LogoutRequest.ClientId.Should().Be("client2");
             _mockPipeline.LogoutRequest.PostLogoutRedirectUri.Should().Be("https://client2/signout-callback2");
+            _mockPipeline.LogoutRequest.UiLocales.Should().Be("fr-FR fr-CA");
 
             var parts = _mockPipeline.LogoutRequest.SignOutIFrameUrl.Split('?');
             parts[0].Should().Be(IdentityServerPipeline.EndSessionCallbackEndpoint);
             var iframeUrl = QueryHelpers.ParseNullableQuery(parts[1]);
             iframeUrl["endSessionId"].FirstOrDefault().Should().NotBeNull();
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task ui_locales_too_long_should_be_ignored()
+        {
+            await _mockPipeline.LoginAsync("bob");
+
+            var authorization = await _mockPipeline.RequestAuthorizationEndpointAsync(
+                clientId: "client2",
+                responseType: "id_token",
+                scope: "openid",
+                redirectUri: "https://client2/callback",
+                state: "123_state",
+                nonce: "123_nonce");
+
+            var id_token = authorization.IdentityToken;
+
+            var response = await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.EndSessionEndpoint +
+                "?id_token_hint=" + id_token +
+                "&post_logout_redirect_uri=https://client2/signout-callback2" +
+                "&ui_locales=" + new string('x', 101));
+
+            _mockPipeline.LogoutWasCalled.Should().BeTrue();
+            _mockPipeline.LogoutRequest.Should().NotBeNull();
+            _mockPipeline.LogoutRequest.ClientId.Should().Be("client2");
+            _mockPipeline.LogoutRequest.PostLogoutRedirectUri.Should().Be("https://client2/signout-callback2");
+            _mockPipeline.LogoutRequest.UiLocales.Should().BeNull();
         }
 
         [Fact]
