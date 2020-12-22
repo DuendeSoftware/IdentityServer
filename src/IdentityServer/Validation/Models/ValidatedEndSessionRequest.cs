@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -34,6 +34,14 @@ namespace Duende.IdentityServer.Validation
         /// The state.
         /// </value>
         public string State { get; set; }
+
+        /// <summary>
+        /// Gets or sets the UI locales.
+        /// </summary>
+        /// <value>
+        /// The UI locales.
+        /// </value>
+        public string UiLocales { get; set; }
 
         /// <summary>
         ///  Ids of clients known to have an authentication session for user at end session time

@@ -2,6 +2,8 @@
 // See LICENSE in the project root for license information.
 
 
+using Duende.IdentityServer.Stores.Serialization;
+
 namespace Duende.IdentityServer.Configuration
 {
     /// <summary>
@@ -140,6 +142,11 @@ namespace Duende.IdentityServer.Configuration
         /// Gets or sets the signing key management options.
         /// </summary>
         public KeyManagementOptions KeyManagement { get; set; } = new KeyManagementOptions();
+
+        /// <summary>
+        /// Options for persisted grants.
+        /// </summary>
+        public PersistentGrantOptions PersistentGrants { get; set; } = new PersistentGrantOptions();
 
         /// <summary>
         /// Gets or sets the license key.
