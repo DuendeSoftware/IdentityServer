@@ -394,5 +394,68 @@ namespace UnitTests.Validation
             result.InvalidScopes.Should().BeEmpty();
             result.InvalidResourceIndicators.Should().BeEquivalentTo(new[] { "resource3" });
         }
+
+
+        // ResourceValidationResult FilterByResourceIndicator
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task FilterByResourceIndicator_should_filter_properly()
+        {
+            var resources = new Resources(
+                new IdentityResource[]
+                {
+                    new IdentityResources.OpenId(),
+                    new IdentityResources.Profile(),
+                },
+                new ApiResource[]
+                {
+                    new ApiResource("resource1"){ Scopes = { "scope1", "scope2" } },
+                    new ApiResource("resource2"){ Scopes = { "scope1" } },
+                    new ApiResource("isolated1"){ Scopes = { "scope3", "scope2" }, RequireResourceIndicator = true },
+                    new ApiResource("isolated2"){ Scopes = { "scope3" }, RequireResourceIndicator = true },
+                },
+                new ApiScope[]
+                {
+                    new ApiScope("scope1"),
+                    new ApiScope("scope2"),
+                    new ApiScope("scope3"),
+                });
+
+            var subject = new ResourceValidationResult(resources);
+
+            {
+                var result = subject.FilterByResourceIndicator(null);
+                result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "resource1", "resource2" });
+                result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope1", "scope2", "scope3" });
+                result.Resources.OfflineAccess.Should().BeFalse();
+            }
+            {
+                resources.OfflineAccess = true;
+                var result = subject.FilterByResourceIndicator(null);
+                result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "resource1", "resource2" });
+                result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope1", "scope2", "scope3" });
+                result.Resources.OfflineAccess.Should().BeTrue();
+            }
+            {
+                var result = subject.FilterByResourceIndicator("resource1");
+                result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "resource1" });
+                result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope1", "scope2" });
+            }
+            {
+                var result = subject.FilterByResourceIndicator("resource2");
+                result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "resource2" });
+                result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope1" });
+            }
+            {
+                var result = subject.FilterByResourceIndicator("isolated1");
+                result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "isolated1" });
+                result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope2", "scope3" });
+            }
+            {
+                var result = subject.FilterByResourceIndicator("isolated2");
+                result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "isolated2" });
+                result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope3" });
+            }
+        }
     }
 }
