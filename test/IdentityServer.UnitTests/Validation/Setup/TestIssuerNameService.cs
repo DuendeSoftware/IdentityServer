@@ -2,22 +2,23 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
+using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
 
 namespace UnitTests.Validation.Setup
 {
     internal class TestIssuerNameService : IIssuerNameService
     {
-        private string _value;
+        private readonly string _value;
 
         public TestIssuerNameService(string value)
         {
             _value = value ?? "https://identityserver";         
         }
-        public string GetCurrent()
+        
+        public Task<string> GetCurrentAsync()
         {
-            return _value;
+            return Task.FromResult(_value);
         }
     }
 }

@@ -65,7 +65,7 @@ namespace Duende.IdentityServer.Validation
             var request = new ValidatedAuthorizeRequest
             {
                 Options = _options,
-                IssuerName = _issuerNameService.GetCurrent(),
+                IssuerName = await _issuerNameService.GetCurrentAsync(),
                 Subject = subject ?? Principal.Anonymous,
                 Raw = parameters ?? throw new ArgumentNullException(nameof(parameters))
             };

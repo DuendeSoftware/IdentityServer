@@ -92,7 +92,7 @@ namespace Duende.IdentityServer.Validation
 
             _validatedRequest = new ValidatedTokenRequest
             {
-                IssuerName = _issuerNameService.GetCurrent(),
+                IssuerName = await _issuerNameService.GetCurrentAsync(),
                 Raw = parameters ?? throw new ArgumentNullException(nameof(parameters)),
                 Options = _options
             };

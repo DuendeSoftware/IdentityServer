@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Threading.Tasks;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 
@@ -18,16 +19,16 @@ namespace Duende.IdentityServer.Services
         /// <summary>
         /// ctor
         /// </summary>
-        /// <param name="httpContextAccessor"></param>
+        /// <param name="httpContextAccessor">The HTTP context accessor</param>
         public DefaultIssuerNameService(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
         
         /// <inheritdoc />
-        public string GetCurrent()
+        public Task<string> GetCurrentAsync()
         {
-            return _httpContextAccessor.HttpContext.GetIdentityServerIssuerUri();
+            return Task.FromResult(_httpContextAccessor.HttpContext.GetIdentityServerIssuerUri());
         }
     }
 }

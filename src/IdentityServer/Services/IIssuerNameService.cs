@@ -2,6 +2,8 @@
 // See LICENSE in the project root for license information.
 
 
+using System.Threading.Tasks;
+
 namespace Duende.IdentityServer.Services
 {
     /// <summary>
@@ -13,6 +15,6 @@ namespace Duende.IdentityServer.Services
         /// Returns the issuer name for the current request
         /// </summary>
         /// <returns></returns>
-        string GetCurrent();
+        Task<string> GetCurrentAsync();
     }
 }
