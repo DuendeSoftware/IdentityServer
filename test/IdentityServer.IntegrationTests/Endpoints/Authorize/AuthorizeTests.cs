@@ -237,6 +237,37 @@ namespace IntegrationTests.Endpoints.Authorize
             authorization.IsError.Should().BeFalse();
             authorization.IdentityToken.Should().NotBeNull();
             authorization.State.Should().Be("123_state");
+            authorization.Values.Keys.Should().NotContain("iss");
+        }
+        
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task code_success_response_should_have_all_expected_values()
+        {
+            _mockPipeline.Subject = new IdentityServerUser("bob").CreatePrincipal();
+            _mockPipeline.BrowserClient.StopRedirectingAfter = 2;
+
+            var url = _mockPipeline.CreateAuthorizeUrl(
+                clientId: "client4",
+                responseType: "code",
+                scope: "openid",
+                redirectUri: "https://client4/callback",
+                state: "123_state",
+                nonce: "123_nonce");
+            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+            response.Headers.Location.ToString().Should().StartWith("https://client4/callback");
+
+            var authorization = new IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
+            authorization.IsError.Should().BeFalse();
+            authorization.IdentityToken.Should().BeNull();
+            authorization.AccessToken.Should().BeNull();
+            authorization.Code.Should().NotBeNullOrEmpty();
+            authorization.Scope.Should().Be("openid");
+            authorization.State.Should().Be("123_state");
+            authorization.Values["session_state"].Should().NotBeNullOrEmpty();
+            authorization.Values["iss"].Should().Be("https%3A%2F%2Fserver");
         }
 
         [Fact]
