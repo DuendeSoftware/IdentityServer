@@ -168,6 +168,21 @@ namespace Duende.IdentityServer.Validation
                 validatedRequest.ClientIds = await UserSession.GetClientListAsync();
             }
 
+            // todo: need OidcConstants.EndSession.UiLocales
+            var uilocales = parameters.Get(OidcConstants.AuthorizeRequest.UiLocales);
+            if (uilocales.IsPresent())
+            {
+                if (uilocales.Length > Options.InputLengthRestrictions.UiLocale)
+                {
+                    var log = new EndSessionRequestValidationLog(validatedRequest);
+                    Logger.LogWarning("UI locale too long. It will be ignored." + Environment.NewLine + "{@details}", log);
+                }
+                else
+                {
+                    validatedRequest.UiLocales = uilocales;
+                }
+            }
+
             LogSuccess(validatedRequest);
 
             return new EndSessionValidationResult

@@ -41,7 +41,7 @@ namespace Duende.IdentityServer.Services
             var deviceAuth = await _devices.FindByUserCodeAsync(userCode);
             if (deviceAuth == null) return null;
 
-            var client = await _clients.FindClientByIdAsync(deviceAuth.ClientId);
+            var client = await _clients.FindEnabledClientByIdAsync(deviceAuth.ClientId);
             if (client == null) return null;
 
             var parsedScopesResult = _scopeParser.ParseScopeValues(deviceAuth.RequestedScopes);
@@ -62,7 +62,7 @@ namespace Duende.IdentityServer.Services
             var deviceAuth = await _devices.FindByUserCodeAsync(userCode);
             if (deviceAuth == null) return LogAndReturnError("Invalid user code", "Device authorization failure - user code is invalid");
 
-            var client = await _clients.FindClientByIdAsync(deviceAuth.ClientId);
+            var client = await _clients.FindEnabledClientByIdAsync(deviceAuth.ClientId);
             if (client == null) return LogAndReturnError("Invalid client", "Device authorization failure - requesting client is invalid");
 
             var subject = await _session.GetUserAsync();

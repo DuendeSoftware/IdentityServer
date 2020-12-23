@@ -40,12 +40,14 @@ namespace Duende.IdentityServer.Models
                 Parameters.Remove(OidcConstants.EndSessionRequest.IdTokenHint);
                 Parameters.Remove(OidcConstants.EndSessionRequest.PostLogoutRedirectUri);
                 Parameters.Remove(OidcConstants.EndSessionRequest.State);
+                Parameters.Remove(OidcConstants.AuthorizeRequest.UiLocales);
 
                 ClientId = request.Client?.ClientId;
                 ClientName = request.Client?.ClientName;
                 SubjectId = request.Subject?.GetSubjectId();
                 SessionId = request.SessionId;
                 ClientIds = request.ClientIds;
+                UiLocales = request.UiLocales;
 
                 if (request.PostLogOutUri != null)
                 {
@@ -89,6 +91,11 @@ namespace Duende.IdentityServer.Models
         public IEnumerable<string> ClientIds { get; set; }
 
         /// <summary>
+        /// The UI locales.
+        /// </summary>
+        public string UiLocales { get; set; }
+        
+        /// <summary>
         /// Gets the entire parameter collection.
         /// </summary>
         public IDictionary<string, string[]> Parameters { get; set; } = new Dictionary<string, string[]>();
@@ -119,6 +126,7 @@ namespace Duende.IdentityServer.Models
                 SubjectId = message.SubjectId;
                 SessionId = message.SessionId;
                 ClientIds = message.ClientIds;
+                UiLocales = message.UiLocales;
                 Parameters = message.Parameters.FromFullDictionary();
             }
 
@@ -155,6 +163,11 @@ namespace Duende.IdentityServer.Models
         /// </summary>
         public IEnumerable<string> ClientIds { get; set; }
 
+        /// <summary>
+        /// The UI locales.
+        /// </summary>
+        public string UiLocales { get; set; }
+        
         /// <summary>
         /// Gets the entire parameter collection.
         /// </summary>

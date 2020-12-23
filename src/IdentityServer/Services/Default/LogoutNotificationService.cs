@@ -19,7 +19,7 @@ namespace Duende.IdentityServer.Services
     public class LogoutNotificationService : ILogoutNotificationService
     {
         private readonly IClientStore _clientStore;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IIssuerNameService _issuerNameService;
         private readonly ILogger<LogoutNotificationService> _logger;
 
 
@@ -28,11 +28,11 @@ namespace Duende.IdentityServer.Services
         /// </summary>
         public LogoutNotificationService(
             IClientStore clientStore,
-            IHttpContextAccessor httpContextAccessor, 
+            IIssuerNameService issuerNameService,
             ILogger<LogoutNotificationService> logger)
         {
             _clientStore = clientStore;
-            _httpContextAccessor = httpContextAccessor;
+            _issuerNameService = issuerNameService;
             _logger = logger;
         }
 
@@ -55,7 +55,7 @@ namespace Duende.IdentityServer.Services
                             if (client.FrontChannelLogoutSessionRequired)
                             {
                                 url = url.AddQueryString(OidcConstants.EndSessionRequest.Sid, context.SessionId);
-                                url = url.AddQueryString(OidcConstants.EndSessionRequest.Issuer, _httpContextAccessor.HttpContext.GetIdentityServerIssuerUri());
+                                url = url.AddQueryString(OidcConstants.EndSessionRequest.Issuer, await _issuerNameService.GetCurrentAsync());
                             }
                         }
                         else if (client.ProtocolType == IdentityServerConstants.ProtocolTypes.WsFederation)

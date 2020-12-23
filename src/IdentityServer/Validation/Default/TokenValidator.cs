@@ -26,7 +26,7 @@ namespace Duende.IdentityServer.Validation
     {
         private readonly ILogger _logger;
         private readonly IdentityServerOptions _options;
-        private readonly IHttpContextAccessor _context;
+        private readonly IIssuerNameService _issuerNameService;
         private readonly IReferenceTokenStore _referenceTokenStore;
         private readonly ICustomTokenValidator _customValidator;
         private readonly IClientStore _clients;
@@ -37,7 +37,7 @@ namespace Duende.IdentityServer.Validation
 
         public TokenValidator(
             IdentityServerOptions options,
-            IHttpContextAccessor context,
+            IIssuerNameService issuerNameService,
             IClientStore clients,
             IProfileService profile,
             IReferenceTokenStore referenceTokenStore,
@@ -48,7 +48,7 @@ namespace Duende.IdentityServer.Validation
             ILogger<TokenValidator> logger)
         {
             _options = options;
-            _context = context;
+            _issuerNameService = issuerNameService;
             _clients = clients;
             _profile = profile;
             _referenceTokenStore = referenceTokenStore;
@@ -250,7 +250,7 @@ namespace Duende.IdentityServer.Validation
 
             var parameters = new TokenValidationParameters
             {
-                ValidIssuer = _context.HttpContext.GetIdentityServerIssuerUri(),
+                ValidIssuer = await _issuerNameService.GetCurrentAsync(),
                 IssuerSigningKeys = validationKeys.Select(k => k.Key),
                 ValidateLifetime = validateLifetime
             };
@@ -397,6 +397,7 @@ namespace Duende.IdentityServer.Validation
             {
                 new Claim(JwtClaimTypes.Issuer, token.Issuer),
                 new Claim(JwtClaimTypes.NotBefore, new DateTimeOffset(token.CreationTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+                new Claim(JwtClaimTypes.IssuedAt, new DateTimeOffset(token.CreationTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
                 new Claim(JwtClaimTypes.Expiration, new DateTimeOffset(token.CreationTime).AddSeconds(token.Lifetime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             };
 

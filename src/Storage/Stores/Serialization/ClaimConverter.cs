@@ -1,41 +1,35 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
-using Newtonsoft.Json;
 using System;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 #pragma warning disable 1591
 
 namespace Duende.IdentityServer.Stores.Serialization
 {
-    public class ClaimConverter : JsonConverter
+    public class ClaimConverter : JsonConverter<Claim>
     {
-        public override bool CanConvert(Type objectType)
+        public override Claim Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return typeof(Claim) == objectType;
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            var source = serializer.Deserialize<ClaimLite>(reader);
+            var source = JsonSerializer.Deserialize<ClaimLite>(ref reader, options);
             var target = new Claim(source.Type, source.Value, source.ValueType);
             return target;
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, Claim value, JsonSerializerOptions options)
         {
-            var source = (Claim)value;
-
             var target = new ClaimLite
             {
-                Type = source.Type,
-                Value = source.Value,
-                ValueType = source.ValueType
+                Type = value.Type,
+                Value = value.Value,
+                ValueType = value.ValueType
             };
 
-            serializer.Serialize(writer, target);
+            JsonSerializer.Serialize(writer, target, options);
         }
     }
 }

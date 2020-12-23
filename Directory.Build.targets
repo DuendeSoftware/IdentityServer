@@ -31,13 +31,14 @@
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="All" />
 
     <!--microsoft extensions -->
+    <PackageReference Update="System.Text.Json" Version="5.0.0" />
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="$(ExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Http.Polly" Version="$(ExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Logging.Console" Version="$(ExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)" />
-    
+
     <!--misc -->
     <PackageReference Update="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(WilsonVersion)" />
@@ -46,6 +47,7 @@
     <PackageReference Update="Serilog.AspNetCore" Version="3.4.0" />     
     
     <!--microsoft asp.net core -->
+    <PackageReference Update="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Identity" Version="$(FrameworkVersion)" />

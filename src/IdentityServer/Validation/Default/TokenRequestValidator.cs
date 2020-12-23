@@ -24,6 +24,7 @@ namespace Duende.IdentityServer.Validation
     internal class TokenRequestValidator : ITokenRequestValidator
     {
         private readonly IdentityServerOptions _options;
+        private readonly IIssuerNameService _issuerNameService;
         private readonly IAuthorizationCodeStore _authorizationCodeStore;
         private readonly ExtensionGrantValidator _extensionGrantValidator;
         private readonly ICustomTokenRequestValidator _customRequestValidator;
@@ -40,24 +41,9 @@ namespace Duende.IdentityServer.Validation
 
         private ValidatedTokenRequest _validatedRequest;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TokenRequestValidator" /> class.
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <param name="authorizationCodeStore">The authorization code store.</param>
-        /// <param name="resourceOwnerValidator">The resource owner validator.</param>
-        /// <param name="profile">The profile.</param>
-        /// <param name="deviceCodeValidator">The device code validator.</param>
-        /// <param name="extensionGrantValidator">The extension grant validator.</param>
-        /// <param name="customRequestValidator">The custom request validator.</param>
-        /// <param name="resourceValidator">The resource validator.</param>
-        /// <param name="resourceStore">The resource store.</param>
-        /// <param name="tokenValidator">The token validator.</param>
-        /// <param name="refreshTokenService"></param>
-        /// <param name="events">The events.</param>
-        /// <param name="clock">The clock.</param>
-        /// <param name="logger">The logger.</param>
-        public TokenRequestValidator(IdentityServerOptions options, 
+        public TokenRequestValidator(
+            IdentityServerOptions options,
+            IIssuerNameService issuerNameService,
             IAuthorizationCodeStore authorizationCodeStore, 
             IResourceOwnerPasswordValidator resourceOwnerValidator, 
             IProfileService profile, 
@@ -74,6 +60,7 @@ namespace Duende.IdentityServer.Validation
         {
             _logger = logger;
             _options = options;
+            _issuerNameService = issuerNameService;
             _clock = clock;
             _authorizationCodeStore = authorizationCodeStore;
             _resourceOwnerValidator = resourceOwnerValidator;
@@ -105,6 +92,7 @@ namespace Duende.IdentityServer.Validation
 
             _validatedRequest = new ValidatedTokenRequest
             {
+                IssuerName = await _issuerNameService.GetCurrentAsync(),
                 Raw = parameters ?? throw new ArgumentNullException(nameof(parameters)),
                 Options = _options
             };
@@ -194,6 +182,9 @@ namespace Duende.IdentityServer.Validation
             }
 
             LogSuccess();
+
+            LicenseValidator.ValidateClient(customValidationContext.Result.ValidatedRequest.ClientId);
+
             return customValidationContext.Result;
         }
 
