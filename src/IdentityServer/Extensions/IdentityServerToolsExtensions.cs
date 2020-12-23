@@ -58,7 +58,9 @@ namespace Duende.IdentityServer
 
             if (options.EmitStaticAudienceClaim)
             {
-                claims.Add(new Claim(JwtClaimTypes.Audience, string.Format(IdentityServerConstants.AccessTokenAudience, tools.ContextAccessor.HttpContext.GetIdentityServerIssuerUri().EnsureTrailingSlash())));
+                claims.Add(new Claim(
+                    JwtClaimTypes.Audience, 
+                    string.Format(IdentityServerConstants.AccessTokenAudience, (await tools.IssuerNameService.GetCurrentAsync()).EnsureTrailingSlash())));
             }
             
             if (!audiences.IsNullOrEmpty())
