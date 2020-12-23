@@ -11,7 +11,7 @@ namespace UnitTests.Validation.Setup
     {
         private readonly string _value;
 
-        public TestIssuerNameService(string value)
+        public TestIssuerNameService(string value = null)
         {
             _value = value ?? "https://identityserver";         
         }
