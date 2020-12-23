@@ -25,11 +25,6 @@ namespace Duende.IdentityServer.ResponseHandling
     public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     {
         /// <summary>
-        /// The HTTP context accessor
-        /// </summary>
-        protected readonly IHttpContextAccessor HttpContextAccessor;
-
-        /// <summary>
         /// The token service
         /// </summary>
         protected readonly ITokenService TokenService;
@@ -63,7 +58,6 @@ namespace Duende.IdentityServer.ResponseHandling
         /// Initializes a new instance of the <see cref="AuthorizeResponseGenerator"/> class.
         /// </summary>
         /// <param name="clock">The clock.</param>
-        /// <param name="httpContextAccessor">The HTTP context accessor</param>
         /// <param name="logger">The logger.</param>
         /// <param name="tokenService">The token service.</param>
         /// <param name="keyMaterialService"></param>
@@ -74,11 +68,9 @@ namespace Duende.IdentityServer.ResponseHandling
             ITokenService tokenService,
             IKeyMaterialService keyMaterialService,
             IAuthorizationCodeStore authorizationCodeStore,
-            IHttpContextAccessor httpContextAccessor,
             ILogger<AuthorizeResponseGenerator> logger,
             IEventService events)
         {
-            HttpContextAccessor = httpContextAccessor;
             Clock = clock;
             TokenService = tokenService;
             KeyMaterialService = keyMaterialService;
@@ -144,7 +136,7 @@ namespace Duende.IdentityServer.ResponseHandling
 
             var response = new AuthorizeResponse
             {
-                Issuer = HttpContextAccessor.HttpContext.GetIdentityServerIssuerUri(),
+                Issuer = request.IssuerName,
                 Request = request,
                 Code = id,
                 SessionState = request.GenerateSessionStateValue()
