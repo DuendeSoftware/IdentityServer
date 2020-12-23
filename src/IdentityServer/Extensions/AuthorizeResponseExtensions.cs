@@ -59,6 +59,11 @@ namespace Duende.IdentityServer.Models
             {
                 collection.Add("session_state", response.SessionState);
             }
+            
+            if (response.Issuer.IsPresent())
+            {
+                collection.Add("iss", response.Issuer);
+            }
 
             return collection;
         }
