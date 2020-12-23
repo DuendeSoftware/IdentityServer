@@ -29,7 +29,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         private readonly ISystemClock _clock;
         private readonly INewKeyLock _newKeyLock;
         private readonly ILogger<KeyManager> _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IIssuerNameService _issuerNameService;
 
         /// <summary>
         /// Constructor for KeyManager
@@ -41,7 +41,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <param name="clock"></param>
         /// <param name="newKeyLock"></param>
         /// <param name="logger"></param>
-        /// <param name="httpContextAccessor"></param>
+        /// <param name="issuerNameService"></param>
         public KeyManager(
             KeyManagementOptions options,
             ISigningKeyStore store,
@@ -50,7 +50,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             ISystemClock clock,
             INewKeyLock newKeyLock,
             ILogger<KeyManager> logger,
-            IHttpContextAccessor httpContextAccessor = null)
+            IIssuerNameService issuerNameService)
         {
             options.Validate();
 
@@ -61,7 +61,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             _clock = clock;
             _newKeyLock = newKeyLock;
             _logger = logger;
-            _httpContextAccessor = httpContextAccessor;
+            _issuerNameService = issuerNameService;
         }
 
         /// <inheritdoc />
@@ -264,7 +264,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             _logger.LogDebug("Creating new key.");
 
             var now = _clock.UtcNow.DateTime;
-            var iss = _httpContextAccessor?.HttpContext?.GetIdentityServerIssuerUri();
+            var iss = await _issuerNameService.GetCurrentAsync();
 
             KeyContainer container = null;
 

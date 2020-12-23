@@ -11,6 +11,7 @@ using Duende.IdentityServer.Configuration;
 using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -23,8 +24,7 @@ namespace Duende.IdentityServer.Validation
     public class JwtRequestValidator
     {
         private readonly string _audienceUri;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        
+
         /// <summary>
         /// JWT handler
         /// </summary>
@@ -36,37 +36,39 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// The audience URI to use
         /// </summary>
-        protected string AudienceUri
+        protected async Task<string> GetAudienceUri()
         {
-            get
+            if (_audienceUri.IsPresent())
             {
-                if (_audienceUri.IsPresent())
-                {
-                    return _audienceUri;
-                }
-
-                return _httpContextAccessor.HttpContext.GetIdentityServerIssuerUri();
+                return _audienceUri;
             }
+
+            return await IssuerNameService.GetCurrentAsync();
         }
 
         /// <summary>
         /// The logger
         /// </summary>
         protected readonly ILogger Logger;
-        
+
         /// <summary>
-        /// The optione
+        /// The options
         /// </summary>
         protected readonly IdentityServerOptions Options;
 
         /// <summary>
+        /// The issuer name service
+        /// </summary>
+        protected readonly IIssuerNameService IssuerNameService;
+
+        /// <summary>
         /// Instantiates an instance of private_key_jwt secret validator
         /// </summary>
-        public JwtRequestValidator(IHttpContextAccessor contextAccessor, IdentityServerOptions options, ILogger<JwtRequestValidator> logger)
+        public JwtRequestValidator(IdentityServerOptions options, IIssuerNameService issuerNameService,
+            ILogger<JwtRequestValidator> logger)
         {
-            _httpContextAccessor = contextAccessor;
-            
             Options = options;
+            IssuerNameService = issuerNameService;
             Logger = logger;
         }
 
@@ -156,7 +158,8 @@ namespace Duende.IdentityServer.Validation
         /// <param name="keys">The keys</param>
         /// <param name="client">The client</param>
         /// <returns></returns>
-        protected virtual Task<JwtSecurityToken> ValidateJwtAsync(string jwtTokenString, IEnumerable<SecurityKey> keys, Client client)
+        protected virtual async Task<JwtSecurityToken> ValidateJwtAsync(string jwtTokenString, IEnumerable<SecurityKey> keys,
+            Client client)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -166,7 +169,7 @@ namespace Duende.IdentityServer.Validation
                 ValidIssuer = client.ClientId,
                 ValidateIssuer = true,
 
-                ValidAudience = AudienceUri,
+                ValidAudience = await GetAudienceUri(),
                 ValidateAudience = true,
 
                 RequireSignedTokens = true,
@@ -179,8 +182,8 @@ namespace Duende.IdentityServer.Validation
             }
 
             Handler.ValidateToken(jwtTokenString, tokenValidationParameters, out var token);
-            
-            return Task.FromResult((JwtSecurityToken)token);
+
+            return (JwtSecurityToken)token;
         }
 
         /// <summary>

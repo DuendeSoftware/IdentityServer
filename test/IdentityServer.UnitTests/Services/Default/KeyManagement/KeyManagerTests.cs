@@ -10,6 +10,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services.KeyManagement;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using UnitTests.Validation.Setup;
 using Xunit;
 
 namespace UnitTests.Services.Default.KeyManagement
@@ -42,7 +43,8 @@ namespace UnitTests.Services.Default.KeyManagement
                 _mockKeyProtector, 
                 _mockClock,
                 new NopKeyLock(),
-                new LoggerFactory().CreateLogger<KeyManager>());
+                new LoggerFactory().CreateLogger<KeyManager>(),
+                new TestIssuerNameService());
         }
 
         KeyContainer CreateKey(TimeSpan? age = null, string alg = "RS256", bool x509 = false)
@@ -90,7 +92,8 @@ namespace UnitTests.Services.Default.KeyManagement
                   _mockKeyProtector,
                   _mockClock,
                   new NopKeyLock(),
-                  new LoggerFactory().CreateLogger<KeyManager>());
+                  new LoggerFactory().CreateLogger<KeyManager>(),
+                  new TestIssuerNameService());
             };
             a.Should().Throw<Exception>();
         }
