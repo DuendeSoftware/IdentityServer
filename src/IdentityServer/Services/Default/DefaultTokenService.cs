@@ -154,8 +154,7 @@ namespace Duende.IdentityServer.Services
                 request.IncludeAllIdentityClaims,
                 request.ValidatedRequest));
 
-            var issuer = ContextAccessor.HttpContext.GetIdentityServerIssuerUri();
-
+            var issuer = request.ValidatedRequest.IssuerName;
             var token = new Token(OidcConstants.TokenTypes.IdentityToken)
             {
                 CreationTime = Clock.UtcNow.UtcDateTime,
@@ -193,8 +192,8 @@ namespace Duende.IdentityServer.Services
             {
                 claims.Add(new Claim(JwtClaimTypes.SessionId, request.ValidatedRequest.SessionId));
             }
-            
-            var issuer = ContextAccessor.HttpContext.GetIdentityServerIssuerUri();
+
+            var issuer = request.ValidatedRequest.IssuerName;
             var token = new Token(OidcConstants.TokenTypes.AccessToken)
             {
                 CreationTime = Clock.UtcNow.UtcDateTime,
