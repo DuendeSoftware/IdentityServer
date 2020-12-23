@@ -110,5 +110,45 @@ namespace UnitTests.Validation.TokenRequest_Validation
             result.IsError.Should().BeTrue();
             result.Error.Should().NotBeNull();
         }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Invalid_resource_indicator()
+        {
+            var client = await _clients.FindClientByIdAsync("device_flow");
+
+            var validator = Factory.CreateTokenRequestValidator(deviceCodeValidator: new TestDeviceCodeValidator(true));
+
+            var parameters = new NameValueCollection
+            {
+                {OidcConstants.TokenRequest.GrantType, OidcConstants.GrantTypes.DeviceCode},
+                {"device_code", Guid.NewGuid().ToString()},
+                { OidcConstants.TokenRequest.Resource, "api" }
+            };
+
+            var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+            result.IsError.Should().BeTrue();
+            result.Error.Should().Be("invalid_target");
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task resource_indicator_should_not_be_allowed()
+        {
+            var client = await _clients.FindClientByIdAsync("device_flow");
+
+            var validator = Factory.CreateTokenRequestValidator(deviceCodeValidator: new TestDeviceCodeValidator(true));
+
+            var parameters = new NameValueCollection
+            {
+                {OidcConstants.TokenRequest.GrantType, OidcConstants.GrantTypes.DeviceCode},
+                {"device_code", Guid.NewGuid().ToString()},
+                { OidcConstants.TokenRequest.Resource, "urn:api1" }
+            };
+
+            var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+            result.IsError.Should().BeTrue();
+            result.Error.Should().Be("invalid_target");
+        }
     }
 }

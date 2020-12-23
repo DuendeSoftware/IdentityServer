@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -243,6 +243,44 @@ namespace UnitTests.Validation.TokenRequest_Validation
             result.IsError.Should().BeTrue();
             result.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
             result.ErrorDescription.Should().Be("custom error description");
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task failed_resource_validation_should_fail()
+        {
+            var client = (await _clients.FindEnabledClientByIdAsync("roclient")).ToValidationResult();
+            var mockResourceValidator = new MockResourceValidator();
+            var validator = Factory.CreateTokenRequestValidator(resourceValidator:mockResourceValidator);
+            
+            var parameters = new NameValueCollection();
+            parameters.Add(OidcConstants.TokenRequest.GrantType, OidcConstants.GrantTypes.Password);
+            parameters.Add(OidcConstants.TokenRequest.Scope, "scope1");
+            parameters.Add(OidcConstants.TokenRequest.UserName, "bob");
+            parameters.Add(OidcConstants.TokenRequest.Password, "bob");
+            parameters.Add("resource", "urn:api1");
+
+            {
+                mockResourceValidator.Result = new ResourceValidationResult
+                {
+                    InvalidScopes = { "foo" }
+                };
+                var result = await validator.ValidateRequestAsync(parameters, client);
+
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_scope");
+            }
+
+            {
+                mockResourceValidator.Result = new ResourceValidationResult
+                {
+                    InvalidResourceIndicators = { "foo" }
+                };
+                var result = await validator.ValidateRequestAsync(parameters, client);
+
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
         }
     }
 }

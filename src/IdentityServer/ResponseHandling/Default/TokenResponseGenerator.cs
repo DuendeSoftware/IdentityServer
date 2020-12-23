@@ -13,6 +13,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.ResponseHandling
 {
@@ -357,7 +358,7 @@ namespace Duende.IdentityServer.ResponseHandling
 
             bool createRefreshToken = request.ValidatedResources.Resources.OfflineAccess;
             var authorizedScopes = Enumerable.Empty<string>();
-            var authorizedResourceIndicators = Enumerable.Empty<string>();
+            IEnumerable<string> authorizedResourceIndicators = null;
 
             if (request.AuthorizationCode != null)
             {
@@ -400,10 +401,6 @@ namespace Duende.IdentityServer.ResponseHandling
             else
             {
                 authorizedScopes = request.ValidatedResources.RawScopeValues;
-                if (request.RequestedResourceIndicator != null)
-                {
-                    authorizedResourceIndicators = new[] { request.RequestedResourceIndicator };
-                }
             }
 
             var at = await TokenService.CreateAccessTokenAsync(tokenRequest);

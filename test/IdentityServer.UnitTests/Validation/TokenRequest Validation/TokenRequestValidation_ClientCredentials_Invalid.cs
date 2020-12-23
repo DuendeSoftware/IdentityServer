@@ -51,11 +51,8 @@ namespace UnitTests.Validation.TokenRequest_Validation
             var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
 
             result.IsError.Should().BeFalse();
-            result.ValidatedRequest.ValidatedResources.Resources.ApiResources.Count.Should().Be(1);
-            result.ValidatedRequest.ValidatedResources.Resources.ApiResources.First().Name.Should().Be("api");
-
-            result.ValidatedRequest.ValidatedResources.Resources.ApiScopes.Count.Should().Be(2);
-            result.ValidatedRequest.ValidatedResources.Resources.ApiScopes.Select(x=>x.Name).Should().BeEquivalentTo(new[] { "resource", "resource2" });
+            result.ValidatedRequest.ValidatedResources.Resources.ApiResources.Select(x=>x.Name).Should().BeEquivalentTo(new[] { "api", "urn:api1", "urn:api2", "urn:api3" });
+            result.ValidatedRequest.ValidatedResources.Resources.ApiScopes.Select(x=>x.Name).Should().BeEquivalentTo(new[] { "resource", "resource2", "scope1" });
         }
 
         [Fact]
@@ -160,6 +157,42 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             result.IsError.Should().BeTrue();
             result.Error.Should().Be(OidcConstants.TokenErrors.InvalidScope);
+        }
+
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Invalid_resource_indicator()
+        {
+            var client = await _clients.FindEnabledClientByIdAsync("client");
+            var validator = Factory.CreateTokenRequestValidator();
+
+            var parameters = new NameValueCollection();
+            parameters.Add(OidcConstants.TokenRequest.GrantType, OidcConstants.GrantTypes.ClientCredentials);
+            parameters.Add(OidcConstants.TokenRequest.Scope, "scope1");
+
+            {
+                parameters[OidcConstants.TokenRequest.Resource] = "urn:api1" + new string('x', 512);
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be(OidcConstants.TokenErrors.InvalidTarget);
+            }
+            {
+                parameters[OidcConstants.TokenRequest.Resource] = "api";
+
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
+            {
+                parameters[OidcConstants.TokenRequest.Resource] = "urn:api1";
+                parameters.Add(OidcConstants.TokenRequest.Resource, "urn:api2");
+
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
         }
     }
 }

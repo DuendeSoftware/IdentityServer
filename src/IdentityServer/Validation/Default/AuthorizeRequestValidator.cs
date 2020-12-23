@@ -585,6 +585,12 @@ namespace Duende.IdentityServer.Validation
             // check for resource indicators and valid format
             //////////////////////////////////////////////////////////
             var resourceIndicators = request.Raw.GetValues(OidcConstants.TokenRequest.Resource) ?? Enumerable.Empty<string>();
+            
+            if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
+            {
+                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator maximum length exceeded");
+            }
+            
             if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
             {
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");

@@ -147,6 +147,12 @@ namespace Duende.IdentityServer.Validation
             // check for resource indicator and basic formatting
             //////////////////////////////////////////////////////////
             var resourceIndicators = parameters.GetValues(OidcConstants.TokenRequest.Resource) ?? Enumerable.Empty<string>();
+
+            if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator maximum length exceeded");
+            }
+
             if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
             {
                 return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
@@ -585,10 +591,19 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // resource indicator
             //////////////////////////////////////////////////////////
-            if (_validatedRequest.RequestedResourceIndicator != null &&
-                !_validatedRequest.RefreshToken.AuthorizedResourceIndicators.Contains(_validatedRequest.RequestedResourceIndicator))
+            var resourceIndicators = _validatedRequest.RefreshToken.AuthorizedResourceIndicators;
+            if (_validatedRequest.RefreshToken.AuthorizedResourceIndicators != null)
             {
-                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original authorize request.");
+                // we had an authorization request so check current requested resource against original list
+                if (_validatedRequest.RequestedResourceIndicator != null &&
+                    !_validatedRequest.RefreshToken.AuthorizedResourceIndicators.Contains(_validatedRequest.RequestedResourceIndicator))
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original authorize request.");
+                }
+            }
+            else if (!String.IsNullOrWhiteSpace(_validatedRequest.RequestedResourceIndicator))
+            {
+                resourceIndicators = new[] { _validatedRequest.RequestedResourceIndicator };
             }
 
             //////////////////////////////////////////////////////////
@@ -598,7 +613,7 @@ namespace Duende.IdentityServer.Validation
             {
                 Client = _validatedRequest.Client,
                 Scopes = _validatedRequest.RefreshToken.AuthorizedScopes,
-                ResourceIndicators = _validatedRequest.RefreshToken.AuthorizedResourceIndicators,
+                ResourceIndicators = resourceIndicators,
                 // we're issuing refresh token, so we need to allow for non-isolated resource
                 IncludeNonIsolatedApiResources = true,
             });

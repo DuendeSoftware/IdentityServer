@@ -125,5 +125,10 @@ namespace Duende.IdentityServer.Configuration
         /// Max length for the code verifier
         /// </summary>
         public int CodeVerifierMaxLength { get; } = 128;
+        
+        /// <summary>
+        /// Max length for resource indicator parameter
+        /// </summary>
+        public int ResourceIndicatorMaxLength { get; } = 512;
     }
 }

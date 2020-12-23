@@ -11,6 +11,7 @@ using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using IdentityModel;
 using UnitTests.Common;
@@ -405,6 +406,145 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             result.IsError.Should().BeTrue();
             result.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Invalid_resource_indicator()
+        {
+            var client = await _clients.FindEnabledClientByIdAsync("codeclient");
+            var grants = Factory.CreateAuthorizationCodeStore();
+
+            var code = new AuthorizationCode
+            {
+                CreationTime = DateTime.UtcNow,
+                Subject = new IdentityServerUser("123").CreatePrincipal(),
+                ClientId = client.ClientId,
+                Lifetime = client.AuthorizationCodeLifetime,
+                RedirectUri = "https://server/cb",
+                RequestedScopes = new List<string>
+                {
+                    "openid", "scope1"
+                },
+                RequestedResourceIndicators = new[] { "urn:api1", "urn:api2" }
+            };
+
+            var handle = await grants.StoreAuthorizationCodeAsync(code);
+
+            var validator = Factory.CreateTokenRequestValidator(
+                authorizationCodeStore: grants);
+
+            var parameters = new NameValueCollection();
+            parameters.Add(OidcConstants.TokenRequest.GrantType, OidcConstants.GrantTypes.AuthorizationCode);
+            parameters.Add(OidcConstants.TokenRequest.Code, handle);
+            parameters.Add(OidcConstants.TokenRequest.RedirectUri, "https://server/cb");
+            parameters.Add(OidcConstants.TokenRequest.Resource, "urn:api1" + new string('x', 512));
+
+            {
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
+            {
+                parameters[OidcConstants.TokenRequest.Resource] = "api";
+
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
+            {
+                parameters[OidcConstants.TokenRequest.Resource] = "urn:api3";
+
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
+            {
+                parameters[OidcConstants.TokenRequest.Resource] = "urn:api1";
+                parameters.Add(OidcConstants.TokenRequest.Resource, "urn:api2");
+
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task failed_resource_validation_should_fail()
+        {
+            var mockResourceValidator = new MockResourceValidator();
+            var client = await _clients.FindEnabledClientByIdAsync("codeclient");
+            var grants = Factory.CreateAuthorizationCodeStore();
+
+            {
+                var code = new AuthorizationCode
+                {
+                    CreationTime = DateTime.UtcNow,
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    ClientId = client.ClientId,
+                    Lifetime = client.AuthorizationCodeLifetime,
+                    RedirectUri = "https://server/cb",
+                    RequestedScopes = new List<string>
+                    {
+                        "openid", "scope1"
+                    },
+                    RequestedResourceIndicators = new[] { "urn:api1", "urn:api2" }
+                };
+
+                var handle = await grants.StoreAuthorizationCodeAsync(code);
+                var validator = Factory.CreateTokenRequestValidator(resourceValidator: mockResourceValidator, authorizationCodeStore: grants);
+
+                var parameters = new NameValueCollection();
+                parameters.Add(OidcConstants.TokenRequest.GrantType, OidcConstants.GrantTypes.AuthorizationCode);
+                parameters.Add(OidcConstants.TokenRequest.Code, handle);
+                parameters.Add(OidcConstants.TokenRequest.RedirectUri, "https://server/cb");
+                parameters.Add(OidcConstants.TokenRequest.Resource, "urn:api1"); 
+                
+                mockResourceValidator.Result = new ResourceValidationResult
+                {
+                    InvalidScopes = { "foo" }
+                };
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_scope");
+            }
+
+            {
+                var code = new AuthorizationCode
+                {
+                    CreationTime = DateTime.UtcNow,
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    ClientId = client.ClientId,
+                    Lifetime = client.AuthorizationCodeLifetime,
+                    RedirectUri = "https://server/cb",
+                    RequestedScopes = new List<string>
+                    {
+                        "openid", "scope1"
+                    },
+                    RequestedResourceIndicators = new[] { "urn:api1", "urn:api2" }
+                };
+
+                var handle = await grants.StoreAuthorizationCodeAsync(code);
+                var validator = Factory.CreateTokenRequestValidator(resourceValidator: mockResourceValidator, authorizationCodeStore: grants);
+
+                var parameters = new NameValueCollection();
+                parameters.Add(OidcConstants.TokenRequest.GrantType, OidcConstants.GrantTypes.AuthorizationCode);
+                parameters.Add(OidcConstants.TokenRequest.Code, handle);
+                parameters.Add(OidcConstants.TokenRequest.RedirectUri, "https://server/cb");
+                parameters.Add(OidcConstants.TokenRequest.Resource, "urn:api1"); 
+                
+                mockResourceValidator.Result = new ResourceValidationResult
+                {
+                    InvalidResourceIndicators = { "foo" }
+                };
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
         }
     }
 }
