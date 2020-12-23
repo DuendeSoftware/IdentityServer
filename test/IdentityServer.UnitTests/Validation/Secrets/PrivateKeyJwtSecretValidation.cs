@@ -32,15 +32,10 @@ namespace UnitTests.Validation.Secrets
         public PrivateKeyJwtSecretValidation()
         {
             _validator = new PrivateKeyJwtSecretValidator(
-                new MockHttpContextAccessor(
-                    new IdentityServerOptions()
-                        {
-                            IssuerUri = "https://idsrv3.com"
-                        }
-                    ),
-                    new DefaultReplayCache(new TestCache()), 
-                    new LoggerFactory().CreateLogger<PrivateKeyJwtSecretValidator>()
-                );
+                 new TestIssuerNameService("https://idsrv3.com"),
+                 new DefaultReplayCache(new TestCache()), 
+                 new LoggerFactory().CreateLogger<PrivateKeyJwtSecretValidator>());
+            
             _clients = new InMemoryClientStore(ClientValidationTestClients.Get());
         }
 
