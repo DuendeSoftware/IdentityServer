@@ -282,7 +282,7 @@ namespace IntegrationTests.Clients
         private Dictionary<string, JsonElement> GetPayload(TokenResponse response)
         {
             var token = response.AccessToken.Split('.').Skip(1).Take(1).First();
-            var dictionary = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
+            var dictionary = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
                 Encoding.UTF8.GetString(Base64Url.Decode(token)));
 
             return dictionary;
