@@ -333,7 +333,7 @@ namespace IntegrationTests.Common
                 responseMode: responseMode,
                 codeChallenge: codeChallenge,
                 codeChallengeMethod: codeChallengeMethod,
-                extra: extra);
+                extra: Parameters.FromObject(extra));
             return url;
         }
 

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 
 namespace IntegrationTests
@@ -14,6 +16,11 @@ namespace IntegrationTests
         {
             var json = document.RootElement.GetRawText();
             return JsonSerializer.Deserialize<T>(json);
+        }
+        
+        public static List<string> ToStringList(this JsonElement element)
+        {
+            return element.EnumerateArray().Select(item => item.GetString()).ToList();
         }
     }
 }
