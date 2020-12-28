@@ -487,6 +487,7 @@ namespace IntegrationTests.Endpoints.Token
             }
         }
         
+
         [Fact]
         [Trait("Category", Category)]
         public async Task refresh_token_exchange_with_resource_should_succeed()
