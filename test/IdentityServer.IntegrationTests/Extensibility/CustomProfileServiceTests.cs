@@ -2,9 +2,11 @@
 // See LICENSE in the project root for license information.
 
 
+using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
@@ -12,7 +14,6 @@ using FluentAssertions;
 using IdentityModel;
 using IntegrationTests.Common;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace IntegrationTests.Extensibility
@@ -77,10 +78,9 @@ namespace IntegrationTests.Extensibility
 
             var payload = authorization.IdentityToken.Split('.')[1];
             var json = Encoding.UTF8.GetString(Base64Url.Decode(payload));
-            var obj = JObject.Parse(json);
+            var obj = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
 
-            obj.GetValue("foo").Should().NotBeNull();
-            obj["foo"].ToString().Should().Be("bar");
+            obj["foo"].GetString().Should().Be("bar");
         }
     }
 

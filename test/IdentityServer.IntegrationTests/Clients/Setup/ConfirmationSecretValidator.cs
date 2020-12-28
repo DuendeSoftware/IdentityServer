@@ -4,10 +4,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
-using Newtonsoft.Json;
 
 namespace IntegrationTests.Clients.Setup
 {
@@ -27,7 +27,7 @@ namespace IntegrationTests.Clients.Setup
                     var result = new SecretValidationResult
                     {
                         Success = true,
-                        Confirmation = JsonConvert.SerializeObject(cnf)
+                        Confirmation = JsonSerializer.Serialize(cnf)
                     };
 
                     return Task.FromResult(result);

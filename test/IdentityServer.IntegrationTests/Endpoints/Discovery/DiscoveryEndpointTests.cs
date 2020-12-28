@@ -2,13 +2,14 @@
 // See LICENSE in the project root for license information.
 
 
+using System.Collections.Generic;
 using FluentAssertions;
 using IdentityModel.Client;
 using IntegrationTests.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
@@ -32,10 +33,8 @@ namespace IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("HTTPS://SERVER/ROOT/.WELL-KNOWN/OPENID-CONFIGURATION");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
-            var issuer = data["issuer"].ToString();
-
-            issuer.Should().Be("https://server/root");
+            var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+            data["issuer"].GetString().Should().Be("https://server/root");
         }
 
         [Fact]
@@ -50,10 +49,8 @@ namespace IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("HTTPS://SERVER/ROOT/.WELL-KNOWN/OPENID-CONFIGURATION");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
-            var issuer = data["issuer"].ToString();
-
-            issuer.Should().Be("https://server/ROOT");
+            var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+            data["issuer"].GetString().Should().Be("https://server/ROOT");
         }
 
         private void Pipeline_OnPostConfigureServices(IServiceCollection obj)
@@ -80,13 +77,13 @@ namespace IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("https://server/root/.well-known/openid-configuration");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
-            var algorithmsSupported = data["id_token_signing_alg_values_supported"];
+            var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+            var algorithmsSupported = data["id_token_signing_alg_values_supported"].EnumerateArray()
+                .Select(x => x.GetString()).ToList();
 
             algorithmsSupported.Count().Should().Be(2);
-
-            algorithmsSupported.Values().Should().Contain(SecurityAlgorithms.RsaSha256);
-            algorithmsSupported.Values().Should().Contain(SecurityAlgorithms.EcdsaSha256);
+            algorithmsSupported.Should().Contain(SecurityAlgorithms.RsaSha256);
+            algorithmsSupported.Should().Contain(SecurityAlgorithms.EcdsaSha256);
         }
 
         [Fact]
@@ -122,18 +119,18 @@ namespace IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("https://server/root/.well-known/openid-configuration/jwks");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
+            var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
 
-            var keys = data["keys"];
+            var keys = data["keys"].EnumerateArray().ToList();
             keys.Should().NotBeNull();
 
             var key = keys[1];
             key.Should().NotBeNull();
 
-            var crv = key["crv"];
+            var crv = key.TryGetValue("crv");
             crv.Should().NotBeNull();
 
-            crv.Value<string>().Should().Be(JsonWebKeyECTypes.P256);
+            crv.GetString().Should().Be(JsonWebKeyECTypes.P256);
 
         }
 
@@ -147,7 +144,7 @@ namespace IntegrationTests.Endpoints.Discovery
             var result = await pipeline.BackChannelClient.GetAsync("https://server/root/.well-known/openid-configuration/jwks");
 
             var json = await result.Content.ReadAsStringAsync();
-            var data = JObject.Parse(json);
+            var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
 
             var keys = data["keys"];
             keys.Should().NotBeNull();
@@ -155,10 +152,10 @@ namespace IntegrationTests.Endpoints.Discovery
             var key = keys[0];
             key.Should().NotBeNull();
 
-            var alg = key["alg"];
+            var alg = key.TryGetValue("alg");
             alg.Should().NotBeNull();
 
-            alg.Value<string>().Should().Be(Constants.SigningAlgorithms.RSA_SHA_256);
+            alg.GetString().Should().Be(Constants.SigningAlgorithms.RSA_SHA_256);
         }
 
         [Theory]

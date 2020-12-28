@@ -7,18 +7,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
 using IdentityModel;
+using IdentityModel.Client;
 using IntegrationTests.Common;
 using Microsoft.AspNetCore.WebUtilities;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace IntegrationTests.Endpoints.EndSession
@@ -544,22 +546,18 @@ namespace IntegrationTests.Endpoints.EndSession
 
                 var bytes = Base64Url.Decode(parts[1]);
                 var json = Encoding.UTF8.GetString(bytes);
-                var payload = JObject.Parse(json);
-                payload["iss"].ToString().Should().Be("https://server");
-                payload["sub"].ToString().Should().Be("bob");
-                payload["aud"].ToString().Should().Be("client3");
+                var payload = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+                
+                payload["iss"].GetString().Should().Be("https://server");
+                payload["sub"].GetString().Should().Be("bob");
+                payload["aud"].GetString().Should().Be("client3");
                 payload["iat"].Should().NotBeNull();
                 payload["jti"].Should().NotBeNull();
                 payload["sid"].Should().NotBeNull();
-                payload["events"].Type.Should().Be(JTokenType.Object);
-
-                var events = (JObject)payload["events"];
-                events.Count.Should().Be(1);
-                events["http://schemas.openid.net/event/backchannel-logout"].Should().NotBeNull();
-                events["http://schemas.openid.net/event/backchannel-logout"].Type.Should().Be(JTokenType.Object);
-
-                var evt = (JObject)events["http://schemas.openid.net/event/backchannel-logout"];
-                evt.Count.Should().Be(0);
+                payload["events"].ValueKind.Should().Be(JsonValueKind.Object);
+                payload["events"].EnumerateObject().Single().Name.Should()
+                    .Be("http://schemas.openid.net/event/backchannel-logout");
+                payload["events"].EnumerateObject().Single().Value.EnumerateObject().Count().Should().Be(0);
             };
 
             await _mockPipeline.LoginAsync("bob");
