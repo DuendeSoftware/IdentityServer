@@ -22,6 +22,8 @@ namespace IntegrationTests.Endpoints.Token
 
         private string client_id = "client";
         private string client_secret = "secret";
+        private string username = "bob";
+        private string password = "password";
 
         private IdentityServerPipeline _mockPipeline = new IdentityServerPipeline();
 
@@ -33,6 +35,7 @@ namespace IntegrationTests.Endpoints.Token
                 ClientSecrets = new List<Secret> { new Secret(client_secret.Sha256()) },
                 AllowedGrantTypes = { GrantType.ClientCredentials, GrantType.ResourceOwnerPassword },
                 AllowedScopes = new List<string> { "scope1", "scope2", "scope3", "scope4", },
+                AllowOfflineAccess = true,
             });
 
 
@@ -264,6 +267,381 @@ namespace IntegrationTests.Endpoints.Token
                     }
                 });
 
+                tokenResponse.IsError.Should().BeTrue();
+                tokenResponse.Error.Should().Be("invalid_target");
+            }
+        }
+
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task refresh_token_requested_without_resource_without_scope_should_succeed()
+        {
+            var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = client_id,
+                ClientSecret = client_secret,
+                UserName = username,
+                Password = password,
+            });
+
+            var claims = ParseAccessTokenClaims(tokenResponse);
+            claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api1", "urn:api2" });
+            claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope2", "scope3", "scope4", "offline_access" });
+        }
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task refresh_token_requested_with_resource_without_scope_should_succeed()
+        {
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Parameters =
+                    {
+                        { "resource", "urn:api1" }
+                    }
+                });
+
+                var claims = ParseAccessTokenClaims(tokenResponse);
+                claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api1" });
+                claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope3", "offline_access" });
+            }
+
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Parameters =
+                    {
+                        { "resource", "urn:api2" }
+                    }
+                });
+
+                var claims = ParseAccessTokenClaims(tokenResponse);
+                claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api2" });
+                claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope2", "offline_access" });
+            }
+
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Parameters =
+                    {
+                        { "resource", "urn:api3" }
+                    }
+                });
+
+                var claims = ParseAccessTokenClaims(tokenResponse);
+                claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api3" });
+                claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope3", "offline_access" });
+            }
+        }
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task refresh_token_requested_without_resource_with_scope_should_succeed()
+        {
+            var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = client_id,
+                ClientSecret = client_secret,
+                UserName = username,
+                Password = password,
+                Scope = "scope1 offline_access"
+            });
+
+            var claims = ParseAccessTokenClaims(tokenResponse);
+            claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api1" });
+            claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "offline_access" });
+        }
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task refresh_token_requested_with_resource_with_scope_should_succeed()
+        {
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Scope = "scope1 offline_access",
+                    Parameters =
+                    {
+                        { "resource", "urn:api1" }
+                    }
+                });
+
+                var claims = ParseAccessTokenClaims(tokenResponse);
+                claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api1" });
+                claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "offline_access" });
+            }
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Scope = "scope1 offline_access",
+                    Parameters =
+                    {
+                        { "resource", "urn:api3" }
+                    }
+                });
+
+                var claims = ParseAccessTokenClaims(tokenResponse);
+                claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api3" });
+                claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "offline_access" });
+            }
+        }
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task refresh_token_requested_with_invalid_resource_and_scope_should_fail()
+        {
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Scope = "scope4 offline_access",
+                    Parameters =
+                    {
+                        { "resource", "urn:api2" }
+                    }
+                });
+                tokenResponse.IsError.Should().BeTrue();
+                tokenResponse.Error.Should().Be("invalid_target");
+            }
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Scope = "scope2 offline_access",
+                    Parameters =
+                    {
+                        { "resource", "urn:api3" }
+                    }
+                });
+                tokenResponse.IsError.Should().BeTrue();
+                tokenResponse.Error.Should().Be("invalid_target");
+            }
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Scope = "scope4 offline_access",
+                    Parameters =
+                    {
+                        { "resource", "urn:api4" }
+                    }
+                });
+                tokenResponse.IsError.Should().BeTrue();
+                tokenResponse.Error.Should().Be("invalid_target");
+            }
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Scope = "offline_access",
+                    Parameters =
+                    {
+                        { "resource", "urn:api4" }
+                    }
+                });
+
+                tokenResponse.IsError.Should().BeTrue();
+                tokenResponse.Error.Should().Be("invalid_target");
+            }
+        }
+        
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task refresh_token_exchange_with_resource_should_succeed()
+        {
+            var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = client_id,
+                ClientSecret = client_secret,
+                UserName = username,
+                Password = password,
+                Scope = "scope1 scope2 scope3 scope4 offline_access",
+            });
+
+            {
+                tokenResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    RefreshToken = tokenResponse.RefreshToken,
+                });
+
+                var claims = ParseAccessTokenClaims(tokenResponse);
+                claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api1", "urn:api2" });
+                claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope2", "scope3", "scope4", "offline_access" });
+            }
+            {
+                tokenResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    RefreshToken = tokenResponse.RefreshToken,
+                    Parameters =
+                    {
+                        { "resource", "urn:api1" }
+                    }
+                });
+
+                var claims = ParseAccessTokenClaims(tokenResponse);
+                claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api1" });
+                claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope3", "offline_access" });
+            }
+            {
+                tokenResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    RefreshToken = tokenResponse.RefreshToken,
+                    Parameters =
+                    {
+                        { "resource", "urn:api2" }
+                    }
+                });
+
+                var claims = ParseAccessTokenClaims(tokenResponse);
+                claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api2" });
+                claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope2", "offline_access" });
+            }
+            {
+                tokenResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    RefreshToken = tokenResponse.RefreshToken,
+                    Parameters =
+                    {
+                        { "resource", "urn:api3" }
+                    }
+                });
+
+                var claims = ParseAccessTokenClaims(tokenResponse);
+                claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api3" });
+                claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope3", "offline_access" });
+            }
+        }
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task refresh_token_exchange_with_invalid_resource_should_fail()
+        {
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Scope = "scope1 scope2 scope3 scope4 offline_access",
+                });
+                tokenResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    RefreshToken = tokenResponse.RefreshToken,
+                    Parameters =
+                    {
+                        { "resource", "urn:api4" }
+                    }
+                });
+                tokenResponse.IsError.Should().BeTrue();
+                tokenResponse.Error.Should().Be("invalid_target");
+            }
+
+
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Scope = "scope2 offline_access",
+                });
+                tokenResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    RefreshToken = tokenResponse.RefreshToken,
+                    Parameters =
+                    {
+                        { "resource", "urn:api1" }
+                    }
+                });
+                tokenResponse.IsError.Should().BeTrue();
+                tokenResponse.Error.Should().Be("invalid_target");
+            }
+
+            {
+                var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    UserName = username,
+                    Password = password,
+                    Scope = "scope4 offline_access",
+                });
+                tokenResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+                {
+                    Address = IdentityServerPipeline.TokenEndpoint,
+                    ClientId = client_id,
+                    ClientSecret = client_secret,
+                    RefreshToken = tokenResponse.RefreshToken,
+                    Parameters =
+                    {
+                        { "resource", "urn:api1" }
+                    }
+                });
                 tokenResponse.IsError.Should().BeTrue();
                 tokenResponse.Error.Should().Be("invalid_target");
             }
