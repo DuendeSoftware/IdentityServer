@@ -1,42 +1,26 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using System.Reflection;
-using System.Text;
-using IdentityModel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json;
 
 namespace Duende.IdentityServer.Services.KeyManagement
 {
     internal static class KeySerializer
     {
-        class InclusiveContractResolver : DefaultContractResolver
-        {
-            protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        static JsonSerializerOptions _settings =
+            new JsonSerializerOptions
             {
-                var property = base.CreateProperty(member, memberSerialization);
-
-                property.Ignored = false;
-
-                return property;
-            }
-        }
-
-        static JsonSerializerSettings _settings =
-            new JsonSerializerSettings
-            {
-                ContractResolver = new InclusiveContractResolver()
+                IncludeFields = true
             };
 
         public static string Serialize<T>(T item)
         {
-            return JsonConvert.SerializeObject(item, _settings);
+            return JsonSerializer.Serialize(item, item.GetType(), _settings);
         }
 
         public static T Deserialize<T>(string json)
         {
-            return JsonConvert.DeserializeObject<T>(json, _settings);
+            return JsonSerializer.Deserialize<T>(json, _settings);
         }
     }
 }
