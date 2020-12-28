@@ -613,7 +613,7 @@ namespace Duende.IdentityServer.Validation
                 Client = request.Client,
                 Scopes = request.RequestedScopes,
                 ResourceIndicators = resourceIndicators,
-                IncludeNonIsolatedApiResources = true,
+                IncludeNonIsolatedApiResources = request.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess),
             });
 
             if (!validatedResources.Succeeded)

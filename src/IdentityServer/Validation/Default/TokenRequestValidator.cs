@@ -330,7 +330,8 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // resource indicator
             //////////////////////////////////////////////////////////
-            if (_validatedRequest.RequestedResourceIndicator != null && 
+            if (_validatedRequest.RequestedResourceIndicator != null &&
+                _validatedRequest.AuthorizationCode.RequestedResourceIndicators?.Any() == true &&
                 !_validatedRequest.AuthorizationCode.RequestedResourceIndicators.Contains(_validatedRequest.RequestedResourceIndicator))
             {
                 return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original authorize request.");
