@@ -124,6 +124,13 @@ namespace Duende.IdentityServer.Configuration
                 throw new Exception($"Invalid signing algorithm(s): '{values}'.");
             }
 
+            var invalidEcKeys = SigningAlgorithms.Where(x => x.IsEcKey && x.UseX509Certificate).ToArray();
+            if (invalidEcKeys.Any())
+            {
+                var values = invalidEcKeys.Select(x => x.Name).Aggregate((x, y) => $"{x}, {y}");
+                throw new Exception($"UseX509Certificate not currently supported for EC keys. Signing algorithm(s): '{values}'.");
+            }
+
             if (InitializationDuration < TimeSpan.Zero) throw new Exception(nameof(InitializationDuration) + " must be greater than or equal to zero.");
             if (InitializationSynchronizationDelay < TimeSpan.Zero) throw new Exception(nameof(InitializationSynchronizationDelay) + " must be greater than or equal to zero.");
 
