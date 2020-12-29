@@ -8,12 +8,12 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using FluentAssertions;
 using IdentityModel;
 using IntegrationTests.Common;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace IntegrationTests.Endpoints.DeviceAuthorization
@@ -139,7 +139,7 @@ namespace IntegrationTests.Endpoints.DeviceAuthorization
             using (var reader = new StreamReader(streamBody))
             {
                 var jsonString = reader.ReadToEnd();
-                return JsonConvert.DeserializeObject<T>(jsonString);
+                return JsonSerializer.Deserialize<T>(jsonString);
             }
         }
 

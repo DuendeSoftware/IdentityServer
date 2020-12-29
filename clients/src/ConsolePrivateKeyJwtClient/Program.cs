@@ -8,7 +8,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 
 namespace ConsolePrivateKeyJwtClient
@@ -78,7 +77,7 @@ namespace ConsolePrivateKeyJwtClient
             var response = await client.GetStringAsync("identity");
 
             "\n\nService claims:".ConsoleGreen();
-            Console.WriteLine(JArray.Parse(response));
+            Console.WriteLine(response.PrettyPrintJson());
         }
 
         private static string CreateClientToken(SigningCredentials credential, string clientId, string audience)

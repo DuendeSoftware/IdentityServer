@@ -1,7 +1,6 @@
 ﻿using Clients;
 using IdentityModel;
 using IdentityModel.Client;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics;
 using System.Net.Http;
@@ -101,7 +100,7 @@ namespace ConsoleDeviceFlow
             var response = await client.GetStringAsync("identity");
 
             "\n\nService claims:".ConsoleGreen();
-            Console.WriteLine(JArray.Parse(response));
+            Console.WriteLine(response.PrettyPrintJson());
         }
     }
 }
