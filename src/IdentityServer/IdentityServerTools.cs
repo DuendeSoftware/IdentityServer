@@ -21,6 +21,7 @@ namespace Duende.IdentityServer
     public class IdentityServerTools
     {
         internal readonly IHttpContextAccessor ContextAccessor;
+        internal readonly IIssuerNameService IssuerNameService;
         private readonly ITokenCreationService _tokenCreation;
         private readonly ISystemClock _clock;
 
@@ -28,11 +29,13 @@ namespace Duende.IdentityServer
         /// Initializes a new instance of the <see cref="IdentityServerTools" /> class.
         /// </summary>
         /// <param name="contextAccessor">The context accessor.</param>
+        /// <param name="issuerNameService">The issuer name service</param>
         /// <param name="tokenCreation">The token creation service.</param>
         /// <param name="clock">The clock.</param>
-        public IdentityServerTools(IHttpContextAccessor contextAccessor, ITokenCreationService tokenCreation, ISystemClock clock)
+        public IdentityServerTools(IHttpContextAccessor contextAccessor, IIssuerNameService issuerNameService, ITokenCreationService tokenCreation, ISystemClock clock)
         {
             ContextAccessor = contextAccessor;
+            IssuerNameService = issuerNameService;
             _tokenCreation = tokenCreation;
             _clock = clock;
         }
@@ -48,7 +51,7 @@ namespace Duende.IdentityServer
         {
             if (claims == null) throw new ArgumentNullException(nameof(claims));
 
-            var issuer = ContextAccessor.HttpContext.GetIdentityServerIssuerUri();
+            var issuer = await IssuerNameService.GetCurrentAsync();
 
             var token = new Token
             {

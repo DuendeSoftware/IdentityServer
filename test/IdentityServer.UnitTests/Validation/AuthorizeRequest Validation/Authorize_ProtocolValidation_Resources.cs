@@ -12,6 +12,7 @@ using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using IdentityModel;
 using UnitTests.Common;
+using UnitTests.Validation.Setup;
 using Xunit;
 
 namespace UnitTests.Validation.AuthorizeRequest_Validation
@@ -48,6 +49,7 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
         {
             _subject = new AuthorizeRequestValidator(
                 _options,
+                new TestIssuerNameService("https://sts"),
                 new InMemoryClientStore(_clients),
                 new DefaultCustomAuthorizeRequestValidator(),
                 new StrictRedirectUriValidator(),

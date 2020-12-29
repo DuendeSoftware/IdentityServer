@@ -21,7 +21,7 @@ namespace Duende.IdentityServer.Validation
     /// </summary>
     public class PrivateKeyJwtSecretValidator : ISecretValidator
     {
-        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IIssuerNameService _issuerNameService;
         private readonly IReplayCache _replayCache;
         private readonly ILogger _logger;
 
@@ -30,9 +30,9 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// Instantiates an instance of private_key_jwt secret validator
         /// </summary>
-        public PrivateKeyJwtSecretValidator(IHttpContextAccessor contextAccessor, IReplayCache replayCache, ILogger<PrivateKeyJwtSecretValidator> logger)
+        public PrivateKeyJwtSecretValidator(IIssuerNameService issuerNameService, IReplayCache replayCache, ILogger<PrivateKeyJwtSecretValidator> logger)
         {
-            _contextAccessor = contextAccessor;
+            _issuerNameService = issuerNameService;
             _replayCache = replayCache;
             _logger = logger;
         }
@@ -81,11 +81,8 @@ namespace Duende.IdentityServer.Validation
 
             var validAudiences = new[]
             {
-                // issuer URI (tbd)
-                //_contextAccessor.HttpContext.GetIdentityServerIssuerUri(),
-                
                 // token endpoint URL
-                string.Concat(_contextAccessor.HttpContext.GetIdentityServerIssuerUri().EnsureTrailingSlash(),
+                string.Concat((await _issuerNameService.GetCurrentAsync()).EnsureTrailingSlash(),
                     Constants.ProtocolRoutePaths.Token)
             };
             

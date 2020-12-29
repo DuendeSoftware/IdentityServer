@@ -14,6 +14,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.ResponseHandling
 {
@@ -135,6 +136,7 @@ namespace Duende.IdentityServer.ResponseHandling
 
             var response = new AuthorizeResponse
             {
+                Issuer = request.IssuerName,
                 Request = request,
                 Code = id,
                 SessionState = request.GenerateSessionStateValue()

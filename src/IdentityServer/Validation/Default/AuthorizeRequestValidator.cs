@@ -21,6 +21,7 @@ namespace Duende.IdentityServer.Validation
     internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
     {
         private readonly IdentityServerOptions _options;
+        private readonly IIssuerNameService _issuerNameService;
         private readonly IClientStore _clients;
         private readonly ICustomAuthorizeRequestValidator _customValidator;
         private readonly IRedirectUriValidator _uriValidator;
@@ -35,6 +36,7 @@ namespace Duende.IdentityServer.Validation
 
         public AuthorizeRequestValidator(
             IdentityServerOptions options,
+            IIssuerNameService issuerNameService,
             IClientStore clients,
             ICustomAuthorizeRequestValidator customValidator,
             IRedirectUriValidator uriValidator,
@@ -45,6 +47,7 @@ namespace Duende.IdentityServer.Validation
             ILogger<AuthorizeRequestValidator> logger)
         {
             _options = options;
+            _issuerNameService = issuerNameService;
             _clients = clients;
             _customValidator = customValidator;
             _uriValidator = uriValidator;
@@ -62,6 +65,7 @@ namespace Duende.IdentityServer.Validation
             var request = new ValidatedAuthorizeRequest
             {
                 Options = _options,
+                IssuerName = await _issuerNameService.GetCurrentAsync(),
                 Subject = subject ?? Principal.Anonymous,
                 Raw = parameters ?? throw new ArgumentNullException(nameof(parameters))
             };

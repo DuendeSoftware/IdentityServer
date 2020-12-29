@@ -327,6 +327,9 @@ namespace Duende.IdentityServer.ResponseHandling
                     entries.Add(OidcConstants.Discovery.RequestUriParameterSupported, true);
                 }
             }
+            
+            // todo: switch to constant once finalized
+            entries.Add("authorization_response_iss_parameter_supported", true);
 
             if (Options.MutualTls.Enabled)
             {
