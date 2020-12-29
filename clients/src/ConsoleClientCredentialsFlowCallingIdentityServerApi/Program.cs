@@ -59,7 +59,7 @@ namespace ConsoleClientCredentialsFlowCallingIdentityServerApi
             var response = await client.GetStringAsync("localApi");
 
             "\n\nService claims:".ConsoleGreen();
-            Console.WriteLine(response.PrintJson());
+            Console.WriteLine(response.PrettyPrintJson());
         }
     }
 }

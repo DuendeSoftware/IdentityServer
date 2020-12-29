@@ -23,8 +23,8 @@ namespace Clients
                     var header = parts[0];
                     var payload = parts[1];
 
-                    Console.WriteLine(PrintJson(Encoding.UTF8.GetString(Base64Url.Decode(header))));
-                    Console.WriteLine(PrintJson(Encoding.UTF8.GetString(Base64Url.Decode(payload))));
+                    Console.WriteLine(PrettyPrintJson(Encoding.UTF8.GetString(Base64Url.Decode(header))));
+                    Console.WriteLine(PrettyPrintJson(Encoding.UTF8.GetString(Base64Url.Decode(payload))));
                 }
             }
             else
@@ -44,7 +44,7 @@ namespace Clients
             }
         }
 
-        public static string PrintJson(this string raw)
+        public static string PrettyPrintJson(this string raw)
         {
             var doc = JsonDocument.Parse(raw).RootElement;
             return JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true });

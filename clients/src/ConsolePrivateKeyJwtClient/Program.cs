@@ -77,7 +77,7 @@ namespace ConsolePrivateKeyJwtClient
             var response = await client.GetStringAsync("identity");
 
             "\n\nService claims:".ConsoleGreen();
-            Console.WriteLine(response.PrintJson());
+            Console.WriteLine(response.PrettyPrintJson());
         }
 
         private static string CreateClientToken(SigningCredentials credential, string clientId, string audience)

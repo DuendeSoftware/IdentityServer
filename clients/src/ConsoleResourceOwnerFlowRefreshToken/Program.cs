@@ -91,7 +91,7 @@ namespace ConsoleResourceOwnerFlowRefreshToken
             var response = await client.GetStringAsync("identity");
 
             "\n\nService claims:".ConsoleGreen();
-            Console.WriteLine(response.PrintJson());
+            Console.WriteLine(response.PrettyPrintJson());
         }
     }
 }

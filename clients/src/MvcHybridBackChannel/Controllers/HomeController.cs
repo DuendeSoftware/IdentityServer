@@ -41,7 +41,7 @@ namespace MvcHybrid.Controllers
             client.SetBearerToken(token);
 
             var response = await client.GetStringAsync(Constants.SampleApi + "identity");
-            ViewBag.Json = response.PrintJson();
+            ViewBag.Json = response.PrettyPrintJson();
 
             return View();
         }
