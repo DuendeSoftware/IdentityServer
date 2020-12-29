@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <!--our stuff -->
-    <PackageReference Update="IdentityModel" Version="4.5.0" />
+    <PackageReference Update="IdentityModel" Version="5.0.0-preview.1.2" />
 
     <!--build related-->
     <PackageReference Include="MinVer" Version="2.3.0" PrivateAssets="All" />
@@ -40,7 +40,6 @@
     <PackageReference Update="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)" />
 
     <!--misc -->
-    <PackageReference Update="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(WilsonVersion)" />
     <PackageReference Update="System.IdentityModel.Tokens.Jwt" Version="$(WilsonVersion)" />
     <PackageReference Update="AutoMapper" Version="[10.0.0,11.0)" />
@@ -52,7 +51,6 @@
     <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Identity" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(FrameworkVersion)" />
-    <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)"/>
     
     <!--microsoft entity framework -->

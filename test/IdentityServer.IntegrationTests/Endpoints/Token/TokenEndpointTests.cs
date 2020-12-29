@@ -3,11 +3,11 @@
 
 
 using FluentAssertions;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Test;
@@ -92,7 +92,7 @@ namespace IntegrationTests.Endpoints.Token
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = await response.Content.ReadAsStringAsync();
-            var result = JObject.Parse(json);
+            var result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
             result.ContainsKey("error").Should().BeFalse();
         }
 
@@ -115,7 +115,7 @@ namespace IntegrationTests.Endpoints.Token
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = await response.Content.ReadAsStringAsync();
-            var result = JObject.Parse(json);
+            var result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
             result.ContainsKey("error").Should().BeFalse();
         }
     }

@@ -1,8 +1,8 @@
 ﻿using IdentityModel;
 using IdentityModel.Client;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Text;
+using System.Text.Json;
 
 namespace Clients
 {
@@ -21,10 +21,10 @@ namespace Clients
 
                     var parts = response.AccessToken.Split('.');
                     var header = parts[0];
-                    var claims = parts[1];
+                    var payload = parts[1];
 
-                    Console.WriteLine(JObject.Parse(Encoding.UTF8.GetString(Base64Url.Decode(header))));
-                    Console.WriteLine(JObject.Parse(Encoding.UTF8.GetString(Base64Url.Decode(claims))));
+                    Console.WriteLine(PrettyPrintJson(Encoding.UTF8.GetString(Base64Url.Decode(header))));
+                    Console.WriteLine(PrettyPrintJson(Encoding.UTF8.GetString(Base64Url.Decode(payload))));
                 }
             }
             else
@@ -42,6 +42,12 @@ namespace Clients
                     Console.WriteLine(response.Raw);
                 }
             }
+        }
+
+        public static string PrettyPrintJson(this string raw)
+        {
+            var doc = JsonDocument.Parse(raw).RootElement;
+            return JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }
