@@ -31,7 +31,15 @@ namespace Duende.IdentityServer.Stores.Serialization
             var target = new ClaimsPrincipalLite
             {
                 AuthenticationType = value.Identity.AuthenticationType,
-                Claims = value.Claims.Select(x => new ClaimLite { Type = x.Type, Value = x.Value, ValueType = x.ValueType }).ToArray()
+                Claims = value.Claims.Select(x =>
+                {
+                    var cl = new ClaimLite { Type = x.Type, Value = x.Value, ValueType = x.ValueType };
+                    if (cl.ValueType == ClaimValueTypes.String)
+                    {
+                        cl.ValueType = null;
+                    }
+                    return cl;
+                }).ToArray()
             };
             JsonSerializer.Serialize(writer, target, options);
         }

@@ -36,7 +36,7 @@ namespace Duende.IdentityServer.Stores.Serialization
             {
                 IgnoreReadOnlyFields = true,
                 IgnoreReadOnlyProperties = true,
-                
+                IgnoreNullValues = true,
             };
             _settings.Converters.Add(new ClaimConverter());
             _settings.Converters.Add(new ClaimsPrincipalConverter());

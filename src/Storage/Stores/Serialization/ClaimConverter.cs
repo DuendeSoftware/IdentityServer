@@ -28,6 +28,10 @@ namespace Duende.IdentityServer.Stores.Serialization
                 Value = value.Value,
                 ValueType = value.ValueType
             };
+            if (target.ValueType == ClaimValueTypes.String)
+            {
+                target.ValueType = null;
+            }
 
             JsonSerializer.Serialize(writer, target, options);
         }
