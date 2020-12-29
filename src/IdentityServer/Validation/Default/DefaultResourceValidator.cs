@@ -38,10 +38,9 @@ namespace Duende.IdentityServer.Validation
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
-            var parsedScopesResult = _scopeParser.ParseScopeValues(request.Scopes);
-
             var result = new ResourceValidationResult();
-            
+
+            var parsedScopesResult = _scopeParser.ParseScopeValues(request.Scopes);
             if (!parsedScopesResult.Succeeded)
             {
                 foreach (var invalidScope in parsedScopesResult.Errors)
@@ -54,20 +53,64 @@ namespace Duende.IdentityServer.Validation
             }
 
             var scopeNames = parsedScopesResult.ParsedScopes.Select(x => x.ParsedName).Distinct().ToArray();
-            var resourcesFromStore = await _store.FindEnabledResourcesByScopeAsync(scopeNames);
+            // todo: this API might want to pass resource indicators to better filter
+            var scopeResourcesFromStore = await _store.FindEnabledResourcesByScopeAsync(scopeNames);
+
+            if (request.ResourceIndicators?.Any() == true)
+            {
+                // remove isolated API resources not included in the requested resource indicators
+                scopeResourcesFromStore.ApiResources = scopeResourcesFromStore.ApiResources
+                    .Where(x => 
+                        // only allow non-isolated resources if the request could produce multiple access
+                        // tokens. this will happen if the request is for a RT, so check for offline_access
+                        (request.IncludeNonIsolatedApiResources && !x.RequireResourceIndicator) || 
+                         request.ResourceIndicators.Contains(x.Name))
+                    .ToHashSet();
+
+                if (!request.IncludeNonIsolatedApiResources)
+                {
+                    // filter API scopes that don't match the resources requested
+                    var allResourceScopes = scopeResourcesFromStore.ApiResources.SelectMany(x => x.Scopes).ToArray();
+                    scopeResourcesFromStore.ApiScopes =
+                        scopeResourcesFromStore.ApiScopes.Where(x => allResourceScopes.Contains(x.Name))
+                        .ToHashSet();
+                }
+
+                // find requested resource indicators not matched by scope
+                var matchedApiResourceNames = scopeResourcesFromStore.ApiResources.Select(x => x.Name).ToArray();
+                var invalidRequestedResourceIndicators = request.ResourceIndicators.Except(matchedApiResourceNames);
+                if (invalidRequestedResourceIndicators.Any())
+                {
+                    foreach(var invalid in invalidRequestedResourceIndicators)
+                    {
+                        _logger.LogError("Invalid resource identifier {resource}. It is either not found, not enabled, or does not support any of the requested scopes.", invalid);
+                        result.InvalidResourceIndicators.Add(invalid);
+                    }
+
+                    return result;
+                }
+            }
+            else
+            {
+                // no resource indicators, so filter all API resources marked as isolated
+                scopeResourcesFromStore.ApiResources = scopeResourcesFromStore.ApiResources.Where(x => !x.RequireResourceIndicator).ToHashSet();
+            }
+
 
             foreach (var scope in parsedScopesResult.ParsedScopes)
             {
-                await ValidateScopeAsync(request.Client, resourcesFromStore, scope, result);
+                await ValidateScopeAsync(request.Client, scopeResourcesFromStore, scope, result);
             }
 
-            if (result.InvalidScopes.Count > 0)
+            
+            if (result.InvalidScopes.Count > 0 || result.InvalidResourceIndicators.Count > 0)
             {
                 result.Resources.IdentityResources.Clear();
                 result.Resources.ApiResources.Clear();
                 result.Resources.ApiScopes.Clear();
                 result.ParsedScopes.Clear();
             }
+
 
             return result;
         }
@@ -81,9 +124,9 @@ namespace Duende.IdentityServer.Validation
         /// <param name="result"></param>
         /// <returns></returns>
         protected virtual async Task ValidateScopeAsync(
-            Client client, 
-            Resources resourcesFromStore, 
-            ParsedScopeValue requestedScope, 
+            Client client,
+            Resources resourcesFromStore,
+            ParsedScopeValue requestedScope,
             ResourceValidationResult result)
         {
             if (requestedScope.ParsedName == IdentityServerConstants.StandardScopes.OfflineAccess)
@@ -136,7 +179,7 @@ namespace Duende.IdentityServer.Validation
                     }
                     else
                     {
-                        _logger.LogError("Scope {scope} not found in store.", requestedScope.ParsedName);
+                        _logger.LogError("Scope {scope} not found in store or not supported by requested resource indicators.", requestedScope.ParsedName);
                         result.InvalidScopes.Add(requestedScope.RawValue);
                     }
                 }

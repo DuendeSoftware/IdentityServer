@@ -3,6 +3,7 @@
 
 
 using Duende.IdentityServer.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -44,7 +45,7 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// Indicates if the result was successful.
         /// </summary>
-        public bool Succeeded => ParsedScopes.Any() && !InvalidScopes.Any();
+        public bool Succeeded => ParsedScopes.Any() && !InvalidScopes.Any() && !InvalidResourceIndicators.Any();
 
         /// <summary>
         /// The resources of the result.
@@ -55,11 +56,16 @@ namespace Duende.IdentityServer.Validation
         /// The parsed scopes represented by the result.
         /// </summary>
         public ICollection<ParsedScopeValue> ParsedScopes { get; set; } = new HashSet<ParsedScopeValue>();
-
+        
         /// <summary>
         /// The original (raw) scope values represented by the validated result.
         /// </summary>
         public IEnumerable<string> RawScopeValues => ParsedScopes.Select(x => x.RawValue);
+
+        /// <summary>
+        /// The requested resource indicators that are invalid.
+        /// </summary>
+        public ICollection<string> InvalidResourceIndicators { get; set; } = new HashSet<string>();
 
         /// <summary>
         /// The requested scopes that are invalid.
@@ -90,7 +96,43 @@ namespace Duende.IdentityServer.Validation
             {
                 OfflineAccess = offline
             };
+
+            return new ResourceValidationResult(resources, parsedScopesToKeep);
+        }
+
+        /// <summary>
+        /// Filters the result by the resource indicator for issuing access tokens.
+        /// </summary>
+        public ResourceValidationResult FilterByResourceIndicator(string resourceIndicator)
+        {
+            // filter ApiResources to only the ones allowed by the resource indicator requested
+            var apiResourcesToKeep = (String.IsNullOrWhiteSpace(resourceIndicator) ?
+                Resources.ApiResources.Where(x => !x.RequireResourceIndicator) :
+                Resources.ApiResources.Where(x => x.Name == resourceIndicator)).ToArray();
             
+            var apiScopesToKeep = Resources.ApiScopes.AsEnumerable();
+            var parsedScopesToKeep = ParsedScopes;
+
+            if (!String.IsNullOrWhiteSpace(resourceIndicator))
+            {
+                // filter ApiScopes to only the ones allowed by the ApiResource requested
+                var scopeNamesToKeep = apiResourcesToKeep.SelectMany(x => x.Scopes).ToArray();
+                apiScopesToKeep = Resources.ApiScopes.Where(x => scopeNamesToKeep.Contains(x.Name)).ToArray();
+
+                // filter ParsedScopes to those matching the apiScopesToKeep
+                var parsedScopesToKeepList = ParsedScopes.Where(x => scopeNamesToKeep.Contains(x.ParsedName)).ToHashSet();
+                if (Resources.OfflineAccess)
+                {
+                    parsedScopesToKeepList.Add(new ParsedScopeValue(IdentityServerConstants.StandardScopes.OfflineAccess));
+                }
+                parsedScopesToKeep = parsedScopesToKeepList;
+            }
+            
+            var resources = new Resources(Resources.IdentityResources, apiResourcesToKeep, apiScopesToKeep)
+            {
+                OfflineAccess = Resources.OfflineAccess,
+            };
+
             return new ResourceValidationResult()
             {
                 Resources = resources,

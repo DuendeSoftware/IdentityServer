@@ -47,7 +47,7 @@ namespace UnitTests.Services.Default
             var client = new Client();
             var accessToken = new Token();
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, accessToken, client);
+            var handle = await _subject.CreateRefreshTokenAsync(new RefreshTokenCreationRequest { Subject = _user, AccessToken = accessToken, Client = client });
 
             (await _store.GetRefreshTokenAsync(handle)).Should().NotBeNull();
         }
@@ -63,7 +63,7 @@ namespace UnitTests.Services.Default
                 AbsoluteRefreshTokenLifetime = 10
             };
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client);
+            var handle = await _subject.CreateRefreshTokenAsync(new RefreshTokenCreationRequest { Subject = _user, AccessToken = new Token(), Client = client });
 
             var refreshToken = (await _store.GetRefreshTokenAsync(handle));
 
@@ -83,7 +83,7 @@ namespace UnitTests.Services.Default
                 AbsoluteRefreshTokenLifetime = 10
             };
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client);
+            var handle = await _subject.CreateRefreshTokenAsync(new RefreshTokenCreationRequest { Subject = _user, AccessToken = new Token(), Client = client });
 
             var refreshToken = (await _store.GetRefreshTokenAsync(handle));
 
@@ -102,7 +102,7 @@ namespace UnitTests.Services.Default
                 SlidingRefreshTokenLifetime = 10
             };
 
-            var handle = await _subject.CreateRefreshTokenAsync(_user, new Token(), client);
+            var handle = await _subject.CreateRefreshTokenAsync(new RefreshTokenCreationRequest { Subject = _user, AccessToken = new Token(), Client = client });
 
             var refreshToken = (await _store.GetRefreshTokenAsync(handle));
 
@@ -123,21 +123,11 @@ namespace UnitTests.Services.Default
             {
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             };
 
             var handle = await _store.StoreRefreshTokenAsync(refreshToken);
 
-            (await _subject.UpdateRefreshTokenAsync(handle, refreshToken, client))
+            (await _subject.UpdateRefreshTokenAsync(new RefreshTokenUpdateRequest { Handle = handle, RefreshToken = refreshToken, Client = client }))
                 .Should().NotBeNull()
                 .And
                 .NotBe(handle);
@@ -161,20 +151,10 @@ namespace UnitTests.Services.Default
             var handle = await _store.StoreRefreshTokenAsync(new RefreshToken
             {
                 CreationTime = now.AddSeconds(-10),
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             });
 
             var refreshToken = await _store.GetRefreshTokenAsync(handle);
-            var newHandle = await _subject.UpdateRefreshTokenAsync(handle, refreshToken, client);
+            var newHandle = await _subject.UpdateRefreshTokenAsync(new RefreshTokenUpdateRequest { Handle = handle, RefreshToken = refreshToken, Client = client });
 
             newHandle.Should().NotBeNull().And.Be(handle);
 
@@ -202,20 +182,10 @@ namespace UnitTests.Services.Default
             var handle = await _store.StoreRefreshTokenAsync(new RefreshToken
             {
                 CreationTime = now.AddSeconds(-1000),
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             });
 
             var refreshToken = await _store.GetRefreshTokenAsync(handle);
-            var newHandle = await _subject.UpdateRefreshTokenAsync(handle, refreshToken, client);
+            var newHandle = await _subject.UpdateRefreshTokenAsync(new RefreshTokenUpdateRequest { Handle = handle, RefreshToken = refreshToken, Client = client });
 
             newHandle.Should().NotBeNull().And.Be(handle);
 
@@ -243,20 +213,10 @@ namespace UnitTests.Services.Default
             var handle = await _store.StoreRefreshTokenAsync(new RefreshToken
             {
                 CreationTime = now.AddSeconds(-1000),
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             });
 
             var refreshToken = await _store.GetRefreshTokenAsync(handle);
-            var newHandle = await _subject.UpdateRefreshTokenAsync(handle, refreshToken, client);
+            var newHandle = await _subject.UpdateRefreshTokenAsync(new RefreshTokenUpdateRequest { Handle = handle, RefreshToken = refreshToken, Client = client });
 
             newHandle.Should().NotBeNull().And.Be(handle);
 
@@ -283,21 +243,13 @@ namespace UnitTests.Services.Default
 
             var handle = await _store.StoreRefreshTokenAsync(new RefreshToken
             {
+                ClientId = client.ClientId,
+                Subject = _user,
                 CreationTime = now.AddSeconds(-1000),
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             });
 
             var refreshToken = await _store.GetRefreshTokenAsync(handle);
-            var newHandle = await _subject.UpdateRefreshTokenAsync(handle, refreshToken, client);
+            var newHandle = await _subject.UpdateRefreshTokenAsync(new RefreshTokenUpdateRequest { Handle = handle, RefreshToken = refreshToken, Client = client });
 
             newHandle.Should().NotBeNull().And.NotBe(handle);
 
@@ -318,18 +270,10 @@ namespace UnitTests.Services.Default
 
             var refreshToken = new RefreshToken
             {
+                ClientId = client.ClientId,
+                Subject = _user,
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             };
 
             var handle = await _store.StoreRefreshTokenAsync(refreshToken);
@@ -337,7 +281,7 @@ namespace UnitTests.Services.Default
             var now = DateTime.UtcNow;
             _clock.UtcNowFunc = () => now;
 
-            var newHandle = await _subject.UpdateRefreshTokenAsync(handle, refreshToken, client);
+            var newHandle = await _subject.UpdateRefreshTokenAsync(new RefreshTokenUpdateRequest { Handle = handle, RefreshToken = refreshToken, Client = client });
 
             var oldToken = await _store.GetRefreshTokenAsync(handle);
             var newToken = await _store.GetRefreshTokenAsync(newHandle);
@@ -371,18 +315,10 @@ namespace UnitTests.Services.Default
 
             var refreshToken = new RefreshToken
             {
+                ClientId = client.ClientId,
+                Subject = _user,
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             };
 
             var handle = await _store.StoreRefreshTokenAsync(refreshToken);
@@ -407,18 +343,10 @@ namespace UnitTests.Services.Default
 
             var refreshToken = new RefreshToken
             {
+                ClientId = "client2",
+                Subject = _user,
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = "client2",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             };
 
             var handle = await _store.StoreRefreshTokenAsync(refreshToken);
@@ -443,18 +371,10 @@ namespace UnitTests.Services.Default
 
             var refreshToken = new RefreshToken
             {
+                ClientId = client.ClientId,
+                Subject = _user,
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             };
 
             var handle = await _store.StoreRefreshTokenAsync(refreshToken);
@@ -482,17 +402,8 @@ namespace UnitTests.Services.Default
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
                 ConsumedTime = DateTime.UtcNow,
-                
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
+                ClientId = client.ClientId,
+                Subject = _user,
             };
 
             var handle = await _store.StoreRefreshTokenAsync(refreshToken);
@@ -517,18 +428,10 @@ namespace UnitTests.Services.Default
 
             var refreshToken = new RefreshToken
             {
+                ClientId = client.ClientId,
+                Subject = _user,
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = client.ClientId,
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Claims = new List<Claim>()
-                    {
-                        new Claim("sub", "123")
-                    }
-                }
             };
 
             var handle = await _store.StoreRefreshTokenAsync(refreshToken);

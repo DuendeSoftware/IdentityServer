@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -21,7 +21,10 @@ namespace Duende.IdentityServer.Extensions
 
             foreach (var field in collection)
             {
-                nv.Add(field.Key, field.Value.First());
+                foreach (var val in field.Value)
+                {
+                    nv.Add(field.Key, val);
+                }
             }
 
             return nv;

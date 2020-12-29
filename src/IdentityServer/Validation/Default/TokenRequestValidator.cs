@@ -30,7 +30,6 @@ namespace Duende.IdentityServer.Validation
         private readonly ICustomTokenRequestValidator _customRequestValidator;
         private readonly IResourceValidator _resourceValidator;
         private readonly IResourceStore _resourceStore;
-        private readonly ITokenValidator _tokenValidator;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IEventService _events;
         private readonly IResourceOwnerPasswordValidator _resourceOwnerValidator;
@@ -52,7 +51,6 @@ namespace Duende.IdentityServer.Validation
             ICustomTokenRequestValidator customRequestValidator,
             IResourceValidator resourceValidator,
             IResourceStore resourceStore,
-            ITokenValidator tokenValidator, 
             IRefreshTokenService refreshTokenService,
             IEventService events, 
             ISystemClock clock, 
@@ -70,7 +68,6 @@ namespace Duende.IdentityServer.Validation
             _customRequestValidator = customRequestValidator;
             _resourceValidator = resourceValidator;
             _resourceStore = resourceStore;
-            _tokenValidator = tokenValidator;
             _refreshTokenService = refreshTokenService;
             _events = events;
         }
@@ -134,6 +131,33 @@ namespace Duende.IdentityServer.Validation
             }
 
             _validatedRequest.GrantType = grantType;
+
+            //////////////////////////////////////////////////////////
+            // check for resource indicator and basic formatting
+            //////////////////////////////////////////////////////////
+            var resourceIndicators = parameters.GetValues(OidcConstants.TokenRequest.Resource) ?? Enumerable.Empty<string>();
+
+            if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator maximum length exceeded");
+            }
+
+            if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
+            }
+            
+            if (resourceIndicators.Count() > 1)
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Multiple resource indicators not supported on token endpoint.");
+            }
+
+            _validatedRequest.RequestedResourceIndicator = resourceIndicators.SingleOrDefault();
+
+
+            //////////////////////////////////////////////////////////
+            // run specific logic for grants
+            //////////////////////////////////////////////////////////
 
             switch (grantType)
             {
@@ -292,6 +316,42 @@ namespace Duende.IdentityServer.Validation
                 return Invalid(OidcConstants.TokenErrors.InvalidRequest);
             }
 
+            //////////////////////////////////////////////////////////
+            // resource indicator
+            //////////////////////////////////////////////////////////
+            if (_validatedRequest.RequestedResourceIndicator != null &&
+                _validatedRequest.AuthorizationCode.RequestedResourceIndicators?.Any() == true &&
+                !_validatedRequest.AuthorizationCode.RequestedResourceIndicators.Contains(_validatedRequest.RequestedResourceIndicator))
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original authorize request.");
+            }
+
+            //////////////////////////////////////////////////////////
+            // resource and scope validation 
+            //////////////////////////////////////////////////////////
+            var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest { 
+                Client = _validatedRequest.Client,
+                Scopes = _validatedRequest.AuthorizationCode.RequestedScopes,
+                ResourceIndicators = _validatedRequest.AuthorizationCode.RequestedResourceIndicators,
+                // if we are issuing a refresh token, then we need to allow the non-isolated resource
+                IncludeNonIsolatedApiResources = _validatedRequest.AuthorizationCode.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess)
+            });
+
+            if (!validatedResources.Succeeded)
+            {
+                if (validatedResources.InvalidResourceIndicators.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator.");
+                }
+                if (validatedResources.InvalidScopes.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope.");
+                }
+            }
+
+            LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
+            _validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
+
             /////////////////////////////////////////////
             // validate PKCE parameters
             /////////////////////////////////////////////
@@ -350,9 +410,10 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////
             // check if client is allowed to request scopes
             /////////////////////////////////////////////
-            if (!await ValidateRequestedScopesAsync(parameters, ignoreImplicitIdentityScopes: true, ignoreImplicitOfflineAccess: true))
+            var scopeError = await ValidateRequestedScopesAndResourcesAsync(parameters, ignoreImplicitIdentityScopes: true, ignoreImplicitOfflineAccess: true);
+            if (scopeError != null)
             {
-                return Invalid(OidcConstants.TokenErrors.InvalidScope);
+                return Invalid(scopeError);
             }
 
             if (_validatedRequest.ValidatedResources.Resources.IdentityResources.Any())
@@ -387,9 +448,10 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////
             // check if client is allowed to request scopes
             /////////////////////////////////////////////
-            if (!(await ValidateRequestedScopesAsync(parameters)))
+            var scopeError = await ValidateRequestedScopesAndResourcesAsync(parameters);
+            if (scopeError != null)
             {
-                return Invalid(OidcConstants.TokenErrors.InvalidScope);
+                return Invalid(scopeError);
             }
 
             /////////////////////////////////////////////
@@ -516,6 +578,51 @@ namespace Duende.IdentityServer.Validation
             _validatedRequest.RefreshTokenHandle = refreshTokenHandle;
             _validatedRequest.Subject = result.RefreshToken.Subject;
 
+            //////////////////////////////////////////////////////////
+            // resource indicator
+            //////////////////////////////////////////////////////////
+            var resourceIndicators = _validatedRequest.RefreshToken.AuthorizedResourceIndicators;
+            if (_validatedRequest.RefreshToken.AuthorizedResourceIndicators != null)
+            {
+                // we had an authorization request so check current requested resource against original list
+                if (_validatedRequest.RequestedResourceIndicator != null &&
+                    !_validatedRequest.RefreshToken.AuthorizedResourceIndicators.Contains(_validatedRequest.RequestedResourceIndicator))
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original authorize request.");
+                }
+            }
+            else if (!String.IsNullOrWhiteSpace(_validatedRequest.RequestedResourceIndicator))
+            {
+                resourceIndicators = new[] { _validatedRequest.RequestedResourceIndicator };
+            }
+
+            //////////////////////////////////////////////////////////
+            // resource and scope validation 
+            //////////////////////////////////////////////////////////
+            var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+            {
+                Client = _validatedRequest.Client,
+                Scopes = _validatedRequest.RefreshToken.AuthorizedScopes,
+                ResourceIndicators = resourceIndicators,
+                // we're issuing refresh token, so we need to allow for non-isolated resource
+                IncludeNonIsolatedApiResources = true,
+            });
+
+            if (!validatedResources.Succeeded)
+            {
+                if (validatedResources.InvalidResourceIndicators.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator.");
+                }
+                if (validatedResources.InvalidScopes.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope.");
+                }
+            }
+
+            LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
+            _validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
+
             _logger.LogDebug("Validation of refresh token request success");
             // todo: more logging - similar to TokenValidator before
             
@@ -525,6 +632,15 @@ namespace Duende.IdentityServer.Validation
         private async Task<TokenRequestValidationResult> ValidateDeviceCodeRequestAsync(NameValueCollection parameters)
         {
             _logger.LogDebug("Start validation of device code request");
+
+            /////////////////////////////////////////////
+            // resource indicator not supported for device flow
+            /////////////////////////////////////////////
+            if (_validatedRequest.RequestedResourceIndicator != null)
+            {
+                LogError("Resource indicators not supported for device flow");
+                return Invalid(OidcConstants.TokenErrors.InvalidTarget);
+            }
 
             /////////////////////////////////////////////
             // check if client is authorized for grant type
@@ -557,9 +673,37 @@ namespace Duende.IdentityServer.Validation
             var deviceCodeContext = new DeviceCodeValidationContext { DeviceCode = deviceCode, Request = _validatedRequest };
             await _deviceCodeValidator.ValidateAsync(deviceCodeContext);
 
-            if (deviceCodeContext.Result.IsError) return deviceCodeContext.Result;
+            if (deviceCodeContext.Result.IsError)
+            {
+                return deviceCodeContext.Result;
+            }
 
-            _logger.LogDebug("Validation of authorization code token request success");
+            //////////////////////////////////////////////////////////
+            // scope validation 
+            //////////////////////////////////////////////////////////
+            var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+            {
+                Client = _validatedRequest.Client,
+                Scopes = _validatedRequest.DeviceCode.AuthorizedScopes,
+                ResourceIndicators = null // not supported for device grant
+            });
+
+            if (!validatedResources.Succeeded)
+            {
+                if (validatedResources.InvalidResourceIndicators.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator.");
+                }
+                if (validatedResources.InvalidScopes.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope.");
+                }
+            }
+
+            LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
+            _validatedRequest.ValidatedResources = validatedResources;
+
+            _logger.LogDebug("Validation of device code token request success");
 
             return Valid();
         }
@@ -589,9 +733,10 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////
             // check if client is allowed to request scopes
             /////////////////////////////////////////////
-            if (!await ValidateRequestedScopesAsync(parameters))
+            var scopeError = await ValidateRequestedScopesAndResourcesAsync(parameters);
+            if (scopeError != null)
             {
-                return Invalid(OidcConstants.TokenErrors.InvalidScope);
+                return Invalid(scopeError);
             }
 
             /////////////////////////////////////////////
@@ -648,7 +793,7 @@ namespace Duende.IdentityServer.Validation
 
         // todo: do we want to rework the semantics of these ignore params?
         // also seems like other workflows other than CC clients can omit scopes?
-        private async Task<bool> ValidateRequestedScopesAsync(NameValueCollection parameters, bool ignoreImplicitIdentityScopes = false, bool ignoreImplicitOfflineAccess = false)
+        private async Task<string> ValidateRequestedScopesAndResourcesAsync(NameValueCollection parameters, bool ignoreImplicitIdentityScopes = false, bool ignoreImplicitOfflineAccess = false)
         {
             var scopes = parameters.Get(OidcConstants.TokenRequest.Scope);
             if (scopes.IsMissing())
@@ -684,14 +829,14 @@ namespace Duende.IdentityServer.Validation
                 else
                 {
                     LogError("No allowed scopes configured for client", new { clientId = _validatedRequest.Client.ClientId });
-                    return false;
+                    return OidcConstants.TokenErrors.InvalidScope;
                 }
             }
 
             if (scopes.Length > _options.InputLengthRestrictions.Scope)
             {
                 LogError("Scope parameter exceeds max allowed length");
-                return false;
+                return OidcConstants.TokenErrors.InvalidScope;
             }
 
             var requestedScopes = scopes.ParseScopesString();
@@ -699,16 +844,30 @@ namespace Duende.IdentityServer.Validation
             if (requestedScopes == null)
             {
                 LogError("No scopes found in request");
-                return false;
+                return OidcConstants.TokenErrors.InvalidScope;
             }
+
+
+            var resourceIndicators = _validatedRequest.RequestedResourceIndicator == null ? 
+                Enumerable.Empty<string>() : 
+                new[] { _validatedRequest.RequestedResourceIndicator };
 
             var resourceValidationResult = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest { 
                 Client = _validatedRequest.Client,
-                Scopes = requestedScopes
+                Scopes = requestedScopes,
+                ResourceIndicators = resourceIndicators,
+                // if the client is passing explicit scopes, we want to exclude the non-isolated resource scenaio from validation
+                IncludeNonIsolatedApiResources = parameters.Get(OidcConstants.TokenRequest.Scope).IsMissing()
             });
 
             if (!resourceValidationResult.Succeeded)
             {
+                if (resourceValidationResult.InvalidResourceIndicators.Any())
+                {
+                    LogError("Invalid resource indicator");
+                    return OidcConstants.TokenErrors.InvalidTarget;
+                }
+
                 if (resourceValidationResult.InvalidScopes.Any())
                 {
                     LogError("Invalid scopes requested");
@@ -718,13 +877,15 @@ namespace Duende.IdentityServer.Validation
                     LogError("Invalid scopes for client requested");
                 }
 
-                return false;
+                return OidcConstants.TokenErrors.InvalidScope;
             }
-
-            _validatedRequest.RequestedScopes = requestedScopes;
-            _validatedRequest.ValidatedResources = resourceValidationResult;
             
-            return true;
+            _validatedRequest.RequestedScopes = requestedScopes;
+
+            LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
+            _validatedRequest.ValidatedResources = resourceValidationResult.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
+            
+            return null;
         }
 
         private TokenRequestValidationResult ValidateAuthorizationCodeWithProofKeyParameters(string codeVerifier, AuthorizationCode authZcode)

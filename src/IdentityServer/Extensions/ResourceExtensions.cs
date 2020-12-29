@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Models
 {
@@ -137,6 +138,29 @@ namespace Duende.IdentityServer.Models
         private static IEnumerable<T> IntersectLists<T>(IEnumerable<IEnumerable<T>> lists)
         {
             return lists.Aggregate((l1, l2) => l1.Intersect(l2));
+        }
+
+        internal static bool AreValidResourceIndicatorFormat(this IEnumerable<string> list, ILogger logger)
+        {
+            if (list != null)
+            {
+                foreach (var item in list)
+                {
+                    if (!Uri.TryCreate(item, UriKind.Absolute, out _))
+                    {
+                        logger.LogDebug("Resource indicator {resource} is not a valid URI.", item);
+                        return false;
+                    }
+
+                    if (item.Contains("#"))
+                    {
+                        logger.LogDebug("Resource indicator {resource} must not contain a fragment component.", item);
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }

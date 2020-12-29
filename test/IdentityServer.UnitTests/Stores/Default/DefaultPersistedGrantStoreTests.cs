@@ -99,8 +99,9 @@ namespace UnitTests.Stores.Default
         }
 
         [Fact]
-        public async Task StoreRefreshTokenAsync_should_persist_grant()
+        public async Task refresh_token_in_pre_version_5_format_should_deserialize()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var token1 = new RefreshToken()
             {
                 CreationTime = DateTime.UtcNow,
@@ -111,14 +112,58 @@ namespace UnitTests.Stores.Default
                     Audiences = { "aud" },
                     CreationTime = DateTime.UtcNow,
                     Type = "type",
+                    Description = "desc",
                     Claims = new List<Claim>
+                    {
+                        new Claim("sub", "123"),
+                        new Claim("sid", "sessionid"),
+                        new Claim("scope", "s1"),
+                        new Claim("scope", "s2"),
+                    }
+                },
+                Version = 4
+            };
+
+            var handle = await _refreshTokens.StoreRefreshTokenAsync(token1);
+            var token2 = await _refreshTokens.GetRefreshTokenAsync(handle);
+
+            token2.Version.Should().Be(5);
+
+            token2.ClientId.Should().Be("client");
+            token2.Subject.GetSubjectId().Should().Be("123");
+            token2.SubjectId.Should().Be("123");
+            token2.Description.Should().Be("desc");
+            token2.SessionId.Should().Be("sessionid");
+            token2.AuthorizedScopes.Should().BeEquivalentTo(new[] { "s1", "s2" });
+            token2.AccessToken.Should().BeNull();
+
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        [Fact]
+        public async Task StoreRefreshTokenAsync_should_persist_grant()
+        {
+            var now = DateTime.UtcNow;
+            var token1 = new RefreshToken()
+            {
+                ClientId = "client",
+                Subject = new IdentityServerUser("123").CreatePrincipal(),
+                AuthorizedScopes = new[] { "foo" },
+                CreationTime = now,
+                Lifetime = 10,
+            };
+            token1.SetAccessToken(new Token
+            {
+                ClientId = "client",
+                Audiences = { "aud" },
+                CreationTime = now,
+                Type = "type",
+                Claims = new List<Claim>
                     {
                         new Claim("sub", "123"),
                         new Claim("scope", "foo")
                     }
-                },
-                Version = 1
-            };
+            });
 
             var handle = await _refreshTokens.StoreRefreshTokenAsync(token1);
             var token2 = await _refreshTokens.GetRefreshTokenAsync(handle);
@@ -128,11 +173,12 @@ namespace UnitTests.Stores.Default
             token1.Lifetime.Should().Be(token2.Lifetime);
             token1.Subject.GetSubjectId().Should().Be(token2.Subject.GetSubjectId());
             token1.Version.Should().Be(token2.Version);
-            token1.AccessToken.Audiences.Count.Should().Be(1);
-            token1.AccessToken.Audiences.First().Should().Be("aud");
-            token1.AccessToken.ClientId.Should().Be(token2.AccessToken.ClientId);
-            token1.AccessToken.CreationTime.Should().Be(token2.AccessToken.CreationTime);
-            token1.AccessToken.Type.Should().Be(token2.AccessToken.Type);
+            var at = token2.GetAccessToken();
+            at.Audiences.Count.Should().Be(1);
+            at.Audiences.First().Should().Be("aud");
+            at.ClientId.Should().Be("client");
+            at.CreationTime.Should().Be(now);
+            at.Type.Should().Be("type");
         }
 
         [Fact]
@@ -142,19 +188,6 @@ namespace UnitTests.Stores.Default
             {
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = "client",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Type = "type",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("sub", "123"),
-                        new Claim("scope", "foo")
-                    }
-                },
-                Version = 1
             };
 
 
@@ -169,21 +202,11 @@ namespace UnitTests.Stores.Default
         {
             var token1 = new RefreshToken()
             {
+                ClientId = "client",
+                Subject = new IdentityServerUser("123").CreatePrincipal(),
+                AuthorizedScopes = new[] { "foo" },
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
-                AccessToken = new Token
-                {
-                    ClientId = "client",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Type = "type",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("sub", "123"),
-                        new Claim("scope", "foo")
-                    }
-                },
-                Version = 1
             };
 
             var handle1 = await _refreshTokens.StoreRefreshTokenAsync(token1);
@@ -334,22 +357,10 @@ namespace UnitTests.Stores.Default
 
             await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
             {
+                ClientId = "client1",
+                Subject = _user,
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 20,
-                AccessToken = new Token
-                {
-                    ClientId = "client1",
-                    Audiences = { "aud" },
-                    CreationTime = DateTime.UtcNow,
-                    Type = "type",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("sub", "123"),
-                        new Claim("scope", "baz1"),
-                        new Claim("scope", "baz2")
-                    }
-                },
-                Version = 1
             });
 
             await _codes.StoreAuthorizationCodeAsync(new AuthorizationCode()

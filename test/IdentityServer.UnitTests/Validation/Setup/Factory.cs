@@ -38,7 +38,6 @@ namespace UnitTests.Validation.Setup
             IDeviceCodeValidator deviceCodeValidator = null,
             IEnumerable<IExtensionGrantValidator> extensionGrantValidators = null,
             ICustomTokenRequestValidator customRequestValidator = null,
-            ITokenValidator tokenValidator = null,
             IRefreshTokenService refreshTokenService = null,
             IResourceValidator resourceValidator = null)
         {
@@ -101,11 +100,6 @@ namespace UnitTests.Validation.Setup
             {
                 resourceValidator = CreateResourceValidator(resourceStore);
             }
-            
-            if (tokenValidator == null)
-            {
-                tokenValidator = CreateTokenValidator(refreshTokenStore: refreshTokenStore, profile: profile);
-            }
 
             if (refreshTokenService == null)
             {
@@ -125,7 +119,6 @@ namespace UnitTests.Validation.Setup
                 customRequestValidator,
                 resourceValidator,
                 resourceStore,
-                tokenValidator,
                 refreshTokenService,
                 new TestEventService(), 
                 new StubClock(), 
@@ -292,7 +285,6 @@ namespace UnitTests.Validation.Setup
                 clock: clock,
                 profile: profile,
                 referenceTokenStore: store,
-                refreshTokenStore: refreshTokenStore,
                 customValidator: new DefaultCustomTokenValidator(),
                     keys: new DefaultKeyMaterialService(
                         new[] { new InMemoryValidationKeysStore(new[] { keyInfo }) }, 

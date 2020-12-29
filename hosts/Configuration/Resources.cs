@@ -33,10 +33,17 @@ namespace IdentityServerHost.Configuration
 
                 // resource specific scopes
                 new ApiScope("resource1.scope1"),
-                new ApiScope("resource2.scope1"), 
+                new ApiScope("resource1.scope2"),
+                
+                new ApiScope("resource2.scope1"),
+                new ApiScope("resource2.scope2"),
+                
+                new ApiScope("resource3.scope1"),
+                new ApiScope("resource3.scope2"),
                 
                 // a scope without resource association
                 new ApiScope("scope3"),
+                new ApiScope("scope4"),
                 
                 // a scope shared by multiple resources
                 new ApiScope("shared.scope"),
@@ -52,19 +59,16 @@ namespace IdentityServerHost.Configuration
         public static readonly IEnumerable<ApiResource> ApiResources = 
             new[]
             {
-                new ApiResource("resource1", "Resource 1")
+                new ApiResource("urn:resource1", "Resource 1")
                 {
                     ApiSecrets = { new Secret("secret".Sha256()) },
 
-                    Scopes = { "resource1.scope1", "shared.scope" }
+                    Scopes = { "resource1.scope1", "resource1.scope2", "shared.scope" }
                 },
                 
-                new ApiResource("resource2", "Resource 2")
+                new ApiResource("urn:resource2", "Resource 2")
                 {
-                    ApiSecrets =
-                    {
-                        new Secret("secret".Sha256())
-                    },
+                    ApiSecrets = { new Secret("secret".Sha256()) },
 
                     // additional claims to put into access token
                     UserClaims =
@@ -73,7 +77,15 @@ namespace IdentityServerHost.Configuration
                         JwtClaimTypes.Email
                     },
 
-                    Scopes = { "resource2.scope1", "shared.scope" }
+                    Scopes = { "resource2.scope1", "resource2.scope2", "shared.scope" }
+                },
+                
+                new ApiResource("urn:resource3", "Resource 3 (isolated)")
+                {
+                    ApiSecrets = { new Secret("secret".Sha256()) },
+                    
+                    RequireResourceIndicator = true,
+                    Scopes = { "resource3.scope1", "resource3.scope2", "shared.scope" }
                 }
             };
     }

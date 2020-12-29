@@ -76,7 +76,7 @@ namespace Duende.IdentityServer.Services
                         ClientId = x.ClientId,
                         SubjectId = subjectId,
                         Description = x.Description,
-                        Scopes = x.Scopes,
+                        Scopes = x.AuthorizedScopes,
                         CreationTime = x.CreationTime,
                         Expiration = x.CreationTime.AddSeconds(x.Lifetime)
                     });

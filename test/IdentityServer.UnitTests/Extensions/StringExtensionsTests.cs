@@ -1,14 +1,17 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
 using Xunit;
 using Duende.IdentityServer.Extensions;
+using FluentAssertions;
 
 namespace UnitTests.Extensions
 {
     public class StringExtensionsTests
     {
+        private const string Category = "StringExtensions Tests";
+
         private void CheckOrigin(string inputUrl, string expectedOrigin)
         {
             var actualOrigin = inputUrl.GetOrigin();
@@ -90,6 +93,56 @@ namespace UnitTests.Extensions
             CheckOrigin("test://localhost:8080/", null);
             CheckOrigin("test://localhost:8080/test", null);
             CheckOrigin("test://localhost:8080/test/resource", null);
+        }
+
+
+        // scope parsing
+
+        [Fact]
+        [Trait("Category", Category)]
+        public void Parse_Scopes_with_Empty_Scope_List()
+        {
+            var scopes = string.Empty.ParseScopesString();
+
+            scopes.Should().BeNull();
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public void Parse_Scopes_with_Sorting()
+        {
+            var scopes = "scope3 scope2 scope1".ParseScopesString();
+
+            scopes.Count.Should().Be(3);
+
+            scopes[0].Should().Be("scope1");
+            scopes[1].Should().Be("scope2");
+            scopes[2].Should().Be("scope3");
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public void Parse_Scopes_with_Extra_Spaces()
+        {
+            var scopes = "   scope3     scope2     scope1   ".ParseScopesString();
+
+            scopes.Count.Should().Be(3);
+
+            scopes[0].Should().Be("scope1");
+            scopes[1].Should().Be("scope2");
+            scopes[2].Should().Be("scope3");
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public void Parse_Scopes_with_Duplicate_Scope()
+        {
+            var scopes = "scope2 scope1 scope2".ParseScopesString();
+
+            scopes.Count.Should().Be(2);
+
+            scopes[0].Should().Be("scope1");
+            scopes[1].Should().Be("scope2");
         }
     }
 }

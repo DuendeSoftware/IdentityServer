@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -52,7 +52,7 @@ namespace Duende.IdentityServer.Models
         /// <c>true</c> if this instance is open identifier; otherwise, <c>false</c>.
         /// </value>
         public bool IsOpenId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the requested scopes.
         /// </summary>
@@ -61,6 +61,11 @@ namespace Duende.IdentityServer.Models
         /// </value>
         // todo: brock, change to parsed scopes
         public IEnumerable<string> RequestedScopes { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the requested resource indicators.
+        /// </summary>
+        public IEnumerable<string> RequestedResourceIndicators { get; set; }
 
         /// <summary>
         /// Gets or sets the redirect URI.

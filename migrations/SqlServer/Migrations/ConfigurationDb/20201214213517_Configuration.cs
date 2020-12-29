@@ -19,6 +19,7 @@ namespace SqlServer.Migrations.ConfigurationDb
                     Description = table.Column<string>(maxLength: 1000, nullable: true),
                     AllowedAccessTokenSigningAlgorithms = table.Column<string>(maxLength: 100, nullable: true),
                     ShowInDiscoveryDocument = table.Column<bool>(nullable: false),
+                    RequireResourceIndicator = table.Column<bool>(nullable: false),
                     Created = table.Column<DateTime>(nullable: false),
                     Updated = table.Column<DateTime>(nullable: true),
                     LastAccessed = table.Column<DateTime>(nullable: true),

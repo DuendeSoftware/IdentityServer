@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Security.Claims;
+using System.Linq;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -73,8 +74,6 @@ namespace Duende.IdentityServer.Validation
                 {
                     errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer.");
                 }
-
-                // todo: add resource isolation check here
             }
 
             if (errors.Count > 0)
@@ -116,7 +115,7 @@ namespace Duende.IdentityServer.Validation
                 }
             }
         }
-        
+
         public static void ValidateIssuer(string iss)
         {
             if (_license != null)
@@ -129,6 +128,21 @@ namespace Duende.IdentityServer.Validation
                         _logger.LogError("Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}.", _license.IssuerLimit, _issuers.Count);
                     }
                 }
+            }
+        }
+
+        public static void ValidateResourceIndicators(string resourceIndicator)
+        {
+            if (_license != null && !String.IsNullOrWhiteSpace(resourceIndicator) && !_license.ResourceIsolation)
+            {
+                _logger.LogError("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.");
+            }
+        }
+        public static void ValidateResourceIndicators(IEnumerable<string> resourceIndicators)
+        {
+            if (_license != null && resourceIndicators?.Any() == true && !_license.ResourceIsolation)
+            {
+                _logger.LogError("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.");
             }
         }
 

@@ -17,6 +17,7 @@ CREATE TABLE [ApiResources] (
     [Description] nvarchar(1000) NULL,
     [AllowedAccessTokenSigningAlgorithms] nvarchar(100) NULL,
     [ShowInDiscoveryDocument] bit NOT NULL,
+    [RequireResourceIndicator] bit NOT NULL,
     [Created] datetime2 NOT NULL,
     [Updated] datetime2 NULL,
     [LastAccessed] datetime2 NULL,
@@ -375,7 +376,7 @@ CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20201125135748_Configuration', N'3.1.0');
+VALUES (N'20201214213517_Configuration', N'3.1.0');
 
 GO
 

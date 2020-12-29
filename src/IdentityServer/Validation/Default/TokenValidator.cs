@@ -41,7 +41,6 @@ namespace Duende.IdentityServer.Validation
             IClientStore clients,
             IProfileService profile,
             IReferenceTokenStore referenceTokenStore,
-            IRefreshTokenStore refreshTokenStore,
             ICustomTokenValidator customValidator,
             IKeyMaterialService keys,
             ISystemClock clock,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -26,7 +26,22 @@ namespace UnitTests.Validation.Setup
                 {
                     Name = "api",
                     Scopes =  { "resource", "resource2" }
-                }
+                },
+                new ApiResource
+                {
+                    Name = "urn:api1",
+                    Scopes =  { "scope1" }
+                },
+                new ApiResource
+                {
+                    Name = "urn:api2",
+                    Scopes =  { "scope1" }
+                },
+                new ApiResource
+                {
+                    Name = "urn:api3",
+                    Scopes =  { "scope1" }
+                },
             };
         }
 
@@ -43,7 +58,8 @@ namespace UnitTests.Validation.Setup
                 {
                     Name = "resource2",
                     Description = "resource scope"
-                }
+                },
+                new ApiScope("scope1")
             };
         }
     }

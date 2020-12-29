@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,9 +7,11 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using IdentityModel;
 using UnitTests.Common;
@@ -68,7 +70,6 @@ namespace UnitTests.Validation.TokenRequest_Validation
         {
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token") { ClientId = "roclient" },
                 Lifetime = 10,
                 CreationTime = DateTime.UtcNow.AddSeconds(-15)
             };
@@ -97,12 +98,7 @@ namespace UnitTests.Validation.TokenRequest_Validation
         {
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token")
-                {
-                    ClientId = "otherclient",
-                    Lifetime = 600,
-                    CreationTime = DateTime.UtcNow
-                }
+                ClientId = "otherclient"
             };
 
             var grants = Factory.CreateRefreshTokenStore();
@@ -129,10 +125,7 @@ namespace UnitTests.Validation.TokenRequest_Validation
         {
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token")
-                {
-                    ClientId = "roclient_restricted"
-                },
+                ClientId = "roclient_restricted",
                 Lifetime = 600,
                 CreationTime = DateTime.UtcNow
             };
@@ -163,11 +156,8 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token")
-                {
-                    Claims = new List<Claim> { subjectClaim },
-                    ClientId = "roclient"
-                },
+                ClientId = "roclient",
+                Subject = new IdentityServerUser("foo").CreatePrincipal(),
                 Lifetime = 600,
                 CreationTime = DateTime.UtcNow
             };
@@ -189,6 +179,148 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             result.IsError.Should().BeTrue();
             result.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task invalid_resource_indicator()
+        {
+            var refreshToken = new RefreshToken
+            {
+                ClientId = "roclient",
+                Subject = new IdentityServerUser("foo").CreatePrincipal(),
+                Lifetime = 600,
+                CreationTime = DateTime.UtcNow,
+                AuthorizedScopes = new[] { "scope1" }
+            };
+
+            var grants = Factory.CreateRefreshTokenStore();
+            var handle = await grants.StoreRefreshTokenAsync(refreshToken);
+
+            var client = await _clients.FindEnabledClientByIdAsync("roclient");
+
+            var validator = Factory.CreateTokenRequestValidator(refreshTokenStore: grants);
+
+            var parameters = new NameValueCollection();
+            parameters.Add(OidcConstants.TokenRequest.GrantType, "refresh_token");
+            parameters.Add(OidcConstants.TokenRequest.RefreshToken, handle);
+
+            {
+                parameters[OidcConstants.TokenRequest.Resource] = "urn:api1" + new string('x', 512);
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be(OidcConstants.TokenErrors.InvalidTarget);
+            }
+            {
+                parameters[OidcConstants.TokenRequest.Resource] = "api";
+
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
+            {
+                parameters[OidcConstants.TokenRequest.Resource] = "urn:api1";
+                parameters.Add(OidcConstants.TokenRequest.Resource, "urn:api2");
+
+                var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task failed_resource_validation_should_fail()
+        {
+            var mockResourceValidator = new MockResourceValidator();
+            var grants = Factory.CreateRefreshTokenStore();
+            var client = (await _clients.FindEnabledClientByIdAsync("roclient")).ToValidationResult();
+            
+            var validator = Factory.CreateTokenRequestValidator(refreshTokenStore: grants, resourceValidator: mockResourceValidator);
+
+            {
+                var refreshToken = new RefreshToken
+                {
+                    ClientId = "roclient",
+                    Subject = new IdentityServerUser("foo").CreatePrincipal(),
+                    Lifetime = 600,
+                    CreationTime = DateTime.UtcNow,
+                    AuthorizedScopes = new[] { "scope1" }
+                };
+                var handle = await grants.StoreRefreshTokenAsync(refreshToken);
+
+                var parameters = new NameValueCollection();
+                parameters.Add(OidcConstants.TokenRequest.GrantType, "refresh_token");
+                parameters.Add(OidcConstants.TokenRequest.RefreshToken, handle);
+                parameters.Add("resource", "urn:api1");
+
+                mockResourceValidator.Result = new ResourceValidationResult
+                {
+                    InvalidScopes = { "foo" }
+                };
+                var result = await validator.ValidateRequestAsync(parameters, client);
+
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_scope");
+            }
+
+            {
+                var refreshToken = new RefreshToken
+                {
+                    ClientId = "roclient",
+                    Subject = new IdentityServerUser("foo").CreatePrincipal(),
+                    Lifetime = 600,
+                    CreationTime = DateTime.UtcNow,
+                    AuthorizedScopes = new[] { "scope1" }
+                };
+                var handle = await grants.StoreRefreshTokenAsync(refreshToken);
+
+                var parameters = new NameValueCollection();
+                parameters.Add(OidcConstants.TokenRequest.GrantType, "refresh_token");
+                parameters.Add(OidcConstants.TokenRequest.RefreshToken, handle);
+                parameters.Add("resource", "urn:api1"); 
+                
+                mockResourceValidator.Result = new ResourceValidationResult
+                {
+                    InvalidResourceIndicators = { "foo" }
+                };
+                var result = await validator.ValidateRequestAsync(parameters, client);
+
+                result.IsError.Should().BeTrue();
+                result.Error.Should().Be("invalid_target");
+            }
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task resource_indicator_requested_not_in_original_request_should_fail()
+        {
+            var grants = Factory.CreateRefreshTokenStore();
+            var client = (await _clients.FindEnabledClientByIdAsync("roclient")).ToValidationResult();
+
+            var validator = Factory.CreateTokenRequestValidator(refreshTokenStore: grants);
+
+            var refreshToken = new RefreshToken
+            {
+                ClientId = "roclient",
+                Subject = new IdentityServerUser("foo").CreatePrincipal(),
+                Lifetime = 600,
+                CreationTime = DateTime.UtcNow,
+                AuthorizedScopes = new[] { "scope1" },
+                AuthorizedResourceIndicators = new[] { "urn:api1", "urn:api2" }
+            };
+            var handle = await grants.StoreRefreshTokenAsync(refreshToken);
+
+            var parameters = new NameValueCollection();
+            parameters.Add(OidcConstants.TokenRequest.GrantType, "refresh_token");
+            parameters.Add(OidcConstants.TokenRequest.RefreshToken, handle);
+            parameters.Add("resource", "urn:api3");
+
+            var result = await validator.ValidateRequestAsync(parameters, client);
+
+            result.IsError.Should().BeTrue();
+            result.Error.Should().Be("invalid_target");
         }
     }
 }

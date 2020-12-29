@@ -69,7 +69,7 @@ namespace Duende.IdentityServer.Validation
                 Subject = subject ?? Principal.Anonymous,
                 Raw = parameters ?? throw new ArgumentNullException(nameof(parameters))
             };
-            
+
             // load client_id
             // client_id must always be present on the request
             var loadClientResult = await LoadClientAsync(request);
@@ -106,8 +106,8 @@ namespace Duende.IdentityServer.Validation
                 return mandatoryResult;
             }
 
-            // scope, scope restrictions and plausability
-            var scopeResult = await ValidateScopeAsync(request);
+            // scope, scope restrictions and plausability, and resource indicators
+            var scopeResult = await ValidateScopeAndResourceAsync(request);
             if (scopeResult.IsError)
             {
                 return scopeResult;
@@ -278,9 +278,9 @@ namespace Duende.IdentityServer.Validation
                 foreach (var key in jwtRequestValidationResult.Payload.Keys)
                 {
                     if (ignoreKeys.Contains(key)) continue;
-                    
+
                     var value = jwtRequestValidationResult.Payload[key];
-                    
+
                     var qsValue = request.Raw.Get(key);
                     if (qsValue != null)
                     {
@@ -545,7 +545,7 @@ namespace Duende.IdentityServer.Validation
             return Valid(request);
         }
 
-        private async Task<AuthorizeRequestValidationResult> ValidateScopeAsync(ValidatedAuthorizeRequest request)
+        private async Task<AuthorizeRequestValidationResult> ValidateScopeAndResourceAsync(ValidatedAuthorizeRequest request)
         {
             //////////////////////////////////////////////////////////
             // scope must be present
@@ -584,19 +584,56 @@ namespace Duende.IdentityServer.Validation
                 }
             }
 
+
+            //////////////////////////////////////////////////////////
+            // check for resource indicators and valid format
+            //////////////////////////////////////////////////////////
+            var resourceIndicators = request.Raw.GetValues(OidcConstants.TokenRequest.Resource) ?? Enumerable.Empty<string>();
+            
+            if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
+            {
+                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator maximum length exceeded");
+            }
+            
+            if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
+            {
+                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
+            }
+
+            // we don't want to allow resource indicators when "token" is requested to authorize endpoint
+            if (request.GrantType == GrantType.Implicit && resourceIndicators.Any())
+            {
+                // todo: correct error?
+                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicators not allowed for response_type 'token'.");
+            }
+            
+            request.RequestedResourceIndiators = resourceIndicators;
+
             //////////////////////////////////////////////////////////
             // check if scopes are valid/supported and check for resource scopes
             //////////////////////////////////////////////////////////
             var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
             {
                 Client = request.Client,
-                Scopes = request.RequestedScopes
+                Scopes = request.RequestedScopes,
+                ResourceIndicators = resourceIndicators,
+                IncludeNonIsolatedApiResources = request.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess),
             });
 
             if (!validatedResources.Succeeded)
             {
-                return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope");
+                if (validatedResources.InvalidResourceIndicators.Any())
+                {
+                    return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator");
+                }
+
+                if (validatedResources.InvalidScopes.Any())
+                {
+                    return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope");
+                }
             }
+            
+            LicenseValidator.ValidateResourceIndicators(resourceIndicators);
 
             if (validatedResources.Resources.IdentityResources.Any() && !request.IsOpenIdRequest)
             {

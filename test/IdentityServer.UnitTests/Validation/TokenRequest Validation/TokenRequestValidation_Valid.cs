@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
@@ -22,6 +23,7 @@ namespace UnitTests.Validation.TokenRequest_Validation
         private const string Category = "TokenRequest Validation - General - Valid";
 
         private IClientStore _clients = Factory.CreateClientStore();
+        private TestDeviceCodeValidator _mockDeviceCodeValidator = new TestDeviceCodeValidator();
 
         [Fact]
         [Trait("Category", Category)]
@@ -262,14 +264,17 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token")
-                {
-                    Claims = new List<Claim> { subjectClaim },
-                    ClientId = "roclient"
-                },
+                ClientId = "roclient",
+                Subject = new IdentityServerUser(subjectClaim.Value).CreatePrincipal(),
+                AuthorizedScopes = Enumerable.Empty<string>(),
                 Lifetime = 600,
                 CreationTime = DateTime.UtcNow
             };
+            refreshToken.SetAccessToken(new Token("access_token")
+            {
+                Claims = new List<Claim> { subjectClaim },
+                ClientId = "roclient"
+            });
 
             var grants = Factory.CreateRefreshTokenStore();
             var handle = await grants.StoreRefreshTokenAsync(refreshToken);
@@ -296,12 +301,9 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             var refreshToken = new RefreshToken
             {
-                AccessToken = new Token("access_token")
-                {
-                    Claims = new List<Claim> { subjectClaim },
-                    ClientId = "roclient_restricted_refresh"
-                },
-
+                ClientId = "roclient_restricted_refresh",
+                Subject = new IdentityServerUser(subjectClaim.Value).CreatePrincipal(),
+                AuthorizedScopes = Enumerable.Empty<string>(),
                 Lifetime = 600,
                 CreationTime = DateTime.UtcNow
             };
@@ -340,7 +342,8 @@ namespace UnitTests.Validation.TokenRequest_Validation
 
             var client = await _clients.FindClientByIdAsync("device_flow");
 
-            var validator = Factory.CreateTokenRequestValidator();
+            var validator = Factory.CreateTokenRequestValidator(deviceCodeValidator: _mockDeviceCodeValidator);
+            _mockDeviceCodeValidator.DeviceCodeResult = deviceCode;
 
             var parameters = new NameValueCollection
             {

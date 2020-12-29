@@ -25,7 +25,8 @@ namespace UnitTests.Validation.Setup
                     },
 
                     AllowedGrantTypes = GrantTypes.Code,
-                    AllowedScopes = { "openid", "profile", "resource", "resource2" },
+                    AllowOfflineAccess = true,
+                    AllowedScopes = { "openid", "profile", "resource", "resource2", "scope1" },
 
                     RequireConsent = false,
                     RequirePkce = false,
@@ -265,7 +266,7 @@ namespace UnitTests.Validation.Setup
                         },
 
                         AllowedGrantTypes = GrantTypes.ClientCredentials,
-                        AllowedScopes = { "openid", "profile", "resource", "resource2" },
+                        AllowedScopes = { "openid", "profile", "resource", "resource2", "scope1" },
 
                         AllowOfflineAccess = true,
 
@@ -299,7 +300,7 @@ namespace UnitTests.Validation.Setup
                         },
 
                         AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                        AllowedScopes = { "openid", "profile", "resource", "resource2" },
+                        AllowedScopes = { "openid", "profile", "resource", "resource2", "scope1" },
                         AllowOfflineAccess = true
                     },
                     new Client

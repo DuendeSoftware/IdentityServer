@@ -13,6 +13,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.ResponseHandling
 {
@@ -145,7 +146,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 AccessToken = accessToken,
                 AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
                 Custom = request.CustomResponse,
-                Scope = request.ValidatedRequest.AuthorizationCode.RequestedScopes.ToSpaceSeparatedString()
+                Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
             };
 
             //////////////////////////
@@ -165,6 +166,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 Client client = null;
                 if (request.ValidatedRequest.AuthorizationCode.ClientId != null)
                 {
+                    // todo: do we need this check?
                     client = await Clients.FindEnabledClientByIdAsync(request.ValidatedRequest.AuthorizationCode.ClientId);
                 }
                 if (client == null)
@@ -172,13 +174,10 @@ namespace Duende.IdentityServer.ResponseHandling
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
 
-                var parsedScopesResult = ScopeParser.ParseScopeValues(request.ValidatedRequest.AuthorizationCode.RequestedScopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.ValidatedRequest.AuthorizationCode.Subject,
-                    ValidatedResources = validatedResources,
+                    ValidatedResources = request.ValidatedRequest.ValidatedResources,
                     Nonce = request.ValidatedRequest.AuthorizationCode.Nonce,
                     AccessTokenToHash = response.AccessToken,
                     StateHash = request.ValidatedRequest.AuthorizationCode.StateHash,
@@ -202,38 +201,36 @@ namespace Duende.IdentityServer.ResponseHandling
         {
             Logger.LogTrace("Creating response for refresh token request");
 
-            var oldAccessToken = request.ValidatedRequest.RefreshToken.AccessToken;
-            string accessTokenString;
+            var accessToken = request.ValidatedRequest.RefreshToken.GetAccessToken(request.ValidatedRequest.RequestedResourceIndicator);
 
-            if (request.ValidatedRequest.Client.UpdateAccessTokenClaimsOnRefresh)
+            var mustUpdate = accessToken == null || request.ValidatedRequest.Client.UpdateAccessTokenClaimsOnRefresh;
+            if (mustUpdate)
             {
-                var subject = request.ValidatedRequest.RefreshToken.Subject;
-
-                // todo: do we want to just parse here and build up validated result
-                // or do we want to fully re-run validation here.
-                var parsedScopesResult = ScopeParser.ParseScopeValues(oldAccessToken.Scopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
                 var creationRequest = new TokenCreationRequest
                 {
-                    Subject = subject,
+                    Subject = request.ValidatedRequest.RefreshToken.Subject,
                     Description = request.ValidatedRequest.RefreshToken.Description,
                     ValidatedRequest = request.ValidatedRequest,
-                    ValidatedResources = validatedResources
+                    ValidatedResources = request.ValidatedRequest.ValidatedResources
                 };
-
-                var newAccessToken = await TokenService.CreateAccessTokenAsync(creationRequest);
-                accessTokenString = await TokenService.CreateSecurityTokenAsync(newAccessToken);
+                accessToken = await TokenService.CreateAccessTokenAsync(creationRequest);
             }
             else
             {
-                oldAccessToken.CreationTime = Clock.UtcNow.UtcDateTime;
-                oldAccessToken.Lifetime = request.ValidatedRequest.AccessTokenLifetime;
-
-                accessTokenString = await TokenService.CreateSecurityTokenAsync(oldAccessToken);
+                // todo: do we want a new JTI?
+                accessToken.CreationTime = Clock.UtcNow.UtcDateTime;
+                accessToken.Lifetime = request.ValidatedRequest.AccessTokenLifetime;
             }
 
-            var handle = await RefreshTokenService.UpdateRefreshTokenAsync(request.ValidatedRequest.RefreshTokenHandle, request.ValidatedRequest.RefreshToken, request.ValidatedRequest.Client);
+            var accessTokenString = await TokenService.CreateSecurityTokenAsync(accessToken);
+            request.ValidatedRequest.RefreshToken.SetAccessToken(accessToken, request.ValidatedRequest.RequestedResourceIndicator);
+
+            var handle = await RefreshTokenService.UpdateRefreshTokenAsync(new RefreshTokenUpdateRequest{
+                Handle = request.ValidatedRequest.RefreshTokenHandle, 
+                RefreshToken = request.ValidatedRequest.RefreshToken, 
+                Client = request.ValidatedRequest.Client,
+                MustUpdate = mustUpdate
+            });
 
             return new TokenResponse
             {
@@ -242,7 +239,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
                 RefreshToken = handle,
                 Custom = request.CustomResponse,
-                Scope = request.ValidatedRequest.RefreshToken.Scopes.ToSpaceSeparatedString()
+                Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
             };
         }
 
@@ -264,7 +261,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 AccessToken = accessToken,
                 AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
                 Custom = request.CustomResponse,
-                Scope = request.ValidatedRequest.DeviceCode.AuthorizedScopes.ToSpaceSeparatedString()
+                Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
             };
 
             //////////////////////////
@@ -284,6 +281,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 Client client = null;
                 if (request.ValidatedRequest.DeviceCode.ClientId != null)
                 {
+                    // todo: do we need this check?
                     client = await Clients.FindEnabledClientByIdAsync(request.ValidatedRequest.DeviceCode.ClientId);
                 }
                 if (client == null)
@@ -291,14 +289,11 @@ namespace Duende.IdentityServer.ResponseHandling
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
 
-                var parsedScopesResult = ScopeParser.ParseScopeValues(request.ValidatedRequest.DeviceCode.AuthorizedScopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-                
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.ValidatedRequest.DeviceCode.Subject,
-                    ValidatedResources = validatedResources,
                     AccessTokenToHash = response.AccessToken,
+                    ValidatedResources = request.ValidatedRequest.ValidatedResources,
                     ValidatedRequest = request.ValidatedRequest
                 };
 
@@ -354,17 +349,24 @@ namespace Duende.IdentityServer.ResponseHandling
         /// <exception cref="System.InvalidOperationException">Client does not exist anymore.</exception>
         protected virtual async Task<(string accessToken, string refreshToken)> CreateAccessTokenAsync(ValidatedTokenRequest request)
         {
-            TokenCreationRequest tokenRequest;
-            bool createRefreshToken;
+            var tokenRequest = new TokenCreationRequest
+            {
+                Subject = request.Subject,
+                ValidatedResources = request.ValidatedResources,
+                ValidatedRequest = request
+            };
+
+            bool createRefreshToken = request.ValidatedResources.Resources.OfflineAccess;
+            var authorizedScopes = Enumerable.Empty<string>();
+            IEnumerable<string> authorizedResourceIndicators = null;
 
             if (request.AuthorizationCode != null)
             {
-                createRefreshToken = request.AuthorizationCode.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OfflineAccess);
-
                 // load the client that belongs to the authorization code
                 Client client = null;
                 if (request.AuthorizationCode.ClientId != null)
                 {
+                    // todo: do we need this check?
                     client = await Clients.FindEnabledClientByIdAsync(request.AuthorizationCode.ClientId);
                 }
                 if (client == null)
@@ -372,24 +374,18 @@ namespace Duende.IdentityServer.ResponseHandling
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
 
-                var parsedScopesResult = ScopeParser.ParseScopeValues(request.AuthorizationCode.RequestedScopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
-                tokenRequest = new TokenCreationRequest
-                {
-                    Subject = request.AuthorizationCode.Subject,
-                    Description = request.AuthorizationCode.Description,
-                    ValidatedResources = validatedResources,
-                    ValidatedRequest = request
-                };
+                tokenRequest.Subject = request.AuthorizationCode.Subject;
+                tokenRequest.Description = request.AuthorizationCode.Description;
+                
+                authorizedScopes = request.AuthorizationCode.RequestedScopes;
+                authorizedResourceIndicators = request.AuthorizationCode.RequestedResourceIndicators;
             }
             else if (request.DeviceCode != null)
             {
-                createRefreshToken = request.DeviceCode.AuthorizedScopes.Contains(IdentityServerConstants.StandardScopes.OfflineAccess);
-
                 Client client = null;
                 if (request.DeviceCode.ClientId != null)
                 {
+                    // todo: do we need this check?
                     client = await Clients.FindEnabledClientByIdAsync(request.DeviceCode.ClientId);
                 }
                 if (client == null)
@@ -397,27 +393,14 @@ namespace Duende.IdentityServer.ResponseHandling
                     throw new InvalidOperationException("Client does not exist anymore.");
                 }
 
-                var parsedScopesResult = ScopeParser.ParseScopeValues(request.DeviceCode.AuthorizedScopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
-                tokenRequest = new TokenCreationRequest
-                {
-                    Subject = request.DeviceCode.Subject,
-                    Description = request.DeviceCode.Description,
-                    ValidatedResources = validatedResources,
-                    ValidatedRequest = request
-                };
+                tokenRequest.Subject = request.DeviceCode.Subject;
+                tokenRequest.Description = request.DeviceCode.Description;
+                
+                authorizedScopes = request.DeviceCode.AuthorizedScopes;
             }
             else
             {
-                createRefreshToken = request.ValidatedResources.Resources.OfflineAccess;
-
-                tokenRequest = new TokenCreationRequest
-                {
-                    Subject = request.Subject,
-                    ValidatedResources = request.ValidatedResources,
-                    ValidatedRequest = request
-                };
+                authorizedScopes = request.ValidatedResources.RawScopeValues;
             }
 
             var at = await TokenService.CreateAccessTokenAsync(tokenRequest);
@@ -425,7 +408,17 @@ namespace Duende.IdentityServer.ResponseHandling
 
             if (createRefreshToken)
             {
-                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(tokenRequest.Subject, at, request.Client);
+                var rtRequest = new RefreshTokenCreationRequest
+                {
+                    Client = request.Client,
+                    Subject = tokenRequest.Subject,
+                    Description = tokenRequest.Description,
+                    AuthorizedScopes = authorizedScopes,
+                    AuthorizedResourceIndicators = authorizedResourceIndicators,
+                    AccessToken = at,
+                    RequestedResourceIndicator = request.RequestedResourceIndicator,
+                };
+                var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(rtRequest);
                 return (accessToken, refreshToken);
             }
 
@@ -440,21 +433,12 @@ namespace Duende.IdentityServer.ResponseHandling
         /// <returns></returns>
         protected virtual async Task<string> CreateIdTokenFromRefreshTokenRequestAsync(ValidatedTokenRequest request, string newAccessToken)
         {
-            // todo: can we just check for "openid" scope?
-            //var identityResources = await Resources.FindEnabledIdentityResourcesByScopeAsync(request.RefreshToken.Scopes);
-            //if (identityResources.Any())
-            
-            if (request.RefreshToken.Scopes.Contains(OidcConstants.StandardScopes.OpenId))
+            if (request.RefreshToken.AuthorizedScopes.Contains(OidcConstants.StandardScopes.OpenId))
             {
-                var oldAccessToken = request.RefreshToken.AccessToken;
-
-                var parsedScopesResult = ScopeParser.ParseScopeValues(oldAccessToken.Scopes);
-                var validatedResources = await Resources.CreateResourceValidationResult(parsedScopesResult);
-
                 var tokenRequest = new TokenCreationRequest
                 {
                     Subject = request.RefreshToken.Subject,
-                    ValidatedResources = validatedResources,
+                    ValidatedResources = request.ValidatedResources,
                     ValidatedRequest = request,
                     AccessTokenToHash = newAccessToken
                 };

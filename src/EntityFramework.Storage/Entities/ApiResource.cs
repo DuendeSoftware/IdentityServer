@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 #pragma warning disable 1591
@@ -17,6 +17,7 @@ namespace Duende.IdentityServer.EntityFramework.Entities
         public string Description { get; set; }
         public string AllowedAccessTokenSigningAlgorithms { get; set; }
         public bool ShowInDiscoveryDocument { get; set; } = true;
+        public bool RequireResourceIndicator { get; set; }
         public List<ApiResourceSecret> Secrets { get; set; }
         public List<ApiResourceScope> Scopes { get; set; }
         public List<ApiResourceClaim> UserClaims { get; set; }

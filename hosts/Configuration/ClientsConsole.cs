@@ -51,6 +51,35 @@ namespace IdentityServerHost.Configuration
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     AllowedScopes = { "transaction" }
                 },
+                
+                ///////////////////////////////////////////
+                // Console Resources and Scopes Sample
+                //////////////////////////////////////////
+                new Client
+                {
+                    ClientId = "console.resource.scope",
+                    ClientSecrets = { new Secret("secret".Sha256()) },
+                    AllowedGrantTypes = GrantTypes.ClientCredentials,
+                    
+                    AllowedScopes =
+                    {
+                        "resource1.scope1",
+                        "resource1.scope2",
+                        
+                        "resource2.scope1",
+                        "resource2.scope2",
+                        
+                        "resource3.scope1",
+                        "resource3.scope2",
+                        
+                        "shared.scope",
+                        
+                        "transaction",
+                        "scope3",
+                        "scope4",
+                        IdentityServerConstants.LocalApi.ScopeName
+                    }
+                },
 
                 ///////////////////////////////////////////
                 // X509 mTLS Client
