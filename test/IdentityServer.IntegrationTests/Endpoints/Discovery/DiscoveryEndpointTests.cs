@@ -123,13 +123,12 @@ namespace IntegrationTests.Endpoints.Discovery
 
             var keys = data["keys"].EnumerateArray().ToList();
             keys.Should().NotBeNull();
-
+            keys.Count.Should().Be(2);
+            
             var key = keys[1];
             key.Should().NotBeNull();
 
             var crv = key.TryGetValue("crv");
-            crv.Should().NotBeNull();
-
             crv.GetString().Should().Be(JsonWebKeyECTypes.P256);
 
         }
@@ -153,8 +152,6 @@ namespace IntegrationTests.Endpoints.Discovery
             key.Should().NotBeNull();
 
             var alg = key.TryGetValue("alg");
-            alg.Should().NotBeNull();
-
             alg.GetString().Should().Be(Constants.SigningAlgorithms.RSA_SHA_256);
         }
 
