@@ -140,6 +140,22 @@ namespace Duende.IdentityServer.Validation
         public IEnumerable<string> PromptModes { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
+        /// Gets or sets the collection of original prompt modes.
+        /// </summary>
+        /// <value>
+        /// The collection of original prompt modes.
+        /// </value>
+        internal IEnumerable<string> OriginalPromptModes { get; set; } = Enumerable.Empty<string>();
+
+        /// <summary>
+        /// Gets or sets the collection of suppressed prompt modes.
+        /// </summary>
+        /// <value>
+        /// The collection of suppressed prompt modes.
+        /// </value>
+        internal IEnumerable<string> SuppressedPromptModes { get; set; } = Enumerable.Empty<string>();
+
+        /// <summary>
         /// Gets or sets the maximum age.
         /// </summary>
         /// <value>

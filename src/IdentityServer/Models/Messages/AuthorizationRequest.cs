@@ -130,7 +130,8 @@ namespace Duende.IdentityServer.Models
             IdP = request.GetIdP();
             Tenant = request.GetTenant();
             LoginHint = request.LoginHint;
-            PromptModes = request.PromptModes;
+            // this allows the UI to see the original prompt modes
+            PromptModes = request.OriginalPromptModes;
             AcrValues = request.GetAcrValues();
             ValidatedResources = request.ValidatedResources;
             Parameters = request.Raw;

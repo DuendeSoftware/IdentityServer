@@ -731,13 +731,35 @@ namespace Duende.IdentityServer.Validation
                         return Invalid(request, description: "Invalid prompt");
                     }
 
-                    request.PromptModes = prompts;
+                    request.OriginalPromptModes = prompts;
                 }
                 else
                 {
                     _logger.LogDebug("Unsupported prompt mode - ignored: " + prompt);
                 }
             }
+
+            var suppressed_prompt = request.Raw.Get("suppressed_" + OidcConstants.AuthorizeRequest.Prompt);
+            if (suppressed_prompt.IsPresent())
+            {
+                var prompts = suppressed_prompt.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (prompts.All(p => Constants.SupportedPromptModes.Contains(p)))
+                {
+                    if (prompts.Contains(OidcConstants.PromptModes.None) && prompts.Length > 1)
+                    {
+                        LogError("suppressed_prompt contains 'none' and other values. 'none' should be used by itself.", request);
+                        return Invalid(request, description: "Invalid prompt");
+                    }
+
+                    request.SuppressedPromptModes = prompts;
+                }
+                else
+                {
+                    _logger.LogDebug("Unsupported suppressed_prompt mode - ignored: " + prompt);
+                }
+            }
+
+            request.PromptModes = request.OriginalPromptModes.Except(request.SuppressedPromptModes).ToArray();
 
             //////////////////////////////////////////////////////////
             // check ui locales
