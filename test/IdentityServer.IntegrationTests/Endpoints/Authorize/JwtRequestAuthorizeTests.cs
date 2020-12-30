@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -1138,6 +1139,43 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.Should().BeNull();
 
             _mockPipeline.JwtRequestMessageHandler.InvokeWasCalled.Should().BeFalse();
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task prompt_login_should_allow_user_to_login_and_complete_authorization()
+        {
+            await _mockPipeline.LoginAsync("bob");
+
+            var requestJwt = CreateRequestJwt(
+                issuer: _client.ClientId,
+                audience: IdentityServerPipeline.BaseUrl,
+                credential: new X509SigningCredentials(TestCert.Load()),
+                claims: new[] {
+                    new Claim("client_id", _client.ClientId),
+                    new Claim("response_type", "id_token"),
+                    new Claim("scope", "openid profile"),
+                    new Claim("state", "123state"),
+                    new Claim("nonce", "123nonce"),
+                    new Claim("redirect_uri", "https://client/callback"),
+                    new Claim("prompt", "login"),
+            });
+
+            var url = _mockPipeline.CreateAuthorizeUrl(
+                clientId: _client.ClientId,
+                responseType: "id_token",
+                extra: new
+                {
+                    request = requestJwt
+                });
+            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+            // this simulates the login page returning to the returnUrl whichi is the authorize callback page
+            _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+            response = await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.BaseUrl + _mockPipeline.LoginReturnUrl);
+            response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+            response.Headers.Location.ToString().Should().StartWith("https://client/callback");
+            response.Headers.Location.ToString().Should().Contain("id_token=");
         }
     }
 }

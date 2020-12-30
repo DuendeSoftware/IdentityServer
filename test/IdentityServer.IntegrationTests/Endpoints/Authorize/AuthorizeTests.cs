@@ -1191,6 +1191,7 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginWasCalled.Should().BeTrue();
             _mockPipeline.LoginRequest.PromptModes.Should().Contain("login");
         }
+        
         [Fact]
         [Trait("Category", Category)]
         public async Task prompt_login_should_allow_user_to_login_and_complete_authorization()
