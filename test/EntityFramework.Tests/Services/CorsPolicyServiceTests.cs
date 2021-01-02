@@ -1,20 +1,19 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
-using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Xunit;
-using System.Linq;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.EntityFramework.Services;
 using Duende.IdentityServer.Models;
-using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Xunit;
 
 namespace Tests.Services
 {
@@ -22,7 +21,7 @@ namespace Tests.Services
     {
         public CorsPolicyServiceTests(DatabaseProviderFixture<ConfigurationDbContext> fixture) : base(fixture)
         {
-            foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<ConfigurationDbContext>)y)).ToList())
+            foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<ConfigurationDbContext>) y)).ToList())
             {
                 using (var context = new ConfigurationDbContext(options, StoreOptions))
                     context.Database.EnsureCreated();
@@ -54,14 +53,11 @@ namespace Tests.Services
             bool result;
             using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
-                var ctx = new DefaultHttpContext();
                 var svcs = new ServiceCollection();
                 svcs.AddSingleton<IConfigurationDbContext>(context);
-                ctx.RequestServices = svcs.BuildServiceProvider();
-                var ctxAccessor = new HttpContextAccessor();
-                ctxAccessor.HttpContext = ctx;
+                var provider = svcs.BuildServiceProvider();
 
-                var service = new CorsPolicyService(ctxAccessor, FakeLogger<CorsPolicyService>.Create());
+                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create());
                 result = service.IsOriginAllowedAsync(testCorsOrigin).Result;
             }
 
@@ -85,14 +81,11 @@ namespace Tests.Services
             bool result;
             using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
-                var ctx = new DefaultHttpContext();
                 var svcs = new ServiceCollection();
                 svcs.AddSingleton<IConfigurationDbContext>(context);
-                ctx.RequestServices = svcs.BuildServiceProvider();
-                var ctxAccessor = new HttpContextAccessor();
-                ctxAccessor.HttpContext = ctx;
+                var provider = svcs.BuildServiceProvider();
 
-                var service = new CorsPolicyService(ctxAccessor, FakeLogger<CorsPolicyService>.Create());
+                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create());
                 result = service.IsOriginAllowedAsync("InvalidOrigin").Result;
             }
 

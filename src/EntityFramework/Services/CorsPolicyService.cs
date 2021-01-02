@@ -1,16 +1,15 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
-using System;
-using System.Threading.Tasks;
-using System.Linq;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.Services;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.EntityFramework.Services
 {
@@ -20,18 +19,19 @@ namespace Duende.IdentityServer.EntityFramework.Services
     /// <seealso cref="ICorsPolicyService" />
     public class CorsPolicyService : ICorsPolicyService
     {
-        private readonly IHttpContextAccessor _context;
+        private readonly IServiceProvider _provider;
         private readonly ILogger<CorsPolicyService> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CorsPolicyService"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
+        /// <param name="provider">The provider.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public CorsPolicyService(IHttpContextAccessor context, ILogger<CorsPolicyService> logger)
+        public CorsPolicyService(IServiceProvider provider, ILogger<CorsPolicyService> logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _provider = provider;
             _logger = logger;
         }
 
@@ -44,13 +44,12 @@ namespace Duende.IdentityServer.EntityFramework.Services
         {
             origin = origin.ToLowerInvariant();
 
-            // doing this here and not in the ctor because: https://github.com/aspnet/CORS/issues/105
-            var dbContext = _context.HttpContext.RequestServices.GetRequiredService<IConfigurationDbContext>();
+            var dbContext = _provider.GetRequiredService<IConfigurationDbContext>();
 
             var query = from o in dbContext.ClientCorsOrigins
                         where o.Origin == origin
                         select o;
-            
+
             var isAllowed = await query.AnyAsync();
 
             _logger.LogDebug("Origin {origin} is allowed: {originAllowed}", origin, isAllowed);
