@@ -157,10 +157,7 @@ namespace ConsoleScopesResources
 
             if (!string.IsNullOrEmpty(resource))
             {
-                request.Parameters = new Dictionary<string, string>
-                {
-                    { "resource", resource }
-                };
+                request.Resource.Add(resource);
             }
 
             var response = await client.RequestClientCredentialsTokenAsync(request);
