@@ -37,11 +37,16 @@ namespace Duende.IdentityServer.Configuration
         /// Emits an aud claim with the format issuer/resources. That's needed for some older access token validation plumbing. Defaults to false.
         /// </summary>
         public bool EmitStaticAudienceClaim { get; set; } = false;
-
+        
         /// <summary>
         /// Specifies whether scopes in JWTs are emitted as array or string
         /// </summary>
         public bool EmitScopesAsSpaceDelimitedStringInJwt { get; set; } = false;
+        
+        /// <summary>
+        /// Specifies whether the s_hash claim gets emitted in identity tokens. Defaults to false.
+        /// </summary>
+        public bool EmitStateHash { get; set; } = false;
         
         /// <summary>
         /// Specifies whether the JWT typ and content-type for JWT secured authorization requests is checked according to IETF spec.
