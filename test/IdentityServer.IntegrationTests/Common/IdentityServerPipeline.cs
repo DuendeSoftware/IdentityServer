@@ -126,7 +126,10 @@ namespace IntegrationTests.Common
 
             services.AddIdentityServer(options =>
             {
-                Options = options;
+                if (Options != null)
+                {
+                    options.EmitStateHash = Options.EmitStateHash;
+                }
 
                 options.Events = new EventsOptions
                 {
@@ -136,6 +139,8 @@ namespace IntegrationTests.Common
                     RaiseSuccessEvents = true
                 };
                 options.KeyManagement.Enabled = false;
+                
+                Options = options;
             })
             .AddInMemoryClients(Clients)
             .AddInMemoryIdentityResources(IdentityScopes)
