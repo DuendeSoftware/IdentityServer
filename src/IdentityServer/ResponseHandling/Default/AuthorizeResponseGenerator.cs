@@ -14,7 +14,6 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.ResponseHandling
 {
@@ -24,6 +23,11 @@ namespace Duende.IdentityServer.ResponseHandling
     /// <seealso cref="IAuthorizeResponseGenerator" />
     public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     {
+        /// <summary>
+        /// The options
+        /// </summary>
+        protected IdentityServerOptions Options;
+
         /// <summary>
         /// The token service
         /// </summary>
@@ -57,6 +61,7 @@ namespace Duende.IdentityServer.ResponseHandling
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizeResponseGenerator"/> class.
         /// </summary>
+        /// <param name="options">The options.</param>
         /// <param name="clock">The clock.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="tokenService">The token service.</param>
@@ -64,6 +69,7 @@ namespace Duende.IdentityServer.ResponseHandling
         /// <param name="authorizationCodeStore">The authorization code store.</param>
         /// <param name="events">The events.</param>
         public AuthorizeResponseGenerator(
+            IdentityServerOptions options,
             ISystemClock clock,
             ITokenService tokenService,
             IKeyMaterialService keyMaterialService,
@@ -71,6 +77,7 @@ namespace Duende.IdentityServer.ResponseHandling
             ILogger<AuthorizeResponseGenerator> logger,
             IEventService events)
         {
+            Options = options;
             Clock = clock;
             TokenService = tokenService;
             KeyMaterialService = keyMaterialService;
@@ -181,7 +188,8 @@ namespace Duende.IdentityServer.ResponseHandling
             if (responseTypes.Contains(OidcConstants.ResponseTypes.IdToken))
             {
                 string stateHash = null;
-                if (request.State.IsPresent())
+                
+                if (Options.EmitStateHash && request.State.IsPresent())
                 {
                     var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.Client.AllowedIdentityTokenSigningAlgorithms);
                     if (credential == null)
@@ -229,7 +237,7 @@ namespace Duende.IdentityServer.ResponseHandling
         protected virtual async Task<AuthorizationCode> CreateCodeAsync(ValidatedAuthorizeRequest request)
         {
             string stateHash = null;
-            if (request.State.IsPresent())
+            if (Options.EmitStateHash && request.State.IsPresent())
             {
                 var credential = await KeyMaterialService.GetSigningCredentialsAsync(request.Client.AllowedIdentityTokenSigningAlgorithms);
                 if (credential == null)

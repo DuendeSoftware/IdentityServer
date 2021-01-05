@@ -112,10 +112,14 @@ namespace IntegrationTests.Conformance.Basic
             s_hash.Should().BeNull();
         }
 
-        [Fact]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         [Trait("Category", Category)]
-        public async Task State_should_result_in_shash()
+        public async Task StateHash_should_be_emitted_based_on_options(bool emitStateHash)
         {
+            _pipeline.Options.EmitStateHash = emitStateHash;
+            
             await _pipeline.LoginAsync("bob");
 
             var nonce = Guid.NewGuid().ToString();
@@ -158,8 +162,16 @@ namespace IntegrationTests.Conformance.Basic
             var token = new JwtSecurityToken(tokenResult.IdentityToken);
             
             var s_hash = token.Claims.FirstOrDefault(c => c.Type == "s_hash");
-            s_hash.Should().NotBeNull();
-            s_hash.Value.Should().Be(CryptoHelper.CreateHashClaimValue("state", "RS256"));
+
+            if (emitStateHash)
+            {
+                s_hash.Should().NotBeNull();
+                s_hash.Value.Should().Be(CryptoHelper.CreateHashClaimValue("state", "RS256"));
+            }
+            else
+            {
+                s_hash.Should().BeNull();
+            }
         }
     }
 }
