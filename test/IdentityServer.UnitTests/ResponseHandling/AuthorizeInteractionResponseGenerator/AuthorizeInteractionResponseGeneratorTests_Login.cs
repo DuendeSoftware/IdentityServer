@@ -268,7 +268,7 @@ namespace UnitTests.ResponseHandling.AuthorizeInteractionResponseGenerator
 
             var result = await _subject.ProcessLoginAsync(request);
 
-            request.Raw.AllKeys.Should().Contain("suppressed_" + OidcConstants.AuthorizeRequest.Prompt);
+            request.Raw.AllKeys.Should().Contain(Constants.SuppressedPrompt);
         }
     }
 }

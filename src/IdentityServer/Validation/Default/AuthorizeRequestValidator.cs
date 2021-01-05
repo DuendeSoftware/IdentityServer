@@ -739,7 +739,7 @@ namespace Duende.IdentityServer.Validation
                 }
             }
 
-            var suppressed_prompt = request.Raw.Get("suppressed_" + OidcConstants.AuthorizeRequest.Prompt);
+            var suppressed_prompt = request.Raw.Get(Constants.SuppressedPrompt);
             if (suppressed_prompt.IsPresent())
             {
                 var prompts = suppressed_prompt.Split(' ', StringSplitOptions.RemoveEmptyEntries);

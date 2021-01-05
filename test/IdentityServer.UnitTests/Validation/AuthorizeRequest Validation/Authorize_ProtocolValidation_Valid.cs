@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -226,7 +226,7 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
             }
             {
                 parameters[OidcConstants.AuthorizeRequest.Prompt] = "consent login";
-                parameters["suppressed_" + OidcConstants.AuthorizeRequest.Prompt] = "login";
+                parameters[Constants.SuppressedPrompt] = "login";
                 var result = await validator.ValidateAsync(parameters);
                 result.ValidatedRequest.PromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent });
                 result.ValidatedRequest.OriginalPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
@@ -234,7 +234,7 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
             }
             {
                 parameters[OidcConstants.AuthorizeRequest.Prompt] = "consent login";
-                parameters["suppressed_" + OidcConstants.AuthorizeRequest.Prompt] = "login consent";
+                parameters[Constants.SuppressedPrompt] = "login consent";
                 var result = await validator.ValidateAsync(parameters);
                 result.ValidatedRequest.PromptModes.Should().BeEmpty();
                 result.ValidatedRequest.OriginalPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });

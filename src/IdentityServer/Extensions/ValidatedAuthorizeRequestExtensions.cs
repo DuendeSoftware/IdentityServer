@@ -32,7 +32,7 @@ namespace Duende.IdentityServer.Validation
                 suppress.Append(OidcConstants.PromptModes.SelectAccount);
             }
             
-            request.Raw.Add("suppressed_" + OidcConstants.AuthorizeRequest.Prompt, suppress.ToString());
+            request.Raw.Add(Constants.SuppressedPrompt, suppress.ToString());
             request.PromptModes = request.PromptModes.Except(new[] { OidcConstants.PromptModes.Login, OidcConstants.PromptModes.SelectAccount }).ToArray();
         }
 
