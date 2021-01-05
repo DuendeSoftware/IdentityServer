@@ -126,10 +126,10 @@ namespace IntegrationTests.Common
 
             services.AddIdentityServer(options =>
             {
-                if (Options != null)
-                {
-                    options.EmitStateHash = Options.EmitStateHash;
-                }
+                //if (Options != null)
+                //{
+                //    options.EmitStateHash = Options.EmitStateHash;
+                //}
 
                 options.Events = new EventsOptions
                 {

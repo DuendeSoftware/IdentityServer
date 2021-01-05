@@ -118,9 +118,7 @@ namespace IntegrationTests.Conformance.Basic
         [Trait("Category", Category)]
         public async Task StateHash_should_be_emitted_based_on_options(bool emitStateHash)
         {
-            // todo: is there a better way to supply per test options?
             _pipeline.Options.EmitStateHash = emitStateHash;
-            _pipeline.Initialize();
             
             await _pipeline.LoginAsync("bob");
 
