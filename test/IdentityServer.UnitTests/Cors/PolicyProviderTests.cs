@@ -1,18 +1,18 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.DependencyInjection;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Services;
 using FluentAssertions;
-using UnitTests.Common;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnitTests.Common;
 using Xunit;
 
 namespace UnitTests.Cors
@@ -37,23 +37,20 @@ namespace UnitTests.Cors
         {
             _options = new IdentityServerOptions();
             _options.Cors.CorsPaths.Clear();
-            foreach(var path in _allowedPaths)
+            foreach (var path in _allowedPaths)
             {
                 _options.Cors.CorsPaths.Add(new PathString(path));
             }
 
-            var ctx = new DefaultHttpContext();
             var svcs = new ServiceCollection();
             svcs.AddSingleton<ICorsPolicyService>(_mockPolicy);
-            ctx.RequestServices = svcs.BuildServiceProvider();
-            var ctxAccessor = new HttpContextAccessor();
-            ctxAccessor.HttpContext = ctx;
+            var provider = svcs.BuildServiceProvider();
+
 
             _subject = new CorsPolicyProvider(
                 TestLogger.Create<CorsPolicyProvider>(),
                 new Decorator<ICorsPolicyProvider>(_mockInner),
-                _options,
-                ctxAccessor);
+                _options, provider);
         }
 
         [Theory]
