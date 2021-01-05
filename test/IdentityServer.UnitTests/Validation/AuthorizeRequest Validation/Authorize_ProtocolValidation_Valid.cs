@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -204,6 +204,42 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
             result.ValidatedRequest.PromptModes.Count().Should().Be(2);
             result.ValidatedRequest.PromptModes.Should().Contain(OidcConstants.PromptModes.Login);
             result.ValidatedRequest.PromptModes.Should().Contain(OidcConstants.PromptModes.Consent);
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task suppressed_prompt_values_should_overwrite_original_values()
+        {
+            var validator = Factory.CreateAuthorizeRequestValidator();
+            
+            var parameters = new NameValueCollection();
+            parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "codeclient");
+            parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid");
+            parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "https://server/cb");
+            parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Code);
+            parameters.Add(OidcConstants.AuthorizeRequest.ResponseMode, OidcConstants.ResponseModes.Fragment);
+
+            {
+                parameters[OidcConstants.AuthorizeRequest.Prompt] = "consent login";
+                var result = await validator.ValidateAsync(parameters);
+                result.ValidatedRequest.PromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
+            }
+            {
+                parameters[OidcConstants.AuthorizeRequest.Prompt] = "consent login";
+                parameters[Constants.SuppressedPrompt] = "login";
+                var result = await validator.ValidateAsync(parameters);
+                result.ValidatedRequest.PromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent });
+                result.ValidatedRequest.OriginalPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
+                result.ValidatedRequest.SuppressedPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Login });
+            }
+            {
+                parameters[OidcConstants.AuthorizeRequest.Prompt] = "consent login";
+                parameters[Constants.SuppressedPrompt] = "login consent";
+                var result = await validator.ValidateAsync(parameters);
+                result.ValidatedRequest.PromptModes.Should().BeEmpty();
+                result.ValidatedRequest.OriginalPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
+                result.ValidatedRequest.SuppressedPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
+            }
         }
     }
 }

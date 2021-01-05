@@ -18,8 +18,22 @@ namespace Duende.IdentityServer.Validation
     {
         public static void RemovePrompt(this ValidatedAuthorizeRequest request)
         {
-            request.PromptModes = Enumerable.Empty<string>();
-            request.Raw.Remove(OidcConstants.AuthorizeRequest.Prompt);
+            var suppress = new StringBuilder();
+            if (request.PromptModes.Contains(OidcConstants.PromptModes.Login))
+            {
+                suppress.Append(OidcConstants.PromptModes.Login);
+            }
+            if (request.PromptModes.Contains(OidcConstants.PromptModes.SelectAccount))
+            {
+                if (suppress.Length > 0)
+                {
+                    suppress.Append(" ");
+                }
+                suppress.Append(OidcConstants.PromptModes.SelectAccount);
+            }
+            
+            request.Raw.Add(Constants.SuppressedPrompt, suppress.ToString());
+            request.PromptModes = request.PromptModes.Except(new[] { OidcConstants.PromptModes.Login, OidcConstants.PromptModes.SelectAccount }).ToArray();
         }
 
         public static string GetPrefixedAcrValue(this ValidatedAuthorizeRequest request, string prefix)

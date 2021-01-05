@@ -113,6 +113,8 @@ namespace Duende.IdentityServer
             OidcConstants.PromptModes.SelectAccount
         };
 
+        public const string SuppressedPrompt = "suppressed_" + OidcConstants.AuthorizeRequest.Prompt;
+
         public static class KnownAcrValues
         {
             public const string HomeRealm = "idp:";
