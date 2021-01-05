@@ -44,6 +44,7 @@ namespace Duende.IdentityServer.EntityFramework.Services
         {
             origin = origin.ToLowerInvariant();
 
+            // doing this here and not in the ctor because: https://github.com/aspnet/CORS/issues/105
             var dbContext = _provider.GetRequiredService<IConfigurationDbContext>();
 
             var query = from o in dbContext.ClientCorsOrigins
