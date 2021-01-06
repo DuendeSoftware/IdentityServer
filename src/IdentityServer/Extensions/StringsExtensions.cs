@@ -47,13 +47,52 @@ namespace Duende.IdentityServer.Extensions
                 return null;
             }
 
-            scopes = scopes.Trim();
-            var parsedScopes = scopes.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
+            var retVal = new List<string>();
+            var span = scopes.AsSpan();
 
-            if (parsedScopes.Any())
+            int startIndex = -1;
+
+            for (int i = 0; i < span.Length; i++)
             {
-                parsedScopes.Sort();
-                return parsedScopes;
+                var element = span[i];
+
+                if (element is ' ')
+                {
+                    if (startIndex == -1)
+                    {
+                        continue;
+                    }
+
+                    var input = span[startIndex..i].ToString();
+                    if (!retVal.Contains(input))
+                    {
+                        retVal.Add(input);
+                    }
+
+                    startIndex = -1;
+
+                    continue;
+                }
+
+                if (startIndex == -1)
+                {
+                    startIndex = i;
+                }
+
+                if (i == span.Length - 1)
+                {
+                    var input = span[startIndex..(i + 1)].ToString();
+                    if (!retVal.Contains(input))
+                    {
+                        retVal.Add(input);
+                    }
+                }
+            }
+
+            if (retVal.Count > 0)
+            {
+                retVal.Sort();
+                return retVal;
             }
 
             return null;
@@ -239,7 +278,7 @@ namespace Duende.IdentityServer.Extensions
                 }
             }
 
-            return new NameValueCollection();           
+            return new NameValueCollection();
         }
 
         public static string GetOrigin(this string url)
@@ -264,7 +303,7 @@ namespace Duende.IdentityServer.Extensions
 
             return null;
         }
-        
+
         public static string Obfuscate(this string value)
         {
             var last4Chars = "****";
