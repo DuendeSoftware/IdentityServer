@@ -215,6 +215,8 @@ namespace IdentityServerHost.Configuration
                     RedirectUris = { "http://127.0.0.1" },
                     AllowOfflineAccess = true,
                     
+                    RefreshTokenUsage = TokenUsage.ReUse,
+                    
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,

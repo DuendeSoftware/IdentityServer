@@ -4,7 +4,9 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using IdentityModel;
 
 namespace ConsoleResourceIndicators
 {
@@ -23,9 +25,9 @@ namespace ConsoleResourceIndicators
             {
                 Console.WriteLine("\n\n");
 
-                "a) scopes: resource1.scope1, resource2.scope1, resource3.scope1 -- no resource indicator".ConsoleGreen();
-                "b) foo".ConsoleGreen();
-                "c) foo".ConsoleGreen();
+                "a) scopes: resource1.scope1, resource2.scope1, resource3.scope1 shared.scope -- no resource indicator".ConsoleGreen();
+                "b) scopes: resource1.scope1, resource2.scope1, resource3.scope1 shared.scope -- urn:resource1, urn:resource2".ConsoleGreen();
+                "c) scopes: resource1.scope1, resource2.scope1, resource3.scope1 shared.scope -- urn:resource1, urn:resource2, urn:resource3".ConsoleGreen();
                 
                 "x) exit".ConsoleGreen();
                 var key = Console.ReadKey();
@@ -33,7 +35,13 @@ namespace ConsoleResourceIndicators
                 switch (key.Key)
                 {
                     case ConsoleKey.A:
-                        await FrontChannel("resource1.scope1 resource2.scope1 resource3.scope1", Array.Empty<string>());
+                        await FrontChannel("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", Array.Empty<string>());
+                        break;
+                    case ConsoleKey.B:
+                        await FrontChannel("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", new[] { "urn:resource1", "urn:resource2" });
+                        break;
+                    case ConsoleKey.C:
+                        await FrontChannel("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", new[] { "urn:resource1", "urn:resource2", "urn:resource3" });
                         break;
                     case ConsoleKey.X:
                         return;
@@ -57,7 +65,7 @@ namespace ConsoleResourceIndicators
                 ClientId = "console.resource.indicators",
 
                 RedirectUri = redirectUri,
-                Scope = scope,
+                Scope = scope + " offline_access",
                 FilterClaims = false,
                 LoadProfile = false,
                 Browser = browser,
@@ -87,19 +95,76 @@ namespace ConsoleResourceIndicators
             
             var result = await _oidcClient.LoginAsync(request);
 
-            ShowResult(result);
+            var parts = result.AccessToken.Split('.');
+            var header = parts[0];
+            var payload = parts[1];
+
+            Console.WriteLine();
+            Console.WriteLine("Standard access token:");
+            Console.WriteLine(Encoding.UTF8.GetString(Base64Url.Decode(header)).PrettyPrintJson());
+            Console.WriteLine(Encoding.UTF8.GetString(Base64Url.Decode(payload)).PrettyPrintJson());
+
+            await BackChannel(result);
         }
 
-        private static void ShowResult(LoginResult result)
+        private static async Task BackChannel(LoginResult result)
         {
+            Console.WriteLine("\n\n");
+            Console.WriteLine("Refresh with resource parameter");
+            
+            while (true)
+            {
+                Console.WriteLine("\n\n");
+
+                "a) urn:resource1".ConsoleGreen();
+                "b) urn:resource2".ConsoleGreen();
+                "c) urn:resource3".ConsoleGreen();
+                
+                "x) exit".ConsoleGreen();
+                var key = Console.ReadKey();
+
+                switch (key.Key)
+                {
+                    case ConsoleKey.A:
+                        await Refresh(result.RefreshToken, "urn:resource1");
+                        break;
+                    case ConsoleKey.B:
+                        await Refresh(result.RefreshToken, "urn:resource2");
+                        break;
+                    case ConsoleKey.C:
+                        await Refresh(result.RefreshToken, "urn:resource3");
+                        break;
+                    case ConsoleKey.X:
+                        return;
+                }
+            }
+        }
+
+        private static async Task Refresh(string refreshToken, string resource)
+        {
+            var result =
+                await _oidcClient.RefreshTokenAsync(refreshToken,
+                    new BackChannelParameters { Resource = { resource } });
+
             if (result.IsError)
             {
-                Console.WriteLine("\n\nError:\n{0}", result.Error);
+                Console.WriteLine();
+                Console.WriteLine(result.Error);
+                Console.ReadLine();
                 return;
             }
+            
+            Console.WriteLine();
+            Console.WriteLine("down-scoped access token:");
+            
+            var parts = result.AccessToken.Split('.');
+            var header = parts[0];
+            var payload = parts[1];
+            
+            Console.WriteLine(Encoding.UTF8.GetString(Base64Url.Decode(header)).PrettyPrintJson());
+            Console.WriteLine(Encoding.UTF8.GetString(Base64Url.Decode(payload)).PrettyPrintJson());
 
-            Console.WriteLine($"access token:   {result.AccessToken}");
-            Console.WriteLine($"refresh token:  {result?.RefreshToken ?? "none"}");
+            Console.ReadLine();
         }
     }
 }
