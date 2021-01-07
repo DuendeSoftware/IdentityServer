@@ -201,6 +201,41 @@ namespace IdentityServerHost.Configuration
                         "resource2.scope1"
                     }
                 },
+                
+                ///////////////////////////////////////////
+                // Console Resource Indicators Sample
+                //////////////////////////////////////////
+                new Client
+                {
+                    ClientId = "console.resource.indicators",
+                    ClientName = "Console Resource Indicators Sample",
+                    RequireClientSecret = false,
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RequirePkce = true,
+                    RedirectUris = { "http://127.0.0.1" },
+                    AllowOfflineAccess = true,
+                    
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        
+                        "resource1.scope1",
+                        "resource1.scope2",
+                        
+                        "resource2.scope1",
+                        "resource2.scope2",
+                        
+                        "resource3.scope1",
+                        "resource3.scope2",
+                        
+                        "shared.scope",
+                        
+                        "transaction",
+                        "scope3",
+                        "scope4",
+                    }
+                },
+                
                 ///////////////////////////////////////////
                 // WinConsole with PKCE Sample
                 //////////////////////////////////////////

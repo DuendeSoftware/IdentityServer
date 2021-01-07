@@ -23,7 +23,7 @@ namespace ConsoleResourceIndicators
             {
                 Console.WriteLine("\n\n");
 
-                "a) scopes: resource1.scope, resource1.scope2, resource1.scope3 -- no resource indicator".ConsoleGreen();
+                "a) scopes: resource1.scope1, resource2.scope1, resource3.scope1 -- no resource indicator".ConsoleGreen();
                 "b) foo".ConsoleGreen();
                 "c) foo".ConsoleGreen();
                 
@@ -33,7 +33,7 @@ namespace ConsoleResourceIndicators
                 switch (key.Key)
                 {
                     case ConsoleKey.A:
-                        await FrontChannel("resource1.scope1, resource1.scope2, resource1.scope3", Array.Empty<string>());
+                        await FrontChannel("resource1.scope1 resource2.scope1 resource3.scope1", Array.Empty<string>());
                         break;
                     case ConsoleKey.X:
                         return;
@@ -54,11 +54,12 @@ namespace ConsoleResourceIndicators
             {
                 Authority = Constants.Authority,
 
-                ClientId = "console.pkce",
+                ClientId = "console.resource.indicators",
 
                 RedirectUri = redirectUri,
                 Scope = scope,
                 FilterClaims = false,
+                LoadProfile = false,
                 Browser = browser,
                 
                 Policy =
@@ -87,7 +88,6 @@ namespace ConsoleResourceIndicators
             var result = await _oidcClient.LoginAsync(request);
 
             ShowResult(result);
-            await NextSteps(result);
         }
 
         private static void ShowResult(LoginResult result)
@@ -98,51 +98,8 @@ namespace ConsoleResourceIndicators
                 return;
             }
 
-            Console.WriteLine("\n\nClaims:");
-            foreach (var claim in result.User.Claims)
-            {
-                Console.WriteLine("{0}: {1}", claim.Type, claim.Value);
-            }
-
-            Console.WriteLine($"\nidentity token: {result.IdentityToken}");
             Console.WriteLine($"access token:   {result.AccessToken}");
             Console.WriteLine($"refresh token:  {result?.RefreshToken ?? "none"}");
-        }
-
-        private static async Task NextSteps(LoginResult result)
-        {
-            var currentAccessToken = result.AccessToken;
-            var currentRefreshToken = result.RefreshToken;
-
-            var menu = "  x...exit  c...call api   ";
-            if (currentRefreshToken != null) menu += "r...refresh token   ";
-
-            while (true)
-            {
-                Console.WriteLine("\n\n");
-
-                Console.Write(menu);
-                var key = Console.ReadKey();
-
-                if (key.Key == ConsoleKey.X) return;
-                if (key.Key == ConsoleKey.R)
-                {
-                    var refreshResult = await _oidcClient.RefreshTokenAsync(currentRefreshToken);
-                    if (result.IsError)
-                    {
-                        Console.WriteLine($"Error: {refreshResult.Error}");
-                    }
-                    else
-                    {
-                        currentRefreshToken = refreshResult.RefreshToken;
-                        currentAccessToken = refreshResult.AccessToken;
-
-                        Console.WriteLine("\n\n");
-                        Console.WriteLine($"access token:   {result.AccessToken}");
-                        Console.WriteLine($"refresh token:  {result?.RefreshToken ?? "none"}");
-                    }
-                }
-            }
         }
     }
 }
