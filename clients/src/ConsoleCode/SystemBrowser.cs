@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ConsoleClientWithBrowser
+namespace ConsoleResourceIndicators
 {
     public class SystemBrowser : IBrowser
     {
