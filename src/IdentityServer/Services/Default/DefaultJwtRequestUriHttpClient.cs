@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
@@ -39,8 +40,13 @@ namespace Duende.IdentityServer.Services
         public async Task<string> GetJwtAsync(string url, Client client)
         {
             var req = new HttpRequestMessage(HttpMethod.Get, url);
-            req.Properties.Add(IdentityServerConstants.JwtRequestClientKey, client);
 
+#if NET5_0
+            req.Options.TryAdd(IdentityServerConstants.JwtRequestClientKey, client);
+#elif NETCOREAPP3_1
+            req.Properties.Add(IdentityServerConstants.JwtRequestClientKey, client);
+#endif
+         
             var response = await _client.SendAsync(req);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
