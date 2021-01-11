@@ -3,11 +3,10 @@
 
 
 using Duende.IdentityServer.Configuration;
-using Microsoft.Extensions.Configuration;
-using System;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -87,7 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IPostConfigureOptions<OpenIdConnectOptions>>(
                 svcs => new ConfigureOpenIdConnectOptions(
                     schemes,
-                    svcs.GetRequiredService<IHttpContextAccessor>())
+                    svcs)
             );
 
             return services;
