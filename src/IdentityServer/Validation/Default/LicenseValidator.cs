@@ -56,7 +56,7 @@ namespace Duende.IdentityServer.Validation
             {
                 var message =  "You do not have a valid license key for Duende IdentityServer. " +
                                 "This is OK for development and testing scenarios. " +
-                                "If you are running in production and want these warnings to disappear, please start a conversation with us: https://duendesoftware.com/contact";
+                                "If you are running in production, you are required to have a licensed version. Please start a conversation with us: https://duendesoftware.com/contact";
 
                 _logger.LogWarning(message);
                 return;
