@@ -100,6 +100,11 @@ namespace Duende.IdentityServer.Validation
                 {
                     _logger.LogInformation("You have a valid license key for Duende IdentityServer for use at {licenseCompany}.", _license.CompanyName);
                 }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("The validated licence details: {@license}", _license);
+                }
             }
         }
 
@@ -190,6 +195,12 @@ namespace Duende.IdentityServer.Validation
 
     internal class License
     {
+        // for testing
+        internal License(params Claim[] claims)
+            : this(new ClaimsPrincipal(new ClaimsIdentity(claims)))
+        {
+        }
+
         public License(ClaimsPrincipal claims)
         {
             CompanyName = claims.FindFirst("company_name")?.Value;
