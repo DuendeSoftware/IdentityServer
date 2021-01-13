@@ -2,17 +2,17 @@
 // See LICENSE in the project root for license information.
 
 
-using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.IO;
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
-using System.Security.Claims;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -54,9 +54,11 @@ namespace Duende.IdentityServer.Validation
 
             if (_license == null)
             {
-                // todo: more wording on license options? URL to license details?
-                // error? or info?
-                _logger.LogWarning("You do not have a valid license key for Duende IdentityServer.");
+                var message = "You do not have a valid license key for Duende IdentityServer. " +
+                                "This is allowed for development and testing scenarios. " +
+                                "If you are running in production you are required to have a licensed version. Please start a conversation with us: https://duendesoftware.com/contact";
+
+                _logger.LogWarning(message);
                 return;
             }
             else
@@ -82,7 +84,7 @@ namespace Duende.IdentityServer.Validation
                 {
                     _logger.LogError(err);
                 }
-                
+
                 if (_license != null)
                 {
                     _logger.LogError("Please contact {licenceContact} from {licenseCompany} to obtain a valid license for Duende IdentityServer.", _license.ContactInfo, _license.CompanyName);
@@ -97,6 +99,11 @@ namespace Duende.IdentityServer.Validation
                 else
                 {
                     _logger.LogInformation("You have a valid license key for Duende IdentityServer for use at {licenseCompany}.", _license.CompanyName);
+                }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("The validated licence details: {@license}", _license);
                 }
             }
         }
@@ -188,6 +195,12 @@ namespace Duende.IdentityServer.Validation
 
     internal class License
     {
+        // for testing
+        internal License(params Claim[] claims)
+            : this(new ClaimsPrincipal(new ClaimsIdentity(claims)))
+        {
+        }
+
         public License(ClaimsPrincipal claims)
         {
             CompanyName = claims.FindFirst("company_name")?.Value;
@@ -198,41 +211,100 @@ namespace Duende.IdentityServer.Validation
                 var expDate = DateTimeOffset.FromUnixTimeSeconds(exp);
                 Expiration = expDate.UtcDateTime;
             }
-            
-            Edition = claims.FindFirst("edition")?.Value;
-            IsEnterprise = "enterprise".Equals(Edition, StringComparison.OrdinalIgnoreCase);
-            IsBusiness = IsEnterprise || "business".Equals(Edition, StringComparison.OrdinalIgnoreCase);
 
-            KeyManagement = IsBusiness || claims.HasClaim("feature", "key_management");
-            ResourceIsolation = IsEnterprise || claims.HasClaim("feature", "resource_isolation");
-
-            if (!IsEnterprise)
+            var edition = claims.FindFirst("edition")?.Value;
+            if (!Enum.TryParse<License.LienceEdition>(edition, true, out var editionValue))
             {
-                if (Int32.TryParse(claims.FindFirst("client_limit")?.Value, out var clientLimit))
+                throw new Exception($"Invalid edition in licence: '{edition}'");
+            }
+            Edition = editionValue;
+
+            KeyManagement = claims.HasClaim("feature", "key_management");
+            switch (Edition)
+            {
+                case LienceEdition.Enterprise:
+                case LienceEdition.Business:
+                case LienceEdition.Community:
+                    KeyManagement = true;
+                    break;
+            }
+
+            ResourceIsolation = claims.HasClaim("feature", "resource_isolation");
+            switch (Edition)
+            {
+                case LienceEdition.Enterprise:
+                case LienceEdition.Community:
+                    ResourceIsolation = true;
+                    break;
+            }
+
+            if (!claims.HasClaim("feature", "unlimited_clients"))
+            {
+                if (IsEnterprise)
+                {
+                    ClientLimit = null; // unlimited
+                }
+                else if (Int32.TryParse(claims.FindFirst("client_limit")?.Value, out var clientLimit))
                 {
                     ClientLimit = clientLimit;
                 }
+                else
+                {
+                    switch (Edition)
+                    {
+                        case LienceEdition.Business:
+                            ClientLimit = 15;
+                            break;
+                        case LienceEdition.Starter:
+                            ClientLimit = 5;
+                            break;
+                        case LienceEdition.Community:
+                            ClientLimit = 4;
+                            break;
+                    }
+                }
+            }
 
-                if (Int32.TryParse(claims.FindFirst("issuer_limit")?.Value, out var issuerLimit))
+            if (!claims.HasClaim("feature", "unlimited_issuers"))
+            {
+                if (IsEnterprise || IsCommunity)
+                {
+                    IssuerLimit = null; // unlimited
+                }
+                else if (Int32.TryParse(claims.FindFirst("issuer_limit")?.Value, out var issuerLimit))
                 {
                     IssuerLimit = issuerLimit;
+                }
+                else
+                {
+                    IssuerLimit = 1;
                 }
             }
         }
 
         public string CompanyName { get; set; }
         public string ContactInfo { get; set; }
-        
+
         public DateTime? Expiration { get; set; }
-        
-        public string Edition { get; set; }
-        public bool IsEnterprise { get; set; }
-        public bool IsBusiness { get; set; }
+
+        public LienceEdition Edition { get; set; }
+        public bool IsEnterprise => Edition == LienceEdition.Enterprise;
+        public bool IsBusiness => Edition == LienceEdition.Business;
+        public bool IsStarter => Edition == LienceEdition.Starter;
+        public bool IsCommunity => Edition == LienceEdition.Community;
 
         public int? ClientLimit { get; set; }
         public int? IssuerLimit { get; set; }
-        
+
         public bool KeyManagement { get; set; }
-        public bool ResourceIsolation { get; set; } 
+        public bool ResourceIsolation { get; set; }
+
+        public enum LienceEdition
+        {
+            Enterprise,
+            Business,
+            Starter,
+            Community
+        }
     }
 }
