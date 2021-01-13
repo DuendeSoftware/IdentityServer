@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support Forum
+    url: https://github.com/DuendeSoftware/IdentityServer/discussions
+    about: Please ask questions here.
+  - name: Direct Contact
+    url: https://duendesoftware.com/contact
+    about: Contact us directly.
