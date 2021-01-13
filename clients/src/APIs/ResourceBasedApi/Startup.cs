@@ -1,5 +1,4 @@
-﻿using Clients;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using IdentityModel.AspNetCore.AccessTokenValidation;
 
@@ -19,8 +18,8 @@ namespace ResourceBasedApi
                 // JWT tokens
                 .AddJwtBearer("token", options =>
                 {
-                    options.Authority = Constants.Authority;
-                    options.Audience = "resource1";
+                    options.Authority = "https://localhost:5001";
+                    options.Audience = "urn:resource1";
 
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
 
@@ -31,9 +30,9 @@ namespace ResourceBasedApi
                 // reference tokens
                 .AddOAuth2Introspection("introspection", options =>
                 {
-                    options.Authority = Constants.Authority;
+                    options.Authority = "https://localhost:5001";
 
-                    options.ClientId = "resource1";
+                    options.ClientId = "urn:resource1";
                     options.ClientSecret = "secret";
                 });
 
