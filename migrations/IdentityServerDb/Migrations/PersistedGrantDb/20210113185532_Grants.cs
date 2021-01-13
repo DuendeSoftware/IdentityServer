@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace SqlServer.Migrations.PersistedGrantDb
+namespace Configuration.Migrations.PersistedGrantDb
 {
     public partial class Grants : Migration
     {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,6 +7,7 @@ using System.Linq;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using IdentityServerHost.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace SqlServer
@@ -17,8 +18,13 @@ namespace SqlServer
         {
             using (var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
+                using (var context = scope.ServiceProvider.GetService<PersistedGrantDbContext>())
+                {
+                    context.Database.Migrate();
+                }
                 using (var context = scope.ServiceProvider.GetService<ConfigurationDbContext>())
                 {
+                    context.Database.Migrate();
                     EnsureSeedData(context);
                 }
             }
