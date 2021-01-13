@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace SqlServer.Migrations.ConfigurationDb
+namespace Configuration.Migrations.ConfigurationDb
 {
     [DbContext(typeof(ConfigurationDbContext))]
-    [Migration("20201214213517_Configuration")]
+    [Migration("20210113185538_Configuration")]
     partial class Configuration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -33,7 +33,6 @@ namespace IdentityServerHost
             services.AddControllersWithViews();
 
             services.AddIdentityServer()
-                .AddDeveloperSigningCredential()
                 .AddInMemoryIdentityResources(IdentityServerHost.Configuration.Resources.IdentityResources)
                 .AddInMemoryApiResources(IdentityServerHost.Configuration.Resources.ApiResources)
                 .AddInMemoryApiScopes(IdentityServerHost.Configuration.Resources.ApiScopes)

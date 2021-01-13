@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -38,8 +38,8 @@ namespace IdentityServerHost
                     options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
 
                     // this enables automatic token cleanup. this is optional.
-                    options.EnableTokenCleanup = true;
-                    options.TokenCleanupInterval = 5; // interval in seconds, short for testing
+                    options.EnableTokenCleanup = false;
+                    options.TokenCleanupInterval = 60; // interval in seconds
                 });
                 // this is something you will want in production to reduce load on and requests to the DB
                 //.AddConfigurationStoreCache();

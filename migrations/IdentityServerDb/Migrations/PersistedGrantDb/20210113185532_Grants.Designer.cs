@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace SqlServer.Migrations.PersistedGrantDb
+namespace Configuration.Migrations.PersistedGrantDb
 {
     [DbContext(typeof(PersistedGrantDbContext))]
-    [Migration("20201214213510_Grants")]
+    [Migration("20210113185532_Grants")]
     partial class Grants
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

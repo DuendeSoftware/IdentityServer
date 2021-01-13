@@ -1,4 +1,4 @@
-﻿using Clients;
+using Clients;
 using IdentityModel.Client;
 using System;
 using System.Linq;
@@ -51,7 +51,7 @@ namespace ConsoleIntrospectionClient
             {
                 Address = disco.IntrospectionEndpoint,
 
-                ClientId = "resource1",
+                ClientId = "urn:resource1",
                 ClientSecret = "secret",
                 Token = accessToken
             });
