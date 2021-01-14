@@ -15,4 +15,7 @@ issue-labels-include:
 - new feature
 - enhancement
 - breaking change
-- internal refactoring
+- internal
+issue-labels-exclude:
+- planned feature
+- feature request
