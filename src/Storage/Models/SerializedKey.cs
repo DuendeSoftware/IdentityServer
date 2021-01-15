@@ -11,7 +11,7 @@ namespace Duende.IdentityServer.Models
     public class SerializedKey
     {
         /// <summary>
-        /// Version number of seralized key.
+        /// Version number of serialized key.
         /// </summary>
         public int Version { get; set; }
         
