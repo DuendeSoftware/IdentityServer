@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Configuration.Migrations.PersistedGrantDb
+namespace IdentityServerDb.Migrations.PersistedGrantDb
 {
     public partial class Grants : Migration
     {
@@ -79,6 +79,11 @@ namespace Configuration.Migrations.PersistedGrantDb
                 name: "IX_Keys_Use",
                 table: "Keys",
                 column: "Use");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PersistedGrants_ConsumedTime",
+                table: "PersistedGrants",
+                column: "ConsumedTime");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PersistedGrants_Expiration",

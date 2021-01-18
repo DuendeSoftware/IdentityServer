@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -69,18 +69,63 @@ namespace Duende.IdentityServer.EntityFramework
         /// <returns></returns>
         protected virtual async Task RemoveGrantsAsync()
         {
+            await RemoveExpiredPersistedGrantsAsync();
+            if (_options.RemoveConsumedTokens)
+            {
+                await RemoveConsumedPersistedGrantsAsync();
+            }
+        }
+
+        /// <summary>
+        /// Removes the expired persisted grants.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual async Task RemoveExpiredPersistedGrantsAsync()
+        {
             var found = Int32.MaxValue;
-            
+
             while (found >= _options.TokenCleanupBatchSize)
             {
                 var expiredGrants = await _persistedGrantDbContext.PersistedGrants
                     .Where(x => x.Expiration < DateTime.UtcNow)
-                    .OrderBy(x => x.Key)
+                    .OrderBy(x => x.Expiration)
                     .Take(_options.TokenCleanupBatchSize)
                     .ToArrayAsync();
 
                 found = expiredGrants.Length;
-                _logger.LogInformation("Removing {grantCount} grants", found);
+                _logger.LogInformation("Removing {grantCount} expired grants", found);
+
+                if (found > 0)
+                {
+                    _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
+                    await SaveChangesAsync();
+
+                    if (_operationalStoreNotification != null)
+                    {
+                        await _operationalStoreNotification.PersistedGrantsRemovedAsync(expiredGrants);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes the consumed persisted grants.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual async Task RemoveConsumedPersistedGrantsAsync()
+        {
+            var found = Int32.MaxValue;
+
+            while (found >= _options.TokenCleanupBatchSize)
+            {
+                var expiredGrants = await _persistedGrantDbContext.PersistedGrants
+                    .Where(x => x.ConsumedTime < DateTime.UtcNow)
+                    .OrderBy(x => x.ConsumedTime)
+                    .Take(_options.TokenCleanupBatchSize)
+                    .ToArrayAsync();
+
+                found = expiredGrants.Length;
+                _logger.LogInformation("Removing {grantCount} consumed grants", found);
 
                 if (found > 0)
                 {

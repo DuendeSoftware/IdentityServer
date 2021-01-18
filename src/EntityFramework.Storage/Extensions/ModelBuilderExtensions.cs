@@ -148,6 +148,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
                 grant.HasIndex(x => new { x.SubjectId, x.ClientId, x.Type });
                 grant.HasIndex(x => new { x.SubjectId, x.SessionId, x.Type });
                 grant.HasIndex(x => x.Expiration);
+                grant.HasIndex(x => x.ConsumedTime);
             });
 
             modelBuilder.Entity<DeviceFlowCodes>(codes =>
