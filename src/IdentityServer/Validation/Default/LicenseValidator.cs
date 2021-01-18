@@ -55,14 +55,19 @@ namespace Duende.IdentityServer.Validation
             if (_license == null)
             {
                 var message = "You do not have a valid license key for Duende IdentityServer. " +
-                                "This is allowed for development and testing scenarios. " +
-                                "If you are running in production you are required to have a licensed version. Please start a conversation with us: https://duendesoftware.com/contact";
+                              "This is allowed for development and testing scenarios. " +
+                              "If you are running in production you are required to have a licensed version. Please start a conversation with us: https://duendesoftware.com/contact";
 
                 _logger.LogWarning(message);
                 return;
             }
             else
             {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("The validated licence key details: {@license}", _license);
+                }
+
                 if (_license.Expiration.HasValue)
                 {
                     var diff = DateTime.UtcNow.Date.Subtract(_license.Expiration.Value.Date).TotalDays;
@@ -94,16 +99,11 @@ namespace Duende.IdentityServer.Validation
             {
                 if (_license.Expiration.HasValue)
                 {
-                    _logger.LogInformation("You have a valid license key for Duende IdentityServer for use at {licenseCompany}. The license expires on {licenseExpiration}.", _license.CompanyName, _license.Expiration.Value.ToLongDateString());
+                    _logger.LogInformation("You have a valid license key for Duende IdentityServer {edition} edition for use at {licenseCompany}. The license expires on {licenseExpiration}.", _license.Edition, _license.CompanyName, _license.Expiration.Value.ToLongDateString());
                 }
                 else
                 {
-                    _logger.LogInformation("You have a valid license key for Duende IdentityServer for use at {licenseCompany}.", _license.CompanyName);
-                }
-
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug("The validated licence details: {@license}", _license);
+                    _logger.LogInformation("You have a valid license key for Duende IdentityServer {edition} edition for use at {licenseCompany}.", _license.Edition, _license.CompanyName);
                 }
             }
         }
@@ -288,10 +288,11 @@ namespace Duende.IdentityServer.Validation
         public DateTime? Expiration { get; set; }
 
         public LienceEdition Edition { get; set; }
-        public bool IsEnterprise => Edition == LienceEdition.Enterprise;
-        public bool IsBusiness => Edition == LienceEdition.Business;
-        public bool IsStarter => Edition == LienceEdition.Starter;
-        public bool IsCommunity => Edition == LienceEdition.Community;
+        
+        internal bool IsEnterprise => Edition == LienceEdition.Enterprise;
+        internal bool IsBusiness => Edition == LienceEdition.Business;
+        internal bool IsStarter => Edition == LienceEdition.Starter;
+        internal bool IsCommunity => Edition == LienceEdition.Community;
 
         public int? ClientLimit { get; set; }
         public int? IssuerLimit { get; set; }
