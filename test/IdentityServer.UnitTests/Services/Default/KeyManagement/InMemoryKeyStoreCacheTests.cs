@@ -23,8 +23,8 @@ namespace UnitTests.Services.Default.KeyManagement
             var now = _mockClock.UtcNow;
 
             var keys = new RsaKeyContainer[] {
-                new RsaKeyContainer() { Created = _mockClock.UtcNow.DateTime.Subtract(TimeSpan.FromMinutes(1)) },
-                new RsaKeyContainer() { Created = _mockClock.UtcNow.DateTime.Subtract(TimeSpan.FromMinutes(2)) },
+                new RsaKeyContainer() { Created = _mockClock.UtcNow.UtcDateTime.Subtract(TimeSpan.FromMinutes(1)) },
+                new RsaKeyContainer() { Created = _mockClock.UtcNow.UtcDateTime.Subtract(TimeSpan.FromMinutes(2)) },
             };
             await _subject.StoreKeysAsync(keys, TimeSpan.FromMinutes(1));
 
@@ -50,8 +50,8 @@ namespace UnitTests.Services.Default.KeyManagement
             var now = _mockClock.UtcNow;
 
             var keys = new RsaKeyContainer[] {
-                new RsaKeyContainer() { Created = _mockClock.UtcNow.DateTime.Subtract(TimeSpan.FromMinutes(1)) },
-                new RsaKeyContainer() { Created = _mockClock.UtcNow.DateTime.Subtract(TimeSpan.FromMinutes(2)) },
+                new RsaKeyContainer() { Created = _mockClock.UtcNow.UtcDateTime.Subtract(TimeSpan.FromMinutes(1)) },
+                new RsaKeyContainer() { Created = _mockClock.UtcNow.UtcDateTime.Subtract(TimeSpan.FromMinutes(2)) },
             };
             await _subject.StoreKeysAsync(keys, TimeSpan.FromMinutes(1));
 
