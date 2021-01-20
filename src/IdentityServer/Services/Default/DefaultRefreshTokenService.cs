@@ -86,7 +86,7 @@ namespace Duende.IdentityServer.Services
             /////////////////////////////////////////////
             // check if refresh token has expired
             /////////////////////////////////////////////
-            if (refreshToken.CreationTime.HasExceeded(refreshToken.Lifetime, Clock.UtcNow.DateTime))
+            if (refreshToken.CreationTime.HasExceeded(refreshToken.Lifetime, Clock.UtcNow.UtcDateTime))
             {
                 Logger.LogWarning("Refresh token has expired.");
                 return invalidGrant;
