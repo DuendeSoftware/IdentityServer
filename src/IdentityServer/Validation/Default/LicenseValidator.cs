@@ -213,7 +213,7 @@ namespace Duende.IdentityServer.Validation
             }
 
             var edition = claims.FindFirst("edition")?.Value;
-            if (!Enum.TryParse<License.LienceEdition>(edition, true, out var editionValue))
+            if (!Enum.TryParse<License.LicenseEdition>(edition, true, out var editionValue))
             {
                 throw new Exception($"Invalid edition in licence: '{edition}'");
             }
@@ -222,9 +222,9 @@ namespace Duende.IdentityServer.Validation
             KeyManagement = claims.HasClaim("feature", "key_management");
             switch (Edition)
             {
-                case LienceEdition.Enterprise:
-                case LienceEdition.Business:
-                case LienceEdition.Community:
+                case LicenseEdition.Enterprise:
+                case LicenseEdition.Business:
+                case LicenseEdition.Community:
                     KeyManagement = true;
                     break;
             }
@@ -232,8 +232,8 @@ namespace Duende.IdentityServer.Validation
             ResourceIsolation = claims.HasClaim("feature", "resource_isolation");
             switch (Edition)
             {
-                case LienceEdition.Enterprise:
-                case LienceEdition.Community:
+                case LicenseEdition.Enterprise:
+                case LicenseEdition.Community:
                     ResourceIsolation = true;
                     break;
             }
@@ -252,13 +252,13 @@ namespace Duende.IdentityServer.Validation
                 {
                     switch (Edition)
                     {
-                        case LienceEdition.Business:
+                        case LicenseEdition.Business:
                             ClientLimit = 15;
                             break;
-                        case LienceEdition.Starter:
+                        case LicenseEdition.Starter:
                             ClientLimit = 5;
                             break;
-                        case LienceEdition.Community:
+                        case LicenseEdition.Community:
                             ClientLimit = 4;
                             break;
                     }
@@ -287,12 +287,12 @@ namespace Duende.IdentityServer.Validation
 
         public DateTime? Expiration { get; set; }
 
-        public LienceEdition Edition { get; set; }
+        public LicenseEdition Edition { get; set; }
         
-        internal bool IsEnterprise => Edition == LienceEdition.Enterprise;
-        internal bool IsBusiness => Edition == LienceEdition.Business;
-        internal bool IsStarter => Edition == LienceEdition.Starter;
-        internal bool IsCommunity => Edition == LienceEdition.Community;
+        internal bool IsEnterprise => Edition == LicenseEdition.Enterprise;
+        internal bool IsBusiness => Edition == LicenseEdition.Business;
+        internal bool IsStarter => Edition == LicenseEdition.Starter;
+        internal bool IsCommunity => Edition == LicenseEdition.Community;
 
         public int? ClientLimit { get; set; }
         public int? IssuerLimit { get; set; }
@@ -300,7 +300,7 @@ namespace Duende.IdentityServer.Validation
         public bool KeyManagement { get; set; }
         public bool ResourceIsolation { get; set; }
 
-        public enum LienceEdition
+        public enum LicenseEdition
         {
             Enterprise,
             Business,

@@ -50,7 +50,7 @@ namespace UnitTests.Validation
         {
             {
                 var subject = new License(new Claim("edition", "enterprise"));
-                subject.Edition.Should().Be(License.LienceEdition.Enterprise);
+                subject.Edition.Should().Be(License.LicenseEdition.Enterprise);
                 subject.IsEnterprise.Should().BeTrue();
                 subject.ClientLimit.Should().BeNull();
                 subject.IssuerLimit.Should().BeNull();
@@ -59,7 +59,7 @@ namespace UnitTests.Validation
             }
             {
                 var subject = new License(new Claim("edition", "business"));
-                subject.Edition.Should().Be(License.LienceEdition.Business);
+                subject.Edition.Should().Be(License.LicenseEdition.Business);
                 subject.IsBusiness.Should().BeTrue();
                 subject.ClientLimit.Should().Be(15);
                 subject.IssuerLimit.Should().Be(1);
@@ -68,7 +68,7 @@ namespace UnitTests.Validation
             }
             {
                 var subject = new License(new Claim("edition", "starter"));
-                subject.Edition.Should().Be(License.LienceEdition.Starter);
+                subject.Edition.Should().Be(License.LicenseEdition.Starter);
                 subject.IsStarter.Should().BeTrue();
                 subject.ClientLimit.Should().Be(5);
                 subject.IssuerLimit.Should().Be(1);
@@ -77,7 +77,7 @@ namespace UnitTests.Validation
             }
             {
                 var subject = new License(new Claim("edition", "community"));
-                subject.Edition.Should().Be(License.LienceEdition.Community);
+                subject.Edition.Should().Be(License.LicenseEdition.Community);
                 subject.IsCommunity.Should().BeTrue();
                 subject.ClientLimit.Should().Be(4);
                 subject.IssuerLimit.Should().BeNull();
