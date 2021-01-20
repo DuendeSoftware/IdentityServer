@@ -97,7 +97,7 @@ namespace build
                 Console.WriteLine($"  Signing {file}");
 
                 Run("dotnet",
-                        "NuGetKeyVaultSignTool ", 
+                        "NuGetKeyVaultSignTool " +
                         $"sign {file} " +
                         "--file-digest sha256 " +
                         "--timestamp-rfc3161 http://timestamp.digicert.com " +
