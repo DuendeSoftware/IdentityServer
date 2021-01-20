@@ -73,7 +73,7 @@ namespace build
 
             Target(Targets.SignPackage, DependsOn(Targets.Pack, Targets.RestoreTools), () =>
             {
-                SignNuGet(packOutput, "*.nupkg");
+                SignNuGet();
             });
 
             Target("default", DependsOn(Targets.Test, Targets.Pack));
@@ -83,7 +83,7 @@ namespace build
             RunTargetsAndExit(args, ex => ex is SimpleExec.NonZeroExitCodeException || ex.Message.EndsWith(envVarMissing));
         }
 
-        private static void SignNuGet(string path, string searchTerm)
+        private static void SignNuGet()
         {
             var signClientSecret = Environment.GetEnvironmentVariable("SignClientSecret");
 
