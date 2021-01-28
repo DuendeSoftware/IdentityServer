@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -13,6 +13,7 @@ namespace IdentityServerHost.Quickstart.UI
         public string ClientLogoUrl { get; set; }
         public bool AllowRememberConsent { get; set; }
 
+        public IEnumerable<ResourceViewModel> ResourceServers { get; set; }
         public IEnumerable<ScopeViewModel> IdentityScopes { get; set; }
         public IEnumerable<ScopeViewModel> ApiScopes { get; set; }
     }

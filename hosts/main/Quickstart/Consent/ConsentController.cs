@@ -212,6 +212,13 @@ namespace IdentityServerHost.Quickstart.UI
             }
             vm.ApiScopes = apiScopes;
 
+            vm.ResourceServers = request.ValidatedResources.Resources.ApiResources.Select(x => new ResourceViewModel
+            {
+                Name = x.Name, 
+                DisplayName = x.DisplayName ?? x.Name,
+                Description = x.Description
+            }).ToArray();
+
             return vm;
         }
 
