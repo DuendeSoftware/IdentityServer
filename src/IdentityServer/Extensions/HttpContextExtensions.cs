@@ -66,6 +66,27 @@ namespace Duende.IdentityServer.Extensions
         }
 
 
+        internal static void SetNextMiddleware(this HttpContext context, RequestDelegate next)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            context.Items[Constants.EnvironmentKeys.NextMiddleware] = next;
+        }
+        internal static RequestDelegate GetNextMiddleware(this HttpContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return context.Items[Constants.EnvironmentKeys.NextMiddleware] as RequestDelegate;
+        }
+        internal static void SetFormPostAuthorizeResponseContext(this HttpContext context, FormPostAuthorizeResponseContext ctx)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            context.Items[Constants.EnvironmentKeys.FormPostAuthorizeResponseContext] = ctx;
+        }
+        internal static FormPostAuthorizeResponseContext GetFormPostAuthorizeResponseContext(this HttpContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return context.Items[Constants.EnvironmentKeys.FormPostAuthorizeResponseContext] as FormPostAuthorizeResponseContext;
+        }
+
         internal static void SetSignOutCalled(this HttpContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));

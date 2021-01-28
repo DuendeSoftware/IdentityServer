@@ -77,19 +77,28 @@ namespace Duende.IdentityServer.Hosting
                 var endpoint = router.Find(context);
                 if (endpoint != null)
                 {
-                    LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
-
-                    _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
-
-                    var result = await endpoint.ProcessAsync(context);
-
-                    if (result != null)
+                    try
                     {
-                        _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);
-                        await result.ExecuteAsync(context);
-                    }
+                        LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 
-                    return;
+                        _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
+
+                        context.SetNextMiddleware(_next);
+
+                        var result = await endpoint.ProcessAsync(context);
+
+                        if (result != null)
+                        {
+                            _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);
+                            await result.ExecuteAsync(context);
+                        }
+
+                        return;
+                    }
+                    finally
+                    {
+                        context.SetNextMiddleware(null);
+                    }
                 }
             }
             catch (Exception ex)

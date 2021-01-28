@@ -2,6 +2,8 @@
 // See LICENSE in the project root for license information.
 
 
+using Microsoft.AspNetCore.Http;
+
 namespace Duende.IdentityServer.Configuration
 {
     /// <summary>
@@ -16,7 +18,12 @@ namespace Duende.IdentityServer.Configuration
         /// <c>true</c> if the authorize endpoint is enabled; otherwise, <c>false</c>.
         /// </value>
         public bool EnableAuthorizeEndpoint { get; set; } = true;
-        
+
+        /// <summary>
+        /// If set, this path will be executed in the pipeline to render the HTML for form post authorize responses.
+        /// </summary>
+        public PathString CustomAuthorizeFormPostResponsePath { get; set; }
+
         /// <summary>
         /// Gets or sets if JWT request_uri processing is enabled on the authorize endpoint. 
         /// </summary>

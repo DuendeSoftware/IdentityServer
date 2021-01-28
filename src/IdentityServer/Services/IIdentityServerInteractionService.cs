@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -75,5 +75,10 @@ namespace Duende.IdentityServer.Services
         /// Revokes all of a user's consents and grants for clients the user has signed into during their current session.
         /// </summary>
         Task RevokeTokensForCurrentSessionAsync();
+
+        /// <summary>
+        /// Returns the current FormPostAuthorizeResponseContext for ther current request.
+        /// </summary>
+        FormPostAuthorizeResponseContext GetFormPostAuthorizeResponseContext();
     }
 }

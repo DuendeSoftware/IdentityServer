@@ -248,6 +248,8 @@ namespace Duende.IdentityServer
             [Obsolete("The IdentityServerOrigin constant is obsolete.")]
             public const string IdentityServerOrigin = "idsvr:IdentityServerOrigin"; // todo: deprecate
             public const string SignOutCalled = "idsvr:IdentityServerSignOutCalled";
+            public const string NextMiddleware = "idsvr:NextMiddleware";
+            public const string FormPostAuthorizeResponseContext = "idsvr:FormPostAuthorizeResponseContext";
         }
 
         public static class TokenTypeHints
