@@ -1,0 +1,17 @@
+@model Duende.IdentityServer.Models.FormPostAuthorizeResponseContext
+
+<div>
+    <h1>
+        Please Wait...
+    </h1>
+    <small>This is a custom page to render the form to post authorization response to the client.</small>
+
+    <form action="@Model.Url" method="post">
+        @foreach(var key in Model.FormData.AllKeys)
+        {
+            <input type="hidden" name="@key" value="@Model.FormData[key]" />
+        }
+        <button type="submit">Click Me</button>
+    </form>
+
+</div>

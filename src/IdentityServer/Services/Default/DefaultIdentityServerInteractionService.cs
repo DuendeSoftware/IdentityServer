@@ -98,7 +98,7 @@ namespace Duende.IdentityServer.Services
         public async Task<ErrorMessage> GetErrorContextAsync(string errorId)
         {
             if (errorId != null)
-            { 
+            {
                 var result = await _errorMessageStore.ReadAsync(errorId);
                 var data = result?.Data;
                 if (data != null)
@@ -136,7 +136,7 @@ namespace Duende.IdentityServer.Services
 
         public Task DenyAuthorizationAsync(AuthorizationRequest request, AuthorizationError error, string errorDescription = null)
         {
-            var response = new ConsentResponse 
+            var response = new ConsentResponse
             {
                 Error = error,
                 ErrorDescription = errorDescription
@@ -191,6 +191,11 @@ namespace Duende.IdentityServer.Services
                 var sessionId = await _userSession.GetSessionIdAsync();
                 await _grants.RemoveAllGrantsAsync(subject, sessionId: sessionId);
             }
+        }
+
+        public FormPostAuthorizeResponseContext GetFormPostAuthorizeResponseContext()
+        {
+            return _context.HttpContext.GetFormPostAuthorizeResponseContext();
         }
     }
 }

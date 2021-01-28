@@ -45,6 +45,8 @@ namespace IdentityServerHost
 
             var builder = services.AddIdentityServer(options =>
                 {
+                    options.Endpoints.CustomAuthorizeFormPostResponsePath = "/home/authz";
+
                     options.Events.RaiseSuccessEvents = true;
                     options.Events.RaiseFailureEvents = true;
                     options.Events.RaiseErrorEvents = true;
@@ -101,10 +103,17 @@ namespace IdentityServerHost
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
 
-            app.UseRouting();
             app.UseIdentityServer();
 
+            app.UseRouting();
+            
+            app.Use(async (ctx, next) => 
+            {
+                await next();
+            });
+
             app.UseAuthorization();
+
 
             app.UseEndpoints(endpoints =>
             {

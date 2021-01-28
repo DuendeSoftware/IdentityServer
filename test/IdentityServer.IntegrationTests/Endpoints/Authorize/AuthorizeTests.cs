@@ -10,12 +10,14 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Stores.Default;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
 using IdentityModel;
 using IntegrationTests.Common;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -1216,6 +1218,46 @@ namespace IntegrationTests.Endpoints.Authorize
             response.StatusCode.Should().Be(HttpStatusCode.Redirect);
             response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
             response.Headers.Location.ToString().Should().Contain("id_token=");
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task CustomAuthorizeFormPostResponsePath_should_call_custom_endpoint()
+        {
+            FormPostAuthorizeResponseContext context = null;
+
+            _mockPipeline.OnPostConfigure += app => {
+                _mockPipeline.Options.Endpoints.CustomAuthorizeFormPostResponsePath = "/custom_authz";
+
+                app.Map("/custom_authz", app2 => {
+                    app2.Run(ctx => {
+                        var interaction = ctx.RequestServices.GetRequiredService<IIdentityServerInteractionService>();
+                        context = interaction.GetFormPostAuthorizeResponseContext();
+                        return Task.CompletedTask;
+                    });
+                });
+            };
+            _mockPipeline.Initialize();
+
+            await _mockPipeline.LoginAsync("bob");
+            _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+            var url = _mockPipeline.CreateAuthorizeUrl(
+                clientId: "client1",
+                responseType: "id_token",
+                responseMode:"form_post",
+                scope: "openid",
+                redirectUri: "https://client1/callback",
+                state: "123_state",
+                nonce: "123_nonce");
+            await _mockPipeline.BrowserClient.GetAsync(url);
+
+            context.Should().NotBeNull();
+            context.Url.Should().Be("https://client1/callback");
+            context.FormData.AllKeys.Should().Contain("id_token");
+            context.FormData.AllKeys.Should().Contain("state");
+            context.FormData.AllKeys.Should().Contain("scope");
+            context.FormData.AllKeys.Should().Contain("session_state");
         }
     }
 }

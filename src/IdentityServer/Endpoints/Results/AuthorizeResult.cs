@@ -115,6 +115,22 @@ namespace Duende.IdentityServer.Endpoints.Results
             else if (Response.Request.ResponseMode == OidcConstants.ResponseModes.FormPost)
             {
                 context.Response.SetNoCache();
+                
+                if (_options.Endpoints.CustomAuthorizeFormPostResponsePath != null)
+                {
+                    var next = context.GetNextMiddleware();
+                    if (next != null)
+                    {
+                        context.Request.Path = _options.Endpoints.CustomAuthorizeFormPostResponsePath;
+                        context.SetFormPostAuthorizeResponseContext(new FormPostAuthorizeResponseContext { 
+                            Url = Response.Request.RedirectUri,
+                            FormData = Response.ToNameValueCollection()
+                        });
+                        await next(context);
+                        return;
+                    }
+                }
+
                 AddSecurityHeaders(context);
                 await context.Response.WriteHtmlAsync(GetFormPostHtml());
             }

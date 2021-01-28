@@ -61,5 +61,11 @@ namespace IdentityServerHost.Quickstart.UI
 
             return View("Error", vm);
         }
+
+        public IActionResult Authz()
+        {
+            var context = _interaction.GetFormPostAuthorizeResponseContext();
+            return View(context);
+        }
     }
 }
