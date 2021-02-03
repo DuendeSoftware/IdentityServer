@@ -347,8 +347,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 }
             }
             
-            // todo: switch to constant once finalized
-            entries.Add("authorization_response_iss_parameter_supported", true);
+            entries.Add(OidcConstants.Discovery.AuthorizationResponseIssParameterSupported, true);
 
             if (Options.MutualTls.Enabled)
             {

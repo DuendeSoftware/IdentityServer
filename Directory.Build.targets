@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <!--our stuff -->
-    <PackageReference Update="IdentityModel" Version="5.0.0" />
+    <PackageReference Update="IdentityModel" Version="5.0.1" />
 
     <!--build related-->
     <PackageReference Include="MinVer" Version="2.3.0" PrivateAssets="All" />
