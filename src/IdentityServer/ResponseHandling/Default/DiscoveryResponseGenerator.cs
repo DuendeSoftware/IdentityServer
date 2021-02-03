@@ -321,6 +321,25 @@ namespace Duende.IdentityServer.ResponseHandling
             if (Options.Endpoints.EnableAuthorizeEndpoint)
             {
                 entries.Add(OidcConstants.Discovery.RequestParameterSupported, true);
+                
+                entries.Add(OidcConstants.Discovery.RequestObjectSigningAlgorithmsSupported, new[]
+                {
+                    SecurityAlgorithms.RsaSha256,
+                    SecurityAlgorithms.RsaSha384,
+                    SecurityAlgorithms.RsaSha512,
+                    
+                    SecurityAlgorithms.RsaSsaPssSha256,
+                    SecurityAlgorithms.RsaSsaPssSha384,
+                    SecurityAlgorithms.RsaSsaPssSha512,
+                    
+                    SecurityAlgorithms.EcdsaSha256,
+                    SecurityAlgorithms.EcdsaSha384,
+                    SecurityAlgorithms.EcdsaSha512,
+                    
+                    SecurityAlgorithms.HmacSha256,
+                    SecurityAlgorithms.HmacSha384,
+                    SecurityAlgorithms.HmacSha512
+                });
 
                 if (Options.Endpoints.EnableJwtRequestUri)
                 {
@@ -328,8 +347,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 }
             }
             
-            // todo: switch to constant once finalized
-            entries.Add("authorization_response_iss_parameter_supported", true);
+            entries.Add(OidcConstants.Discovery.AuthorizationResponseIssParameterSupported, true);
 
             if (Options.MutualTls.Enabled)
             {
