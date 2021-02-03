@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Services;
+using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -703,15 +704,10 @@ namespace Duende.IdentityServer.Validation
             }
             else
             {
-                if (request.GrantType == GrantType.Implicit ||
-                    request.GrantType == GrantType.Hybrid)
+                if (request.ResponseType.FromSpaceSeparatedString().Contains(TokenTypes.IdentityToken))
                 {
-                    // only openid requests require nonce
-                    if (request.IsOpenIdRequest)
-                    {
-                        LogError("Nonce required for implicit and hybrid flow with openid scope", request);
-                        return Invalid(request, description: "Invalid nonce");
-                    }
+                    LogError("Nonce required for flow with id_token response type", request);
+                    return Invalid(request, description: "Invalid nonce");
                 }
             }
 

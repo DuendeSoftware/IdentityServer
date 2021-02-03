@@ -153,6 +153,22 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
 
         [Fact]
         [Trait("Category", Category)]
+        public async Task Valid_OpenId_Code_Token_Request()
+        {
+            var parameters = new NameValueCollection();
+            parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "hybridclient");
+            parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid");
+            parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "https://server/cb");
+            parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.CodeToken);
+
+            var validator = Factory.CreateAuthorizeRequestValidator();
+            var result = await validator.ValidateAsync(parameters);
+
+            result.IsError.Should().BeFalse();
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
         public async Task Valid_ResponseMode_For_Code_ResponseType()
         {
             var parameters = new NameValueCollection();
