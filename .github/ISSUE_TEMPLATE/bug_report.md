@@ -7,7 +7,9 @@ assignees: ''
 
 ---
 
-**Which exact version are you using?**
+**Which version of Duende IdentityServer are you using?**
+
+**Which version of .NET are you using?**
 
 **Describe the bug**
 
