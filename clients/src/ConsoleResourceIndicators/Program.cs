@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IdentityModel;
+using IdentityModel.Client;
 
 namespace ConsoleResourceIndicators
 {
@@ -66,6 +67,7 @@ namespace ConsoleResourceIndicators
 
                 RedirectUri = redirectUri,
                 Scope = scope + " offline_access",
+                Resource = resource.ToList(),
                 FilterClaims = false,
                 LoadProfile = false,
                 Browser = browser,
@@ -85,15 +87,7 @@ namespace ConsoleResourceIndicators
             options.LoggerFactory.AddSerilog(serilog);
 
             _oidcClient = new OidcClient(options);
-            var request = new LoginRequest
-            {
-                FrontChannel =
-                {
-                    Resource = resource.ToList()
-                }
-            };
-            
-            var result = await _oidcClient.LoginAsync(request);
+            var result = await _oidcClient.LoginAsync();
 
             var parts = result.AccessToken.Split('.');
             var header = parts[0];
@@ -144,7 +138,10 @@ namespace ConsoleResourceIndicators
         {
             var result =
                 await _oidcClient.RefreshTokenAsync(refreshToken,
-                    new BackChannelParameters { Resource = { resource } });
+                    new Parameters
+                    {
+                        { "resource", resource }
+                    });
 
             if (result.IsError)
             {
