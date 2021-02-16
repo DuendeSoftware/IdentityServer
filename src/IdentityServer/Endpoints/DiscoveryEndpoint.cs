@@ -60,7 +60,7 @@ namespace Duende.IdentityServer.Endpoints
             _logger.LogTrace("Calling into discovery response generator: {type}", _responseGenerator.GetType().FullName);
             var response = await _responseGenerator.CreateDiscoveryDocumentAsync(baseUrl, issuerUri);
 
-            return new DiscoveryDocumentResult(response, _options.Discovery.ResponseCacheInterval);
+            return new DiscoveryDocumentResult(response, _options.Discovery.ResponseCacheInterval, _options.Discovery.ReturnDiscoveryIndented);
         }
     }
 }

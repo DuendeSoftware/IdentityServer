@@ -15,9 +15,9 @@ namespace Duende.IdentityServer.Extensions
 {
     public static class HttpResponseExtensions
     {
-        public static async Task WriteJsonAsync(this HttpResponse response, object o, string contentType = null)
+        public static async Task WriteJsonAsync(this HttpResponse response, object o,  string contentType = null, bool? serializeIndented = null)
         {
-            var json = ObjectSerializer.ToString(o);
+            var json = ObjectSerializer.ToString(o, serializeIndented.GetValueOrDefault(false));
             await response.WriteJsonAsync(json, contentType);
             await response.Body.FlushAsync();
         }

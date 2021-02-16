@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -12,10 +12,15 @@ namespace Duende.IdentityServer
         {
             IgnoreNullValues = true
         };
-        
-        public static string ToString(object o)
+
+        private static readonly JsonSerializerOptions OptionsIndented = new JsonSerializerOptions
         {
-            return JsonSerializer.Serialize(o, Options);
+            IgnoreNullValues = true,
+            WriteIndented = true
+        };
+        public static string ToString(object o, bool indented = false)
+        {
+            return JsonSerializer.Serialize(o, indented? OptionsIndented : Options);
         }
 
         public static T FromString<T>(string value)

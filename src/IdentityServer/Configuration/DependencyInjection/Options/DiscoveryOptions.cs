@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -78,5 +78,10 @@ namespace Duende.IdentityServer.Configuration
         /// Adds custom entries to the discovery document
         /// </summary>
         public Dictionary<string, object> CustomEntries { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Should Discovery document return Indented
+        /// </summary>
+        public bool ReturnDiscoveryIndented { get; set; } = false;
     }
 }

@@ -53,7 +53,7 @@ namespace Duende.IdentityServer.Endpoints
             _logger.LogTrace("Calling into discovery response generator: {type}", _responseGenerator.GetType().FullName);
             var response = await _responseGenerator.CreateJwkDocumentAsync();
 
-            return new JsonWebKeysResult(response, _options.Discovery.ResponseCacheInterval);
+            return new JsonWebKeysResult(response, _options.Discovery.ResponseCacheInterval, _options.Discovery.ReturnDiscoveryIndented);
         }
     }
 }

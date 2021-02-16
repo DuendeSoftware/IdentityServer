@@ -35,14 +35,21 @@ namespace Duende.IdentityServer.Endpoints.Results
         public int? MaxAge { get; }
 
         /// <summary>
+        /// Should the result Json be indented
+        /// </summary>
+        public bool JsonWebKeyResultIndented { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="JsonWebKeysResult" /> class.
         /// </summary>
         /// <param name="webKeys">The web keys.</param>
         /// <param name="maxAge">The maximum age.</param>
-        public JsonWebKeysResult(IEnumerable<JsonWebKey> webKeys, int? maxAge)
+        /// <param name="jsonWebKeysResultIndented">Result Indented or not</param>
+        public JsonWebKeysResult(IEnumerable<JsonWebKey> webKeys, int? maxAge, bool jsonWebKeysResultIndented)
         {
             WebKeys = webKeys ?? throw new ArgumentNullException(nameof(webKeys));
             MaxAge = maxAge;
+            JsonWebKeyResultIndented = jsonWebKeysResultIndented;
         }
 
         /// <summary>
@@ -57,7 +64,7 @@ namespace Duende.IdentityServer.Endpoints.Results
                 context.Response.SetCache(MaxAge.Value, "Origin");
             }
 
-            return context.Response.WriteJsonAsync(new { keys = WebKeys }, "application/json; charset=UTF-8");
+            return context.Response.WriteJsonAsync(new { keys = WebKeys }, "application/json; charset=UTF-8", JsonWebKeyResultIndented);
         }
     }
 }

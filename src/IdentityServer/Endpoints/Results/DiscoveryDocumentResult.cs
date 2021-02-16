@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -34,15 +34,22 @@ namespace Duende.IdentityServer.Endpoints.Results
         public int? MaxAge { get; }
 
         /// <summary>
+        /// Should the result Json be indented 
+        /// </summary>
+        public bool DiscoveryDocumentResultIndented { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DiscoveryDocumentResult" /> class.
         /// </summary>
         /// <param name="entries">The entries.</param>
         /// <param name="maxAge">The maximum age.</param>
+        /// <param name="discoveryDocumentResultIndented">Result Indented or not</param>
         /// <exception cref="System.ArgumentNullException">entries</exception>
-        public DiscoveryDocumentResult(Dictionary<string, object> entries, int? maxAge)
+        public DiscoveryDocumentResult(Dictionary<string, object> entries, int? maxAge, bool discoveryDocumentResultIndented)
         {
             Entries = entries ?? throw new ArgumentNullException(nameof(entries));
             MaxAge = maxAge;
+            DiscoveryDocumentResultIndented = discoveryDocumentResultIndented;
         }
 
         /// <summary>
@@ -57,7 +64,7 @@ namespace Duende.IdentityServer.Endpoints.Results
                 context.Response.SetCache(MaxAge.Value, "Origin");
             }
 
-            return context.Response.WriteJsonAsync(Entries);
+            return context.Response.WriteJsonAsync(Entries,null, serializeIndented:DiscoveryDocumentResultIndented);
         }
     }
 }
