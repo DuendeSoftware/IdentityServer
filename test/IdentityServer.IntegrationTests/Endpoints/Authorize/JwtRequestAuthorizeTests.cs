@@ -928,6 +928,7 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.AcrValues.Should().BeEquivalentTo(new string[] { "acr_2", "acr_1" });
             _mockPipeline.LoginRequest.Parameters.AllKeys.Should().Contain("foo");
             _mockPipeline.LoginRequest.Parameters["foo"].Should().Be("123foo");
+            _mockPipeline.LoginRequest.RequestObjectValues.Count.Should().Be(11);
 
             _mockPipeline.JwtRequestMessageHandler.InvokeWasCalled.Should().BeTrue();
         }
