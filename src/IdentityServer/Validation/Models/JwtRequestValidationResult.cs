@@ -3,6 +3,7 @@
 
 
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -14,6 +15,6 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// The key/value pairs from the JWT payload of a successfuly validated request.
         /// </summary>
-        public Dictionary<string, string> Payload { get; set; }
+        public IEnumerable<Claim> Payload { get; set; }
     }
 }

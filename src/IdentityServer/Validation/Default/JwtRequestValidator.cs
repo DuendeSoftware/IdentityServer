@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using IdentityModel;
@@ -30,7 +31,7 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// JWT handler
         /// </summary>
-        protected JsonWebTokenHandler Handler = new JsonWebTokenHandler();
+        protected JsonWebTokenHandler Handler;
 
         /// <summary>
         /// The audience URI to use
@@ -69,6 +70,12 @@ namespace Duende.IdentityServer.Validation
             Options = options;
             IssuerNameService = issuerNameService;
             Logger = logger;
+            
+            Handler = new JsonWebTokenHandler
+            {
+                // todo: check size
+                MaximumTokenSizeInBytes = options.InputLengthRestrictions.Jwt
+            };
         }
 
         /// <summary>
@@ -77,7 +84,9 @@ namespace Duende.IdentityServer.Validation
         internal JwtRequestValidator(string audience, ILogger<JwtRequestValidator> logger)
         {
             _audienceUri = audience;
+            
             Logger = logger;
+            Handler = new JsonWebTokenHandler();
         }
 
         /// <summary>
@@ -194,19 +203,11 @@ namespace Duende.IdentityServer.Validation
         /// </summary>
         /// <param name="token">The JWT token</param>
         /// <returns></returns>
-        protected virtual Task<Dictionary<string, string>> ProcessPayloadAsync(JsonWebToken token)
+        protected virtual Task<IEnumerable<Claim>> ProcessPayloadAsync(JsonWebToken token)
         {
             // filter JWT validation values
-            var payload = new Dictionary<string, string>();
-            foreach (var claim in token.Claims)
-            {
-                if (!Constants.Filters.JwtRequestClaimTypesFilter.Contains(claim.Type))
-                {
-                    payload.Add(claim.Type, claim.Value);
-                }
-            }
-
-            return Task.FromResult(payload);
+            var filtered = token.Claims.Where(claim => !Constants.Filters.JwtRequestClaimTypesFilter.Contains(claim.Type));
+            return Task.FromResult(filtered);
         }
     }
 }
