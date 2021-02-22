@@ -900,6 +900,8 @@ namespace IntegrationTests.Endpoints.Authorize
                     new Claim("display", "popup"),
                     new Claim("ui_locales", "ui_locale_value"),
                     new Claim("foo", "123foo"),
+                    new Claim("bar", "bar1"),
+                    new Claim("bar", "bar2"),
             });
             _mockPipeline.JwtRequestMessageHandler.OnInvoke = req =>
             {
@@ -928,7 +930,7 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.AcrValues.Should().BeEquivalentTo(new string[] { "acr_2", "acr_1" });
             _mockPipeline.LoginRequest.Parameters.AllKeys.Should().Contain("foo");
             _mockPipeline.LoginRequest.Parameters["foo"].Should().Be("123foo");
-            _mockPipeline.LoginRequest.RequestObjectValues.Count.Should().Be(11);
+            _mockPipeline.LoginRequest.RequestObjectValues.Count.Should().Be(12);
 
             _mockPipeline.JwtRequestMessageHandler.InvokeWasCalled.Should().BeTrue();
         }
