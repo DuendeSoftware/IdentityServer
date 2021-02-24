@@ -301,25 +301,6 @@ namespace Duende.IdentityServer.Validation
                     request.Raw.Add(claim.Type, claim.Value);
                 }
                 
-                // foreach (var key in jwtRequestValidationResult.Payload.Keys)
-                // {
-                //     if (ignoreKeys.Contains(key)) continue;
-                //
-                //     var value = jwtRequestValidationResult.Payload[key];
-                //
-                //     var qsValue = request.Raw.Get(key);
-                //     if (qsValue != null)
-                //     {
-                //         if (!string.Equals(value, qsValue, StringComparison.Ordinal))
-                //         {
-                //             LogError("parameter mismatch between request object and query string parameter.", request);
-                //             return Invalid(request, description: "Parameter mismatch in JWT request");
-                //         }
-                //     }
-                //
-                //     request.Raw.Set(key, value);
-                // }
-
                 request.RequestObjectValues = jwtRequestValidationResult.Payload;
             }
 

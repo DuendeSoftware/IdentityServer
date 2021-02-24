@@ -73,7 +73,6 @@ namespace Duende.IdentityServer.Validation
             
             Handler = new JsonWebTokenHandler
             {
-                // todo: check size
                 MaximumTokenSizeInBytes = options.InputLengthRestrictions.Jwt
             };
         }
