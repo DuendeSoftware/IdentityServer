@@ -261,7 +261,7 @@ namespace Duende.IdentityServer.Validation
                 // validate client_id mismatch
                 var payloadClientId =
                     jwtRequestValidationResult.Payload.SingleOrDefault(c =>
-                        c.Type == OidcConstants.AuthorizeRequest.ResponseType)?.Value;
+                        c.Type == OidcConstants.AuthorizeRequest.ClientId)?.Value;
 
                 if (!string.IsNullOrEmpty(payloadClientId))
                 {

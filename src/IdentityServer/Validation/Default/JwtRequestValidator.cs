@@ -203,11 +203,11 @@ namespace Duende.IdentityServer.Validation
         /// </summary>
         /// <param name="token">The JWT token</param>
         /// <returns></returns>
-        protected virtual Task<IEnumerable<Claim>> ProcessPayloadAsync(JsonWebToken token)
+        protected virtual Task<List<Claim>> ProcessPayloadAsync(JsonWebToken token)
         {
             // filter JWT validation values
             var filtered = token.Claims.Where(claim => !Constants.Filters.JwtRequestClaimTypesFilter.Contains(claim.Type));
-            return Task.FromResult(filtered);
+            return Task.FromResult(filtered.ToList());
         }
     }
 }
