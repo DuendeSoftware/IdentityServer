@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Extensions;
@@ -24,6 +25,7 @@ namespace Duende.IdentityServer.Validation
     {
         private readonly IIssuerNameService _issuerNameService;
         private readonly IReplayCache _replayCache;
+        private readonly IdentityServerOptions _options;
         private readonly ILogger _logger;
 
         private const string Purpose = nameof(PrivateKeyJwtSecretValidator);
@@ -31,11 +33,15 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// Instantiates an instance of private_key_jwt secret validator
         /// </summary>
-        public PrivateKeyJwtSecretValidator(IIssuerNameService issuerNameService, IReplayCache replayCache,
+        public PrivateKeyJwtSecretValidator(
+            IIssuerNameService issuerNameService, 
+            IReplayCache replayCache,
+            IdentityServerOptions options,
             ILogger<PrivateKeyJwtSecretValidator> logger)
         {
             _issuerNameService = issuerNameService;
             _replayCache = replayCache;
+            _options = options;
             _logger = logger;
         }
 
@@ -105,7 +111,7 @@ namespace Duende.IdentityServer.Validation
                 ClockSkew = TimeSpan.FromMinutes(5)
             };
 
-            var handler = new JsonWebTokenHandler();
+            var handler = new JsonWebTokenHandler() { MaximumTokenSizeInBytes = _options.InputLengthRestrictions.Jwt };
             var result = handler.ValidateToken(jwtTokenString, tokenValidationParameters);
             if (!result.IsValid)
             {

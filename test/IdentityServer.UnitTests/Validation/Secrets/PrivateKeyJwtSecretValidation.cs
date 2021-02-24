@@ -34,6 +34,7 @@ namespace UnitTests.Validation.Secrets
             _validator = new PrivateKeyJwtSecretValidator(
                  new TestIssuerNameService("https://idsrv3.com"),
                  new DefaultReplayCache(new TestCache()), 
+                 new IdentityServerOptions(),
                  new LoggerFactory().CreateLogger<PrivateKeyJwtSecretValidator>());
             
             _clients = new InMemoryClientStore(ClientValidationTestClients.Get());
