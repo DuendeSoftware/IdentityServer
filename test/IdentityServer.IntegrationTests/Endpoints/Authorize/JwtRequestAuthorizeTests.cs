@@ -441,7 +441,7 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.Should().BeNull();
         }
         
-        [Fact(Skip = "re-visit later")]
+        [Fact]
         [Trait("Category", Category)]
         public async Task authorize_should_accept_complex_objects_in_request_object()
         {
@@ -488,20 +488,16 @@ namespace IntegrationTests.Endpoints.Authorize
             someObj.Should().BeEquivalentTo(someObj2);
             
             _mockPipeline.LoginRequest.Parameters["someArr"].Should().NotBeNull();
-            value = _mockPipeline.LoginRequest.Parameters["someArr"];
-            var someArr2 = JsonSerializer.Deserialize<string[]>(value);
-            someArr2.Should().Contain(new[] { "a", "c", "b" });
-            someArr2.Length.Should().Be(3);
-
-            _mockPipeline.LoginRequest.RequestObjectValues.Count().Should().Be(13);
+            var arrValue = _mockPipeline.LoginRequest.Parameters.GetValues("someArr");
+            arrValue.Length.Should().Be(3);
+            
+            _mockPipeline.LoginRequest.RequestObjectValues.Count().Should().Be(15);
             value = _mockPipeline.LoginRequest.RequestObjectValues.Single(c => c.Type == "someObj").Value;
             someObj2 = JsonSerializer.Deserialize(value, someObj.GetType());
             someObj.Should().BeEquivalentTo(someObj2);
-            
-            value = _mockPipeline.LoginRequest.RequestObjectValues.Single(c => c.Type == "someArr").Value;
-            someArr2 = JsonSerializer.Deserialize<string[]>(value);
-            someArr2.Should().Contain(new[] { "a", "c", "b" });
-            someArr2.Length.Should().Be(3);
+
+            var arrValue2 = _mockPipeline.LoginRequest.RequestObjectValues.Where(c => c.Type == "someArr").ToList();
+            arrValue2.Count.Should().Be(3);
         }
 
         [Fact]
