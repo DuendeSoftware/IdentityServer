@@ -51,6 +51,7 @@ namespace IdentityServerHost
                     options.Events.RaiseInformationEvents = true;
 
                     options.EmitScopesAsSpaceDelimitedStringInJwt = true;
+                    options.Endpoints.EnableJwtRequestUri = true;
                 })
                 .AddInMemoryClients(Clients.Get())
                 .AddInMemoryIdentityResources(Resources.IdentityResources)
