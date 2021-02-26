@@ -28,7 +28,7 @@ namespace Duende.IdentityServer.Validation
         private readonly IRedirectUriValidator _uriValidator;
         private readonly IResourceValidator _resourceValidator;
         private readonly IUserSession _userSession;
-        private readonly JwtRequestValidator _jwtRequestValidator;
+        private readonly IJwtRequestValidator _jwtRequestValidator;
         private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
         private readonly ILogger _logger;
 
@@ -43,7 +43,7 @@ namespace Duende.IdentityServer.Validation
             IRedirectUriValidator uriValidator,
             IResourceValidator resourceValidator,
             IUserSession userSession,
-            JwtRequestValidator jwtRequestValidator,
+            IJwtRequestValidator jwtRequestValidator,
             IJwtRequestUriHttpClient jwtRequestUriHttpClient,
             ILogger<AuthorizeRequestValidator> logger)
         {
@@ -300,6 +300,14 @@ namespace Duende.IdentityServer.Validation
                 {
                     request.Raw.Add(claim.Type, claim.Value);
                 }
+                
+                var ruri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
+                if (ruri != null)
+                {
+                    request.Raw.Remove(OidcConstants.AuthorizeRequest.RequestUri);
+                    request.Raw.Add(OidcConstants.AuthorizeRequest.Request, request.RequestObject);
+                }
+                
                 
                 request.RequestObjectValues = jwtRequestValidationResult.Payload;
             }

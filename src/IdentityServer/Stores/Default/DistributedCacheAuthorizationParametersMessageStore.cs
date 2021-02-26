@@ -33,7 +33,7 @@ namespace Duende.IdentityServer.Stores.Default
         private string CacheKeyPrefix => "DistributedCacheAuthorizationParametersMessageStore";
         
         /// <inheritdoc/>
-        public async Task<string> WriteAsync(Message<IDictionary<string, string[]>> message)
+        public virtual async Task<string> WriteAsync(Message<IDictionary<string, string[]>> message)
         {
             // since this store is trusted and the JWT request processing has provided redundant entries
             // in the NameValueCollection, we are removing the JWT "request_uri" param so that when they
@@ -55,7 +55,7 @@ namespace Duende.IdentityServer.Stores.Default
         }
 
         /// <inheritdoc/>
-        public async Task<Message<IDictionary<string, string[]>>> ReadAsync(string id)
+        public virtual async Task<Message<IDictionary<string, string[]>>> ReadAsync(string id)
         {
             var cacheKey = $"{CacheKeyPrefix}-{id}";
             var json = await _distributedCache.GetStringAsync(cacheKey);
@@ -69,7 +69,7 @@ namespace Duende.IdentityServer.Stores.Default
         }
 
         /// <inheritdoc/>
-        public Task DeleteAsync(string id)
+        public virtual Task DeleteAsync(string id)
         {
             return _distributedCache.RemoveAsync(id);
         }
