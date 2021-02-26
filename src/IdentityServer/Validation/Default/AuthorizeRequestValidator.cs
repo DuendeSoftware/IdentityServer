@@ -301,6 +301,14 @@ namespace Duende.IdentityServer.Validation
                     request.Raw.Add(claim.Type, claim.Value);
                 }
                 
+                var ruri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
+                if (ruri != null)
+                {
+                    request.Raw.Remove(OidcConstants.AuthorizeRequest.RequestUri);
+                    request.Raw.Add(OidcConstants.AuthorizeRequest.Request, request.RequestObject);
+                }
+                
+                
                 request.RequestObjectValues = jwtRequestValidationResult.Payload;
             }
 
