@@ -21,7 +21,7 @@ namespace Duende.IdentityServer.Validation
     /// <summary>
     /// Validates JWT authorization request objects
     /// </summary>
-    public class JwtRequestValidator
+    public class JwtRequestValidator : IJwtRequestValidator
     {
         private readonly string _audienceUri;
 

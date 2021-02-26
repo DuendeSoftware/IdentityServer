@@ -128,7 +128,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddTransient<ISecretsListValidator, SecretValidator>();
             builder.Services.AddTransient<ExtensionGrantValidator>();
             builder.Services.AddTransient<BearerTokenUsageValidator>();
-            builder.Services.AddTransient<JwtRequestValidator>();
+            builder.Services.AddTransient<IJwtRequestValidator, JwtRequestValidator>();
 
             builder.Services.AddTransient<ReturnUrlParser>();
             builder.Services.AddTransient<IdentityServerTools>();
