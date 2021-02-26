@@ -3,7 +3,7 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'netstandard2.0'">
     <FrameworkVersion>3.1.0</FrameworkVersion>
     <ExtensionsVersion>3.1.0</ExtensionsVersion>
-    <EntityFrameworkVersion>3.1.0</EntityFrameworkVersion>
+    <EntityFrameworkVersion>5.0.3</EntityFrameworkVersion>
     <WilsonVersion>5.6.0</WilsonVersion>
   </PropertyGroup>
   
