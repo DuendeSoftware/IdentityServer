@@ -5,6 +5,7 @@
 using IdentityModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -193,7 +194,7 @@ namespace Duende.IdentityServer.Validation
         /// <value>
         /// The request object values
         /// </value>
-        public Dictionary<string, string> RequestObjectValues { get; set; } = new Dictionary<string, string>();
+        public IEnumerable<Claim> RequestObjectValues { get; set; } = new List<Claim>();
 
         /// <summary>
         /// Gets or sets the request object (either passed by value or retrieved by reference)

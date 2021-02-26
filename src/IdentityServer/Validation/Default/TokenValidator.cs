@@ -11,6 +11,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.IdentityModel.Tokens.Jwt;
+using System.Xml.XPath;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Models;
@@ -19,6 +20,8 @@ using Microsoft.IdentityModel.Tokens;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.JsonWebTokens;
+using JsonWebKey = Microsoft.IdentityModel.Tokens.JsonWebKey;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -59,7 +62,8 @@ namespace Duende.IdentityServer.Validation
             _log = new TokenValidationLog();
         }
 
-        public async Task<TokenValidationResult> ValidateIdentityTokenAsync(string token, string clientId = null, bool validateLifetime = true)
+        public async Task<TokenValidationResult> ValidateIdentityTokenAsync(string token, string clientId = null,
+            bool validateLifetime = true)
         {
             _logger.LogDebug("Start identity token validation");
 
@@ -197,10 +201,12 @@ namespace Duende.IdentityServer.Validation
 
                 if (result.ReferenceTokenId.IsPresent())
                 {
-                    principal.Identities.First().AddClaim(new Claim(JwtClaimTypes.ReferenceTokenId, result.ReferenceTokenId));
+                    principal.Identities.First()
+                        .AddClaim(new Claim(JwtClaimTypes.ReferenceTokenId, result.ReferenceTokenId));
                 }
 
-                var isActiveCtx = new IsActiveContext(principal, result.Client, IdentityServerConstants.ProfileIsActiveCallers.AccessTokenValidation);
+                var isActiveCtx = new IsActiveContext(principal, result.Client,
+                    IdentityServerConstants.ProfileIsActiveCallers.AccessTokenValidation);
                 await _profile.IsActiveAsync(isActiveCtx);
 
                 if (isActiveCtx.IsActive == false)
@@ -218,7 +224,8 @@ namespace Duende.IdentityServer.Validation
             // check expected scope(s)
             if (expectedScope.IsPresent())
             {
-                var scope = result.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Scope && c.Value == expectedScope);
+                var scope = result.Claims.FirstOrDefault(c =>
+                    c.Type == JwtClaimTypes.Scope && c.Value == expectedScope);
                 if (scope == null)
                 {
                     LogError($"Checking for expected scope {expectedScope} failed");
@@ -242,10 +249,10 @@ namespace Duende.IdentityServer.Validation
             return customResult;
         }
 
-        private async Task<TokenValidationResult> ValidateJwtAsync(string jwt, IEnumerable<SecurityKeyInfo> validationKeys, bool validateLifetime = true, string audience = null)
+        private async Task<TokenValidationResult> ValidateJwtAsync(string jwtString,
+            IEnumerable<SecurityKeyInfo> validationKeys, bool validateLifetime = true, string audience = null)
         {
-            var handler = new JwtSecurityTokenHandler();
-            handler.InboundClaimTypeMap.Clear();
+            var handler = new JsonWebTokenHandler();
 
             var parameters = new TokenValidationParameters
             {
@@ -261,90 +268,81 @@ namespace Duende.IdentityServer.Validation
             else
             {
                 parameters.ValidateAudience = false;
-            }
-
-            try
-            {
-                var id = handler.ValidateToken(jwt, parameters, out var securityToken);
-                var jwtSecurityToken = securityToken as JwtSecurityToken;
 
                 // if no audience is specified, we make at least sure that it is an access token
-                if (audience.IsMissing())
+                if (_options.AccessTokenJwtType.IsPresent())
                 {
-                    if (_options.AccessTokenJwtType.IsPresent())
-                    {
-                        var type = jwtSecurityToken.Header.Typ;
-                        if (!string.Equals(type, _options.AccessTokenJwtType))
-                        {
-                            return new TokenValidationResult
-                            {
-                                IsError = true,
-                                Error = "invalid JWT token type"
-                            };
-                        }
-
-                    }
+                    parameters.ValidTypes = new[] { _options.AccessTokenJwtType };
                 }
-                
-                // if access token contains an ID, log it
-                var jwtId = id.FindFirst(JwtClaimTypes.JwtId);
-                if (jwtId != null)
-                {
-                    _log.JwtId = jwtId.Value;
-                }
-
-                // load the client that belongs to the client_id claim
-                Client client = null;
-                var clientId = id.FindFirst(JwtClaimTypes.ClientId);
-                if (clientId != null)
-                {
-                    client = await _clients.FindEnabledClientByIdAsync(clientId.Value);
-                    if (client == null)
-                    {
-                        throw new InvalidOperationException("Client does not exist anymore.");
-                    }
-                }
-
-                var claims = id.Claims.ToList();
-                
-                // check the scope format (array vs space delimited string)
-                var scopes = claims.Where(c => c.Type == JwtClaimTypes.Scope).ToArray();
-                if (scopes.Any())
-                {
-                    foreach (var scope in scopes)
-                    {
-                        if (scope.Value.Contains(" "))
-                        {
-                            claims.Remove(scope);
-                            
-                            var values = scope.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var value in values)
-                            {
-                                claims.Add(new Claim(JwtClaimTypes.Scope, value));
-                            }
-                        }
-                    }
-                }
-
-                return new TokenValidationResult
-                {
-                    IsError = false,
-
-                    Claims = claims,
-                    Client = client,
-                    Jwt = jwt
-                };
             }
-            catch (SecurityTokenExpiredException expiredException)
+            
+            var result = handler.ValidateToken(jwtString, parameters);
+            if (!result.IsValid)
             {
-                _logger.LogInformation(expiredException, "JWT token validation error: {exception}", expiredException.Message);
-                return Invalid(OidcConstants.ProtectedResourceErrors.ExpiredToken);
+                if (result.Exception is SecurityTokenExpiredException expiredException)
+                {
+                    _logger.LogInformation(expiredException, "JWT token validation error: {exception}",
+                        expiredException.Message);
+                    return Invalid(OidcConstants.ProtectedResourceErrors.ExpiredToken);
+                }
+                else
+                {
+                    _logger.LogError(result.Exception, "JWT token validation error: {exception}",
+                        result.Exception.Message);
+                    return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
+                }
             }
-            catch (Exception ex)
+
+            var id = result.ClaimsIdentity;
+
+            // if access token contains an ID, log it
+            var jwtId = id.FindFirst(JwtClaimTypes.JwtId);
+            if (jwtId != null)
             {
-                _logger.LogError(ex, "JWT token validation error: {exception}", ex.Message);
-                return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
+                _log.JwtId = jwtId.Value;
             }
+
+            // load the client that belongs to the client_id claim
+            Client client = null;
+            var clientId = id.FindFirst(JwtClaimTypes.ClientId);
+            if (clientId != null)
+            {
+                client = await _clients.FindEnabledClientByIdAsync(clientId.Value);
+                if (client == null)
+                {
+                    throw new InvalidOperationException("Client does not exist anymore.");
+                }
+            }
+
+            var claims = id.Claims.ToList();
+
+            // check the scope format (array vs space delimited string)
+            var scopes = claims.Where(c => c.Type == JwtClaimTypes.Scope).ToArray();
+            if (scopes.Any())
+            {
+                foreach (var scope in scopes)
+                {
+                    if (scope.Value.Contains(" "))
+                    {
+                        claims.Remove(scope);
+
+                        var values = scope.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var value in values)
+                        {
+                            claims.Add(new Claim(JwtClaimTypes.Scope, value));
+                        }
+                    }
+                }
+            }
+
+            return new TokenValidationResult
+            {
+                IsError = false,
+
+                Claims = claims,
+                Client = client,
+                Jwt = jwtString
+            };
         }
 
         private async Task<TokenValidationResult> ValidateReferenceAccessTokenAsync(string tokenHandle)
@@ -395,9 +393,13 @@ namespace Duende.IdentityServer.Validation
             var claims = new List<Claim>
             {
                 new Claim(JwtClaimTypes.Issuer, token.Issuer),
-                new Claim(JwtClaimTypes.NotBefore, new DateTimeOffset(token.CreationTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-                new Claim(JwtClaimTypes.IssuedAt, new DateTimeOffset(token.CreationTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-                new Claim(JwtClaimTypes.Expiration, new DateTimeOffset(token.CreationTime).AddSeconds(token.Lifetime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+                new Claim(JwtClaimTypes.NotBefore,
+                    new DateTimeOffset(token.CreationTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+                new Claim(JwtClaimTypes.IssuedAt, new DateTimeOffset(token.CreationTime).ToUnixTimeSeconds().ToString(),
+                    ClaimValueTypes.Integer64),
+                new Claim(JwtClaimTypes.Expiration,
+                    new DateTimeOffset(token.CreationTime).AddSeconds(token.Lifetime).ToUnixTimeSeconds().ToString(),
+                    ClaimValueTypes.Integer64)
             };
 
             foreach (var aud in token.Audiences)

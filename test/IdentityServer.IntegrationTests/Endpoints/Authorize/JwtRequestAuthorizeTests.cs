@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -252,9 +253,9 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.Parameters.AllKeys.Should().Contain("foo");
             _mockPipeline.LoginRequest.Parameters["foo"].Should().Be("123foo");
 
-            _mockPipeline.LoginRequest.RequestObjectValues.Count.Should().Be(11);
-            _mockPipeline.LoginRequest.RequestObjectValues.Should().ContainKey("foo");
-            _mockPipeline.LoginRequest.RequestObjectValues["foo"].Should().Be("123foo");
+            _mockPipeline.LoginRequest.RequestObjectValues.Count().Should().Be(11);
+            _mockPipeline.LoginRequest.RequestObjectValues.Single(c => c.Type == "foo" && c.Value == "123foo").Should()
+                .NotBeNull();
         }
 
         [Fact]
@@ -300,9 +301,9 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.Parameters.AllKeys.Should().Contain("foo");
             _mockPipeline.LoginRequest.Parameters["foo"].Should().Be("123foo");
 
-            _mockPipeline.LoginRequest.RequestObjectValues.Count.Should().Be(11);
-            _mockPipeline.LoginRequest.RequestObjectValues.Should().ContainKey("foo");
-            _mockPipeline.LoginRequest.RequestObjectValues["foo"].Should().Be("123foo");
+            _mockPipeline.LoginRequest.RequestObjectValues.Count().Should().Be(11);
+            _mockPipeline.LoginRequest.RequestObjectValues.Single(c => c.Type == "foo" && c.Value == "123foo").Should()
+                .NotBeNull();
         }
 
         [Fact]
@@ -348,9 +349,9 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.Parameters.AllKeys.Should().Contain("foo");
             _mockPipeline.LoginRequest.Parameters["foo"].Should().Be("123foo");
 
-            _mockPipeline.LoginRequest.RequestObjectValues.Count.Should().Be(11);
-            _mockPipeline.LoginRequest.RequestObjectValues.Should().ContainKey("foo");
-            _mockPipeline.LoginRequest.RequestObjectValues["foo"].Should().Be("123foo");
+            _mockPipeline.LoginRequest.RequestObjectValues.Count().Should().Be(11);
+            _mockPipeline.LoginRequest.RequestObjectValues.Single(c => c.Type == "foo" && c.Value == "123foo").Should()
+                .NotBeNull();
         }
         
         [Fact]
@@ -398,9 +399,9 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.Parameters.AllKeys.Should().Contain("foo");
             _mockPipeline.LoginRequest.Parameters["foo"].Should().Be("123foo");
 
-            _mockPipeline.LoginRequest.RequestObjectValues.Count.Should().Be(11);
-            _mockPipeline.LoginRequest.RequestObjectValues.Should().ContainKey("foo");
-            _mockPipeline.LoginRequest.RequestObjectValues["foo"].Should().Be("123foo");
+            _mockPipeline.LoginRequest.RequestObjectValues.Count().Should().Be(11);
+            _mockPipeline.LoginRequest.RequestObjectValues.Single(c => c.Type == "foo" && c.Value == "123foo").Should()
+                .NotBeNull();
         }
         
         [Fact]
@@ -440,51 +441,6 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.Should().BeNull();
         }
         
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task mismatch_in_jwt_values_should_error()
-        {
-            var requestJwt = CreateRequestJwt(
-                issuer: _client.ClientId,
-                audience: IdentityServerPipeline.BaseUrl,
-                credential: new SigningCredentials(_rsaKey, "RS256"),
-                claims: new[] {
-                    new Claim("client_id", _client.ClientId),
-                    new Claim("response_type", "id_token"),
-                    new Claim("scope", "openid profile"),
-                    new Claim("state", "123state"),
-                    new Claim("nonce", "123nonce"),
-                    new Claim("redirect_uri", "https://client/callback"),
-                    new Claim("acr_values", "acr_1 acr_2 tenant:tenant_value idp:idp_value"),
-                    new Claim("login_hint", "login_hint_value"),
-                    new Claim("display", "popup"),
-                    new Claim("ui_locales", "ui_locale_value"),
-                    new Claim("foo", "123foo"),
-            });
-
-            var url = _mockPipeline.CreateAuthorizeUrl(
-                clientId: _client.ClientId,
-                responseType: "id_token",
-                scope: "bad",
-                state: "bad",
-                nonce: "bad",
-                redirectUri: "bad",
-                acrValues: "bad",
-                loginHint: "bad",
-                extra: new
-                {
-                    display = "bad",
-                    ui_locales = "bad",
-                    foo = "bad",
-                    request = requestJwt
-                });
-            var response = await _mockPipeline.BrowserClient.GetAsync(url);
-
-            _mockPipeline.ErrorMessage.Error.Should().Be("invalid_request");
-            _mockPipeline.ErrorMessage.ErrorDescription.Should().Be("Parameter mismatch in JWT request");
-            _mockPipeline.LoginRequest.Should().BeNull();
-        }
-
         [Fact]
         [Trait("Category", Category)]
         public async Task authorize_should_accept_complex_objects_in_request_object()
@@ -527,21 +483,21 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.Should().NotBeNull();
 
             _mockPipeline.LoginRequest.Parameters["someObj"].Should().NotBeNull();
-            var someObj2 = JsonSerializer.Deserialize(_mockPipeline.LoginRequest.Parameters["someObj"], someObj.GetType());
+            var value = _mockPipeline.LoginRequest.Parameters["someObj"];
+            var someObj2 = JsonSerializer.Deserialize(value, someObj.GetType());
             someObj.Should().BeEquivalentTo(someObj2);
+            
             _mockPipeline.LoginRequest.Parameters["someArr"].Should().NotBeNull();
-            var someArr2 = JsonSerializer.Deserialize<string[]>(_mockPipeline.LoginRequest.Parameters["someArr"]);
-            someArr2.Should().Contain(new[] { "a", "c", "b" });
-            someArr2.Length.Should().Be(3);
-
-            _mockPipeline.LoginRequest.RequestObjectValues.Count.Should().Be(13);
-            _mockPipeline.LoginRequest.RequestObjectValues["someObj"].Should().NotBeNull();
-            someObj2 = JsonSerializer.Deserialize(_mockPipeline.LoginRequest.RequestObjectValues["someObj"], someObj.GetType());
+            var arrValue = _mockPipeline.LoginRequest.Parameters.GetValues("someArr");
+            arrValue.Length.Should().Be(3);
+            
+            _mockPipeline.LoginRequest.RequestObjectValues.Count().Should().Be(15);
+            value = _mockPipeline.LoginRequest.RequestObjectValues.Single(c => c.Type == "someObj").Value;
+            someObj2 = JsonSerializer.Deserialize(value, someObj.GetType());
             someObj.Should().BeEquivalentTo(someObj2);
-            _mockPipeline.LoginRequest.RequestObjectValues["someArr"].Should().NotBeNull();
-            someArr2 = JsonSerializer.Deserialize<string[]>(_mockPipeline.LoginRequest.Parameters["someArr"]);
-            someArr2.Should().Contain(new[] { "a", "c", "b" });
-            someArr2.Length.Should().Be(3);
+
+            var arrValue2 = _mockPipeline.LoginRequest.RequestObjectValues.Where(c => c.Type == "someArr").ToList();
+            arrValue2.Count.Should().Be(3);
         }
 
         [Fact]
@@ -930,7 +886,7 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.AcrValues.Should().BeEquivalentTo(new string[] { "acr_2", "acr_1" });
             _mockPipeline.LoginRequest.Parameters.AllKeys.Should().Contain("foo");
             _mockPipeline.LoginRequest.Parameters["foo"].Should().Be("123foo");
-            _mockPipeline.LoginRequest.RequestObjectValues.Count.Should().Be(12);
+            _mockPipeline.LoginRequest.RequestObjectValues.Count().Should().Be(13);
 
             _mockPipeline.JwtRequestMessageHandler.InvokeWasCalled.Should().BeTrue();
         }
