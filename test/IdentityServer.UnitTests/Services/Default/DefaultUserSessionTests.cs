@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -51,30 +51,30 @@ namespace UnitTests.Services.Default
         }
 
         [Fact]
-        public async Task CreateSessionId_when_user_is_authenticated_should_not_generate_new_sid()
+        public async Task CreateSessionId_should_allow_sid_to_be_indicated_in_properties()
         {
             // this test is needed to allow same session id when cookie is slid
             // IOW, if UI layer passes in same properties dictionary, then we assume it's the same user
 
-            _props.SetSessionId("999");
-            _mockAuthenticationHandler.Result = AuthenticateResult.Success(new AuthenticationTicket(_user, _props, "scheme"));
+            var newProps = new AuthenticationProperties();
+            newProps.SetSessionId("999");
+            await _subject.CreateSessionIdAsync(_user, newProps);
 
-            await _subject.CreateSessionIdAsync(_user, _props);
-
-            _props.GetSessionId().Should().NotBeNull();
-            _props.GetSessionId().Should().Be("999");
+            newProps.GetSessionId().Should().NotBeNull();
+            newProps.GetSessionId().Should().Be("999");
         }
 
         [Fact]
-        public async Task CreateSessionId_when_props_does_not_contain_key_should_generate_new_sid()
+        public async Task CreateSessionId_when_current_props_does_not_contain_key_should_generate_new_sid()
         {
             _mockAuthenticationHandler.Result = AuthenticateResult.Success(new AuthenticationTicket(_user, _props, "scheme"));
 
             _props.GetSessionId().Should().BeNull();
 
-            await _subject.CreateSessionIdAsync(_user, _props);
+            var newProps = new AuthenticationProperties();
+            await _subject.CreateSessionIdAsync(_user, newProps);
 
-            _props.GetSessionId().Should().NotBeNull();
+            newProps.GetSessionId().Should().NotBeNull();
         }
 
         [Fact]
@@ -83,10 +83,24 @@ namespace UnitTests.Services.Default
             _props.SetSessionId("999");
             _mockAuthenticationHandler.Result = AuthenticateResult.Success(new AuthenticationTicket(_user, _props, "scheme"));
 
-            await _subject.CreateSessionIdAsync(new IdentityServerUser("alice").CreatePrincipal(), _props);
+            var newProps = new AuthenticationProperties();
+            await _subject.CreateSessionIdAsync(new IdentityServerUser("alice").CreatePrincipal(), newProps);
 
-            _props.GetSessionId().Should().NotBeNull();
-            _props.GetSessionId().Should().NotBe("999");
+            newProps.GetSessionId().Should().NotBeNull();
+            newProps.GetSessionId().Should().NotBe("999");
+        }
+        
+        [Fact]
+        public async Task CreateSessionId_when_user_is_authenticated_and_same_sub_should_preserve_sid()
+        {
+            _props.SetSessionId("999");
+            _mockAuthenticationHandler.Result = AuthenticateResult.Success(new AuthenticationTicket(_user, _props, "scheme"));
+
+            var newProps = new AuthenticationProperties();
+            await _subject.CreateSessionIdAsync(_user, newProps);
+
+            newProps.GetSessionId().Should().NotBeNull();
+            newProps.GetSessionId().Should().Be("999");
         }
 
         [Fact]
