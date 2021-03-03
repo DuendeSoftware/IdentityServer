@@ -274,10 +274,8 @@ namespace Duende.IdentityServer.Validation
                             ClientLimit = 15;
                             break;
                         case LicenseEdition.Starter:
-                            ClientLimit = 5;
-                            break;
                         case LicenseEdition.Community:
-                            ClientLimit = 4;
+                            ClientLimit = 5;
                             break;
                     }
                 }
