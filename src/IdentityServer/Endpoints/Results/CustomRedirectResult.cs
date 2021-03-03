@@ -67,7 +67,7 @@ namespace Duende.IdentityServer.Endpoints.Results
             Init(context);
 
             var returnUrl = context.GetIdentityServerBasePath().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.AuthorizeCallback;
-            returnUrl = returnUrl.AddQueryString(_request.Raw.ToQueryString());
+            returnUrl = returnUrl.AddQueryString(_request.ToOptimizedQueryString());
 
             if (!_url.IsLocalUrl())
             {
