@@ -16,10 +16,13 @@ using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Stores.Default;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
 using IdentityModel;
 using IntegrationTests.Common;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
@@ -354,10 +357,22 @@ namespace IntegrationTests.Endpoints.Authorize
                 .NotBeNull();
         }
 
-        [Fact]
+        [Theory]
+        [InlineData((Type) null)]
+        [InlineData(typeof(QueryStringAuthorizationParametersMessageStore))]
+        [InlineData(typeof(DistributedCacheAuthorizationParametersMessageStore))]
         [Trait("Category", Category)]
-        public async Task authorize_should_accept_valid_JWT_request_object_and_allow_some_parameters_in_query()
+        public async Task authorize_should_accept_valid_JWT_request_object_and_allow_some_parameters_in_query(Type storeType)
         {
+            if (storeType != null)
+            {
+                _mockPipeline.OnPostConfigureServices += services =>
+                {
+                    services.AddTransient(typeof(IAuthorizationParametersMessageStore), storeType);
+                };
+                _mockPipeline.Initialize();
+            }
+            
             var requestJwt = CreateRequestJwt(
                 issuer: _client.ClientId,
                 audience: IdentityServerPipeline.BaseUrl,
@@ -943,10 +958,22 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.JwtRequestMessageHandler.InvokeWasCalled.Should().BeTrue();
         }
 
-        [Fact]
+        [Theory]
+        [InlineData((Type) null)]
+        [InlineData(typeof(QueryStringAuthorizationParametersMessageStore))]
+        [InlineData(typeof(DistributedCacheAuthorizationParametersMessageStore))]
         [Trait("Category", Category)]
-        public async Task authorize_should_accept_request_uri_and_allow_some_parameters_in_query()
+        public async Task authorize_should_accept_request_uri_and_allow_some_parameters_in_query(Type storeType)
         {
+            if (storeType != null)
+            {
+                _mockPipeline.OnPostConfigureServices += services =>
+                {
+                    services.AddTransient(typeof(IAuthorizationParametersMessageStore), storeType);
+                };
+                _mockPipeline.Initialize();
+            }
+
             _mockPipeline.Options.Endpoints.EnableJwtRequestUri = true;
 
             var requestJwt = CreateRequestJwt(
@@ -1213,10 +1240,22 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.JwtRequestMessageHandler.InvokeWasCalled.Should().BeFalse();
         }
 
-        [Fact]
+        [Theory]
+        [InlineData((Type) null)]
+        [InlineData(typeof(QueryStringAuthorizationParametersMessageStore))]
+        [InlineData(typeof(DistributedCacheAuthorizationParametersMessageStore))]
         [Trait("Category", Category)]
-        public async Task prompt_login_should_allow_user_to_login_and_complete_authorization()
+        public async Task prompt_login_should_allow_user_to_login_and_complete_authorization(Type storeType)
         {
+            if (storeType != null)
+            {
+                _mockPipeline.OnPostConfigureServices += services =>
+                {
+                    services.AddTransient(typeof(IAuthorizationParametersMessageStore), storeType);
+                };
+                _mockPipeline.Initialize();
+            }
+            
             await _mockPipeline.LoginAsync("bob");
 
             var requestJwt = CreateRequestJwt(
