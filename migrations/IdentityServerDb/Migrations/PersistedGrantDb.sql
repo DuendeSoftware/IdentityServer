@@ -66,6 +66,10 @@ CREATE INDEX [IX_Keys_Use] ON [Keys] ([Use]);
 
 GO
 
+CREATE INDEX [IX_PersistedGrants_ConsumedTime] ON [PersistedGrants] ([ConsumedTime]);
+
+GO
+
 CREATE INDEX [IX_PersistedGrants_Expiration] ON [PersistedGrants] ([Expiration]);
 
 GO
@@ -79,7 +83,7 @@ CREATE INDEX [IX_PersistedGrants_SubjectId_SessionId_Type] ON [PersistedGrants] 
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20210113185532_Grants', N'3.1.0');
+VALUES (N'20210118185528_Grants', N'3.1.0');
 
 GO
 
