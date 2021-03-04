@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -6,6 +6,7 @@ namespace IdentityServerHost.Quickstart.UI
 {
     public class ScopeViewModel
     {
+        public string Name { get; set; }
         public string Value { get; set; }
         public string DisplayName { get; set; }
         public string Description { get; set; }
