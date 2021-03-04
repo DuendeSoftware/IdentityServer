@@ -21,17 +21,19 @@ using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.HttpOverrides;
 using IdentityServerHost.Quickstart.UI;
-using Duende.IdentityServer.Configuration;
+using Microsoft.AspNetCore.Hosting;
 
 namespace IdentityServerHost
 {
     public class Startup
     {
         private readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _environment;
 
-        public Startup(IConfiguration config)
+        public Startup(IConfiguration config, IWebHostEnvironment environment)
         {
             _config = config;
+            _environment = environment;
 
             IdentityModelEventSource.ShowPII = true;
         }
@@ -39,6 +41,9 @@ namespace IdentityServerHost
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+
+            services.AddRazorPages()
+                .AddRazorRuntimeCompilation();
             
             // cookie policy to deal with temporary browser incompatibilities
             services.AddSameSiteCookiePolicy();
@@ -110,6 +115,8 @@ namespace IdentityServerHost
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
+
+                endpoints.MapRazorPages();
             });
         }
     }
