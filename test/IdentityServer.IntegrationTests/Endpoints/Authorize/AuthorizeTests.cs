@@ -10,9 +10,11 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Stores.Default;
 using Duende.IdentityServer.Test;
+using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using IdentityModel;
 using IntegrationTests.Common;
@@ -1216,6 +1218,76 @@ namespace IntegrationTests.Endpoints.Authorize
             response.StatusCode.Should().Be(HttpStatusCode.Redirect);
             response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
             response.Headers.Location.ToString().Should().Contain("id_token=");
+        }
+
+
+        [Theory]
+        [InlineData((Type) null)]
+        [InlineData(typeof(QueryStringAuthorizationParametersMessageStore))]
+        [InlineData(typeof(DistributedCacheAuthorizationParametersMessageStore))]
+        [Trait("Category", Category)]
+        public async Task custom_request_should_have_authorization_params(Type storeType)
+        {
+            var mockAuthzInteractionService = new MockAuthzInteractionService();
+            mockAuthzInteractionService.Response.RedirectUrl = "/custom";
+
+            if (storeType != null)
+            {
+                _mockPipeline.OnPostConfigureServices += services =>
+                {
+                    services.AddTransient(typeof(IAuthorizeInteractionResponseGenerator), svc => mockAuthzInteractionService);
+                    services.AddTransient(typeof(IAuthorizationParametersMessageStore), storeType);
+                };
+            }
+            else
+            {
+                _mockPipeline.OnPostConfigureServices += services =>
+                {
+                    services.AddTransient(typeof(IAuthorizeInteractionResponseGenerator), svc => mockAuthzInteractionService);
+                };
+            }
+            _mockPipeline.Initialize();
+
+
+            var url = _mockPipeline.CreateAuthorizeUrl(
+                clientId: "client1",
+                responseType: "id_token",
+                scope: "openid",
+                redirectUri: "https://client1/callback",
+                state: "123_state",
+                nonce: "123_nonce",
+                loginHint: "login_hint_value",
+                acrValues: "acr_1 acr_2 tenant:tenant_value idp:idp_value",
+                extra: new
+                {
+                    display = "popup", // must use a valid value from the spec for display
+                    ui_locales = "ui_locale_value",
+                    custom_foo = "foo_value"
+                });
+            var response = await _mockPipeline.BrowserClient.GetAsync(url + "&foo=bar");
+
+            _mockPipeline.CustomWasCalled.Should().BeTrue();
+
+            _mockPipeline.CustomRequest.Should().NotBeNull();
+            _mockPipeline.CustomRequest.Client.ClientId.Should().Be("client1");
+            _mockPipeline.CustomRequest.DisplayMode.Should().Be("popup");
+            _mockPipeline.CustomRequest.UiLocales.Should().Be("ui_locale_value");
+            _mockPipeline.CustomRequest.IdP.Should().Be("idp_value");
+            _mockPipeline.CustomRequest.Tenant.Should().Be("tenant_value");
+            _mockPipeline.CustomRequest.LoginHint.Should().Be("login_hint_value");
+            _mockPipeline.CustomRequest.AcrValues.Should().BeEquivalentTo(new string[] { "acr_2", "acr_1" });
+            _mockPipeline.CustomRequest.Parameters.AllKeys.Should().Contain("foo");
+            _mockPipeline.CustomRequest.Parameters["foo"].Should().Be("bar");
+        }
+    }
+
+    public class MockAuthzInteractionService : IAuthorizeInteractionResponseGenerator
+    {
+        public InteractionResponse Response { get; set; } = new InteractionResponse();
+
+        public Task<InteractionResponse> ProcessInteractionAsync(ValidatedAuthorizeRequest request, ConsentResponse consent = null)
+        {
+            return Task.FromResult(Response);
         }
     }
 }
