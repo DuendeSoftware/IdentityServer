@@ -202,7 +202,7 @@ namespace IntegrationTests.Endpoints.Authorize
                     ui_locales = "ui_locale_value",
                     custom_foo = "foo_value"
                 });
-            var response = await _mockPipeline.BrowserClient.GetAsync(url + "&foo=bar");
+            var response = await _mockPipeline.BrowserClient.GetAsync(url + "&foo=foo1&foo=foo2");
 
             _mockPipeline.LoginRequest.Should().NotBeNull();
             _mockPipeline.LoginRequest.Client.ClientId.Should().Be("client1");
@@ -213,7 +213,7 @@ namespace IntegrationTests.Endpoints.Authorize
             _mockPipeline.LoginRequest.LoginHint.Should().Be("login_hint_value");
             _mockPipeline.LoginRequest.AcrValues.Should().BeEquivalentTo(new string[] { "acr_2", "acr_1" });
             _mockPipeline.LoginRequest.Parameters.AllKeys.Should().Contain("foo");
-            _mockPipeline.LoginRequest.Parameters["foo"].Should().Be("bar");
+            _mockPipeline.LoginRequest.Parameters.GetValues("foo").Should().BeEquivalentTo(new[] { "foo1", "foo2" });
         }
 
         [Fact]
