@@ -8,11 +8,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
-namespace IdentityServerHost.Quickstart.UI
+namespace IdentityServerHost.Pages.Diagnostics
 {
-    public class DiagnosticsViewModel
+    public class ViewModel
     {
-        public DiagnosticsViewModel(AuthenticateResult result)
+        public ViewModel(AuthenticateResult result)
         {
             AuthenticateResult = result;
 
