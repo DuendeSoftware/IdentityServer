@@ -41,4 +41,8 @@
       <Link>Configuration\Resources.cs</Link>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pages\Account" />
+  </ItemGroup>
 </Project>
