@@ -14,6 +14,7 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
+using IdentityModel;
 
 namespace IdentityServerHost.Quickstart.UI
 {
@@ -198,6 +199,9 @@ namespace IdentityServerHost.Quickstart.UI
                 .Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null))
                 .ToArray();
 
+            var resourceIndicators = request.Parameters.GetValues(OidcConstants.AuthorizeRequest.Resource);
+            var apiResources = request.ValidatedResources.Resources.ApiResources.Where(x => resourceIndicators.Contains(x.Name));
+
             var apiScopes = new List<ScopeViewModel>();
             foreach (var parsedScope in request.ValidatedResources.ParsedScopes)
             {
@@ -205,6 +209,12 @@ namespace IdentityServerHost.Quickstart.UI
                 if (apiScope != null)
                 {
                     var scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
+                    scopeVm.Resources = apiResources.Where(x => x.Scopes.Contains(parsedScope.ParsedName))
+                        .Select(x=> new ResourceViewModel
+                        {
+                            Name = x.Name,
+                            DisplayName = x.DisplayName ?? x.Name,
+                        }).ToArray();
                     apiScopes.Add(scopeVm);
                 }
             }
@@ -213,22 +223,6 @@ namespace IdentityServerHost.Quickstart.UI
                 apiScopes.Add(GetOfflineAccessScope(vm.ScopesConsented.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess) || model == null));
             }
             vm.ApiScopes = apiScopes;
-
-            var resources = new List<ResourceViewModel>();
-            foreach (var resourceServer in request.ValidatedResources.Resources.ApiResources.Where(x => x.RequireResourceIndicator))
-            {
-                var resourceModel = new ResourceViewModel
-                {
-                    Name = resourceServer.Name,
-                    DisplayName = resourceServer.DisplayName ?? resourceServer.Name,
-                    Description = resourceServer.Description
-                };
-                resourceModel.Scopes = apiScopes.Where(x => resourceServer.Scopes.Contains(x.Name)).ToArray();
-
-                resources.Add(resourceModel);
-            }
-            vm.ResourceServers = resources;
-
 
             return vm;
         }

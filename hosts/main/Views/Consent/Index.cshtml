@@ -59,55 +59,6 @@
                     </div>
                 }
                 
-                @if (Model.ResourceServers.Any())
-                {
-                    <div class="form-group">
-                        <div class="card">
-                            <div class="card-header">
-                                <span class="glyphicon glyphicon-cloud"></span>
-                                These resource servers will be granted access.
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                @foreach (var resource in Model.ResourceServers)
-                                {
-                                    <li class="list-group-item">
-                                        <label>
-                                            @if (resource.DisplayName != null)
-                                            {
-                                                <strong>@resource.DisplayName</strong>
-                                                <text>(@resource.Name)</text>
-                                            }
-                                            else
-                                            {
-                                                <strong>@resource.Name</strong>
-                                            }
-                                        </label>
-                                        @if (resource.Description != null)
-                                        {
-                                            <div class="consent-description">
-                                                <label>@resource.Description</label>
-                                            </div>
-                                        }
-                                        @if (resource.Scopes?.Any() == true)
-                                        {
-                                            <div class="consent-description">
-                                                <label>Will be restricted to:</label>
-                                                <ul>
-                                                @foreach (var scope in resource.Scopes)
-                                                {
-                                                    var display = scope.DisplayName;
-                                                    <li>@display</li>
-                                                }
-                                                </ul>
-                                            </div>
-                                        }
-                                    </li>
-                                }
-                            </ul>
-                        </div>
-                    </div>
-                }
-
                 <div class="form-group">
                     <div class="card">
                         <div class="card-header">
