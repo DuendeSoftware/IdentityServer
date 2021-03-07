@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IdentityServerHost.Pages.Diagnostics
 {
+    [Authorize]
     public class Index : PageModel
     {
         public ViewModel View { get; set; }

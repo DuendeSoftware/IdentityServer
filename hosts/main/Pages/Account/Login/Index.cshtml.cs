@@ -9,13 +9,15 @@ using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Test;
 using IdentityServerHost.Quickstart.UI;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IdentityServerHost.Pages.Account.Login
 {
-    [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public class Index : PageModel
     {
         private readonly TestUserStore _users;
@@ -28,7 +30,7 @@ namespace IdentityServerHost.Pages.Account.Login
         
         [BindProperty]
         public InputModel Input { get; set; }
-
+        
         public Index(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
@@ -48,7 +50,8 @@ namespace IdentityServerHost.Pages.Account.Login
         
         public async Task OnGet(string returnUrl)
         {
-            View = await BuildLoginViewModelAsync(returnUrl);
+            await BuildModelAsync(returnUrl);
+            
 
             // todo
             // if (vm.IsExternalLoginOnly)
@@ -155,31 +158,34 @@ namespace IdentityServerHost.Pages.Account.Login
             }
 
             // something went wrong, show form with error
-            var vm = await BuildLoginViewModelAsync(Input);
+            await BuildModelAsync(Input.ReturnUrl);
             return Page();
         }
         
-        private async Task<ViewModel> BuildLoginViewModelAsync(string returnUrl)
+        private async Task BuildModelAsync(string returnUrl)
         {
+            Input = new InputModel
+            {
+                ReturnUrl = returnUrl
+            };
+            
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
             if (context?.IdP != null && await _schemeProvider.GetSchemeAsync(context.IdP) != null)
             {
                 var local = context.IdP == Duende.IdentityServer.IdentityServerConstants.LocalIdentityProvider;
 
                 // this is meant to short circuit the UI and only trigger the one external IdP
-                var vm = new ViewModel
+                View = new ViewModel
                 {
                     EnableLocalLogin = local,
-                    ReturnUrl = returnUrl,
-                    Username = context?.LoginHint,
                 };
+
+                Input.Username = context?.LoginHint;
 
                 if (!local)
                 {
-                    vm.ExternalProviders = new[] { new ViewModel.ExternalProvider { AuthenticationScheme = context.IdP } };
+                    View.ExternalProviders = new[] { new ViewModel.ExternalProvider { AuthenticationScheme = context.IdP } };
                 }
-
-                return vm;
             }
 
             var schemes = await _schemeProvider.GetAllSchemesAsync();
@@ -207,22 +213,17 @@ namespace IdentityServerHost.Pages.Account.Login
                 }
             }
 
-            return new ViewModel
+            View = new ViewModel
             {
                 AllowRememberLogin = AccountOptions.AllowRememberLogin,
                 EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
-                ReturnUrl = returnUrl,
-                Username = context?.LoginHint,
                 ExternalProviders = providers.ToArray()
             };
         }
 
-        private async Task<ViewModel> BuildLoginViewModelAsync(InputModel model)
+        private async Task BuildModelAsync()
         {
-            var vm = await BuildLoginViewModelAsync(model.ReturnUrl);
-            vm.Username = model.Username;
-            vm.RememberLogin = model.RememberLogin;
-            return vm;
+            await BuildModelAsync(Input.ReturnUrl);
         }
     }
 }
