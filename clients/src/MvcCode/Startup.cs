@@ -53,6 +53,7 @@ namespace MvcCode
                     options.Scope.Add("profile");
                     options.Scope.Add("email");
                     options.Scope.Add("resource1.scope1");
+                    options.Scope.Add("resource2.scope1");
                     //options.Scope.Add("transaction:123");
                     //options.Scope.Add("transaction");
                     options.Scope.Add("offline_access");

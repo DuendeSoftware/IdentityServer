@@ -1,4 +1,4 @@
-﻿@model ScopeViewModel
+@model ScopeViewModel
 
 <li class="list-group-item">
     <label>
@@ -29,6 +29,18 @@
     {
         <div class="consent-description">
             <label for="scopes_@Model.Value">@Model.Description</label>
+        </div>
+    }
+    @if (Model.Resources?.Any() == true)
+    {
+        <div class="consent-description">
+            <label>Will be available to these resource servers:</label>
+            <ul>
+            @foreach (var resource in Model.Resources)
+            {
+                <li>@resource.DisplayName</li>
+            }
+            </ul>
         </div>
     }
 </li>

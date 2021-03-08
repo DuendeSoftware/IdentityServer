@@ -22,23 +22,30 @@ using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.HttpOverrides;
 using IdentityServerHost.Quickstart.UI;
 using Duende.IdentityServer.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace IdentityServerHost
 {
     public class Startup
     {
         private readonly IConfiguration _config;
+        private readonly IHostEnvironment _environment;
 
-        public Startup(IConfiguration config)
+        public Startup(IConfiguration config, IHostEnvironment environment)
         {
             _config = config;
+            _environment = environment;
 
             IdentityModelEventSource.ShowPII = true;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            var mvc = services.AddControllersWithViews();
+            if (_environment.IsDevelopment())
+            {
+                mvc.AddRazorRuntimeCompilation();
+            }
             
             // cookie policy to deal with temporary browser incompatibilities
             services.AddSameSiteCookiePolicy();
@@ -103,7 +110,7 @@ namespace IdentityServerHost
             app.UseStaticFiles();
 
             app.UseRouting();
-            app.UseIdentityServer();
+                app.UseIdentityServer();
 
             app.UseAuthorization();
 
