@@ -56,6 +56,7 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().BeNull();
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeTrue();
+                subject.ISV.Should().BeFalse();
             }
             {
                 var subject = new License(new Claim("edition", "business"));
@@ -65,6 +66,7 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().Be(1);
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeFalse();
+                subject.ISV.Should().BeFalse();
             }
             {
                 var subject = new License(new Claim("edition", "starter"));
@@ -74,15 +76,17 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().Be(1);
                 subject.KeyManagement.Should().BeFalse();
                 subject.ResourceIsolation.Should().BeFalse();
+                subject.ISV.Should().BeFalse();
             }
             {
                 var subject = new License(new Claim("edition", "community"));
                 subject.Edition.Should().Be(License.LicenseEdition.Community);
                 subject.IsCommunity.Should().BeTrue();
-                subject.ClientLimit.Should().Be(4);
-                subject.IssuerLimit.Should().BeNull();
+                subject.ClientLimit.Should().Be(5);
+                subject.IssuerLimit.Should().Be(1);
                 subject.KeyManagement.Should().BeTrue();
-                subject.ResourceIsolation.Should().BeTrue();
+                subject.ResourceIsolation.Should().BeFalse();
+                subject.ISV.Should().BeFalse();
             }
         }
 
@@ -126,11 +130,13 @@ namespace UnitTests.Validation
                     new Claim("client_limit", "20"),
                     new Claim("issuer_limit", "5"),
                     new Claim("feature", "key_management"),
+                    new Claim("feature", "isv"),
                     new Claim("feature", "resource_isolation"));
                 subject.ClientLimit.Should().Be(20);
                 subject.IssuerLimit.Should().Be(5);
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeTrue();
+                subject.ISV.Should().BeTrue();
             }
             {
                 var subject = new License(

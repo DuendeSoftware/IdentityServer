@@ -71,7 +71,7 @@ namespace Duende.IdentityServer.Validation
                 if (_license.Expiration.HasValue)
                 {
                     var diff = DateTime.UtcNow.Date.Subtract(_license.Expiration.Value.Date).TotalDays;
-                    if (diff > 0)
+                    if (diff > 0 && !_license.ISV)
                     {
                         errors.Add($"Your license for Duende IdentityServer expired {diff} days ago.");
                     }
@@ -250,7 +250,6 @@ namespace Duende.IdentityServer.Validation
             switch (Edition)
             {
                 case LicenseEdition.Enterprise:
-                case LicenseEdition.Community:
                     ResourceIsolation = true;
                     break;
             }
@@ -282,7 +281,7 @@ namespace Duende.IdentityServer.Validation
 
             if (!claims.HasClaim("feature", "unlimited_issuers"))
             {
-                if (IsEnterprise || IsCommunity)
+                if (IsEnterprise)
                 {
                     IssuerLimit = null; // unlimited
                 }
