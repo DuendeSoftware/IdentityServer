@@ -1,13 +1,3 @@
-// Copyright (c) Duende Software. All rights reserved.
-// See LICENSE in the project root for license information.
-
-
-using IdentityModel;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,24 +8,29 @@ using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Test;
+using IdentityModel;
+using IdentityServerHost.Quickstart.UI;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 
-namespace IdentityServerHost.Quickstart.UI
+namespace IdentityServerHost.Pages.Account.External
 {
-    [SecurityHeaders]
-    [AllowAnonymous]
-    public class ExternalController : Controller
+    public class Callback : PageModel
     {
         private readonly TestUserStore _users;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
-        private readonly ILogger<ExternalController> _logger;
+        private readonly ILogger<Callback> _logger;
         private readonly IEventService _events;
 
-        public ExternalController(
+        public Callback(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IEventService events,
-            ILogger<ExternalController> logger,
+            ILogger<Callback> logger,
             TestUserStore users = null)
         {
             // if the TestUserStore is not in DI, then we'll just use the global users collection
@@ -47,42 +42,8 @@ namespace IdentityServerHost.Quickstart.UI
             _logger = logger;
             _events = events;
         }
-
-        /// <summary>
-        /// initiate roundtrip to external authentication provider
-        /// </summary>
-        [HttpGet]
-        public IActionResult Challenge(string scheme, string returnUrl)
-        {
-            if (string.IsNullOrEmpty(returnUrl)) returnUrl = "~/";
-
-            // validate returnUrl - either it is a valid OIDC URL or back to a local page
-            if (Url.IsLocalUrl(returnUrl) == false && _interaction.IsValidReturnUrl(returnUrl) == false)
-            {
-                // user might have clicked on a malicious link - should be logged
-                throw new Exception("invalid return URL");
-            }
-            
-            // start challenge and roundtrip the return URL and scheme 
-            var props = new AuthenticationProperties
-            {
-                RedirectUri = Url.Action(nameof(Callback)), 
-                Items =
-                {
-                    { "returnUrl", returnUrl }, 
-                    { "scheme", scheme },
-                }
-            };
-
-            return Challenge(props, scheme);
-            
-        }
-
-        /// <summary>
-        /// Post processing of external authentication
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> Callback()
+        
+        public async Task<IActionResult> OnGet()
         {
             // read external identity from the temporary cookie
             var result = await HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
@@ -140,7 +101,9 @@ namespace IdentityServerHost.Quickstart.UI
                 {
                     // The client is native, so this change in how to
                     // return the response is for better UX for the end user.
-                    return this.LoadingPage("Redirect", returnUrl);
+                    
+                    //todo
+                    //return this.LoadingPage("Redirect", returnUrl);
                 }
             }
 

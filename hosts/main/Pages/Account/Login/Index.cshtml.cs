@@ -48,17 +48,17 @@ namespace IdentityServerHost.Pages.Account.Login
             _events = events;
         }
         
-        public async Task OnGet(string returnUrl)
+        public async Task<IActionResult> OnGet(string returnUrl)
         {
             await BuildModelAsync(returnUrl);
             
+            if (View.IsExternalLoginOnly)
+            {
+                // we only have one option for logging in and it's an external provider
+                return RedirectToPage("/account/challenge/index", new { scheme = View.ExternalLoginScheme, returnUrl });
+            }
 
-            // todo
-            // if (vm.IsExternalLoginOnly)
-            // {
-            //     // we only have one option for logging in and it's an external provider
-            //     return RedirectToAction("Challenge", "External", new { scheme = vm.ExternalLoginScheme, returnUrl });
-            // }
+            return Page();
         }
         
         public async Task<IActionResult> OnPost()
