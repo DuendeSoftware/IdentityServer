@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -72,7 +71,7 @@ namespace Duende.IdentityServer.Validation
                 if (_license.Expiration.HasValue)
                 {
                     var diff = DateTime.UtcNow.Date.Subtract(_license.Expiration.Value.Date).TotalDays;
-                    if (diff > 0)
+                    if (diff > 0 && !_license.ISV)
                     {
                         errors.Add($"Your license for Duende IdentityServer expired {diff} days ago.");
                     }
@@ -251,7 +250,6 @@ namespace Duende.IdentityServer.Validation
             switch (Edition)
             {
                 case LicenseEdition.Enterprise:
-                case LicenseEdition.Community:
                     ResourceIsolation = true;
                     break;
             }
@@ -274,10 +272,8 @@ namespace Duende.IdentityServer.Validation
                             ClientLimit = 15;
                             break;
                         case LicenseEdition.Starter:
-                            ClientLimit = 5;
-                            break;
                         case LicenseEdition.Community:
-                            ClientLimit = 4;
+                            ClientLimit = 5;
                             break;
                     }
                 }
@@ -285,7 +281,7 @@ namespace Duende.IdentityServer.Validation
 
             if (!claims.HasClaim("feature", "unlimited_issuers"))
             {
-                if (IsEnterprise || IsCommunity)
+                if (IsEnterprise)
                 {
                     IssuerLimit = null; // unlimited
                 }
@@ -298,6 +294,8 @@ namespace Duende.IdentityServer.Validation
                     IssuerLimit = 1;
                 }
             }
+
+            ISV = claims.HasClaim("feature", "isv");
         }
 
         public string CompanyName { get; set; }
@@ -317,6 +315,7 @@ namespace Duende.IdentityServer.Validation
 
         public bool KeyManagement { get; set; }
         public bool ResourceIsolation { get; set; }
+        public bool ISV { get; set; }
 
         public enum LicenseEdition
         {
