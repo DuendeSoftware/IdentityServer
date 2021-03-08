@@ -43,7 +43,7 @@ namespace IdentityServerHost.Pages.Account.Logout
         public async Task<IActionResult> OnPost()
         {
             // build a model so the logout page knows what to display
-            await BuildModelAsync(LogoutId);
+            if (View == null) await BuildModelAsync(LogoutId);
             
             if (User?.Identity.IsAuthenticated == true)
             {
@@ -60,18 +60,19 @@ namespace IdentityServerHost.Pages.Account.Logout
                 // build a return URL so the upstream provider will redirect back
                 // to us after the user has logged out. this allows us to then
                 // complete our single sign-out processing.
-                string url = Url.Page("Logout", new { logoutId = LogoutId });
+                string url = Url.Page("/account/logout/index", new { logoutId = LogoutId });
 
                 // this triggers a redirect to the external provider for sign-out
                 return SignOut(new AuthenticationProperties { RedirectUri = url }, View.ExternalAuthenticationScheme);
             }
 
-            return RedirectToPage("LoggedOut", new { logoutId = LogoutId });
+            return RedirectToPage("/account/postlogout/index", new { logoutId = LogoutId });
         }
 
         private async Task BuildModelAsync(string logoutId)
         {
             View = new ViewModel { ShowLogoutPrompt = AccountOptions.ShowLogoutPrompt };
+            LogoutId = logoutId;
 
             if (User?.Identity.IsAuthenticated != true)
             {
@@ -94,13 +95,10 @@ namespace IdentityServerHost.Pages.Account.Logout
                     var providerSupportsSignout = await HttpContext.GetSchemeSupportsSignOutAsync(idp);
                     if (providerSupportsSignout)
                     {
-                        if (LogoutId == null)
-                        {
-                            // if there's no current logout context, we need to create one
-                            // this captures necessary info from the current logged in user
-                            // before we signout and redirect away to the external IdP for signout
-                            LogoutId = await _interaction.CreateLogoutContextAsync();
-                        }
+                        // if there's no current logout context, we need to create one
+                        // this captures necessary info from the current logged in user
+                        // before we signout and redirect away to the external IdP for signout
+                        LogoutId ??= await _interaction.CreateLogoutContextAsync();
 
                         View.ExternalAuthenticationScheme = idp;
                     }
