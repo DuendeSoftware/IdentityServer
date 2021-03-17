@@ -199,7 +199,7 @@ namespace IdentityServerHost.Quickstart.UI
                 .Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null))
                 .ToArray();
 
-            var resourceIndicators = request.Parameters.GetValues(OidcConstants.AuthorizeRequest.Resource);
+            var resourceIndicators = request.Parameters.GetValues(OidcConstants.AuthorizeRequest.Resource) ?? Enumerable.Empty<string>();
             var apiResources = request.ValidatedResources.Resources.ApiResources.Where(x => resourceIndicators.Contains(x.Name));
 
             var apiScopes = new List<ScopeViewModel>();
