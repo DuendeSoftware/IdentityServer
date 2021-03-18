@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
 using IdentityServerHost.Configuration;
 using IdentityModel;
 using Microsoft.AspNetCore.Builder;
@@ -14,14 +13,10 @@ using Serilog;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using IdentityServerHost.Extensions;
-using Microsoft.AspNetCore.Authentication.Certificate;
-using Microsoft.AspNetCore.HttpOverrides;
 using IdentityServerHost.Quickstart.UI;
-using Duende.IdentityServer.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog.Events;
 

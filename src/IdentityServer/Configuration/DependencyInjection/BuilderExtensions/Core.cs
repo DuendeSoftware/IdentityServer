@@ -27,7 +27,6 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting.FederatedSignOut;
 using Duende.IdentityServer.Services.Default;
 using Duende.IdentityServer.Services.KeyManagement;
-using System.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection

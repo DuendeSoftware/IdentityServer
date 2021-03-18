@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -10,16 +9,11 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Stores;
-using Duende.IdentityServer.Stores.Default;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
-using IdentityModel;
 using IdentityModel.Client;
 using IntegrationTests.Common;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace IntegrationTests.Endpoints.Authorize
