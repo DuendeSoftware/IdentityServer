@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
