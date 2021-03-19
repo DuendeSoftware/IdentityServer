@@ -110,8 +110,8 @@ namespace IntegrationTests.Clients
 
             var unixNow = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var exp = payload["exp"].GetInt64();
-            exp.Should().BeLessThan(unixNow + 3605);
-            exp.Should().BeGreaterThan(unixNow + 3595);
+            exp.Should().BeLessThan(unixNow + 3620);
+            exp.Should().BeGreaterThan(unixNow + 3580);
 
             payload.Count().Should().Be(13);
             payload["iss"].GetString().Should().Be("https://idsvr4");
@@ -179,8 +179,8 @@ namespace IntegrationTests.Clients
 
             var unixNow = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var exp = payload["exp"].GetInt64();
-            exp.Should().BeLessThan(unixNow + 3605);
-            exp.Should().BeGreaterThan(unixNow + 3595);
+            exp.Should().BeLessThan(unixNow + 3620);
+            exp.Should().BeGreaterThan(unixNow + 3580);
 
             payload.Count().Should().Be(13);
             payload["iss"].GetString().Should().Be("https://idsvr4");
@@ -384,8 +384,8 @@ namespace IntegrationTests.Clients
 
             var unixNow = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var exp = payload["exp"].GetInt64();
-            exp.Should().BeLessThan(unixNow + 5005);
-            exp.Should().BeGreaterThan(unixNow + 4995);
+            exp.Should().BeLessThan(unixNow + 5020);
+            exp.Should().BeGreaterThan(unixNow + 4980);
 
             payload.Count().Should().Be(10);
             payload["iss"].GetString().Should().Be("https://idsvr4");
