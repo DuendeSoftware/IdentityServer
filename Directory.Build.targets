@@ -16,14 +16,14 @@
 
   <ItemGroup>
     <!--our stuff -->
-    <PackageReference Update="IdentityModel" Version="5.0.1" />
+    <PackageReference Update="IdentityModel" Version="5.1.0" />
 
     <!--build related-->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="MinVer" Version="2.5.0" PrivateAssets="All" />
     <PackageReference Update="SimpleExec" Version="7.0.0" />
     <PackageReference Update="Bullseye" Version="3.7.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-
+    
     <!--tests -->
     <PackageReference Update="FluentAssertions" Version="5.10.3" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.9.1" />
@@ -31,7 +31,7 @@
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="All" />
 
     <!--microsoft extensions -->
-    <PackageReference Update="System.Text.Json" Version="5.0.0" />
+    <PackageReference Update="System.Text.Json" Version="5.0.1" />
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="$(ExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Http.Polly" Version="$(ExtensionsVersion)" />
