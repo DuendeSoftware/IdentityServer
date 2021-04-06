@@ -75,7 +75,6 @@ namespace IdentityServerHost.Quickstart.UI
             };
 
             return Challenge(props, scheme);
-            
         }
 
         /// <summary>

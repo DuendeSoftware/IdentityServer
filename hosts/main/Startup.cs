@@ -19,6 +19,7 @@ using IdentityServerHost.Extensions;
 using IdentityServerHost.Quickstart.UI;
 using Microsoft.Extensions.Hosting;
 using Serilog.Events;
+using Duende.IdentityServer.Hosting.DynamicProviders;
 
 namespace IdentityServerHost
 {
@@ -60,6 +61,26 @@ namespace IdentityServerHost
                 .AddInMemoryIdentityResources(Resources.IdentityResources)
                 .AddInMemoryApiScopes(Resources.ApiScopes)
                 .AddInMemoryApiResources(Resources.ApiResources)
+                .AddInMemoryOidcProviders(new[] 
+                {
+                    new OidcProvider
+                    {
+                        Scheme = "demoidsrv",
+                        DisplayName = "IdentityServer",
+                        Authority = "https://demo.duendesoftware.com",
+                        ClientId = "login",
+                    },
+                    new OidcProvider
+                    {
+                        Scheme = "google",
+                        DisplayName = "Google",
+                        Authority = "https://accounts.google.com",
+                        ResponseType = "code",
+                        ClientId = "998042782978-gkes3j509qj26omrh6orvrnu0klpflh6.apps.googleusercontent.com",
+                        ClientSecret = "JXLqUqt64ShRrAPHJPc24zId",
+                        Scope = "openid profile email"
+                    },
+                })
                 //.AddStaticSigningCredential()
                 .AddExtensionGrantValidator<Extensions.ExtensionGrantValidator>()
                 .AddExtensionGrantValidator<Extensions.NoSubjectExtensionGrantValidator>()
@@ -134,36 +155,36 @@ namespace IdentityServerHost
             services.AddOidcStateDataFormatterCache("aad", "demoidsrv");
 
             services.AddAuthentication()
-                .AddOpenIdConnect("Google", "Google", options =>
-                {
-                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                    options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+                //.AddOpenIdConnect("Google", "Google", options =>
+                //{
+                //    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                //    options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
-                    options.Authority = "https://accounts.google.com/";
-                    options.ClientId = "708996912208-9m4dkjb5hscn7cjrn5u0r4tbgkbj1fko.apps.googleusercontent.com";
+                //    options.Authority = "https://accounts.google.com/";
+                //    options.ClientId = "708996912208-9m4dkjb5hscn7cjrn5u0r4tbgkbj1fko.apps.googleusercontent.com";
 
-                    options.CallbackPath = "/signin-google";
-                    options.Scope.Add("email");
-                })
-                .AddOpenIdConnect("demoidsrv", "IdentityServer", options =>
-                {
-                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                    options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+                //    options.CallbackPath = "/signin-google";
+                //    options.Scope.Add("email");
+                //});
+                //.AddOpenIdConnect("demoidsrv", "IdentityServer", options =>
+                //{
+                //    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                //    options.SignOutScheme = IdentityServerConstants.SignoutScheme;
 
-                    options.Authority = "https://demo.duendesoftware.com";
-                    options.ClientId = "login";
-                    options.ResponseType = "id_token";
-                    options.SaveTokens = true;
-                    options.CallbackPath = "/signin-idsrv";
-                    options.SignedOutCallbackPath = "/signout-callback-idsrv";
-                    options.RemoteSignOutPath = "/signout-idsrv";
+                //    options.Authority = "https://demo.duendesoftware.com";
+                //    options.ClientId = "login";
+                //    options.ResponseType = "id_token";
+                //    options.SaveTokens = true;
+                //    options.CallbackPath = "/signin-idsrv";
+                //    options.SignedOutCallbackPath = "/signout-callback-idsrv";
+                //    options.RemoteSignOutPath = "/signout-idsrv";
 
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        NameClaimType = "name",
-                        RoleClaimType = "role"
-                    };
-                })
+                //    options.TokenValidationParameters = new TokenValidationParameters
+                //    {
+                //        NameClaimType = "name",
+                //        RoleClaimType = "role"
+                //    };
+                //})
                 .AddOpenIdConnect("aad", "Azure AD", options =>
                 {
                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
