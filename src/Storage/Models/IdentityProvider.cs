@@ -24,7 +24,7 @@ namespace Duende.IdentityServer.Models
         public bool Enabled { get; set; } = true;
 
         /// <summary>
-        /// Type of the provider.
+        /// Protocol type of the provider.
         /// </summary>
         public string Type { get; set; }
     }

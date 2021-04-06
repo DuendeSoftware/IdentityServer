@@ -4,6 +4,7 @@
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Duende.IdentityServer.Hosting.DynamicProviders
 {
@@ -32,7 +33,15 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
 
             context.AuthenticationOptions.SaveTokens = true;
             context.AuthenticationOptions.GetClaimsFromUserInfoEndpoint = true;
-
+            context.AuthenticationOptions.DisableTelemetry = true;
+#if NET5_0
+            context.AuthenticationOptions.MapInboundClaims = false;
+#else
+            context.AuthenticationOptions.SecurityTokenValidator = new JwtSecurityTokenHandler 
+            {
+                MapInboundClaims = false
+            };
+#endif
             context.AuthenticationOptions.TokenValidationParameters.NameClaimType = JwtClaimTypes.Name;
             context.AuthenticationOptions.TokenValidationParameters.RoleClaimType = JwtClaimTypes.Role;
             

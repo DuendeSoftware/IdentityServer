@@ -90,5 +90,14 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
 
             return null;
         }
+
+        public IdentityProvider Remove(string scheme)
+        {
+            scheme = scheme ?? String.Empty;
+
+            _cache.TryRemove(scheme, out var item);
+
+            return item?.Item;
+        }
     }
 }
