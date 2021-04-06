@@ -3,9 +3,11 @@
 
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Hosting.DynamicProviders;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -38,5 +40,20 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return builder;
         }
+
+        /// <summary>
+        /// Adds the in memory OIDC provider store.
+        /// </summary>
+        /// <param name="builder">The builder.</param>
+        /// <param name="providers"></param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddInMemoryOidcProviders(this IIdentityServerBuilder builder, IEnumerable<OidcProvider> providers)
+        {
+            builder.Services.AddSingleton<IIdentityProviderStore>(new InMemoryOidcProviderStore(providers));
+            builder.Services.AddTransientDecorator<IIdentityProviderStore, CachingIdentityProviderStore>();
+            builder.Services.AddSingleton<IdentityProviderCache>();
+            return builder;
+        }
+
     }
 }

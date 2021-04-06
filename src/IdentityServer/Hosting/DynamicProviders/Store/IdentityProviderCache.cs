@@ -42,8 +42,6 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         }
 
         // remove the entry from the IOptionsMonitorCache, since it's an indefinite cache
-        // todo: do we even need this? the IOptionsMonitorCache is only used in ctor for handlers
-        // and if our cache/store find no entry, then we don't create a handler
         void RemoveCacheEntry(IdentityProvider idp)
         {
             var provider = _options.FindProviderType(idp.Type);
@@ -51,8 +49,6 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
             var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
             if (optionsCache != null)
             {
-                RemoveCacheEntry((IOptionsMonitorCache<object>) optionsCache, idp.Scheme);
-                
                 var mi = optionsMonitorType.GetMethod("TryRemove");
                 if (mi != null)
                 {
@@ -61,11 +57,6 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
             }
         }
         
-        void RemoveCacheEntry(IOptionsMonitorCache<object> cache, string scheme)
-        {
-            cache.TryRemove(scheme);
-        }
-
         public void Add(IdentityProvider idp)
         {
             RemoveCacheEntry(idp);
