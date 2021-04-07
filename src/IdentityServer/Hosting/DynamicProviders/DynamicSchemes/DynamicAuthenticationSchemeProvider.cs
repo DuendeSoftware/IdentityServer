@@ -17,20 +17,17 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
     {
         private readonly IAuthenticationSchemeProvider _inner;
         private readonly DynamicProviderOptions _options;
-        private readonly IIdentityProviderStore _identityProviderStore;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<DynamicAuthenticationSchemeProvider> _logger;
 
         public DynamicAuthenticationSchemeProvider(
             Decorator<IAuthenticationSchemeProvider> inner,
             DynamicProviderOptions options,
-            IIdentityProviderStore identityProviderStore,
             IHttpContextAccessor httpContextAccessor,
             ILogger<DynamicAuthenticationSchemeProvider> logger)
         {
             _inner = inner.Instance;
             _options = options;
-            _identityProviderStore = identityProviderStore;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
         }
@@ -95,15 +92,16 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
 
         private async Task<AuthenticationScheme> GetDynamicSchemeAsync(string name)
         {
-            // this has to be here because the regular authenticaiton middleware accepts IAuthenticationSchemeProvider
-            // as a ctor param, not an Invoke param, which makes it a singleton. Our DynamicAuthenticationSchemeCache is
-            // scoped in DI.
+            // these have to be here because the regular authenticaiton middleware accepts IAuthenticationSchemeProvider
+            // as a ctor param, not an Invoke param, which makes it a singleton. Our DynamicAuthenticationSchemeCache
+            // and possibly the store is scoped in DI.
             var cache = _httpContextAccessor.HttpContext.RequestServices.GetRequiredService<DynamicAuthenticationSchemeCache>();
+            var store = _httpContextAccessor.HttpContext.RequestServices.GetRequiredService<IIdentityProviderStore>();
 
             var dynamicScheme = cache.Get(name);
             if (dynamicScheme == null)
             {
-                var idp = await _identityProviderStore.GetBySchemeAsync(name);
+                var idp = await store.GetBySchemeAsync(name);
                 if (idp != null && idp.Enabled)
                 {
                     var providerType = _options.FindProviderType(idp.Type);

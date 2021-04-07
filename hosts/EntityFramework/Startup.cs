@@ -41,9 +41,10 @@ namespace IdentityServerHost
                     options.EnableTokenCleanup = true;
                     options.RemoveConsumedTokens = true;
                     options.TokenCleanupInterval = 10; // interval in seconds
-                });
+                })
                 // this is something you will want in production to reduce load on and requests to the DB
-                //.AddConfigurationStoreCache();
+                .AddConfigurationStoreCache()
+                ;
         }
 
         public void Configure(IApplicationBuilder app)

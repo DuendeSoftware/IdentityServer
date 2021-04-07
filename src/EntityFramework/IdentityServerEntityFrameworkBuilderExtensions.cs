@@ -51,7 +51,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.AddClientStore<ClientStore>();
             builder.AddResourceStore<ResourceStore>();
             builder.AddCorsPolicyService<CorsPolicyService>();
-
+            builder.AddIdentityProviderStore<IdentityProviderStore>();
+            
             return builder;
         }
 
@@ -69,6 +70,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.AddClientStoreCache<ClientStore>();
             builder.AddResourceStoreCache<ResourceStore>();
             builder.AddCorsPolicyCache<CorsPolicyService>();
+            builder.AddIdentityProviderStoreCache();
 
             return builder;
         }

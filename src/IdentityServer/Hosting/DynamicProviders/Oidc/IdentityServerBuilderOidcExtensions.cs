@@ -49,7 +49,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddInMemoryOidcProviders(this IIdentityServerBuilder builder, IEnumerable<OidcProvider> providers)
         {
-            builder.Services.AddSingleton<IIdentityProviderStore>(new InMemoryOidcProviderStore(providers));
+            builder.Services.AddSingleton(providers);
+            builder.AddIdentityProviderStore<InMemoryOidcProviderStore>();
             builder.Services.AddTransientDecorator<IIdentityProviderStore, CachingIdentityProviderStore>();
             builder.Services.AddSingleton<IdentityProviderCache>();
             return builder;

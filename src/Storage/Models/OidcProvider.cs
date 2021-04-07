@@ -42,7 +42,10 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         /// </summary>
         public string Scope { get; set; } = "openid";
 
-        internal IEnumerable<string> Scopes
+        /// <summary>
+        /// Parses the scope into a collection.
+        /// </summary>
+        public IEnumerable<string> Scopes
         {
             get
             {
