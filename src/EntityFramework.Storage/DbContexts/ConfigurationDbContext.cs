@@ -98,7 +98,7 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// <value>
         /// The identity providers.
         /// </value>
-        public DbSet<IdentityProvider> IdentityProviders { get; set; }
+        public DbSet<OidcIdentityProvider> OidcIdentityProviders { get; set; }
         
         /// <summary>
         /// Override this method to further configure the model that was discovered by convention from the entity types

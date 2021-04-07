@@ -26,7 +26,7 @@ namespace Duende.IdentityServer.EntityFramework.Mappers
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public static OidcProvider ToOidcModel(this IdentityProvider entity)
+        public static OidcProvider ToOidcModel(this OidcIdentityProvider entity)
         {
             return entity == null ? null : Mapper.Map<OidcProvider>(entity);
         }
@@ -36,9 +36,9 @@ namespace Duende.IdentityServer.EntityFramework.Mappers
         /// </summary>
         /// <param name="model">The model.</param>
         /// <returns></returns>
-        public static IdentityProvider ToEntity(this OidcProvider model)
+        public static OidcIdentityProvider ToEntity(this OidcProvider model)
         {
-            return model == null ? null : Mapper.Map<IdentityProvider>(model);
+            return model == null ? null : Mapper.Map<OidcIdentityProvider>(model);
         }
     }
 }

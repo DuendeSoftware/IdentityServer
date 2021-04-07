@@ -18,7 +18,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
     /// Implementation of IClientStore thats uses EF.
     /// </summary>
     /// <seealso cref="IClientStore" />
-    public class IdentityProviderStore : IIdentityProviderStore
+    public class OidcIdentityProviderStore : IIdentityProviderStore
     {
         /// <summary>
         /// The DbContext.
@@ -28,15 +28,15 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <summary>
         /// The logger.
         /// </summary>
-        protected readonly ILogger<IdentityProviderStore> Logger;
+        protected readonly ILogger<OidcIdentityProviderStore> Logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityProviderStore"/> class.
+        /// Initializes a new instance of the <see cref="OidcIdentityProviderStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public IdentityProviderStore(IConfigurationDbContext context, ILogger<IdentityProviderStore> logger)
+        public OidcIdentityProviderStore(IConfigurationDbContext context, ILogger<OidcIdentityProviderStore> logger)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
@@ -45,7 +45,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <inheritdoc/>
         public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
         {
-            var query = Context.IdentityProviders.Where(x => x.Scheme == scheme);
+            var query = Context.OidcIdentityProviders.Where(x => x.Scheme == scheme);
 
             var idp = (await query.ToArrayAsync()).SingleOrDefault(x => x.Scheme == scheme);
             if (idp == null) return null;
@@ -64,7 +64,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </summary>
         /// <param name="idp"></param>
         /// <returns></returns>
-        protected virtual IdentityProvider MapIdp(Entities.IdentityProvider idp)
+        protected virtual IdentityProvider MapIdp(Entities.OidcIdentityProvider idp)
         {
             if (idp.Type == "oidc")
             {

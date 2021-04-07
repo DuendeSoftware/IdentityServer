@@ -304,9 +304,9 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
         {
             if (!string.IsNullOrWhiteSpace(storeOptions.DefaultSchema)) modelBuilder.HasDefaultSchema(storeOptions.DefaultSchema);
 
-            modelBuilder.Entity<IdentityProvider>(entity =>
+            modelBuilder.Entity<OidcIdentityProvider>(entity =>
             {
-                entity.ToTable(storeOptions.IdentityProvider).HasKey(x => x.Id);
+                entity.ToTable(storeOptions.OidcIdentityProvider).HasKey(x => x.Id);
 
                 entity.Property(x => x.Scheme).HasMaxLength(200).IsRequired();
                 entity.Property(x => x.Type).HasMaxLength(20).IsRequired();

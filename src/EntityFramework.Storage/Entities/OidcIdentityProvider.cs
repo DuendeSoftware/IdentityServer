@@ -8,7 +8,7 @@ namespace Duende.IdentityServer.EntityFramework.Entities
     /// <summary>
     /// Models storage for identity providers.
     /// </summary>
-    public class IdentityProvider
+    public class OidcIdentityProvider
     {
         /// <summary>
         /// Primary key used for EF
@@ -32,7 +32,7 @@ namespace Duende.IdentityServer.EntityFramework.Entities
         /// <summary>
         /// Protocol type of the provider.
         /// </summary>
-        public string Type { get; set; }
+        public string Type { get; set; } = "oidc";
         
         /* OIDC */
 

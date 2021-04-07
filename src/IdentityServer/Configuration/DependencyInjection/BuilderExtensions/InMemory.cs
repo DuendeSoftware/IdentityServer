@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
-using Duende.IdentityServer.Hosting.DynamicProviders;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
