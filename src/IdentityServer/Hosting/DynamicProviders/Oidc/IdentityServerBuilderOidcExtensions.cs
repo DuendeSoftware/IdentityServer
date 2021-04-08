@@ -43,11 +43,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Adds the in memory OIDC provider store.
+        /// This API is for testing only.
         /// </summary>
         /// <param name="builder">The builder.</param>
         /// <param name="providers"></param>
         /// <returns></returns>
-        public static IIdentityServerBuilder AddInMemoryOidcProviders(this IIdentityServerBuilder builder, IEnumerable<OidcProvider> providers)
+        internal static IIdentityServerBuilder AddInMemoryOidcProviders(this IIdentityServerBuilder builder, IEnumerable<OidcProvider> providers)
         {
             builder.Services.AddSingleton(providers);
             builder.AddIdentityProviderStore<InMemoryOidcProviderStore>();
@@ -55,6 +56,5 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddSingleton<IdentityProviderCache>();
             return builder;
         }
-
     }
 }
