@@ -19,6 +19,7 @@ namespace Duende.IdentityServer.EntityFramework.Mappers
         public IdentityProviderMapperProfile()
         {
             CreateMap<Duende.IdentityServer.EntityFramework.Entities.OidcIdentityProvider, OidcProvider>(MemberList.Destination)
+                .ForMember(x => x.Scopes, opts => opts.Ignore())
                 .ReverseMap();
         }
     }

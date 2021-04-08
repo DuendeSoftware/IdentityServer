@@ -109,7 +109,7 @@ CREATE TABLE [IdentityResources] (
 GO
 
 CREATE TABLE [OidcIdentityProviders] (
-    [Id] nvarchar(450) NOT NULL,
+    [Id] int NOT NULL IDENTITY,
     [Scheme] nvarchar(200) NOT NULL,
     [DisplayName] nvarchar(200) NULL,
     [Enabled] bit NOT NULL,
@@ -392,7 +392,7 @@ CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20210407193727_Configuration', N'3.1.0');
+VALUES (N'20210408135431_Configuration', N'3.1.0');
 
 GO
 

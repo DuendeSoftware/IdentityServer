@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using System;
+
 namespace Duende.IdentityServer.Models
 {
     /// <summary>
@@ -27,5 +29,10 @@ namespace Duende.IdentityServer.Models
         /// Protocol type of the provider.
         /// </summary>
         public string Type { get; set; }
+
+        public object SingleOrDefault()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

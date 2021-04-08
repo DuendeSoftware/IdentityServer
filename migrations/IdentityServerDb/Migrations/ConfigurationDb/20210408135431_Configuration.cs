@@ -130,7 +130,8 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 name: "OidcIdentityProviders",
                 columns: table => new
                 {
-                    Id = table.Column<string>(nullable: false),
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Scheme = table.Column<string>(maxLength: 200, nullable: false),
                     DisplayName = table.Column<string>(maxLength: 200, nullable: true),
                     Enabled = table.Column<bool>(nullable: false),

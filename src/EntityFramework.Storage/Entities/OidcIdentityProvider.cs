@@ -13,7 +13,7 @@ namespace Duende.IdentityServer.EntityFramework.Entities
         /// <summary>
         /// Primary key used for EF
         /// </summary>
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         /* general */
 
