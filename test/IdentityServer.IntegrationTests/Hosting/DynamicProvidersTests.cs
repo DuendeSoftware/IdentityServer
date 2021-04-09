@@ -194,9 +194,9 @@ namespace IdentityServer.IntegrationTests.Hosting
                 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapGet("/", async ctx =>
+                    endpoints.MapGet("/user", async ctx =>
                     {
-                        var session = await ctx.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                        var session = await ctx.AuthenticateAsync(IdentityServerConstants.DefaultCookieAuthenticationScheme);
                         if (session.Succeeded)
                         {
                             await ctx.Response.WriteAsync(session.Principal.FindFirst("sub").Value);
@@ -206,9 +206,29 @@ namespace IdentityServer.IntegrationTests.Hosting
                             ctx.Response.StatusCode = 401;
                         }
                     });
+                    endpoints.MapGet("/callback", async ctx =>
+                    {
+                        var session = await ctx.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                        if (session.Succeeded)
+                        {
+                            await ctx.SignInAsync(session.Principal, session.Properties);
+                            await ctx.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+
+                            await ctx.Response.WriteAsync(session.Principal.FindFirst("sub").Value);
+                        }
+                        else
+                        {
+                            ctx.Response.StatusCode = 401;
+                        }
+                    });
                     endpoints.MapGet("/challenge", async ctx =>
                     {
-                        await ctx.ChallengeAsync(ctx.Request.Query["scheme"]);
+                        await ctx.ChallengeAsync(ctx.Request.Query["scheme"], 
+                            new AuthenticationProperties { RedirectUri = "/callback" });
+                    });
+                    endpoints.MapGet("/logout", async ctx =>
+                    {
+                        await ctx.SignOutAsync(ctx.Request.Query["scheme"]);
                     });
                 });
             };
@@ -225,6 +245,15 @@ namespace IdentityServer.IntegrationTests.Hosting
             response.Headers.Location.ToString().Should().StartWith("https://idp1/connect/authorize");
         }
         
+        [Fact]
+        public async Task signout_should_trigger_endsession_request_to_dynamic_idp()
+        {
+            var response = await _host.HttpClient.GetAsync(_host.Url("/logout?scheme=idp1"));
+
+            response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+            response.Headers.Location.ToString().Should().StartWith("https://idp1/connect/endsession");
+        }
+
         [Fact]
         public async Task challenge_should_trigger_authorize_request_to_static_idp()
         {
@@ -249,9 +278,10 @@ namespace IdentityServer.IntegrationTests.Hosting
             var redirectUri = response.Headers.Location.ToString();
             redirectUri.Should().StartWith("https://server/federation/idp1/signin");
 
-            await _host.BrowserClient.GetAsync(redirectUri);
+            response = await _host.BrowserClient.GetAsync(redirectUri);
+            response.Headers.Location.ToString().Should().StartWith("/callback");
 
-            response = await _host.BrowserClient.GetAsync(_host.Url("/"));
+            response = await _host.BrowserClient.GetAsync(_host.Url("/callback"));
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var body = await response.Content.ReadAsStringAsync();
             body.Should().Be("1"); // sub
@@ -268,9 +298,8 @@ namespace IdentityServer.IntegrationTests.Hosting
             var redirectUri = response.Headers.Location.ToString();
             redirectUri.Should().StartWith("https://server/signin-oidc");
 
-            await _host.BrowserClient.GetAsync(redirectUri);
-
-            response = await _host.BrowserClient.GetAsync(_host.Url("/"));
+            response = await _host.BrowserClient.GetAsync(redirectUri);
+            response = await _host.BrowserClient.GetAsync(_host.Url(response.Headers.Location.ToString())); // ~/callback
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var body = await response.Content.ReadAsStringAsync();
             body.Should().Be("2"); // sub
@@ -290,12 +319,49 @@ namespace IdentityServer.IntegrationTests.Hosting
             var cache = _host.Resolve<IdentityProviderCache>();
             cache.Remove("test");
 
-            await _host.BrowserClient.GetAsync(redirectUri);
-
-            response = await _host.BrowserClient.GetAsync(_host.Url("/"));
+            response = await _host.BrowserClient.GetAsync(redirectUri);
+            
+            response = await _host.BrowserClient.GetAsync(_host.Url(response.Headers.Location.ToString()));
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var body = await response.Content.ReadAsStringAsync();
             body.Should().Be("1"); // sub
+        }
+
+        [Fact]
+        public async Task front_channel_signout_from_dynamic_idp_should_sign_user_out()
+        {
+            var response = await _host.BrowserClient.GetAsync(_host.Url("/challenge?scheme=idp1"));
+            var authzUrl = response.Headers.Location.ToString();
+
+            await _idp1.BrowserClient.GetAsync(_idp1.Url("/signin"));
+            response = await _idp1.BrowserClient.GetAsync(authzUrl); // ~idp1/connect/authorize
+            var redirectUri = response.Headers.Location.ToString();
+
+            response = await _host.BrowserClient.GetAsync(redirectUri); // federation/idp1/signin
+            response = await _host.BrowserClient.GetAsync(_host.Url("/callback")); // signs the user in
+
+            response = await _host.BrowserClient.GetAsync(_host.Url("/user"));
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+
+            response = await _host.BrowserClient.GetAsync(_host.Url("/logout?scheme=idp1"));
+            var endSessionUrl = response.Headers.Location.ToString();
+
+            response = await _idp1.BrowserClient.GetAsync(endSessionUrl);
+            response = await _idp1.BrowserClient.GetAsync(response.Headers.Location.ToString()); // ~/idp1/account/logout
+
+            var page = await _idp1.BrowserClient.GetAsync(Idp1FrontChannelLogoutUri);
+            var iframeUrl = await _idp1.BrowserClient.ReadElementAttributeAsync("iframe", "src");
+
+            response = await _host.BrowserClient.GetAsync(_host.Url("/user"));
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            iframeUrl.Should().StartWith(_host.Url("/federation/idp1/signout"));
+            response = await _host.BrowserClient.GetAsync(iframeUrl); // ~/federation/idp1/signout
+            response.IsSuccessStatusCode.Should().BeTrue();
+
+            response = await _host.BrowserClient.GetAsync(_host.Url("/user"));
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 #endif
     }

@@ -29,10 +29,5 @@ namespace Duende.IdentityServer.Models
         /// Protocol type of the provider.
         /// </summary>
         public string Type { get; set; }
-
-        public object SingleOrDefault()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
