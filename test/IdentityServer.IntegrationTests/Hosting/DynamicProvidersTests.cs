@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Threading.Tasks;
 using Xunit;
@@ -23,12 +25,13 @@ namespace IdentityServer.IntegrationTests.Hosting
     {
         private GenericHost _host;
         private GenericHost _idp1;
+        private GenericHost _idp2;
 
         List<OidcProvider> _oidcProviders = new List<OidcProvider>()
         { 
             new OidcProvider
             {
-                Scheme = "test",
+                Scheme = "idp1",
                 Authority = "https://idp1",
                 ClientId = "client",
                 ClientSecret = "secret",
@@ -53,9 +56,9 @@ namespace IdentityServer.IntegrationTests.Hosting
                             ClientId = "client",
                             ClientSecrets = { new Secret("secret".Sha256()) },
                             AllowedGrantTypes = GrantTypes.Code,
-                            RedirectUris = { "https://server/federation/test/signin" },
-                            PostLogoutRedirectUris = { "https://server/federation/test/signout-callback" },
-                            FrontChannelLogoutUri = "https://server/federation/test/signout",
+                            RedirectUris = { "https://server/federation/idp1/signin" },
+                            PostLogoutRedirectUris = { "https://server/federation/idp1/signout-callback" },
+                            FrontChannelLogoutUri = "https://server/federation/idp1/signout",
                             AllowedScopes = { "openid" }
                         }
                     })
@@ -63,6 +66,11 @@ namespace IdentityServer.IntegrationTests.Hosting
                         new IdentityResources.OpenId(),
                     })
                     .AddDeveloperSigningCredential(persistKey: false);
+
+                services.AddLogging(options =>
+                {
+                    options.AddFilter("Duende", LogLevel.Debug);
+                });
             };
             _idp1.OnConfigure += app =>
             {
@@ -88,6 +96,52 @@ namespace IdentityServer.IntegrationTests.Hosting
             };
             _idp1.InitializeAsync().Wait();
 
+            _idp2 = new GenericHost("https://idp2");
+            _idp2.OnConfigureServices += services =>
+            {
+                services.AddRouting();
+                services.AddAuthorization();
+
+                services.AddIdentityServer()
+                    .AddInMemoryClients(new Client[] {
+                        new Client
+                        {
+                            ClientId = "client",
+                            ClientSecrets = { new Secret("secret".Sha256()) },
+                            AllowedGrantTypes = GrantTypes.Code,
+                            RedirectUris = { "https://server/signin-oidc" },
+                            PostLogoutRedirectUris = { "https://server/signout-callback-oidc" },
+                            FrontChannelLogoutUri = "https://server/signout-oidc",
+                            AllowedScopes = { "openid" }
+                        }
+                    })
+                    .AddInMemoryIdentityResources(new IdentityResource[] {
+                        new IdentityResources.OpenId(),
+                    })
+                    .AddDeveloperSigningCredential(persistKey: false);
+
+                services.AddLogging(options =>
+                {
+                    options.AddFilter("Duende", LogLevel.Debug);
+                });
+            };
+            _idp2.OnConfigure += app =>
+            {
+                app.UseRouting();
+
+                app.UseIdentityServer();
+                app.UseAuthorization();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapGet("/signin", async ctx =>
+                    {
+                        await ctx.SignInAsync(new IdentityServerUser("2").CreatePrincipal());
+                    });
+                });
+            };
+            _idp2.InitializeAsync().Wait();
+
 
 
             _host = new GenericHost("https://server");
@@ -106,6 +160,29 @@ namespace IdentityServer.IntegrationTests.Hosting
                 services.ConfigureAll<OpenIdConnectOptions>(options =>
                 {
                     options.BackchannelHttpHandler = _idp1.Server.CreateHandler();
+                });
+
+                services.AddAuthentication()
+                    .AddOpenIdConnect("idp2", options => 
+                    {
+                        options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                        options.Authority = "https://idp2";
+                        options.ClientId = "client";
+                        options.ClientSecret = "secret";
+                        options.ResponseType = "code";
+                        options.ResponseMode = "query";
+                        options.Scope.Clear();
+                        options.Scope.Add("openid");
+                        options.SecurityTokenValidator = new JwtSecurityTokenHandler
+                        {
+                            MapInboundClaims = false
+                        };
+                        options.BackchannelHttpHandler = _idp2.Server.CreateHandler();
+                    });
+
+                services.AddLogging(options =>
+                {
+                    options.AddFilter("Duende", LogLevel.Debug);
                 });
             };
             _host.OnConfigure += app => 
@@ -140,28 +217,37 @@ namespace IdentityServer.IntegrationTests.Hosting
         }
 
         [Fact]
-        public async Task challenge_should_trigger_authorize_request_to_idp()
+        public async Task challenge_should_trigger_authorize_request_to_dynamic_idp()
         {
-            var response = await _host.HttpClient.GetAsync(_host.Url("/challenge?scheme=test"));
+            var response = await _host.HttpClient.GetAsync(_host.Url("/challenge?scheme=idp1"));
 
             response.StatusCode.Should().Be(HttpStatusCode.Redirect);
             response.Headers.Location.ToString().Should().StartWith("https://idp1/connect/authorize");
+        }
+        
+        [Fact]
+        public async Task challenge_should_trigger_authorize_request_to_static_idp()
+        {
+            var response = await _host.HttpClient.GetAsync(_host.Url("/challenge?scheme=idp2"));
+
+            response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+            response.Headers.Location.ToString().Should().StartWith("https://idp2/connect/authorize");
         }
 
 #if NET5_0_OR_GREATER
         // the cookie processing in this workflow requires updates to .NET5 for our test browser and cookie container
         // https://github.com/dotnet/runtime/issues/26776
-        
+
         [Fact]
-        public async Task redirect_uri_should_process_signin_result()
+        public async Task redirect_uri_should_process_dynamic_provider_signin_result()
         {
-            var response = await _host.BrowserClient.GetAsync(_host.Url("/challenge?scheme=test"));
+            var response = await _host.BrowserClient.GetAsync(_host.Url("/challenge?scheme=idp1"));
             var authzUrl = response.Headers.Location.ToString();
 
             await _idp1.BrowserClient.GetAsync(_idp1.Url("/signin"));
             response = await _idp1.BrowserClient.GetAsync(authzUrl);
             var redirectUri = response.Headers.Location.ToString();
-            redirectUri.Should().StartWith("https://server/federation/test/signin");
+            redirectUri.Should().StartWith("https://server/federation/idp1/signin");
 
             await _host.BrowserClient.GetAsync(redirectUri);
 
@@ -171,17 +257,35 @@ namespace IdentityServer.IntegrationTests.Hosting
             body.Should().Be("1"); // sub
         }
 
+        [Fact]
+        public async Task redirect_uri_should_process_static_provider_signin_result()
+        {
+            var response = await _host.BrowserClient.GetAsync(_host.Url("/challenge?scheme=idp2"));
+            var authzUrl = response.Headers.Location.ToString();
+
+            await _idp2.BrowserClient.GetAsync(_idp2.Url("/signin"));
+            response = await _idp2.BrowserClient.GetAsync(authzUrl);
+            var redirectUri = response.Headers.Location.ToString();
+            redirectUri.Should().StartWith("https://server/signin-oidc");
+
+            await _host.BrowserClient.GetAsync(redirectUri);
+
+            response = await _host.BrowserClient.GetAsync(_host.Url("/"));
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().Be("2"); // sub
+        }
 
         [Fact]
         public async Task redirect_uri_should_work_when_dynamic_provider_not_in_cache()
         {
-            var response = await _host.BrowserClient.GetAsync(_host.Url("/challenge?scheme=test"));
+            var response = await _host.BrowserClient.GetAsync(_host.Url("/challenge?scheme=idp1"));
             var authzUrl = response.Headers.Location.ToString();
 
             await _idp1.BrowserClient.GetAsync(_idp1.Url("/signin"));
             response = await _idp1.BrowserClient.GetAsync(authzUrl);
             var redirectUri = response.Headers.Location.ToString();
-            redirectUri.Should().StartWith("https://server/federation/test/signin");
+            redirectUri.Should().StartWith("https://server/federation/idp1/signin");
 
             var cache = _host.Resolve<IdentityProviderCache>();
             cache.Remove("test");
