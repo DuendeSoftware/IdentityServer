@@ -21,10 +21,14 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
 
             context.AuthenticationOptions.Authority = context.IdentityProvider.Authority;
             context.AuthenticationOptions.RequireHttpsMetadata = context.IdentityProvider.Authority.StartsWith("https");
+            
             context.AuthenticationOptions.ClientId = context.IdentityProvider.ClientId;
             context.AuthenticationOptions.ClientSecret = context.IdentityProvider.ClientSecret;
 
             context.AuthenticationOptions.ResponseType = context.IdentityProvider.ResponseType;
+            context.AuthenticationOptions.ResponseMode =
+                context.IdentityProvider.ResponseType.Contains("id_token") ? "form_post" : "query";
+
             context.AuthenticationOptions.Scope.Clear();
             foreach (var scope in context.IdentityProvider.Scopes)
             {
@@ -34,7 +38,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
             context.AuthenticationOptions.SaveTokens = true;
             context.AuthenticationOptions.GetClaimsFromUserInfoEndpoint = true;
             context.AuthenticationOptions.DisableTelemetry = true;
-#if NET5_0
+#if NET5_0_OR_GREATER
             context.AuthenticationOptions.MapInboundClaims = false;
 #else
             context.AuthenticationOptions.SecurityTokenValidator = new JwtSecurityTokenHandler 
