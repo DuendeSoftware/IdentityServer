@@ -26,7 +26,7 @@ jobs:
     - name: Setup dotnet (main)
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.0.100-preview.2.21155.3'
+        dotnet-version: '6.0.100-preview.3.21202.5'
     
     - run: dotnet --info
     
