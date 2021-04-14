@@ -19,7 +19,6 @@ using IdentityServerHost.Extensions;
 using IdentityServerHost.Quickstart.UI;
 using Microsoft.Extensions.Hosting;
 using Serilog.Events;
-using Duende.IdentityServer.Hosting.DynamicProviders;
 
 namespace IdentityServerHost
 {
