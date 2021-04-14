@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -18,7 +18,10 @@ namespace Duende.IdentityServer.Services
     {
         private const string KeySeparator = ":";
 
-        private readonly IMemoryCache _cache;
+        /// <summary>
+        /// The memory cache.
+        /// </summary>
+        protected IMemoryCache Cache { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultCache{T}"/> class.
@@ -26,10 +29,15 @@ namespace Duende.IdentityServer.Services
         /// <param name="cache">The cache.</param>
         public DefaultCache(IMemoryCache cache)
         {
-            _cache = cache;
+            Cache = cache;
         }
 
-        private string GetKey(string key)
+        /// <summary>
+        /// Used to create the key for the cache based on the data type being cached.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected string GetKey(string key)
         {
             return typeof(T).FullName + KeySeparator + key;
         }
@@ -44,7 +52,7 @@ namespace Duende.IdentityServer.Services
         public Task<T> GetAsync(string key)
         {
             key = GetKey(key);
-            var item = _cache.Get<T>(key);
+            var item = Cache.Get<T>(key);
             return Task.FromResult(item);
         }
 
@@ -58,7 +66,7 @@ namespace Duende.IdentityServer.Services
         public Task SetAsync(string key, T item, TimeSpan expiration)
         {
             key = GetKey(key);
-            _cache.Set(key, item, expiration);
+            Cache.Set(key, item, expiration);
             return Task.CompletedTask;
         }
     }
