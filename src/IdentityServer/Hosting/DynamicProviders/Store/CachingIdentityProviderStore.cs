@@ -20,7 +20,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
     {
         private readonly IIdentityProviderStore _inner;
         private readonly ICache<IdentityProvider> _cache;
-        private readonly DynamicProviderOptions _options;
+        private readonly IdentityServerOptions _options;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         /// <summary>
@@ -28,16 +28,16 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         /// </summary>
         /// <param name="inner"></param>
         /// <param name="cache"></param>
-        /// <param name="dynamicProviderOptions"></param>
+        /// <param name="options"></param>
         /// <param name="httpContextAccessor"></param>
         public CachingIdentityProviderStore(T inner, 
-            ICache<IdentityProvider> cache, 
-            DynamicProviderOptions dynamicProviderOptions,
+            ICache<IdentityProvider> cache,
+            IdentityServerOptions options,
             IHttpContextAccessor httpContextAccessor)
         {
             _inner = inner;
             _cache = cache;
-            _options = dynamicProviderOptions;
+            _options = options;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -51,7 +51,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
                 if (result != null)
                 {
                     RemoveCacheEntry(result);
-                    await _cache.SetAsync(scheme, result, _options.ProviderCacheDuration);
+                    await _cache.SetAsync(scheme, result, _options.Caching.IdentityProviderCacheDuration);
                 }
             }
 
@@ -63,7 +63,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         // this keeps theirs in sync with ours when we re-load from the DB
         void RemoveCacheEntry(IdentityProvider idp)
         {
-            var provider = _options.FindProviderType(idp.Type);
+            var provider = _options.DynamicProviders.FindProviderType(idp.Type);
             var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
             var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
             if (optionsCache != null)

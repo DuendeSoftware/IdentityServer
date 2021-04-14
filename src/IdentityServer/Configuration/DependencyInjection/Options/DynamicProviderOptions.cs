@@ -33,11 +33,6 @@ namespace Duende.IdentityServer.Configuration
         public string SignOutScheme { get; set; } = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
         /// <summary>
-        /// Duration providers are cached from the store.
-        /// </summary>
-        public TimeSpan ProviderCacheDuration { get; set; } = TimeSpan.FromMinutes(60);
-
-        /// <summary>
         /// Registers a provider confiuration model and authenticaiton handler for the protocol type being used.
         /// </summary>
         public void AddProviderType<THandler, TOptions, TIdentityProvider>(string type)
