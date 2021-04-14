@@ -47,7 +47,6 @@ namespace Duende.IdentityServer.Validation
             return null;
         }
 
-        // todo: check this periodcally?
         public static void ValidateLicense()
         {
             var errors = new List<string>();
@@ -167,6 +166,14 @@ namespace Duende.IdentityServer.Validation
             }
         }
 
+        public static void ValidateDynamicProviders()
+        {
+            if (_license != null && !_license.DynamicProviders)
+            {
+                _logger.LogError("A request was made invoking a dynamic provider. Your license for Duende IdentityServer does not permit dynamic providers.");
+            }
+        }
+
         internal static License ValidateKey(string licenseKey)
         {
             if (!String.IsNullOrWhiteSpace(licenseKey))
@@ -253,6 +260,14 @@ namespace Duende.IdentityServer.Validation
                     ResourceIsolation = true;
                     break;
             }
+            
+            DynamicProviders = claims.HasClaim("feature", "dynamic_providers");
+            switch (Edition)
+            {
+                case LicenseEdition.Enterprise:
+                    DynamicProviders = true;
+                    break;
+            }
 
             if (!claims.HasClaim("feature", "unlimited_clients"))
             {
@@ -315,6 +330,7 @@ namespace Duende.IdentityServer.Validation
 
         public bool KeyManagement { get; set; }
         public bool ResourceIsolation { get; set; }
+        public bool DynamicProviders { get; set; }
         public bool ISV { get; set; }
 
         public enum LicenseEdition

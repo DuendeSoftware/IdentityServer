@@ -4,6 +4,7 @@
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.DependencyInjection;
 using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -107,6 +108,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
                     var providerType = _options.FindProviderType(idp.Type);
                     if (providerType != null)
                     {
+                        LicenseValidator.ValidateDynamicProviders();
                         dynamicScheme = new DynamicAuthenticationScheme(idp, providerType.HandlerType);
                         cache.Add(name, dynamicScheme);
                     }
