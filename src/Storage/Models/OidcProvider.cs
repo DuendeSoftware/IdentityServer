@@ -22,19 +22,19 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         }
 
         /// <summary>
-        /// The base address of the OIDC provider
+        /// The base address of the OIDC provider.
         /// </summary>
         public string Authority { get; set; }
         /// <summary>
-        /// The response type
+        /// The response type. Defaults to "id_token".
         /// </summary>
         public string ResponseType { get; set; } = "id_token";
         /// <summary>
-        /// The client id
+        /// The client id.
         /// </summary>
         public string ClientId { get; set; }
         /// <summary>
-        /// The client secret
+        /// The client secret. By default this is the plaintext client secret and great consideration should be taken if this value is to be stored as plaintext in the store.
         /// </summary>
         public string ClientSecret { get; set; }
         /// <summary>

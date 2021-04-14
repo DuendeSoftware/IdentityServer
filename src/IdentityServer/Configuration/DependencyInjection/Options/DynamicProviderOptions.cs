@@ -18,17 +18,17 @@ namespace Duende.IdentityServer.Configuration
         Dictionary<string, DynamicProviderType> _providers = new Dictionary<string, DynamicProviderType>();
 
         /// <summary>
-        /// Prefix in the pipeline for callbacks from external providers.
+        /// Prefix in the pipeline for callbacks from external providers. Defaults to "/federation".
         /// </summary>
         public PathString PathPrefix { get; set; } = "/federation";
 
         /// <summary>
-        /// Scheme used for signin.
+        /// Scheme used for signin. Defaults to the constant IdentityServerConstants.ExternalCookieAuthenticationScheme.
         /// </summary>
         public string SignInScheme { get; set; } = IdentityServerConstants.ExternalCookieAuthenticationScheme;
 
         /// <summary>
-        /// Scheme for signout.
+        /// Scheme for signout. Defaults to the constant IdentityServerConstants.DefaultCookieAuthenticationScheme.
         /// </summary>
         public string SignOutScheme { get; set; } = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
