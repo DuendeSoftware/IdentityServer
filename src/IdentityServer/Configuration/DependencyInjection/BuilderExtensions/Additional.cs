@@ -275,10 +275,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="builder">The builder.</param>
         /// <returns></returns>
-        public static IIdentityServerBuilder AddIdentityProviderStoreCache(this IIdentityServerBuilder builder)
+        public static IIdentityServerBuilder AddIdentityProviderStoreCache<T>(this IIdentityServerBuilder builder)
+            where T : IIdentityProviderStore
         {
-            builder.Services.AddTransientDecorator<IIdentityProviderStore, CachingIdentityProviderStore>();
-            builder.Services.AddSingleton<IdentityProviderCache>();
+            builder.Services.TryAddTransient(typeof(T));
+            builder.Services.AddTransient<IIdentityProviderStore, CachingIdentityProviderStore<T>>();
             return builder;
         }
         

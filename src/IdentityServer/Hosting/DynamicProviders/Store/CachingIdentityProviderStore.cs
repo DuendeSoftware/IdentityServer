@@ -1,38 +1,79 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Duende.IdentityServer.Configuration.DependencyInjection;
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Hosting.DynamicProviders
 {
-    class CachingIdentityProviderStore : IIdentityProviderStore
+    /// <summary>
+    /// Caching decorator for IIdentityProviderStore
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class CachingIdentityProviderStore<T> : IIdentityProviderStore
+            where T : IIdentityProviderStore
     {
         private readonly IIdentityProviderStore _inner;
-        private readonly IdentityProviderCache _cache;
+        private readonly ICache<IdentityProvider> _cache;
+        private readonly DynamicProviderOptions _options;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CachingIdentityProviderStore(Decorator<IIdentityProviderStore> inner, 
-            IdentityProviderCache schemeCache)
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="inner"></param>
+        /// <param name="cache"></param>
+        /// <param name="dynamicProviderOptions"></param>
+        /// <param name="httpContextAccessor"></param>
+        public CachingIdentityProviderStore(T inner, 
+            ICache<IdentityProvider> cache, 
+            DynamicProviderOptions dynamicProviderOptions,
+            IHttpContextAccessor httpContextAccessor)
         {
-            _inner = inner.Instance;
-            _cache = schemeCache;
+            _inner = inner;
+            _cache = cache;
+            _options = dynamicProviderOptions;
+            _httpContextAccessor = httpContextAccessor;
         }
 
+        /// <inheritdoc/>
         public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
         {
-            var result = _cache.Get(scheme);
+            var result = await _cache.GetAsync(scheme);
             if (result == null)
             {
                 result = await _inner.GetBySchemeAsync(scheme);
                 if (result != null)
                 {
-                    _cache.Add(result);
+                    RemoveCacheEntry(result);
+                    await _cache.SetAsync(scheme, result, _options.ProviderCacheDuration);
                 }
             }
 
             return result;
+        }
+
+        // when items are re-added, we remove the corresponding options from the 
+        // options monitor since those instances are cached my the authentication handler plumbing
+        // this keeps theirs in sync with ours when we re-load from the DB
+        void RemoveCacheEntry(IdentityProvider idp)
+        {
+            var provider = _options.FindProviderType(idp.Type);
+            var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
+            var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
+            if (optionsCache != null)
+            {
+                var mi = optionsMonitorType.GetMethod("TryRemove");
+                if (mi != null)
+                {
+                    mi.Invoke(optionsCache, new[] { idp.Scheme });
+                }
+            }
         }
     }
 }

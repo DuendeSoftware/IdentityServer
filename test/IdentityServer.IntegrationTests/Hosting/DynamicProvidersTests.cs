@@ -154,7 +154,8 @@ namespace IdentityServer.IntegrationTests.Hosting
                     .AddInMemoryClients(new Client[] { })
                     .AddInMemoryIdentityResources(new IdentityResource[] { })
                     .AddInMemoryOidcProviders(_oidcProviders)
-                    .AddIdentityProviderStoreCache()
+                    .AddInMemoryCaching()
+                    .AddIdentityProviderStoreCache<InMemoryOidcProviderStore>()
                     .AddDeveloperSigningCredential(persistKey: false);
 
                 services.ConfigureAll<OpenIdConnectOptions>(options =>
@@ -316,7 +317,7 @@ namespace IdentityServer.IntegrationTests.Hosting
             var redirectUri = response.Headers.Location.ToString();
             redirectUri.Should().StartWith("https://server/federation/idp1/signin");
 
-            var cache = _host.Resolve<IdentityProviderCache>();
+            var cache = _host.Resolve<ICache<IdentityProvider>>() as DefaultCache<IdentityProvider>;
             cache.Remove("test");
 
             response = await _host.BrowserClient.GetAsync(redirectUri);

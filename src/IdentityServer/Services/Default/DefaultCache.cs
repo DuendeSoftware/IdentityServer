@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -60,6 +60,13 @@ namespace Duende.IdentityServer.Services
             key = GetKey(key);
             _cache.Set(key, item, expiration);
             return Task.CompletedTask;
+        }
+
+        // for testing
+        internal void Remove(string key)
+        {
+            key = GetKey(key);
+            _cache.Remove(key);
         }
     }
 }

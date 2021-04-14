@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.AddClientStoreCache<ClientStore>();
             builder.AddResourceStoreCache<ResourceStore>();
             builder.AddCorsPolicyCache<CorsPolicyService>();
-            builder.AddIdentityProviderStoreCache();
+            builder.AddIdentityProviderStoreCache<OidcIdentityProviderStore>();
 
             return builder;
         }

@@ -38,7 +38,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         /// </summary>
         public string ClientSecret { get; set; }
         /// <summary>
-        /// The scope
+        /// Space separated list of scope values.
         /// </summary>
         public string Scope { get; set; } = "openid";
 
