@@ -20,8 +20,8 @@ namespace Duende.IdentityServer.Services
     /// <seealso cref="IKeyMaterialService" />
     public class DefaultKeyMaterialService : IKeyMaterialService
     {
-        private readonly IEnumerable<ISigningCredentialStore> _signingCredentialStores;
         private readonly IEnumerable<IValidationKeysStore> _validationKeysStores;
+        private readonly IEnumerable<ISigningCredentialStore> _signingCredentialStores;
         private readonly IAutomaticKeyManagerKeyStore _keyManagerKeyStore;
 
         /// <summary>
@@ -35,8 +35,8 @@ namespace Duende.IdentityServer.Services
             IEnumerable<ISigningCredentialStore> signingCredentialStores,
             IAutomaticKeyManagerKeyStore keyManagerKeyStore)
         {
-            _signingCredentialStores = signingCredentialStores;
             _validationKeysStores = validationKeysStores;
+            _signingCredentialStores = signingCredentialStores;
             _keyManagerKeyStore = keyManagerKeyStore;
         }
 
@@ -45,12 +45,6 @@ namespace Duende.IdentityServer.Services
         {
             if (allowedAlgorithms.IsNullOrEmpty())
             {
-                var automaticKey = await _keyManagerKeyStore.GetSigningCredentialsAsync();
-                if (automaticKey != null)
-                {
-                    return automaticKey;
-                }
-
                 var list = _signingCredentialStores.ToList();
                 for (var i = 0; i < list.Count; i++)
                 {
@@ -59,6 +53,12 @@ namespace Duende.IdentityServer.Services
                     {
                         return key;
                     }
+                }
+                
+                var automaticKey = await _keyManagerKeyStore.GetSigningCredentialsAsync();
+                if (automaticKey != null)
+                {
+                    return automaticKey;
                 }
 
                 throw new InvalidOperationException($"No signing credential registered.");
@@ -80,12 +80,6 @@ namespace Duende.IdentityServer.Services
         {
             var credentials = new List<SigningCredentials>();
 
-            var automaticSigningKeys = await _keyManagerKeyStore.GetAllSigningCredentialsAsync();
-            if (automaticSigningKeys != null)
-            {
-                credentials.AddRange(automaticSigningKeys);
-            }
-
             foreach (var store in _signingCredentialStores)
             {
                 var signingKey = await store.GetSigningCredentialsAsync();
@@ -93,6 +87,12 @@ namespace Duende.IdentityServer.Services
                 {
                     credentials.Add(signingKey);
                 }
+            }
+            
+            var automaticSigningKeys = await _keyManagerKeyStore.GetAllSigningCredentialsAsync();
+            if (automaticSigningKeys != null)
+            {
+                credentials.AddRange(automaticSigningKeys);
             }
 
             return credentials;
