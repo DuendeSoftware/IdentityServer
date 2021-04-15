@@ -235,6 +235,12 @@ namespace Duende.IdentityServer.Validation
             }
 
             Edition = editionValue;
+            ISV = claims.HasClaim("feature", "isv");
+
+            if (ISV && IsCommunity)
+            {
+                throw new Exception("Invalid License: ISV is not valid for community edition.");
+            }
 
             KeyManagement = claims.HasClaim("feature", "key_management");
             switch (Edition)
@@ -256,16 +262,23 @@ namespace Duende.IdentityServer.Validation
 
             if (!claims.HasClaim("feature", "unlimited_clients"))
             {
-                if (IsEnterprise)
+                if (IsEnterprise && !ISV)
                 {
+                    // non-ISV enterprise always has no client limit
                     ClientLimit = null; // unlimited
                 }
                 else if (Int32.TryParse(claims.FindFirst("client_limit")?.Value, out var clientLimit))
                 {
                     ClientLimit = clientLimit;
                 }
+                else if (ISV)
+                {
+                    // default for all ISV editions
+                    ClientLimit = 5;
+                }
                 else
                 {
+                    // defaults for non-ISV editions
                     switch (Edition)
                     {
                         case LicenseEdition.Business:
@@ -294,8 +307,6 @@ namespace Duende.IdentityServer.Validation
                     IssuerLimit = 1;
                 }
             }
-
-            ISV = claims.HasClaim("feature", "isv");
         }
 
         public string CompanyName { get; set; }

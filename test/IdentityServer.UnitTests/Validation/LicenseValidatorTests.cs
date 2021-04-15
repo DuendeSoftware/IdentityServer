@@ -48,6 +48,7 @@ namespace UnitTests.Validation
         [Trait("Category", Category)]
         public void license_should_parse_edition_and_use_default_values()
         {
+            // non-ISV
             {
                 var subject = new License(new Claim("edition", "enterprise"));
                 subject.Edition.Should().Be(License.LicenseEdition.Enterprise);
@@ -87,6 +88,42 @@ namespace UnitTests.Validation
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeFalse();
                 subject.ISV.Should().BeFalse();
+            }
+
+            // ISV
+            {
+                var subject = new License(new Claim("edition", "enterprise"), new Claim("feature", "isv"));
+                subject.Edition.Should().Be(License.LicenseEdition.Enterprise);
+                subject.IsEnterprise.Should().BeTrue();
+                subject.ClientLimit.Should().Be(5);
+                subject.IssuerLimit.Should().BeNull();
+                subject.KeyManagement.Should().BeTrue();
+                subject.ResourceIsolation.Should().BeTrue();
+                subject.ISV.Should().BeTrue();
+            }
+            {
+                var subject = new License(new Claim("edition", "business"), new Claim("feature", "isv"));
+                subject.Edition.Should().Be(License.LicenseEdition.Business);
+                subject.IsBusiness.Should().BeTrue();
+                subject.ClientLimit.Should().Be(5);
+                subject.IssuerLimit.Should().Be(1);
+                subject.KeyManagement.Should().BeTrue();
+                subject.ResourceIsolation.Should().BeFalse();
+                subject.ISV.Should().BeTrue();
+            }
+            {
+                var subject = new License(new Claim("edition", "starter"), new Claim("feature", "isv"));
+                subject.Edition.Should().Be(License.LicenseEdition.Starter);
+                subject.IsStarter.Should().BeTrue();
+                subject.ClientLimit.Should().Be(5);
+                subject.IssuerLimit.Should().Be(1);
+                subject.KeyManagement.Should().BeFalse();
+                subject.ResourceIsolation.Should().BeFalse();
+                subject.ISV.Should().BeTrue();
+            }
+            {
+                Action a = () => new License(new Claim("edition", "community"), new Claim("feature", "isv"));
+                a.Should().Throw<Exception>();
             }
         }
 
@@ -162,6 +199,55 @@ namespace UnitTests.Validation
                     new Claim("feature", "unlimited_clients"));
                 subject.ClientLimit.Should().BeNull();
             }
+
+            // ISV
+            {
+                var subject = new License(
+                    new Claim("edition", "enterprise"),
+                    new Claim("feature", "isv"),
+                    new Claim("client_limit", "20"));
+                subject.ClientLimit.Should().Be(20);
+            }
+            {
+                var subject = new License(
+                    new Claim("edition", "business"),
+                    new Claim("feature", "isv"),
+                    new Claim("client_limit", "20"));
+                subject.ClientLimit.Should().Be(20);
+            }
+            {
+                var subject = new License(
+                    new Claim("edition", "starter"),
+                    new Claim("feature", "isv"),
+                    new Claim("client_limit", "20"));
+                subject.ClientLimit.Should().Be(20);
+            }
+
+            {
+                var subject = new License(
+                    new Claim("edition", "enterprise"),
+                    new Claim("feature", "isv"),
+                    new Claim("feature", "unlimited_clients"),
+                    new Claim("client_limit", "20"));
+                subject.ClientLimit.Should().BeNull();
+            }
+            {
+                var subject = new License(
+                    new Claim("edition", "business"),
+                    new Claim("feature", "isv"),
+                    new Claim("feature", "unlimited_clients"),
+                    new Claim("client_limit", "20"));
+                subject.ClientLimit.Should().BeNull();
+            }
+            {
+                var subject = new License(
+                    new Claim("edition", "starter"),
+                    new Claim("feature", "isv"),
+                    new Claim("feature", "unlimited_clients"),
+                    new Claim("client_limit", "20"));
+                subject.ClientLimit.Should().BeNull();
+            }
+
         }
 
         [Fact]
