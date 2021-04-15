@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -93,6 +93,14 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         public DbSet<ApiScope> ApiScopes { get; set; }
 
         /// <summary>
+        /// Gets or sets the identity providers.
+        /// </summary>
+        /// <value>
+        /// The identity providers.
+        /// </value>
+        public DbSet<OidcIdentityProvider> OidcIdentityProviders { get; set; }
+        
+        /// <summary>
         /// Override this method to further configure the model that was discovered by convention from the entity types
         /// exposed in <see cref="T:Microsoft.EntityFrameworkCore.DbSet`1" /> properties on your derived context. The resulting model may be cached
         /// and re-used for subsequent instances of your derived context.
@@ -108,6 +116,7 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         {
             modelBuilder.ConfigureClientContext(storeOptions);
             modelBuilder.ConfigureResourcesContext(storeOptions);
+            modelBuilder.ConfigureIdentityProviderContext(storeOptions);
 
             base.OnModelCreating(modelBuilder);
         }

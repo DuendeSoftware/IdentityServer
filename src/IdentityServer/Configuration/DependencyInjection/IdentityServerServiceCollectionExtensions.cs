@@ -41,6 +41,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddDefaultEndpoints()
                 .AddPluggableServices()
                 .AddKeyManagement()
+                .AddDynamicProvidersCore()
+                .AddOidcDynamicProvider()
                 .AddValidators()
                 .AddResponseGenerators()
                 .AddDefaultSecretParsers()

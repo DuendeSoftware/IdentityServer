@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -53,5 +53,13 @@ namespace Duende.IdentityServer.EntityFramework.Interfaces
         /// The identity resources.
         /// </value>
         DbSet<ApiScope> ApiScopes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identity providers.
+        /// </summary>
+        /// <value>
+        /// The identity providers.
+        /// </value>
+        DbSet<OidcIdentityProvider> OidcIdentityProviders { get; set; }
     }
 }

@@ -12,7 +12,7 @@ using IdentityModel.Client;
 using IntegrationTests.Common;
 using Xunit;
 
-namespace IntegrationTests.Pipeline
+namespace IntegrationTests.Hosting
 {
     public class SubpathHosting
     {

@@ -157,5 +157,10 @@ namespace Duende.IdentityServer.Configuration
         /// Gets or sets the license key.
         /// </summary>
         public string LicenseKey { get; set; }
+
+        /// <summary>
+        /// Options for dynamic external providers.
+        /// </summary>
+        public DynamicProviderOptions DynamicProviders { get; set; } = new DynamicProviderOptions();
     }
 }

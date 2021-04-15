@@ -5,6 +5,7 @@
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting;
+using Duende.IdentityServer.Hosting.DynamicProviders;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
@@ -35,6 +36,8 @@ namespace Microsoft.AspNetCore.Builder
             app.UseMiddleware<BaseUrlMiddleware>();
 
             app.ConfigureCors();
+
+            app.UseMiddleware<DynamicSchemeAuthenticationMiddleware>();
 
             // it seems ok if we have UseAuthentication more than once in the pipeline --
             // this will just re-run the various callback handlers and the default authN 

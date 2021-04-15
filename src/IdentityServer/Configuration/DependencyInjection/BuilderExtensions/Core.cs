@@ -28,6 +28,7 @@ using Duende.IdentityServer.Hosting.FederatedSignOut;
 using Duende.IdentityServer.Services.Default;
 using Duende.IdentityServer.Services.KeyManagement;
 using Microsoft.Extensions.Logging;
+using Duende.IdentityServer.Hosting.DynamicProviders;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -211,6 +212,24 @@ namespace Microsoft.Extensions.DependencyInjection
                 var opts = x.GetRequiredService<IdentityServerOptions>();
                 return new FileSystemKeyStore(opts.KeyManagement.KeyPath, x.GetRequiredService<ILogger<FileSystemKeyStore>>());
             });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds the core services for dynamic external providers.
+        /// </summary>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddDynamicProvidersCore(this IIdentityServerBuilder builder)
+        {
+            builder.Services.AddSingleton(svcs => svcs.GetRequiredService<IdentityServerOptions>().DynamicProviders);
+            builder.Services.AddTransientDecorator<IAuthenticationSchemeProvider, DynamicAuthenticationSchemeProvider>();
+            builder.Services.TryAddSingleton<IIdentityProviderStore, NopIdentityProviderStore>();
+            // the per-request cache is to ensure that a scheme loaded from the cache is still available later in the
+            // request and made available anywhere else during this request (in case the static cache times out across 
+            // 2 calls within the same request)
+            builder.Services.AddScoped<DynamicAuthenticationSchemeCache>();
 
             return builder;
         }

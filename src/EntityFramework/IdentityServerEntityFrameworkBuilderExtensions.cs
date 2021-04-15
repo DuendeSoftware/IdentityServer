@@ -10,7 +10,6 @@ using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.EntityFramework.Services;
 using Duende.IdentityServer.EntityFramework.Storage;
 using Duende.IdentityServer.EntityFramework.Stores;
-using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 
@@ -51,7 +50,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.AddClientStore<ClientStore>();
             builder.AddResourceStore<ResourceStore>();
             builder.AddCorsPolicyService<CorsPolicyService>();
-
+            builder.AddIdentityProviderStore<OidcIdentityProviderStore>();
+            
             return builder;
         }
 
@@ -69,6 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.AddClientStoreCache<ClientStore>();
             builder.AddResourceStoreCache<ResourceStore>();
             builder.AddCorsPolicyCache<CorsPolicyService>();
+            builder.AddIdentityProviderStoreCache<OidcIdentityProviderStore>();
 
             return builder;
         }

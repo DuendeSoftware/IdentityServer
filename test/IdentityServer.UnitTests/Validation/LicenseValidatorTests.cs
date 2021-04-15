@@ -57,6 +57,7 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().BeNull();
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeTrue();
+                subject.DynamicProviders.Should().BeTrue();
                 subject.ISV.Should().BeFalse();
             }
             {
@@ -67,6 +68,7 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().Be(1);
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeFalse();
+                subject.DynamicProviders.Should().BeFalse();
                 subject.ISV.Should().BeFalse();
             }
             {
@@ -77,6 +79,7 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().Be(1);
                 subject.KeyManagement.Should().BeFalse();
                 subject.ResourceIsolation.Should().BeFalse();
+                subject.DynamicProviders.Should().BeFalse();
                 subject.ISV.Should().BeFalse();
             }
             {
@@ -87,6 +90,7 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().Be(1);
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeFalse();
+                subject.DynamicProviders.Should().BeFalse();
                 subject.ISV.Should().BeFalse();
             }
 
@@ -145,10 +149,12 @@ namespace UnitTests.Validation
                     new Claim("edition", "business"),
                     new Claim("client_limit", "20"),
                     new Claim("issuer_limit", "5"),
-                    new Claim("feature", "resource_isolation"));
+                    new Claim("feature", "resource_isolation"),
+                    new Claim("feature", "dynamic_providers"));
                 subject.ClientLimit.Should().Be(20);
                 subject.IssuerLimit.Should().Be(5);
                 subject.ResourceIsolation.Should().BeTrue();
+                subject.DynamicProviders.Should().BeTrue();
             }
             {
                 var subject = new License(
@@ -168,11 +174,13 @@ namespace UnitTests.Validation
                     new Claim("issuer_limit", "5"),
                     new Claim("feature", "key_management"),
                     new Claim("feature", "isv"),
-                    new Claim("feature", "resource_isolation"));
+                    new Claim("feature", "resource_isolation"),
+                    new Claim("feature", "dynamic_providers"));
                 subject.ClientLimit.Should().Be(20);
                 subject.IssuerLimit.Should().Be(5);
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeTrue();
+                subject.DynamicProviders.Should().BeTrue();
                 subject.ISV.Should().BeTrue();
             }
             {

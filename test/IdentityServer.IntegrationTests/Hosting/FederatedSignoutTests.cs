@@ -17,7 +17,7 @@ using IntegrationTests.Common;
 using Microsoft.AspNetCore.Authentication;
 using Xunit;
 
-namespace IntegrationTests.Pipeline
+namespace IntegrationTests.Hosting
 {
     public class FederatedSignoutTests
     {
