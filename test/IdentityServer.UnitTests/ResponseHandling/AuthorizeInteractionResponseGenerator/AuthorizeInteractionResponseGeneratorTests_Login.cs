@@ -27,6 +27,7 @@ namespace UnitTests.ResponseHandling.AuthorizeInteractionResponseGenerator
         public AuthorizeInteractionResponseGeneratorTests_Login()
         {
             _subject = new Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator(
+                _options,
                 _clock,
                 TestLogger.Create<Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator>(),
                 _mockConsentService,

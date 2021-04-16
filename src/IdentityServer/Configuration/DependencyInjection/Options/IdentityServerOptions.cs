@@ -55,6 +55,11 @@ namespace Duende.IdentityServer.Configuration
         public bool StrictJarValidation { get; set; } = false;
 
         /// <summary>
+        /// Specifies if a user's tenant claim is compared to the tenant acr_values parameter value to determine if the login page is displayed. Defaults to false.
+        /// </summary>
+        public bool ValidateTenantOnAuthorization { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets the endpoint configuration.
         /// </summary>
         /// <value>

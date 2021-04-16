@@ -421,8 +421,10 @@ namespace IntegrationTests.Endpoints.Authorize
         
         [Fact]
         [Trait("Category", Category)]
-        public async Task user_tenant_does_not_match_acr_tenant_should_cause_login_page()
+        public async Task when_tenant_validation_enabled_user_tenant_does_not_match_acr_tenant_should_cause_login_page()
         {
+            _mockPipeline.Options.ValidateTenantOnAuthorization = true;
+
             var user = new IdentityServerUser("bob") { Tenant = "t1" };
             await _mockPipeline.LoginAsync(user.CreatePrincipal());
 
@@ -438,6 +440,27 @@ namespace IntegrationTests.Endpoints.Authorize
 
             _mockPipeline.LoginWasCalled.Should().BeTrue();
             _mockPipeline.LoginRequest.Tenant.Should().Be("t2");
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task when_tenant_validation_disabled_user_tenant_does_not_match_acr_tenant_should_not_cause_login_page()
+        {
+            var user = new IdentityServerUser("bob") { Tenant = "t1" };
+            await _mockPipeline.LoginAsync(user.CreatePrincipal());
+
+            _mockPipeline.LoginWasCalled = false;
+            var url = _mockPipeline.CreateAuthorizeUrl(
+                clientId: "client1",
+                responseType: "id_token",
+                scope: "openid profile",
+                redirectUri: "https://client1/callback",
+                state: "123_state",
+                nonce: "123_nonce",
+                acrValues: "tenant:t2");
+            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+            _mockPipeline.LoginWasCalled.Should().BeFalse();
         }
 
         [Fact]
