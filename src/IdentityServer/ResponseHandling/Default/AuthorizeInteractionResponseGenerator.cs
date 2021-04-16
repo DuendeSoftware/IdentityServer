@@ -12,6 +12,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
+using Duende.IdentityServer.Configuration;
 
 namespace Duende.IdentityServer.ResponseHandling
 {
@@ -40,20 +41,28 @@ namespace Duende.IdentityServer.ResponseHandling
         /// The clock
         /// </summary>
         protected readonly ISystemClock Clock;
+        
+        /// <summary>
+        /// The options
+        /// </summary>
+        protected readonly IdentityServerOptions Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizeInteractionResponseGenerator"/> class.
         /// </summary>
+        /// <param name="options"></param>
         /// <param name="clock">The clock.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="consent">The consent.</param>
         /// <param name="profile">The profile.</param>
         public AuthorizeInteractionResponseGenerator(
+            IdentityServerOptions options,
             ISystemClock clock,
             ILogger<AuthorizeInteractionResponseGenerator> logger,
             IConsentService consent, 
             IProfileService profile)
         {
+            Options = options;
             Clock = clock;
             Logger = logger;
             Consent = consent;
@@ -158,6 +167,21 @@ namespace Duende.IdentityServer.ResponseHandling
                 }
 
                 return new InteractionResponse { IsLogin = true };
+            }
+
+            // check if tenant hint matches current tenant
+            if (Options.ValidateTenantOnAuthorization)
+            {
+                var tenant = request.GetTenant();
+                if (tenant.IsPresent())
+                {
+                    var currentTenant = request.Subject.GetTenant();
+                    if (tenant != currentTenant)
+                    {
+                        Logger.LogInformation("Showing login: Current tenant ({currentTenant}) is not the requested tenant ({tenant})", currentTenant, tenant);
+                        return new InteractionResponse { IsLogin = true };
+                    }
+                }
             }
 
             // check current idp

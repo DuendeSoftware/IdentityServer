@@ -93,6 +93,7 @@ namespace UnitTests.ResponseHandling.AuthorizeInteractionResponseGenerator
         public AuthorizeInteractionResponseGeneratorTests_Consent()
         {
             _subject = new Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator(
+                _options,
                 new StubClock(),
                 TestLogger.Create<Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator>(),
                 _mockConsent,
