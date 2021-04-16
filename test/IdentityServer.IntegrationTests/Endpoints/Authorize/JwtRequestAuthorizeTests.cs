@@ -1281,9 +1281,65 @@ namespace IntegrationTests.Endpoints.Authorize
                 });
             var response = await _mockPipeline.BrowserClient.GetAsync(url);
 
-            // this simulates the login page returning to the returnUrl whichi is the authorize callback page
+            // this simulates the login page returning to the returnUrl which is the authorize callback page
             _mockPipeline.BrowserClient.AllowAutoRedirect = false;
             response = await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.BaseUrl + _mockPipeline.LoginReturnUrl);
+            response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+            response.Headers.Location.ToString().Should().StartWith("https://client/callback");
+            response.Headers.Location.ToString().Should().Contain("id_token=");
+            response.Headers.Location.ToString().Should().Contain("state=state123");
+        }
+
+        [Theory]
+        [InlineData((Type) null)]
+        [InlineData(typeof(QueryStringAuthorizationParametersMessageStore))]
+        [InlineData(typeof(DistributedCacheAuthorizationParametersMessageStore))]
+        [Trait("Category", Category)]
+        public async Task prompt_login_should_allow_user_to_consent_and_complete_authorization(Type storeType)
+        {
+            if (storeType != null)
+            {
+                _mockPipeline.OnPostConfigureServices += services =>
+                {
+                    services.AddTransient(typeof(IAuthorizationParametersMessageStore), storeType);
+                };
+                _mockPipeline.Initialize();
+            }
+
+            _client.RequireConsent = true;
+            
+            await _mockPipeline.LoginAsync("bob");
+
+            var requestJwt = CreateRequestJwt(
+                issuer: _client.ClientId,
+                audience: IdentityServerPipeline.BaseUrl,
+                credential: new X509SigningCredentials(TestCert.Load()),
+                claims: new[] {
+                    new Claim("client_id", _client.ClientId),
+                    new Claim("response_type", "id_token"),
+                    new Claim("scope", "openid profile"),
+                    new Claim("redirect_uri", "https://client/callback"),
+            });
+
+            var url = _mockPipeline.CreateAuthorizeUrl(
+                clientId: _client.ClientId,
+                responseType: "id_token",
+                state: "state123",
+                nonce: "nonce123",
+                extra: new
+                {
+                    request = requestJwt
+                });
+
+            _mockPipeline.ConsentResponse = new ConsentResponse()
+            {
+                ScopesValuesConsented = new string[] { "openid", "profile" }
+            };
+            _mockPipeline.BrowserClient.StopRedirectingAfter = 2;
+
+            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+
             response.StatusCode.Should().Be(HttpStatusCode.Redirect);
             response.Headers.Location.ToString().Should().StartWith("https://client/callback");
             response.Headers.Location.ToString().Should().Contain("id_token=");
