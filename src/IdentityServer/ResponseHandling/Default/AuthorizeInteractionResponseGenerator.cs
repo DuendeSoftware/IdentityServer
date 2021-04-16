@@ -160,6 +160,18 @@ namespace Duende.IdentityServer.ResponseHandling
                 return new InteractionResponse { IsLogin = true };
             }
 
+            // check if tenant hint matches current tenant
+            var tenant = request.GetTenant();
+            if (tenant.IsPresent())
+            {
+                var currentTenant = request.Subject.GetTenant();
+                if (tenant != currentTenant)
+                {
+                    Logger.LogInformation("Showing login: Current tenant ({currentTenant}) is not the requested tenant ({tenant})", currentTenant, tenant);
+                    return new InteractionResponse { IsLogin = true };
+                }
+            }
+
             // check current idp
             var currentIdp = request.Subject.GetIdentityProvider();
 

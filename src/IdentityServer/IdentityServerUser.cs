@@ -32,6 +32,11 @@ namespace Duende.IdentityServer
         public string IdentityProvider { get; set; }
 
         /// <summary>
+        /// Tenant (optional)
+        /// </summary>
+        public string Tenant { get; set; }
+
+        /// <summary>
         /// Authentication methods
         /// </summary>
         public ICollection<string> AuthenticationMethods { get; set; } = new HashSet<string>();
@@ -75,6 +80,11 @@ namespace Duende.IdentityServer
             if (IdentityProvider.IsPresent())
             {
                 claims.Add(new Claim(JwtClaimTypes.IdentityProvider, IdentityProvider));
+            }
+            
+            if (Tenant.IsPresent())
+            {
+                claims.Add(new Claim(IdentityServerConstants.ClaimTypes.Tenant, Tenant));
             }
 
             if (AuthenticationTime.HasValue)
