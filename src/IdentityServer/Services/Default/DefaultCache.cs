@@ -74,7 +74,7 @@ namespace Duende.IdentityServer.Services
         internal void Remove(string key)
         {
             key = GetKey(key);
-            _cache.Remove(key);
+            Cache.Remove(key);
         }
     }
 }
