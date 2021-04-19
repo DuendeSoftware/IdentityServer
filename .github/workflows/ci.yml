@@ -5,6 +5,7 @@ on:
     branches:
     - main
     - features/**
+    - releases/**
     tags:
     - '*.*.*'
   pull_request:
