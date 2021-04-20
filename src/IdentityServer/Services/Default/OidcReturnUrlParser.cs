@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -10,6 +10,7 @@ using System.Collections.Specialized;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
+using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.Services
 {
@@ -17,17 +18,20 @@ namespace Duende.IdentityServer.Services
     {
         private readonly IAuthorizeRequestValidator _validator;
         private readonly IUserSession _userSession;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger _logger;
         private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
         public OidcReturnUrlParser(
             IAuthorizeRequestValidator validator,
             IUserSession userSession,
+            IHttpContextAccessor httpContextAccessor,
             ILogger<OidcReturnUrlParser> logger,
             IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
         {
             _validator = validator;
             _userSession = userSession;
+            _httpContextAccessor = httpContextAccessor;
             _logger = logger;
             _authorizationParametersMessageStore = authorizationParametersMessageStore;
         }
@@ -59,6 +63,12 @@ namespace Duende.IdentityServer.Services
 
         public bool IsValidReturnUrl(string returnUrl)
         {
+            var host = _httpContextAccessor.HttpContext.GetIdentityServerHost();
+            if (returnUrl.StartsWith(host, StringComparison.OrdinalIgnoreCase))
+            {
+                returnUrl = returnUrl.Substring(host.Length);
+            }
+            
             if (returnUrl.IsLocalUrl())
             {
                 var index = returnUrl.IndexOf('?');
