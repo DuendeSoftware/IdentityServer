@@ -67,6 +67,7 @@ namespace Duende.IdentityServer.Services
             {
                 if (!Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out _))
                 {
+                    _logger.LogTrace("returnUrl is not valid");
                     return false;
                 }
 
