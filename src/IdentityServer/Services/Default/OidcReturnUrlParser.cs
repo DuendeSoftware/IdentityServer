@@ -63,18 +63,35 @@ namespace Duende.IdentityServer.Services
 
         public bool IsValidReturnUrl(string returnUrl)
         {
-            var host = _httpContextAccessor.HttpContext.GetIdentityServerHost();
-            if (returnUrl.StartsWith(host, StringComparison.OrdinalIgnoreCase))
+            if (returnUrl != null)
             {
-                returnUrl = returnUrl.Substring(host.Length);
+                if (!Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out _))
+                {
+                    return false;
+                }
+
+                var host = _httpContextAccessor.HttpContext.GetIdentityServerHost();
+                if (returnUrl.StartsWith(host, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    returnUrl = returnUrl.Substring(host.Length);
+                }
             }
             
             if (returnUrl.IsLocalUrl())
             {
-                var index = returnUrl.IndexOf('?');
-                if (index >= 0)
                 {
-                    returnUrl = returnUrl.Substring(0, index);
+                    var index = returnUrl.IndexOf('?');
+                    if (index >= 0)
+                    {
+                        returnUrl = returnUrl.Substring(0, index);
+                    }
+                }
+                {
+                    var index = returnUrl.IndexOf('#');
+                    if (index >= 0)
+                    {
+                        returnUrl = returnUrl.Substring(0, index);
+                    }
                 }
 
                 if (returnUrl.EndsWith(Constants.ProtocolRoutePaths.Authorize, StringComparison.Ordinal) ||
