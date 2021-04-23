@@ -108,8 +108,8 @@ namespace Duende.IdentityServer.Configuration
         public string DeviceVerificationUserCodeParameter { get; set; } = Constants.UIConstants.DefaultRoutePathParams.UserCode;
 
         /// <summary>
-        /// Flag that allows return URL validation to accept full URL that includes the IdentityServer scheme and host name. Defaults to false.
+        /// Flag that allows return URL validation to accept full URL that includes the IdentityServer origin. Defaults to false.
         /// </summary>
-        public bool AllowHostInReturnUrl { get; set; }
+        public bool AllowOriginInReturnUrl { get; set; }
     }
 }

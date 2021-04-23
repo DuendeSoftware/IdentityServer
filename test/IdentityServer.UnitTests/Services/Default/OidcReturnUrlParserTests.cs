@@ -70,7 +70,7 @@ namespace UnitTests.Services.Default
         [InlineData("https://server/foo/connect/authorize")]
         public void IsValidReturnUrl_accepts_urls_with_current_host(string url)
         {
-            _options.UserInteraction.AllowHostInReturnUrl = true;
+            _options.UserInteraction.AllowOriginInReturnUrl = true;
             var valid = _subject.IsValidReturnUrl(url);
             valid.Should().BeTrue();
         }
@@ -78,7 +78,7 @@ namespace UnitTests.Services.Default
         [Fact]
         public void IsValidReturnUrl_when_AllowHostInReturnUrl_disabled_rejects_urls_with_current_host()
         {
-            _options.UserInteraction.AllowHostInReturnUrl = false;
+            _options.UserInteraction.AllowOriginInReturnUrl = false;
             var valid = _subject.IsValidReturnUrl("https://server/connect/authorize");
             valid.Should().BeFalse();
         }
@@ -94,7 +94,7 @@ namespace UnitTests.Services.Default
         [InlineData("https://server:443/connect/authorize")]
         public void IsValidReturnUrl_rejects_urls_with_incorrect_current_host(string url)
         {
-            _options.UserInteraction.AllowHostInReturnUrl = true;
+            _options.UserInteraction.AllowOriginInReturnUrl = true;
             var valid = _subject.IsValidReturnUrl(url);
             valid.Should().BeFalse();
         }
@@ -106,7 +106,7 @@ namespace UnitTests.Services.Default
         [InlineData("https://SERVER:443/connect/authorize")]
         public void IsValidReturnUrl_accepts_urls_with_current_port(string url)
         {
-            _options.UserInteraction.AllowHostInReturnUrl = true;
+            _options.UserInteraction.AllowOriginInReturnUrl = true;
             _httpContext.Request.Host = new HostString("server:443");
 
             var valid = _subject.IsValidReturnUrl(url);
@@ -125,7 +125,7 @@ namespace UnitTests.Services.Default
         [InlineData("https://server:443//foo/connect/authorize")]
         public void IsValidReturnUrl_rejects_urls_with_incorrect_current_port(string url)
         {
-            _options.UserInteraction.AllowHostInReturnUrl = true;
+            _options.UserInteraction.AllowOriginInReturnUrl = true;
             _httpContext.Request.Host = new HostString("server:443");
             
             var valid = _subject.IsValidReturnUrl(url);

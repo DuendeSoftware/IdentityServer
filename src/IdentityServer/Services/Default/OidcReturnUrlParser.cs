@@ -67,7 +67,7 @@ namespace Duende.IdentityServer.Services
 
         public bool IsValidReturnUrl(string returnUrl)
         {
-            if (_options.UserInteraction.AllowHostInReturnUrl && returnUrl != null)
+            if (_options.UserInteraction.AllowOriginInReturnUrl && returnUrl != null)
             {
                 if (!Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out _))
                 {
