@@ -21,10 +21,6 @@ namespace UnitTests.Services.Default
 
         public OidcReturnUrlParserTests()
         {
-            var services = new ServiceCollection();
-            services.AddSingleton(_options);
-            _httpContext.RequestServices = services.BuildServiceProvider();
-
             _httpContext.Request.Scheme = "https";
             _httpContext.Request.Host = new HostString("server");
 
