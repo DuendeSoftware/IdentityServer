@@ -7,6 +7,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 using Xunit;
 
 namespace UnitTests.Services.Default
@@ -111,7 +112,7 @@ namespace UnitTests.Services.Default
             _options.UserInteraction.AllowOriginInReturnUrl = true;
             _httpContext.Request.Host = new HostString("грант.рф");
 
-            var valid = _subject.IsValidReturnUrl("https://грант.рф/connect/authorize");
+            var valid = _subject.IsValidReturnUrl("https://xn--80af5akm.xn--p1ai/connect/authorize");
             valid.Should().BeTrue();
         }
 

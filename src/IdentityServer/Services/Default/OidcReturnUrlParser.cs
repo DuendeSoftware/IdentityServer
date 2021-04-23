@@ -75,10 +75,10 @@ namespace Duende.IdentityServer.Services
                     return false;
                 }
 
-                var origin = _httpContextAccessor.HttpContext.GetIdentityServerOrigin();
-                if (returnUrl.StartsWith(origin, StringComparison.OrdinalIgnoreCase) == true)
+                var host = _httpContextAccessor.HttpContext.GetIdentityServerHost();
+                if (returnUrl.StartsWith(host, StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    returnUrl = returnUrl.Substring(origin.Length);
+                    returnUrl = returnUrl.Substring(host.Length);
                 }
             }
             
