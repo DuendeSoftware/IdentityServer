@@ -5,6 +5,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -19,6 +20,10 @@ namespace UnitTests.Services.Default
 
         public OidcReturnUrlParserTests()
         {
+            var services = new ServiceCollection();
+            services.AddSingleton(_options);
+            _httpContext.RequestServices = services.BuildServiceProvider();
+
             _httpContext.Request.Scheme = "https";
             _httpContext.Request.Host = new HostString("server");
 
@@ -99,6 +104,16 @@ namespace UnitTests.Services.Default
             valid.Should().BeFalse();
         }
 
+
+        [Fact]
+        public void IsValidReturnUrl_accepts_urls_with_unicode()
+        {
+            _options.UserInteraction.AllowOriginInReturnUrl = true;
+            _httpContext.Request.Host = new HostString("грант.рф");
+
+            var valid = _subject.IsValidReturnUrl("https://грант.рф/connect/authorize");
+            valid.Should().BeTrue();
+        }
 
         [Theory]
         [InlineData("https://server:443/connect/authorize")]
