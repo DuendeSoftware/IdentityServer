@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +13,8 @@ namespace UnitTests.Services.Default
     public class OidcReturnUrlParserTests
     {
         private OidcReturnUrlParser _subject;
-        
+
+        IdentityServerOptions _options = new IdentityServerOptions();
         DefaultHttpContext _httpContext = new DefaultHttpContext();
 
         public OidcReturnUrlParserTests()
@@ -21,6 +23,7 @@ namespace UnitTests.Services.Default
             _httpContext.Request.Host = new HostString("server");
 
             _subject = new OidcReturnUrlParser(
+                _options,
                 null, null, 
                 new HttpContextAccessor { HttpContext = _httpContext }, 
                 new LoggerFactory().CreateLogger<OidcReturnUrlParser>());
@@ -67,10 +70,19 @@ namespace UnitTests.Services.Default
         [InlineData("https://server/foo/connect/authorize")]
         public void IsValidReturnUrl_accepts_urls_with_current_host(string url)
         {
+            _options.UserInteraction.AllowHostInReturnUrl = true;
             var valid = _subject.IsValidReturnUrl(url);
             valid.Should().BeTrue();
         }
-        
+
+        [Fact]
+        public void IsValidReturnUrl_when_AllowHostInReturnUrl_disabled_rejects_urls_with_current_host()
+        {
+            _options.UserInteraction.AllowHostInReturnUrl = false;
+            var valid = _subject.IsValidReturnUrl("https://server/connect/authorize");
+            valid.Should().BeFalse();
+        }
+
         [Theory]
         [InlineData("http://server/connect/authorize")]
         [InlineData("https:\\/server/connect/authorize")]
@@ -82,6 +94,7 @@ namespace UnitTests.Services.Default
         [InlineData("https://server:443/connect/authorize")]
         public void IsValidReturnUrl_rejects_urls_with_incorrect_current_host(string url)
         {
+            _options.UserInteraction.AllowHostInReturnUrl = true;
             var valid = _subject.IsValidReturnUrl(url);
             valid.Should().BeFalse();
         }
@@ -93,6 +106,7 @@ namespace UnitTests.Services.Default
         [InlineData("https://SERVER:443/connect/authorize")]
         public void IsValidReturnUrl_accepts_urls_with_current_port(string url)
         {
+            _options.UserInteraction.AllowHostInReturnUrl = true;
             _httpContext.Request.Host = new HostString("server:443");
 
             var valid = _subject.IsValidReturnUrl(url);
@@ -111,6 +125,7 @@ namespace UnitTests.Services.Default
         [InlineData("https://server:443//foo/connect/authorize")]
         public void IsValidReturnUrl_rejects_urls_with_incorrect_current_port(string url)
         {
+            _options.UserInteraction.AllowHostInReturnUrl = true;
             _httpContext.Request.Host = new HostString("server:443");
             
             var valid = _subject.IsValidReturnUrl(url);

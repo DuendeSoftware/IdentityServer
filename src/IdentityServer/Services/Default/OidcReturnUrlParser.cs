@@ -11,11 +11,13 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Http;
+using Duende.IdentityServer.Configuration;
 
 namespace Duende.IdentityServer.Services
 {
     internal class OidcReturnUrlParser : IReturnUrlParser
     {
+        private readonly IdentityServerOptions _options;
         private readonly IAuthorizeRequestValidator _validator;
         private readonly IUserSession _userSession;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -23,12 +25,14 @@ namespace Duende.IdentityServer.Services
         private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
         public OidcReturnUrlParser(
+            IdentityServerOptions options,
             IAuthorizeRequestValidator validator,
             IUserSession userSession,
             IHttpContextAccessor httpContextAccessor,
             ILogger<OidcReturnUrlParser> logger,
             IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
         {
+            _options = options;
             _validator = validator;
             _userSession = userSession;
             _httpContextAccessor = httpContextAccessor;
@@ -63,7 +67,7 @@ namespace Duende.IdentityServer.Services
 
         public bool IsValidReturnUrl(string returnUrl)
         {
-            if (returnUrl != null)
+            if (_options.UserInteraction.AllowHostInReturnUrl && returnUrl != null)
             {
                 if (!Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out _))
                 {
