@@ -3,7 +3,7 @@
 
 
 using Duende.IdentityServer.EntityFramework.Mappers;
-using Duende.IdentityServer.Hosting.DynamicProviders;
+using Duende.IdentityServer.Models;
 using FluentAssertions;
 using Xunit;
 
@@ -22,7 +22,7 @@ namespace UnitTests.Mappers
         {
             var model = new OidcProvider();
             var mappedEntity = model.ToEntity();
-            var mappedModel = mappedEntity.ToOidcModel();
+            var mappedModel = mappedEntity.ToModel();
 
             Assert.NotNull(mappedModel);
             Assert.NotNull(mappedEntity);
@@ -41,22 +41,17 @@ namespace UnitTests.Mappers
                 ResponseType = "rt",
                 Scheme = "scheme",
                 Scope = "scope",
-                Type = "type"
             };
 
 
             var mappedEntity = model.ToEntity();
-            mappedEntity.Authority.Should().Be("auth");
-            mappedEntity.ClientId.Should().Be("client");
-            mappedEntity.ClientSecret.Should().Be("secret");
             mappedEntity.DisplayName.Should().Be("name");
-            mappedEntity.ResponseType.Should().Be("rt");
             mappedEntity.Scheme.Should().Be("scheme");
-            mappedEntity.Scope.Should().Be("scope");
-            mappedEntity.Type.Should().Be("type");
+            mappedEntity.Type.Should().Be("oidc");
+            mappedEntity.Properties.Should().NotBeNullOrEmpty();
 
 
-            var mappedModel = mappedEntity.ToOidcModel();
+            var mappedModel = new OidcProvider(mappedEntity.ToModel());
 
             mappedModel.Authority.Should().Be("auth");
             mappedModel.ClientId.Should().Be("client");
@@ -65,7 +60,7 @@ namespace UnitTests.Mappers
             mappedModel.ResponseType.Should().Be("rt");
             mappedModel.Scheme.Should().Be("scheme");
             mappedModel.Scope.Should().Be("scope");
-            mappedModel.Type.Should().Be("type");
+            mappedModel.Type.Should().Be("oidc");
         }
     }
 }

@@ -91,6 +91,18 @@ CREATE TABLE [Clients] (
 
 GO
 
+CREATE TABLE [IdentityProviders] (
+    [Id] int NOT NULL IDENTITY,
+    [Scheme] nvarchar(200) NOT NULL,
+    [DisplayName] nvarchar(200) NULL,
+    [Enabled] bit NOT NULL,
+    [Type] nvarchar(20) NOT NULL,
+    [Properties] nvarchar(max) NULL,
+    CONSTRAINT [PK_IdentityProviders] PRIMARY KEY ([Id])
+);
+
+GO
+
 CREATE TABLE [IdentityResources] (
     [Id] int NOT NULL IDENTITY,
     [Enabled] bit NOT NULL,
@@ -104,22 +116,6 @@ CREATE TABLE [IdentityResources] (
     [Updated] datetime2 NULL,
     [NonEditable] bit NOT NULL,
     CONSTRAINT [PK_IdentityResources] PRIMARY KEY ([Id])
-);
-
-GO
-
-CREATE TABLE [OidcIdentityProviders] (
-    [Id] int NOT NULL IDENTITY,
-    [Scheme] nvarchar(200) NOT NULL,
-    [DisplayName] nvarchar(200) NULL,
-    [Enabled] bit NOT NULL,
-    [Type] nvarchar(20) NOT NULL,
-    [Authority] nvarchar(400) NULL,
-    [ResponseType] nvarchar(20) NULL,
-    [ClientId] nvarchar(100) NULL,
-    [ClientSecret] nvarchar(200) NULL,
-    [Scope] nvarchar(400) NULL,
-    CONSTRAINT [PK_OidcIdentityProviders] PRIMARY KEY ([Id])
 );
 
 GO
@@ -392,7 +388,7 @@ CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20210408135431_Configuration', N'3.1.0');
+VALUES (N'20210505191113_Configuration', N'3.1.0');
 
 GO
 

@@ -190,6 +190,6 @@ namespace Duende.IdentityServer.EntityFramework.Options
         /// <summary>
         /// Gets or sets the identity providers table configuration.
         /// </summary>
-        public TableConfiguration OidcIdentityProvider { get; set; } = new TableConfiguration("OidcIdentityProviders");
+        public TableConfiguration IdentityProvider { get; set; } = new TableConfiguration("IdentityProviders");
     }
 }

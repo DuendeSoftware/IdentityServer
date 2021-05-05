@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Mappers;
-using Duende.IdentityServer.Hosting.DynamicProviders;
+using Duende.IdentityServer.Models;
 using IdentityServerHost.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,7 +52,7 @@ namespace SqlServer
             if (!context.IdentityResources.Any())
             {
                 Console.WriteLine("IdentityResources being populated");
-                foreach (var resource in Resources.IdentityResources)
+                foreach (var resource in IdentityServerHost.Configuration.Resources.IdentityResources)
                 {
                     context.IdentityResources.Add(resource.ToEntity());
                 }
@@ -66,7 +66,7 @@ namespace SqlServer
             if (!context.ApiResources.Any())
             {
                 Console.WriteLine("ApiResources being populated");
-                foreach (var resource in Resources.ApiResources)
+                foreach (var resource in IdentityServerHost.Configuration.Resources.ApiResources)
                 {
                     context.ApiResources.Add(resource.ToEntity());
                 }
@@ -80,7 +80,7 @@ namespace SqlServer
             if (!context.ApiScopes.Any())
             {
                 Console.WriteLine("Scopes being populated");
-                foreach (var resource in Resources.ApiScopes)
+                foreach (var resource in IdentityServerHost.Configuration.Resources.ApiScopes)
                 {
                     context.ApiScopes.Add(resource.ToEntity());
                 }
@@ -91,17 +91,17 @@ namespace SqlServer
                 Console.WriteLine("Scopes already populated");
             }
 
-            if (!context.OidcIdentityProviders.Any())
+            if (!context.IdentityProviders.Any())
             {
                 Console.WriteLine("OidcIdentityProviders being populated");
-                context.OidcIdentityProviders.Add(new OidcProvider
+                context.IdentityProviders.Add(new OidcProvider
                     {
                         Scheme = "demoidsrv",
                         DisplayName = "IdentityServer",
                         Authority = "https://demo.duendesoftware.com",
                         ClientId = "login",
                     }.ToEntity());
-                context.OidcIdentityProviders.Add(new OidcProvider
+                context.IdentityProviders.Add(new OidcProvider
                     {
                         Scheme = "google",
                         DisplayName = "Google",
@@ -120,5 +120,4 @@ namespace SqlServer
             Console.WriteLine();
         }
     }
-
 }

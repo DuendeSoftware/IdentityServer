@@ -650,6 +650,38 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                     b.ToTable("ClientSecrets");
                 });
 
+            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.IdentityProvider", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("nvarchar(200)")
+                        .HasMaxLength(200);
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Properties")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Scheme")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(200)")
+                        .HasMaxLength(200);
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(20)")
+                        .HasMaxLength(20);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("IdentityProviders");
+                });
+
             modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.IdentityResource", b =>
                 {
                     b.Property<int>("Id")
@@ -746,55 +778,6 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                     b.HasIndex("IdentityResourceId");
 
                     b.ToTable("IdentityResourceProperties");
-                });
-
-            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.OidcIdentityProvider", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Authority")
-                        .HasColumnType("nvarchar(400)")
-                        .HasMaxLength(400);
-
-                    b.Property<string>("ClientId")
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
-
-                    b.Property<string>("ClientSecret")
-                        .HasColumnType("nvarchar(200)")
-                        .HasMaxLength(200);
-
-                    b.Property<string>("DisplayName")
-                        .HasColumnType("nvarchar(200)")
-                        .HasMaxLength(200);
-
-                    b.Property<bool>("Enabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ResponseType")
-                        .HasColumnType("nvarchar(20)")
-                        .HasMaxLength(20);
-
-                    b.Property<string>("Scheme")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(200)")
-                        .HasMaxLength(200);
-
-                    b.Property<string>("Scope")
-                        .HasColumnType("nvarchar(400)")
-                        .HasMaxLength(400);
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(20)")
-                        .HasMaxLength(20);
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OidcIdentityProviders");
                 });
 
             modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.ApiResourceClaim", b =>

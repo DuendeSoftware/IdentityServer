@@ -8,14 +8,12 @@ namespace Duende.IdentityServer.EntityFramework.Entities
     /// <summary>
     /// Models storage for identity providers.
     /// </summary>
-    public class OidcIdentityProvider
+    public class IdentityProvider
     {
         /// <summary>
         /// Primary key used for EF
         /// </summary>
         public int Id { get; set; }
-
-        /* general */
 
         /// <summary>
         /// Scheme name for the provider.
@@ -32,29 +30,11 @@ namespace Duende.IdentityServer.EntityFramework.Entities
         /// <summary>
         /// Protocol type of the provider.
         /// </summary>
-        public string Type { get; set; } = "oidc";
-        
-        /* OIDC */
+        public string Type { get; set; }
 
         /// <summary>
-        /// The address of the provider
+        /// Seralized value for the identity provider properties dictionary.
         /// </summary>
-        public string Authority { get; set; }
-        /// <summary>
-        /// The response type
-        /// </summary>
-        public string ResponseType { get; set; } = "id_token";
-        /// <summary>
-        /// The client id
-        /// </summary>
-        public string ClientId { get; set; }
-        /// <summary>
-        /// The client secret
-        /// </summary>
-        public string ClientSecret { get; set; }
-        /// <summary>
-        /// The scope
-        /// </summary>
-        public string Scope { get; set; } = "openid";
+        public string Properties { get; set; }
     }
 }
