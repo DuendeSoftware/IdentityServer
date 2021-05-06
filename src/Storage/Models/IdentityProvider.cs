@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Models
@@ -13,16 +14,19 @@ namespace Duende.IdentityServer.Models
         /// <summary>
         /// Ctor
         /// </summary>
-        public IdentityProvider()
+        public IdentityProvider(string type)
         {
+            Type = type ?? throw new ArgumentNullException(nameof(type));
         }
-        
+
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="other"></param>
-        public IdentityProvider(IdentityProvider other)
+        public IdentityProvider(string type, IdentityProvider other) : this(type)
         {
+            if (other == null) throw new ArgumentNullException(nameof(other));
+            if (other.Type != type) throw new ArgumentException($"Type '{type}' does not match type of other '{other.Type}'");
+
             Scheme = other.Scheme;
             DisplayName = other.DisplayName;
             Enabled = other.Enabled;

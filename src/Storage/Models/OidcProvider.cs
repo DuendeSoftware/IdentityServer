@@ -15,17 +15,15 @@ namespace Duende.IdentityServer.Models
         /// <summary>
         /// Ctor
         /// </summary>
-        public OidcProvider()
+        public OidcProvider() : base("oidc")
         {
-            Type = "oidc";
         }
         
         /// <summary>
         /// Ctor
         /// </summary>
-        public OidcProvider(IdentityProvider other) : base(other)
+        public OidcProvider(IdentityProvider other) : base("oidc", other)
         {
-            if (other.Type != "oidc") throw new Exception("Invalid 'type'");
         }
 
         /// <summary>
