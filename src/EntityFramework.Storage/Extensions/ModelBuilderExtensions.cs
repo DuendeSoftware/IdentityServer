@@ -304,19 +304,13 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
         {
             if (!string.IsNullOrWhiteSpace(storeOptions.DefaultSchema)) modelBuilder.HasDefaultSchema(storeOptions.DefaultSchema);
 
-            modelBuilder.Entity<OidcIdentityProvider>(entity =>
+            modelBuilder.Entity<IdentityProvider>(entity =>
             {
-                entity.ToTable(storeOptions.OidcIdentityProvider).HasKey(x => x.Id);
+                entity.ToTable(storeOptions.IdentityProvider).HasKey(x => x.Id);
 
                 entity.Property(x => x.Scheme).HasMaxLength(200).IsRequired();
                 entity.Property(x => x.Type).HasMaxLength(20).IsRequired();
                 entity.Property(x => x.DisplayName).HasMaxLength(200);
-
-                entity.Property(x => x.Authority).HasMaxLength(400);
-                entity.Property(x => x.ResponseType).HasMaxLength(20);
-                entity.Property(x => x.ClientId).HasMaxLength(100);
-                entity.Property(x => x.ClientSecret).HasMaxLength(200);
-                entity.Property(x => x.Scope).HasMaxLength(400);
             });
         }
     }

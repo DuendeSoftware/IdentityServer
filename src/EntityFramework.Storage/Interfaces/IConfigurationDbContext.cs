@@ -60,6 +60,6 @@ namespace Duende.IdentityServer.EntityFramework.Interfaces
         /// <value>
         /// The identity providers.
         /// </value>
-        DbSet<OidcIdentityProvider> OidcIdentityProviders { get; set; }
+        DbSet<IdentityProvider> IdentityProviders { get; set; }
     }
 }

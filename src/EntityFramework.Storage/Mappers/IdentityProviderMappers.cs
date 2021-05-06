@@ -4,7 +4,6 @@
 
 using AutoMapper;
 using Duende.IdentityServer.EntityFramework.Entities;
-using Duende.IdentityServer.Hosting.DynamicProviders;
 
 namespace Duende.IdentityServer.EntityFramework.Mappers
 {
@@ -26,9 +25,9 @@ namespace Duende.IdentityServer.EntityFramework.Mappers
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public static OidcProvider ToOidcModel(this OidcIdentityProvider entity)
+        public static Models.IdentityProvider ToModel(this IdentityProvider entity)
         {
-            return entity == null ? null : Mapper.Map<OidcProvider>(entity);
+            return entity == null ? null : Mapper.Map<Models.IdentityProvider>(entity);
         }
 
         /// <summary>
@@ -36,9 +35,9 @@ namespace Duende.IdentityServer.EntityFramework.Mappers
         /// </summary>
         /// <param name="model">The model.</param>
         /// <returns></returns>
-        public static OidcIdentityProvider ToEntity(this OidcProvider model)
+        public static Entities.IdentityProvider ToEntity(this Models.IdentityProvider model)
         {
-            return model == null ? null : Mapper.Map<OidcIdentityProvider>(model);
+            return model == null ? null : Mapper.Map<IdentityProvider>(model);
         }
     }
 }

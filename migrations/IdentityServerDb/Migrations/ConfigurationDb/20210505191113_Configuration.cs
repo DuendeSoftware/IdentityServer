@@ -105,6 +105,23 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 });
 
             migrationBuilder.CreateTable(
+                name: "IdentityProviders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Scheme = table.Column<string>(maxLength: 200, nullable: false),
+                    DisplayName = table.Column<string>(maxLength: 200, nullable: true),
+                    Enabled = table.Column<bool>(nullable: false),
+                    Type = table.Column<string>(maxLength: 20, nullable: false),
+                    Properties = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IdentityProviders", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "IdentityResources",
                 columns: table => new
                 {
@@ -124,27 +141,6 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_IdentityResources", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OidcIdentityProviders",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Scheme = table.Column<string>(maxLength: 200, nullable: false),
-                    DisplayName = table.Column<string>(maxLength: 200, nullable: true),
-                    Enabled = table.Column<bool>(nullable: false),
-                    Type = table.Column<string>(maxLength: 20, nullable: false),
-                    Authority = table.Column<string>(maxLength: 400, nullable: true),
-                    ResponseType = table.Column<string>(maxLength: 20, nullable: true),
-                    ClientId = table.Column<string>(maxLength: 100, nullable: true),
-                    ClientSecret = table.Column<string>(maxLength: 200, nullable: true),
-                    Scope = table.Column<string>(maxLength: 400, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OidcIdentityProviders", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -658,13 +654,13 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 name: "ClientSecrets");
 
             migrationBuilder.DropTable(
+                name: "IdentityProviders");
+
+            migrationBuilder.DropTable(
                 name: "IdentityResourceClaims");
 
             migrationBuilder.DropTable(
                 name: "IdentityResourceProperties");
-
-            migrationBuilder.DropTable(
-                name: "OidcIdentityProviders");
 
             migrationBuilder.DropTable(
                 name: "ApiResources");
