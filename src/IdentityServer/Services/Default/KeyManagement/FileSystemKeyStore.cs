@@ -42,11 +42,6 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             _directory = directory;
             _logger = logger;
-
-            if (!_directory.Exists)
-            {
-                _directory.Create();
-            }
         }
 
         /// <summary>
@@ -56,6 +51,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
         public async Task<IEnumerable<SerializedKey>> LoadKeysAsync()
         {
             var list = new List<SerializedKey>();
+
+            if (!_directory.Exists)
+            {
+                _directory.Create();
+            }
 
             var files = _directory.GetFiles(KeyFilePrefix + "*" + KeyFileExtension);
             foreach (var file in files)
@@ -70,7 +70,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                         list.Add(item);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error reading file: " + file.Name);
                 }
@@ -86,6 +86,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <returns></returns>
         public Task StoreKeyAsync(SerializedKey key)
         {
+            if (!_directory.Exists)
+            {
+                _directory.Create();
+            }
+
             var json = KeySerializer.Serialize(key);
 
             var path = Path.Combine(_directory.FullName, KeyFilePrefix + key.Id + KeyFileExtension);
@@ -106,7 +111,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             {
                 File.Delete(path);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting file: " + path);
             }
