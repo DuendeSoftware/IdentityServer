@@ -64,14 +64,17 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         void RemoveCacheEntry(IdentityProvider idp)
         {
             var provider = _options.DynamicProviders.FindProviderType(idp.Type);
-            var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
-            var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
-            if (optionsCache != null)
+            if (provider != null)
             {
-                var mi = optionsMonitorType.GetMethod("TryRemove");
-                if (mi != null)
+                var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
+                var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
+                if (optionsCache != null)
                 {
-                    mi.Invoke(optionsCache, new[] { idp.Scheme });
+                    var mi = optionsMonitorType.GetMethod("TryRemove");
+                    if (mi != null)
+                    {
+                        mi.Invoke(optionsCache, new[] { idp.Scheme });
+                    }
                 }
             }
         }
