@@ -36,7 +36,7 @@ namespace Duende.IdentityServer.Configuration
         /// Registers a provider confiuration model and authenticaiton handler for the protocol type being used.
         /// </summary>
         public void AddProviderType<THandler, TOptions, TIdentityProvider>(string type)
-            where THandler : AuthenticationHandler<TOptions>
+            where THandler : IAuthenticationHandler, IAuthenticationRequestHandler
             where TOptions : AuthenticationSchemeOptions, new()
             where TIdentityProvider : IdentityProvider
         {
@@ -55,10 +55,22 @@ namespace Duende.IdentityServer.Configuration
             return _providers.ContainsKey(type) ? _providers[type] : null;
         }
 
+        /// <summary>
+        /// Models a provider type registered with the dynamic providers feature.
+        /// </summary>
         internal class DynamicProviderType
         {
+            /// <summary>
+            /// The type of the handler.
+            /// </summary>
             public Type HandlerType { get; set; }
+            /// <summary>
+            /// The type of the options.
+            /// </summary>
             public Type OptionsType { get; set; }
+            /// <summary>
+            /// The identity provider protocol type.
+            /// </summary>
             public Type IdentityProviderType { get; set; }
         }
     }
