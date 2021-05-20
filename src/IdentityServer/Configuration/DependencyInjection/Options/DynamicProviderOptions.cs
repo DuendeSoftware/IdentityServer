@@ -36,7 +36,7 @@ namespace Duende.IdentityServer.Configuration
         /// Registers a provider confiuration model and authenticaiton handler for the protocol type being used.
         /// </summary>
         public void AddProviderType<THandler, TOptions, TIdentityProvider>(string type)
-            where THandler : IAuthenticationHandler, IAuthenticationRequestHandler
+            where THandler : IAuthenticationRequestHandler
             where TOptions : AuthenticationSchemeOptions, new()
             where TIdentityProvider : IdentityProvider
         {
