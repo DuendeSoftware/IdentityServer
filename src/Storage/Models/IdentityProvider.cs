@@ -7,6 +7,27 @@ using System.Collections.Generic;
 namespace Duende.IdentityServer.Models
 {
     /// <summary>
+    /// Models name for a scheme
+    /// </summary>
+    public class IdentityProviderName
+    {
+        /// <summary>
+        /// Scheme name for the provider.
+        /// </summary>
+        public string Scheme { get; set; }
+
+        /// <summary>
+        /// Display name for the provider.
+        /// </summary>
+        public string DisplayName { get; set; }
+        
+        /// <summary>
+        /// Flag that indicates if the provider should be used.
+        /// </summary>
+        public bool Enabled { get; set; }
+    }
+
+    /// <summary>
     /// Models general storage for an external authentication provider/handler scheme
     /// </summary>
     public class IdentityProvider

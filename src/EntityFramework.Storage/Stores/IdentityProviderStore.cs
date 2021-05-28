@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
@@ -40,6 +41,17 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
+        {
+            var query = Context.IdentityProviders.Select(x => new IdentityProviderName { 
+                Enabled = x.Enabled,
+                Scheme = x.Scheme,
+                DisplayName  = x.DisplayName
+            });
+            return await query.ToArrayAsync();
         }
 
         /// <inheritdoc/>
