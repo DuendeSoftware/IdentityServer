@@ -50,7 +50,12 @@ namespace Duende.IdentityServer.Configuration
             });
         }
 
-        internal DynamicProviderType FindProviderType(string type)
+        /// <summary>
+        /// Finds the DynamicProviderType registration by protocol type.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public DynamicProviderType FindProviderType(string type)
         {
             return _providers.ContainsKey(type) ? _providers[type] : null;
         }
@@ -58,7 +63,7 @@ namespace Duende.IdentityServer.Configuration
         /// <summary>
         /// Models a provider type registered with the dynamic providers feature.
         /// </summary>
-        internal class DynamicProviderType
+        public class DynamicProviderType
         {
             /// <summary>
             /// The type of the handler.
