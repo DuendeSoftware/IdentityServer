@@ -18,6 +18,16 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
             _providers = providers;
         }
 
+        public Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
+        {
+            var items = _providers.Select(x => new IdentityProviderName { 
+                Enabled = x.Enabled,
+                DisplayName = x.DisplayName,
+                Scheme = x.Scheme
+            });
+            return Task.FromResult(items);
+        }
+
         public Task<IdentityProvider> GetBySchemeAsync(string scheme)
         {
             var item = _providers.FirstOrDefault(x => x.Scheme == scheme);

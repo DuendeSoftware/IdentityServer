@@ -7,6 +7,7 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Hosting.DynamicProviders
@@ -20,6 +21,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
     {
         private readonly IIdentityProviderStore _inner;
         private readonly ICache<IdentityProvider> _cache;
+        private readonly ICache<IEnumerable<IdentityProviderName>> _allCache;
         private readonly IdentityServerOptions _options;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -28,17 +30,36 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         /// </summary>
         /// <param name="inner"></param>
         /// <param name="cache"></param>
+        /// <param name="allCache"></param>
         /// <param name="options"></param>
         /// <param name="httpContextAccessor"></param>
         public CachingIdentityProviderStore(T inner, 
             ICache<IdentityProvider> cache,
+            ICache<IEnumerable<IdentityProviderName>> allCache,
             IdentityServerOptions options,
             IHttpContextAccessor httpContextAccessor)
         {
             _inner = inner;
             _cache = cache;
+            _allCache = allCache;
             _options = options;
             _httpContextAccessor = httpContextAccessor;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
+        {
+            var result = await _allCache.GetAsync("::all::");
+            if (result == null)
+            {
+                result = await _inner.GetAllSchemeNamesAsync();
+                if (result != null)
+                {
+                    await _allCache.SetAsync("::all::", result, _options.Caching.IdentityProviderCacheDuration);
+                }
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
