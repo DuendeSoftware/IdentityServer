@@ -85,5 +85,9 @@ namespace Duende.IdentityServer.EntityFramework.Options
         /// The size of the token cleanup batch.
         /// </value>
         public int TokenCleanupBatchSize { get; set; } = 100;
+
+        public bool EnablePooling { get; set; } = false;
+
+        public int PoolSize { get; set; } = 1024;
     }
 }
