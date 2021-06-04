@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace IdentityServerHost.Pages.Diagnostics
 {
+    [SecurityHeaders]
     [Authorize]
     public class Index : PageModel
     {

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace IdentityServerHost.Pages.Error
 {
+    [SecurityHeaders]
     public class Index : PageModel
     {
         private readonly IIdentityServerInteractionService _interaction;

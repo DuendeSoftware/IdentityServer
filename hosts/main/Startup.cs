@@ -20,7 +20,6 @@ using Duende.IdentityServer;
 using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.HttpOverrides;
-using IdentityServerHost.Quickstart.UI;
 using Microsoft.AspNetCore.Hosting;
 
 namespace IdentityServerHost
@@ -58,8 +57,10 @@ namespace IdentityServerHost
                     options.EmitScopesAsSpaceDelimitedStringInJwt = true;
                     options.Endpoints.EnableJwtRequestUri = true;
 
+                    options.UserInteraction.LoginUrl = "/login";
+                    options.UserInteraction.LogoutUrl = "/logout";
+                    options.UserInteraction.ConsentUrl = "/consent";
                     options.UserInteraction.ErrorUrl = "/error";
-
                 })
                 .AddInMemoryClients(Clients.Get())
                 .AddInMemoryIdentityResources(Resources.IdentityResources)
