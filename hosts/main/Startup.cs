@@ -16,18 +16,18 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using IdentityServerHost.Extensions;
-using IdentityServerHost.Quickstart.UI;
 using Microsoft.Extensions.Hosting;
 using Serilog.Events;
+using Microsoft.AspNetCore.Hosting;
 
 namespace IdentityServerHost
 {
     public class Startup
     {
         private readonly IConfiguration _config;
-        private readonly IHostEnvironment _environment;
+        private readonly IWebHostEnvironment _environment;
 
-        public Startup(IConfiguration config, IHostEnvironment environment)
+        public Startup(IConfiguration config, IWebHostEnvironment environment)
         {
             _config = config;
             _environment = environment;
@@ -37,6 +37,9 @@ namespace IdentityServerHost
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRazorPages()
+                .AddRazorRuntimeCompilation();
+            
             var mvc = services.AddControllersWithViews();
             if (_environment.IsDevelopment())
             {
@@ -55,6 +58,11 @@ namespace IdentityServerHost
 
                     options.EmitScopesAsSpaceDelimitedStringInJwt = true;
                     options.Endpoints.EnableJwtRequestUri = true;
+
+                    options.UserInteraction.LoginUrl = "/login";
+                    options.UserInteraction.LogoutUrl = "/logout";
+                    options.UserInteraction.ConsentUrl = "/consent";
+                    options.UserInteraction.ErrorUrl = "/error";
                 })
                 .AddInMemoryClients(Clients.Get())
                 .AddInMemoryIdentityResources(Resources.IdentityResources)
@@ -95,7 +103,11 @@ namespace IdentityServerHost
             app.UseIdentityServer();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
+            app.UseEndpoints(endpoints => 
+            {
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
+            });
         }
     }
 
