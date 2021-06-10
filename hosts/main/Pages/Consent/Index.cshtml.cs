@@ -46,7 +46,10 @@ namespace IdentityServerHost.Pages.Consent
                 return RedirectToPage("/Error/Index");
             }
 
-            Input = new InputModel { ReturnUrl = returnUrl };
+            Input = new InputModel
+            {
+                ReturnUrl = returnUrl,
+            };
 
             return Page();
         }
@@ -140,12 +143,6 @@ namespace IdentityServerHost.Pages.Consent
         {
             var vm = new ViewModel
             {
-                RememberConsent = model?.RememberConsent ?? true,
-                ScopesConsented = model?.ScopesConsented ?? Enumerable.Empty<string>(),
-                Description = model?.Description,
-
-                ReturnUrl = returnUrl,
-
                 ClientName = request.Client.ClientName ?? request.Client.ClientId,
                 ClientUrl = request.Client.ClientUri,
                 ClientLogoUrl = request.Client.LogoUri,
@@ -153,7 +150,7 @@ namespace IdentityServerHost.Pages.Consent
             };
 
             vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources
-                .Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null))
+                .Select(x => CreateScopeViewModel(x, model?.ScopesConsented == null || model.ScopesConsented?.Contains(x.Name) == true))
                 .ToArray();
 
             var resourceIndicators = request.Parameters.GetValues(OidcConstants.AuthorizeRequest.Resource) ?? Enumerable.Empty<string>();
@@ -165,7 +162,7 @@ namespace IdentityServerHost.Pages.Consent
                 var apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
                 if (apiScope != null)
                 {
-                    var scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
+                    var scopeVm = CreateScopeViewModel(parsedScope, apiScope, model == null || model.ScopesConsented?.Contains(parsedScope.RawValue) == true);
                     scopeVm.Resources = apiResources.Where(x => x.Scopes.Contains(parsedScope.ParsedName))
                         .Select(x => new ResourceViewModel
                         {
@@ -177,7 +174,7 @@ namespace IdentityServerHost.Pages.Consent
             }
             if (ConsentOptions.EnableOfflineAccess && request.ValidatedResources.Resources.OfflineAccess)
             {
-                apiScopes.Add(GetOfflineAccessScope(vm.ScopesConsented.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess) || model == null));
+                apiScopes.Add(GetOfflineAccessScope(model == null || model.ScopesConsented?.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess) == true));
             }
             vm.ApiScopes = apiScopes;
 

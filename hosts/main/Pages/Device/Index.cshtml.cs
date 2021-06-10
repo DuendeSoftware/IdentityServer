@@ -61,8 +61,9 @@ namespace IdentityServerHost.Pages.Device
                 return Page();
             }
 
-            //View.ConfirmUserCode = true;
-            Input = new InputModel { UserCode = userCode };
+            Input = new InputModel { 
+                UserCode = userCode,
+            };
 
             return Page();
         }
@@ -137,29 +138,23 @@ namespace IdentityServerHost.Pages.Device
             var request = await _interaction.GetAuthorizationContextAsync(userCode);
             if (request != null)
             {
-                return CreateConsentViewModel(userCode, model, request);
+                return CreateConsentViewModel(model, request);
             }
 
             return null;
         }
 
-        private ViewModel CreateConsentViewModel(string userCode, InputModel model, DeviceFlowAuthorizationRequest request)
+        private ViewModel CreateConsentViewModel(InputModel model, DeviceFlowAuthorizationRequest request)
         {
             var vm = new ViewModel
             {
-                UserCode = userCode,
-                Description = model?.Description,
-
-                RememberConsent = model?.RememberConsent ?? true,
-                ScopesConsented = model?.ScopesConsented ?? Enumerable.Empty<string>(),
-
                 ClientName = request.Client.ClientName ?? request.Client.ClientId,
                 ClientUrl = request.Client.ClientUri,
                 ClientLogoUrl = request.Client.LogoUri,
                 AllowRememberConsent = request.Client.AllowRememberConsent
             };
 
-            vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
+            vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, model == null || model.ScopesConsented?.Contains(x.Name) == true)).ToArray();
 
             var apiScopes = new List<ScopeViewModel>();
             foreach (var parsedScope in request.ValidatedResources.ParsedScopes)
@@ -167,13 +162,13 @@ namespace IdentityServerHost.Pages.Device
                 var apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
                 if (apiScope != null)
                 {
-                    var scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
+                    var scopeVm = CreateScopeViewModel(parsedScope, apiScope, model == null || model.ScopesConsented?.Contains(parsedScope.RawValue) == true);
                     apiScopes.Add(scopeVm);
                 }
             }
             if (DeviceOptions.EnableOfflineAccess && request.ValidatedResources.Resources.OfflineAccess)
             {
-                apiScopes.Add(GetOfflineAccessScope(vm.ScopesConsented.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess) || model == null));
+                apiScopes.Add(GetOfflineAccessScope(model == null || model.ScopesConsented?.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess) == true));
             }
             vm.ApiScopes = apiScopes;
 

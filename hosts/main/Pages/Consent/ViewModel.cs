@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace IdentityServerHost.Pages.Consent
 {
-    public class ViewModel : InputModel
+    public class ViewModel
     {
         public string ClientName { get; set; }
         public string ClientUrl { get; set; }
