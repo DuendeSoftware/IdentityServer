@@ -48,7 +48,8 @@ namespace Duende.IdentityServer.Stores
         /// </returns>
         public async Task<Client> FindClientByIdAsync(string clientId)
         {
-            var client = await _cache.GetAsync(clientId,
+            var client = await _cache.GetAsync(
+                nameof(FindClientByIdAsync) + "|" + clientId,
                 _options.Caching.ClientStoreExpiration,
                 async () => await _inner.FindClientByIdAsync(clientId),
                 _logger);

@@ -7,6 +7,7 @@ using Duende.IdentityServer.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
 using Microsoft.Extensions.Logging;
@@ -63,10 +64,10 @@ namespace Duende.IdentityServer.Stores
             _logger = logger;
         }
 
-        private string GetKey(IEnumerable<string> names)
+        private string GetKey(IEnumerable<string> names, [CallerMemberName] string caller = null)
         {
             if (names == null || !names.Any()) return string.Empty;
-            return names.OrderBy(x => x).Aggregate((x, y) => x + "," + y);
+            return caller + "|" + names.OrderBy(x => x).Aggregate((x, y) => x + "," + y);
         }
 
         /// <inheritdoc/>
