@@ -20,7 +20,12 @@ namespace UnitTests.ResponseHandling.AuthorizeInteractionResponseGenerator
 {
     public class CustomAuthorizeInteractionResponseGenerator : Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator
     {
-        public CustomAuthorizeInteractionResponseGenerator(ISystemClock clock, ILogger<Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator> logger, IConsentService consent, IProfileService profile) : base(clock, logger, consent, profile)
+        public CustomAuthorizeInteractionResponseGenerator(
+            IdentityServerOptions options,
+            ISystemClock clock, 
+            ILogger<Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator> logger, 
+            IConsentService consent, 
+            IProfileService profile) : base(options, clock, logger, consent, profile)
         {
         }
 
@@ -56,6 +61,7 @@ namespace UnitTests.ResponseHandling.AuthorizeInteractionResponseGenerator
         public AuthorizeInteractionResponseGeneratorTests_Custom()
         {
             _subject = new CustomAuthorizeInteractionResponseGenerator(
+                _options,
                 _clock,
                 TestLogger.Create<Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator>(),
                 _mockConsentService,

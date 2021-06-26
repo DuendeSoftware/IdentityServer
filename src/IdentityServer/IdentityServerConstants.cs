@@ -165,5 +165,10 @@ namespace Duende.IdentityServer
             public const string JwtRequestUriHttpClient = "IdentityServer:JwtRequestUriClient";
             public const string BackChannelLogoutHttpClient = "IdentityServer:BackChannelLogoutClient";
         }
+
+        public static class ClaimTypes
+        {
+            public const string Tenant = "tenant";
+        }
     }
 }

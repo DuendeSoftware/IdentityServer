@@ -19,7 +19,7 @@
     
     <!--tests -->
     <PackageReference Update="FluentAssertions" Version="5.10.3" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.9.1" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="All" />
 
@@ -36,7 +36,7 @@
     <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(WilsonVersion)" />
     <PackageReference Update="System.IdentityModel.Tokens.Jwt" Version="$(WilsonVersion)" />
     <PackageReference Update="AutoMapper" Version="[10.0.0,11.0)" />
-    <PackageReference Update="Serilog.AspNetCore" Version="4.0.0" />     
+    <PackageReference Update="Serilog.AspNetCore" Version="4.1.0" />     
     
     <!--microsoft asp.net core -->
     <PackageReference Update="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(FrameworkVersion)" />

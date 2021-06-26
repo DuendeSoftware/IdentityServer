@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 using System;
@@ -18,6 +18,7 @@ using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Duende.IdentityServer.Stores;
 
 namespace Duende.IdentityServer.Endpoints
 {
@@ -32,6 +33,9 @@ namespace Duende.IdentityServer.Endpoints
 
         private readonly IAuthorizeRequestValidator _validator;
 
+        private readonly IConsentMessageStore _consentResponseStore;
+        private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
+
         protected AuthorizeEndpointBase(
             IEventService events,
             ILogger<AuthorizeEndpointBase> logger,
@@ -39,7 +43,9 @@ namespace Duende.IdentityServer.Endpoints
             IAuthorizeRequestValidator validator,
             IAuthorizeInteractionResponseGenerator interactionGenerator,
             IAuthorizeResponseGenerator authorizeResponseGenerator,
-            IUserSession userSession)
+            IUserSession userSession,
+            IConsentMessageStore consentResponseStore,
+            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
         {
             _events = events;
             _options = options;
@@ -48,6 +54,8 @@ namespace Duende.IdentityServer.Endpoints
             _interactionGenerator = interactionGenerator;
             _authorizeResponseGenerator = authorizeResponseGenerator;
             UserSession = userSession;
+            _consentResponseStore = consentResponseStore;
+            _authorizationParametersMessageStore = authorizationParametersMessageStore;
         }
 
         protected ILogger Logger { get; private set; }
@@ -56,7 +64,7 @@ namespace Duende.IdentityServer.Endpoints
 
         public abstract Task<IEndpointResult> ProcessAsync(HttpContext context);
 
-        internal async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, ConsentResponse consent)
+        internal async Task<IEndpointResult> ProcessAuthorizeRequestAsync(NameValueCollection parameters, ClaimsPrincipal user, bool checkConsentResponse = false)
         {
             if (user != null)
             {
@@ -65,6 +73,15 @@ namespace Duende.IdentityServer.Endpoints
             else
             {
                 Logger.LogDebug("No user present in authorize request");
+            }
+
+            if (checkConsentResponse && _authorizationParametersMessageStore != null)
+            {
+                var messageStoreId = parameters[Constants.AuthorizationParamsStore.MessageStoreIdParameterName];
+                var entry = await _authorizationParametersMessageStore.ReadAsync(messageStoreId);
+                parameters = entry?.Data.FromFullDictionary() ?? new NameValueCollection();
+
+                await _authorizationParametersMessageStore.DeleteAsync(messageStoreId);
             }
 
             // validate request
@@ -78,35 +95,61 @@ namespace Duende.IdentityServer.Endpoints
                     result.ErrorDescription);
             }
 
-            var request = result.ValidatedRequest;
-            LogRequest(request);
+            string consentRequestId = null;
 
-            // determine user interaction
-            var interactionResult = await _interactionGenerator.ProcessInteractionAsync(request, consent);
-            if (interactionResult.IsError)
+            try
             {
-                return await CreateErrorResultAsync("Interaction generator error", request, interactionResult.Error, interactionResult.ErrorDescription, false);
+                Message<ConsentResponse> consent = null;
+
+                if (checkConsentResponse)
+                {
+                    var consentRequest = new ConsentRequest(result.ValidatedRequest.Raw, user?.GetSubjectId());
+                    consentRequestId = consentRequest.Id;
+                    consent = await _consentResponseStore.ReadAsync(consentRequestId);
+
+                    if (consent != null && consent.Data == null)
+                    {
+                        return await CreateErrorResultAsync("consent message is missing data");
+                    }
+                }
+
+                var request = result.ValidatedRequest;
+                LogRequest(request);
+
+                // determine user interaction
+                var interactionResult = await _interactionGenerator.ProcessInteractionAsync(request, consent?.Data);
+                if (interactionResult.IsError)
+                {
+                    return await CreateErrorResultAsync("Interaction generator error", request, interactionResult.Error, interactionResult.ErrorDescription, false);
+                }
+                if (interactionResult.IsLogin)
+                {
+                    return new LoginPageResult(request);
+                }
+                if (interactionResult.IsConsent)
+                {
+                    return new ConsentPageResult(request);
+                }
+                if (interactionResult.IsRedirect)
+                {
+                    return new CustomRedirectResult(request, interactionResult.RedirectUrl);
+                }
+
+                var response = await _authorizeResponseGenerator.CreateResponseAsync(request);
+
+                await RaiseResponseEventAsync(response);
+
+                LogResponse(response);
+
+                return new AuthorizeResult(response);
             }
-            if (interactionResult.IsLogin)
+            finally
             {
-                return new LoginPageResult(request);
+                if (consentRequestId != null)
+                {
+                    await _consentResponseStore.DeleteAsync(consentRequestId);
+                }
             }
-            if (interactionResult.IsConsent)
-            {
-                return new ConsentPageResult(request);
-            }
-            if (interactionResult.IsRedirect)
-            {
-                return new CustomRedirectResult(request, interactionResult.RedirectUrl);
-            }
-
-            var response = await _authorizeResponseGenerator.CreateResponseAsync(request);
-
-            await RaiseResponseEventAsync(response);
-
-            LogResponse(response);
-
-            return new AuthorizeResult(response);
         }
 
         protected async Task<IEndpointResult> CreateErrorResultAsync(

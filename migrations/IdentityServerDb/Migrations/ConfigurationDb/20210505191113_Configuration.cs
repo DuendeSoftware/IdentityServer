@@ -105,6 +105,23 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 });
 
             migrationBuilder.CreateTable(
+                name: "IdentityProviders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Scheme = table.Column<string>(maxLength: 200, nullable: false),
+                    DisplayName = table.Column<string>(maxLength: 200, nullable: true),
+                    Enabled = table.Column<bool>(nullable: false),
+                    Type = table.Column<string>(maxLength: 20, nullable: false),
+                    Properties = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IdentityProviders", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "IdentityResources",
                 columns: table => new
                 {
@@ -635,6 +652,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
 
             migrationBuilder.DropTable(
                 name: "ClientSecrets");
+
+            migrationBuilder.DropTable(
+                name: "IdentityProviders");
 
             migrationBuilder.DropTable(
                 name: "IdentityResourceClaims");

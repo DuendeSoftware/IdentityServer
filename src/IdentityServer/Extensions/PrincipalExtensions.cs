@@ -205,6 +205,17 @@ namespace Duende.IdentityServer.Extensions
         }
 
         /// <summary>
+        /// Gets the tenant.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <returns></returns>
+        [DebuggerStepThrough]
+        public static string GetTenant(this ClaimsPrincipal principal)
+        {
+            return principal.FindFirst(IdentityServerConstants.ClaimTypes.Tenant)?.Value;
+        }
+        
+        /// <summary>
         /// Determines whether this instance is authenticated.
         /// </summary>
         /// <param name="principal">The principal.</param>

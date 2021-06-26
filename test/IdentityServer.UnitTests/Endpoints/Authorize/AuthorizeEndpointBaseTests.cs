@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 using System.Collections.Specialized;
@@ -18,6 +18,7 @@ using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Duende.IdentityServer.Stores;
 
 namespace UnitTests.Endpoints.Authorize
 {
@@ -43,6 +44,8 @@ namespace UnitTests.Endpoints.Authorize
 
         private StubAuthorizeInteractionResponseGenerator _stubInteractionGenerator = new StubAuthorizeInteractionResponseGenerator();
 
+        private MockConsentMessageStore _mockUserConsentResponseMessageStore = new MockConsentMessageStore();
+        
         private TestAuthorizeEndpoint _subject;
 
         private ClaimsPrincipal _user = new IdentityServerUser("bob").CreatePrincipal();
@@ -66,7 +69,7 @@ namespace UnitTests.Endpoints.Authorize
             _stubAuthorizeRequestValidator.Result.IsError = true;
             _stubAuthorizeRequestValidator.Result.Error = "login_required";
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user);
 
             result.Should().BeOfType<AuthorizeResult>();
             ((AuthorizeResult)result).Response.IsError.Should().BeTrue();
@@ -80,7 +83,7 @@ namespace UnitTests.Endpoints.Authorize
             _stubAuthorizeRequestValidator.Result.IsError = true;
             _stubAuthorizeRequestValidator.Result.Error = "some_error";
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user);
 
             result.Should().BeOfType<AuthorizeResult>();
             ((AuthorizeResult)result).Response.IsError.Should().BeTrue();
@@ -92,7 +95,7 @@ namespace UnitTests.Endpoints.Authorize
         {
             _stubInteractionGenerator.Response.IsConsent = true;
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user);
 
             result.Should().BeOfType<ConsentPageResult>();
         }
@@ -103,7 +106,7 @@ namespace UnitTests.Endpoints.Authorize
         {
             _stubInteractionGenerator.Response.Error = "error";
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user);
 
             result.Should().BeOfType<AuthorizeResult>();
             ((AuthorizeResult)result).Response.IsError.Should().BeTrue();
@@ -118,7 +121,7 @@ namespace UnitTests.Endpoints.Authorize
              _stubInteractionGenerator.Response.Error = "error";
             _stubInteractionGenerator.Response.ErrorDescription = errorDescription;
 
-             var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+             var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user);
 
              result.Should().BeOfType<AuthorizeResult>();
             var authorizeResult = ((AuthorizeResult)result);
@@ -132,7 +135,7 @@ namespace UnitTests.Endpoints.Authorize
         {
             _stubInteractionGenerator.Response.IsLogin = true;
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user);
 
             result.Should().BeOfType<LoginPageResult>();
         }
@@ -144,7 +147,7 @@ namespace UnitTests.Endpoints.Authorize
             _mockUserSession.User = _user;
             _stubInteractionGenerator.Response.RedirectUrl = "http://foo.com";
 
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user);
 
             result.Should().BeOfType<CustomRedirectResult>();
         }
@@ -153,7 +156,7 @@ namespace UnitTests.Endpoints.Authorize
         [Trait("Category", Category)]
         public async Task successful_authorization_request_should_generate_authorize_result()
         {
-            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user);
 
             result.Should().BeOfType<AuthorizeResult>();
         }
@@ -187,7 +190,8 @@ namespace UnitTests.Endpoints.Authorize
                 _stubAuthorizeRequestValidator,
                 _stubInteractionGenerator,
                 _stubAuthorizeResponseGenerator,
-                _mockUserSession);
+                _mockUserSession,
+                _mockUserConsentResponseMessageStore);
         }
 
         internal class TestAuthorizeEndpoint : AuthorizeEndpointBase
@@ -199,8 +203,10 @@ namespace UnitTests.Endpoints.Authorize
               IAuthorizeRequestValidator validator,
               IAuthorizeInteractionResponseGenerator interactionGenerator,
               IAuthorizeResponseGenerator authorizeResponseGenerator,
-              IUserSession userSession)
-            : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession)
+              IUserSession userSession,
+              IConsentMessageStore consentResponseStore,
+              IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
+            : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession, consentResponseStore, authorizationParametersMessageStore)
             {
             }
 

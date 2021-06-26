@@ -13,6 +13,7 @@ using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Duende.IdentityServer.Stores;
 
 namespace Duende.IdentityServer.Endpoints
 {
@@ -25,8 +26,10 @@ namespace Duende.IdentityServer.Endpoints
            IAuthorizeRequestValidator validator,
            IAuthorizeInteractionResponseGenerator interactionGenerator,
            IAuthorizeResponseGenerator authorizeResponseGenerator,
-           IUserSession userSession)
-            : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession)
+           IUserSession userSession,
+           IConsentMessageStore consentResponseStore,
+           IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
+            : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession, consentResponseStore, authorizationParametersMessageStore)
         {
         }
 
@@ -55,7 +58,7 @@ namespace Duende.IdentityServer.Endpoints
             }
 
             var user = await UserSession.GetUserAsync();
-            var result = await ProcessAuthorizeRequestAsync(values, user, null);
+            var result = await ProcessAuthorizeRequestAsync(values, user);
 
             Logger.LogTrace("End authorize request. result type: {0}", result?.GetType().ToString() ?? "-none-");
 

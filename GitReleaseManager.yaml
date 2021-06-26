@@ -18,4 +18,5 @@ issue-labels-include:
 - internal
 issue-labels-exclude:
 - planned feature
+- feature idea
 - feature request
