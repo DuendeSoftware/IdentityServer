@@ -10,6 +10,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -21,6 +22,7 @@ namespace Duende.IdentityServer.Validation
     /// </summary>
     public class PrivateKeyJwtSecretValidator : ISecretValidator
     {
+        private readonly IHttpContextAccessor _contextAccessor;
         private readonly IIssuerNameService _issuerNameService;
         private readonly IReplayCache _replayCache;
         private readonly IdentityServerOptions _options;
@@ -32,11 +34,13 @@ namespace Duende.IdentityServer.Validation
         /// Instantiates an instance of private_key_jwt secret validator
         /// </summary>
         public PrivateKeyJwtSecretValidator(
+            IHttpContextAccessor contextAccessor, 
             IIssuerNameService issuerNameService, 
             IReplayCache replayCache,
             IdentityServerOptions options,
             ILogger<PrivateKeyJwtSecretValidator> logger)
         {
+            _contextAccessor = contextAccessor;
             _issuerNameService = issuerNameService;
             _replayCache = replayCache;
             _options = options;
@@ -88,6 +92,8 @@ namespace Duende.IdentityServer.Validation
             var validAudiences = new[]
             {
                 // token endpoint URL
+                string.Concat(_contextAccessor.HttpContext.GetIdentityServerBaseUrl().EnsureTrailingSlash(),
+                    Constants.ProtocolRoutePaths.Token),
                 string.Concat((await _issuerNameService.GetCurrentAsync()).EnsureTrailingSlash(),
                     Constants.ProtocolRoutePaths.Token)
             };
