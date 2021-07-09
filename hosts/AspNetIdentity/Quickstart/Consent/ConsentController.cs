@@ -14,6 +14,7 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
+using IdentityModel;
 
 namespace IdentityServerHost.Quickstart.UI
 {
@@ -194,15 +195,26 @@ namespace IdentityServerHost.Quickstart.UI
                 AllowRememberConsent = request.Client.AllowRememberConsent
             };
 
-            vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
+            vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources
+                .Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null))
+                .ToArray();
+
+            var resourceIndicators = request.Parameters.GetValues(OidcConstants.AuthorizeRequest.Resource) ?? Enumerable.Empty<string>();
+            var apiResources = request.ValidatedResources.Resources.ApiResources.Where(x => resourceIndicators.Contains(x.Name));
 
             var apiScopes = new List<ScopeViewModel>();
-            foreach(var parsedScope in request.ValidatedResources.ParsedScopes)
+            foreach (var parsedScope in request.ValidatedResources.ParsedScopes)
             {
                 var apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
                 if (apiScope != null)
                 {
                     var scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
+                    scopeVm.Resources = apiResources.Where(x => x.Scopes.Contains(parsedScope.ParsedName))
+                        .Select(x=> new ResourceViewModel
+                        {
+                            Name = x.Name,
+                            DisplayName = x.DisplayName ?? x.Name,
+                        }).ToArray();
                     apiScopes.Add(scopeVm);
                 }
             }
@@ -219,6 +231,7 @@ namespace IdentityServerHost.Quickstart.UI
         {
             return new ScopeViewModel
             {
+                Name = identity.Name,
                 Value = identity.Name,
                 DisplayName = identity.DisplayName ?? identity.Name,
                 Description = identity.Description,
@@ -238,6 +251,7 @@ namespace IdentityServerHost.Quickstart.UI
 
             return new ScopeViewModel
             {
+                Name = parsedScopeValue.ParsedName,
                 Value = parsedScopeValue.RawValue,
                 DisplayName = displayName,
                 Description = apiScope.Description,

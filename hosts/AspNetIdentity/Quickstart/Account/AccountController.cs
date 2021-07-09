@@ -255,7 +255,7 @@ namespace IdentityServerHost.Quickstart.UI
                     DisplayName = x.DisplayName
                 });
             providers.AddRange(dyanmicSchemes);
-            
+
             var allowLocal = true;
             if (context?.Client.ClientId != null)
             {

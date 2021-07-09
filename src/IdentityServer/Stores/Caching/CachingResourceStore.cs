@@ -113,7 +113,8 @@ namespace Duende.IdentityServer.Stores
         {
             var key = GetKey(names);
 
-            var apis = await _apiByScopeCache.GetAsync(key,
+            // this cache key needs a prefix to disambiguate from the other ICache<IEnumerable<ApiResource>> _apiResourceCache cache
+            var apis = await _apiByScopeCache.GetAsync("ApiResourcesByScopeNames:" + key,
                 _options.Caching.ResourceStoreExpiration,
                 async () => await _inner.FindApiResourcesByScopeNameAsync(names),
                 _logger);

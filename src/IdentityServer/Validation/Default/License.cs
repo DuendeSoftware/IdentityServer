@@ -142,5 +142,10 @@ namespace Duende.IdentityServer.Validation
             Starter,
             Community
         }
+
+        public override string ToString()
+        {
+            return ObjectSerializer.ToString(this);
+        }
     }
 }
