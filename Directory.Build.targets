@@ -1,17 +1,10 @@
 <Project>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'netstandard2.0'">
-    <FrameworkVersion>3.1.0</FrameworkVersion>
-    <ExtensionsVersion>3.1.0</ExtensionsVersion>
-    <EntityFrameworkVersion>3.1.0</EntityFrameworkVersion>
-    <WilsonVersion>5.6.0</WilsonVersion>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0'">
-    <FrameworkVersion>5.0.0</FrameworkVersion>
-    <ExtensionsVersion>5.0.0</ExtensionsVersion>
-    <EntityFrameworkVersion>5.0.0</EntityFrameworkVersion>
-    <WilsonVersion>6.8.0</WilsonVersion>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
+    <FrameworkVersion>6.0.0-preview.5.*</FrameworkVersion>
+    <ExtensionsVersion>6.0.0-preview.5.*</ExtensionsVersion>
+    <EntityFrameworkVersion>6.0.0-preview.5.*</EntityFrameworkVersion>
+    <WilsonVersion>6.10.0</WilsonVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,7 +5,6 @@ on:
     branches:
     - main
     - features/**
-    - releases/**
     tags:
     - '*.*.*'
   pull_request:
@@ -25,15 +24,10 @@ jobs:
     - uses: actions/checkout@af513c7a016048ae468971c52ed77d9562c7c819
     
     - name: Setup dotnet (main)
-      uses: actions/setup-dotnet@v1.8.0
+      uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.x'
-      
-    - name: Setup dotnet (testing)
-      uses: actions/setup-dotnet@v1.8.0
-      with:
-        dotnet-version: '3.1.x'
-
+        dotnet-version: '6.0.100-preview.5.21302.13'
+    
     - run: dotnet --info
     
     - if: contains(matrix.runs-on, 'macOS') || contains(matrix.runs-on, 'ubuntu')
