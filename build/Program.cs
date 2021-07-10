@@ -80,7 +80,7 @@ namespace build
 
             Target("sign", DependsOn(Targets.SignBinary, Targets.Test, Targets.SignPackage));
 
-            RunTargetsAndExit(args, ex => ex is SimpleExec.NonZeroExitCodeException || ex.Message.EndsWith(envVarMissing));
+            RunTargetsAndExit(args, ex => ex is SimpleExec.ExitCodeException || ex.Message.EndsWith(envVarMissing));
         }
 
         private static void SignNuGet()
