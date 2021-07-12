@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -41,6 +41,8 @@ namespace UnitTests.Endpoints.Authorize
 
         private StubAuthorizeInteractionResponseGenerator _stubInteractionGenerator = new StubAuthorizeInteractionResponseGenerator();
 
+        private MockConsentMessageStore _mockUserConsentResponseMessageStore = new MockConsentMessageStore();
+        
         private AuthorizeEndpoint _subject;
 
         private ClaimsPrincipal _user = new IdentityServerUser("bob").CreatePrincipal();
@@ -107,7 +109,8 @@ namespace UnitTests.Endpoints.Authorize
                 _stubAuthorizeRequestValidator,
                 _stubInteractionGenerator,
                 _stubAuthorizeResponseGenerator,
-                _mockUserSession);
+                _mockUserSession,
+                _mockUserConsentResponseMessageStore);
         }
     }
 }

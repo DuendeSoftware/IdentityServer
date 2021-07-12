@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
 using IdentityServerHost.Configuration;
 using IdentityModel;
 using Microsoft.AspNetCore.Builder;
@@ -14,32 +13,36 @@ using Serilog;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using IdentityServerHost.Extensions;
-using Microsoft.AspNetCore.Authentication.Certificate;
-using Microsoft.AspNetCore.HttpOverrides;
 using IdentityServerHost.Quickstart.UI;
-using Duende.IdentityServer.Configuration;
+using Microsoft.Extensions.Hosting;
+using Serilog.Events;
 
 namespace IdentityServerHost
 {
     public class Startup
     {
         private readonly IConfiguration _config;
+        private readonly IHostEnvironment _environment;
 
-        public Startup(IConfiguration config)
+        public Startup(IConfiguration config, IHostEnvironment environment)
         {
             _config = config;
+            _environment = environment;
 
             IdentityModelEventSource.ShowPII = true;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
-            
+            var mvc = services.AddControllersWithViews();
+            if (_environment.IsDevelopment())
+            {
+                mvc.AddRazorRuntimeCompilation();
+            }
+
             // cookie policy to deal with temporary browser incompatibilities
             services.AddSameSiteCookiePolicy();
 
@@ -51,6 +54,7 @@ namespace IdentityServerHost
                     options.Events.RaiseInformationEvents = true;
 
                     options.EmitScopesAsSpaceDelimitedStringInJwt = true;
+                    options.Endpoints.EnableJwtRequestUri = true;
                 })
                 .AddInMemoryClients(Clients.Get())
                 .AddInMemoryIdentityResources(Resources.IdentityResources)
@@ -69,15 +73,6 @@ namespace IdentityServerHost
 
             services.AddExternalIdentityProviders();
 
-            services.AddAuthentication()
-                .AddCertificate(options =>
-                {
-                    options.AllowedCertificateTypes = CertificateTypes.All;
-                    options.RevocationMode = X509RevocationMode.NoCheck;
-                });
-            
-            services.AddCertificateForwardingForNginx();
-            
             services.AddLocalApiAuthentication(principal =>
             {
                 principal.Identities.First().AddClaim(new Claim("additional_claim", "additional_value"));
@@ -88,28 +83,19 @@ namespace IdentityServerHost
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
+            app.UseSerilogRequestLogging(
+                options => options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Debug);
 
-            app.UseCertificateForwarding();
             app.UseCookiePolicy();
-            
-            app.UseSerilogRequestLogging();
 
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
 
             app.UseRouting();
             app.UseIdentityServer();
-
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
         }
     }
 
@@ -149,16 +135,16 @@ namespace IdentityServerHost
 
             services.AddAuthentication()
                 .AddOpenIdConnect("Google", "Google", options =>
-                 {
-                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                     options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+                {
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                    options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
-                     options.Authority = "https://accounts.google.com/";
-                     options.ClientId = "708996912208-9m4dkjb5hscn7cjrn5u0r4tbgkbj1fko.apps.googleusercontent.com";
+                    options.Authority = "https://accounts.google.com/";
+                    options.ClientId = "708996912208-9m4dkjb5hscn7cjrn5u0r4tbgkbj1fko.apps.googleusercontent.com";
 
-                     options.CallbackPath = "/signin-google";
-                     options.Scope.Add("email");
-                 })
+                    options.CallbackPath = "/signin-google";
+                    options.Scope.Add("email");
+                })
                 .AddOpenIdConnect("demoidsrv", "IdentityServer", options =>
                 {
                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
@@ -194,48 +180,9 @@ namespace IdentityServerHost
                         NameClaimType = "name",
                         RoleClaimType = "role"
                     };
-                })
-                .AddOpenIdConnect("adfs", "ADFS", options =>
-                {
-                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                    options.SignOutScheme = IdentityServerConstants.SignoutScheme;
-
-                    options.Authority = "https://adfs.leastprivilege.vm/adfs";
-                    options.ClientId = "c0ea8d99-f1e7-43b0-a100-7dee3f2e5c3c";
-                    options.ResponseType = "id_token";
-
-                    options.CallbackPath = "/signin-adfs";
-                    options.SignedOutCallbackPath = "/signout-callback-adfs";
-                    options.RemoteSignOutPath = "/signout-adfs";
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        NameClaimType = "name",
-                        RoleClaimType = "role"
-                    };
                 });
 
             return services;
-        }
-
-        public static void AddCertificateForwardingForNginx(this IServiceCollection services)
-        {
-            services.AddCertificateForwarding(options =>
-            {
-                options.CertificateHeader = "X-SSL-CERT";
-
-                options.HeaderConverter = (headerValue) =>
-                {
-                    X509Certificate2 clientCertificate = null;
-
-                    if(!string.IsNullOrWhiteSpace(headerValue))
-                    {
-                        byte[] bytes = Encoding.UTF8.GetBytes(Uri.UnescapeDataString(headerValue));
-                        clientCertificate = new X509Certificate2(bytes);
-                    }
-
-                    return clientCertificate;
-                };
-            });
         }
     }
 }

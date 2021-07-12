@@ -3,15 +3,13 @@
 
 
 using Duende.IdentityServer.Models;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Duende.IdentityServer.Extensions;
-using System.Security.Claims;
-using IdentityModel;
-using System;
 using Duende.IdentityServer.Services;
+using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Duende.IdentityServer
 {
@@ -20,7 +18,7 @@ namespace Duende.IdentityServer
     /// </summary>
     public class IdentityServerTools
     {
-        internal readonly IHttpContextAccessor ContextAccessor;
+        internal readonly IServiceProvider ServiceProvider;
         internal readonly IIssuerNameService IssuerNameService;
         private readonly ITokenCreationService _tokenCreation;
         private readonly ISystemClock _clock;
@@ -28,13 +26,13 @@ namespace Duende.IdentityServer
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityServerTools" /> class.
         /// </summary>
-        /// <param name="contextAccessor">The context accessor.</param>
+        /// <param name="serviceProvider">The provider.</param>
         /// <param name="issuerNameService">The issuer name service</param>
         /// <param name="tokenCreation">The token creation service.</param>
         /// <param name="clock">The clock.</param>
-        public IdentityServerTools(IHttpContextAccessor contextAccessor, IIssuerNameService issuerNameService, ITokenCreationService tokenCreation, ISystemClock clock)
+        public IdentityServerTools(IServiceProvider serviceProvider, IIssuerNameService issuerNameService, ITokenCreationService tokenCreation, ISystemClock clock)
         {
-            ContextAccessor = contextAccessor;
+            ServiceProvider = serviceProvider;
             IssuerNameService = issuerNameService;
             _tokenCreation = tokenCreation;
             _clock = clock;

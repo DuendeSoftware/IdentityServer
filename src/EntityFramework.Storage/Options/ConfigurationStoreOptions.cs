@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -187,5 +187,9 @@ namespace Duende.IdentityServer.EntityFramework.Options
         /// </value>
         public TableConfiguration ApiScopeProperty { get; set; } = new TableConfiguration("ApiScopeProperties");
 
+        /// <summary>
+        /// Gets or sets the identity providers table configuration.
+        /// </summary>
+        public TableConfiguration IdentityProvider { get; set; } = new TableConfiguration("IdentityProviders");
     }
 }

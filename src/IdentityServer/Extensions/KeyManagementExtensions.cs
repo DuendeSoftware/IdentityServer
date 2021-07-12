@@ -36,7 +36,7 @@ namespace Duende.IdentityServer.Extensions
 
         internal static TimeSpan GetAge(this ISystemClock clock, DateTime date)
         {
-            var now = clock.UtcNow.DateTime;
+            var now = clock.UtcNow.UtcDateTime;
             if (date > now) now = date;
             return now.Subtract(date);
         }

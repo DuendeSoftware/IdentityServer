@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -18,7 +17,6 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
 using IdentityModel;
-using IdentityModel.Client;
 using IntegrationTests.Common;
 using Microsoft.AspNetCore.WebUtilities;
 using Xunit;
@@ -411,8 +409,8 @@ namespace IntegrationTests.Endpoints.EndSession
 
             response = await _mockPipeline.BrowserClient.GetAsync(signoutFrameUrl);
             var html = await response.Content.ReadAsStringAsync();
-            html.Should().Contain("https://client1/signout?sid=" + sid + "&iss=" + UrlEncoder.Default.Encode("https://server"));
-            html.Should().Contain("https://client2/signout?sid=" + sid + "&iss=" + UrlEncoder.Default.Encode("https://server"));
+            html.Should().Contain(HtmlEncoder.Default.Encode("https://client1/signout?sid=" + sid + "&iss=" + UrlEncoder.Default.Encode("https://server")));
+            html.Should().Contain(HtmlEncoder.Default.Encode("https://client2/signout?sid=" + sid + "&iss=" + UrlEncoder.Default.Encode("https://server")));
         }
 
         [Fact]

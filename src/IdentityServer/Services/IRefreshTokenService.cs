@@ -3,10 +3,8 @@
 
 
 using Duende.IdentityServer.Models;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Validation;
-using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Services
 {

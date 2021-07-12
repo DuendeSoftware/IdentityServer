@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -30,6 +30,11 @@ namespace Duende.IdentityServer
         /// Identity provider (optional)
         /// </summary>
         public string IdentityProvider { get; set; }
+
+        /// <summary>
+        /// Tenant (optional)
+        /// </summary>
+        public string Tenant { get; set; }
 
         /// <summary>
         /// Authentication methods
@@ -75,6 +80,11 @@ namespace Duende.IdentityServer
             if (IdentityProvider.IsPresent())
             {
                 claims.Add(new Claim(JwtClaimTypes.IdentityProvider, IdentityProvider));
+            }
+            
+            if (Tenant.IsPresent())
+            {
+                claims.Add(new Claim(IdentityServerConstants.ClaimTypes.Tenant, Tenant));
             }
 
             if (AuthenticationTime.HasValue)

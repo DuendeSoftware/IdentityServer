@@ -6,7 +6,6 @@ using Microsoft.Extensions.Primitives;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 
 #pragma warning disable 1591
 
@@ -37,7 +36,10 @@ namespace Duende.IdentityServer.Extensions
 
             foreach (var field in collection)
             {
-                nv.Add(field.Key, field.Value.First());
+                foreach (var item in field.Value)
+                {
+                    nv.Add(field.Key, item);
+                }
             }
 
             return nv;

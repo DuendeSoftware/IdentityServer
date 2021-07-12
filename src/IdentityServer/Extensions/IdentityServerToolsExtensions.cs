@@ -2,13 +2,13 @@
 // See LICENSE in the project root for license information.
 
 
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Extensions;
 using IdentityModel;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Duende.IdentityServer
 {
@@ -35,9 +35,8 @@ namespace Duende.IdentityServer
             IEnumerable<Claim> additionalClaims = null)
         {
             var claims = new HashSet<Claim>(new ClaimComparer());
-            var context = tools.ContextAccessor.HttpContext;
-            var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            
+            var options = tools.ServiceProvider.GetRequiredService<IdentityServerOptions>();
+
             if (additionalClaims != null)
             {
                 foreach (var claim in additionalClaims)
@@ -59,10 +58,10 @@ namespace Duende.IdentityServer
             if (options.EmitStaticAudienceClaim)
             {
                 claims.Add(new Claim(
-                    JwtClaimTypes.Audience, 
+                    JwtClaimTypes.Audience,
                     string.Format(IdentityServerConstants.AccessTokenAudience, (await tools.IssuerNameService.GetCurrentAsync()).EnsureTrailingSlash())));
             }
-            
+
             if (!audiences.IsNullOrEmpty())
             {
                 foreach (var audience in audiences)

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1"/>
+
+        <PackageReference Include="IdentityModel.OidcClient" Version="4.0.0-preview.7"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1"/>
+
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Constants\Constants.csproj"/>
+    </ItemGroup>
+</Project>

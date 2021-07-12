@@ -132,7 +132,7 @@ namespace Duende.IdentityServer.Models
         public string FrontChannelLogoutUri { get; set; }
 
         /// <summary>
-        /// Specifies is the user's session id should be sent to the FrontChannelLogoutUri. Defaults to <c>true</c>.
+        /// Specifies if the user's session id should be sent to the FrontChannelLogoutUri. Defaults to <c>true</c>.
         /// </summary>
         public bool FrontChannelLogoutSessionRequired { get; set; } = true;
 
@@ -142,7 +142,7 @@ namespace Duende.IdentityServer.Models
         public string BackChannelLogoutUri { get; set; }
 
         /// <summary>
-        /// Specifies is the user's session id should be sent to the BackChannelLogoutUri. Defaults to <c>true</c>.
+        /// Specifies if the user's session id should be sent to the BackChannelLogoutUri. Defaults to <c>true</c>.
         /// </summary>
         public bool BackChannelLogoutSessionRequired { get; set; } = true;
 

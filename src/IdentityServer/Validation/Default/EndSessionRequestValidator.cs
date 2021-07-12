@@ -122,7 +122,7 @@ namespace Duende.IdentityServer.Validation
                     return Invalid("Error validating id token hint", validatedRequest);
                 }
 
-                validatedRequest.Client = tokenValidationResult.Client;
+                validatedRequest.SetClient(tokenValidationResult.Client);
 
                 // validate sub claim against currently logged on user
                 var subClaim = tokenValidationResult.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Subject);

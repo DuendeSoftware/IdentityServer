@@ -25,7 +25,6 @@ namespace Duende.IdentityServer.EntityFramework.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="CorsPolicyService"/> class.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="ArgumentNullException">context</exception>

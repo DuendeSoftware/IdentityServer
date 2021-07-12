@@ -12,6 +12,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
+using System.Text.Encodings.Web;
 
 namespace Duende.IdentityServer.Endpoints.Results
 {
@@ -79,7 +80,7 @@ namespace Duende.IdentityServer.Endpoints.Results
 
             if (_result.FrontChannelLogoutUrls != null && _result.FrontChannelLogoutUrls.Any())
             {
-                var frameUrls = _result.FrontChannelLogoutUrls.Select(url => $"<iframe src='{url}'></iframe>");
+                var frameUrls = _result.FrontChannelLogoutUrls.Select(url => $"<iframe src='{HtmlEncoder.Default.Encode(url)}'></iframe>"); 
                 framesHtml = frameUrls.Aggregate((x, y) => x + y);
             }
 

@@ -39,9 +39,16 @@ namespace Duende.IdentityServer.Hosting
         /// <param name="router">The router.</param>
         /// <param name="session">The user session.</param>
         /// <param name="events">The event service.</param>
+        /// <param name="issuerNameService">The issuer name service</param>
         /// <param name="backChannelLogoutService"></param>
         /// <returns></returns>
-        public async Task Invoke(HttpContext context, IEndpointRouter router, IUserSession session, IEventService events, IBackChannelLogoutService backChannelLogoutService)
+        public async Task Invoke(
+            HttpContext context, 
+            IEndpointRouter router, 
+            IUserSession session, 
+            IEventService events,
+            IIssuerNameService issuerNameService,
+            IBackChannelLogoutService backChannelLogoutService)
         {
             // this will check the authentication session and from it emit the check session
             // cookie needed from JS-based signout clients.
@@ -70,7 +77,7 @@ namespace Duende.IdentityServer.Hosting
                 var endpoint = router.Find(context);
                 if (endpoint != null)
                 {
-                    LicenseValidator.ValidateIssuer(context.GetIdentityServerIssuerUri());
+                    LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 
                     _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
 

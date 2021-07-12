@@ -45,7 +45,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 keys = _cache;
             }
 
-            if (keys != null && expires >= _clock.UtcNow.DateTime)
+            if (keys != null && expires >= _clock.UtcNow.UtcDateTime)
             {
                 return Task.FromResult(keys);
             }
@@ -63,7 +63,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             lock (_lock)
             {
-                _expires = _clock.UtcNow.DateTime.Add(duration);
+                _expires = _clock.UtcNow.UtcDateTime.Add(duration);
                 _cache = keys;
             }
 

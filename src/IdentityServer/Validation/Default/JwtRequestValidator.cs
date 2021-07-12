@@ -4,16 +4,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Validation
@@ -21,17 +21,14 @@ namespace Duende.IdentityServer.Validation
     /// <summary>
     /// Validates JWT authorization request objects
     /// </summary>
-    public class JwtRequestValidator
+    public class JwtRequestValidator : IJwtRequestValidator
     {
         private readonly string _audienceUri;
 
         /// <summary>
         /// JWT handler
         /// </summary>
-        protected JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler
-        {
-            MapInboundClaims = false
-        };
+        protected JsonWebTokenHandler Handler;
 
         /// <summary>
         /// The audience URI to use
@@ -70,6 +67,11 @@ namespace Duende.IdentityServer.Validation
             Options = options;
             IssuerNameService = issuerNameService;
             Logger = logger;
+            
+            Handler = new JsonWebTokenHandler
+            {
+                MaximumTokenSizeInBytes = options.InputLengthRestrictions.Jwt
+            };
         }
 
         /// <summary>
@@ -78,7 +80,9 @@ namespace Duende.IdentityServer.Validation
         internal JwtRequestValidator(string audience, ILogger<JwtRequestValidator> logger)
         {
             _audienceUri = audience;
+            
             Logger = logger;
+            Handler = new JsonWebTokenHandler();
         }
 
         /// <summary>
@@ -111,7 +115,7 @@ namespace Duende.IdentityServer.Validation
                 return fail;
             }
 
-            JwtSecurityToken jwtSecurityToken;
+            JsonWebToken jwtSecurityToken;
             try
             {
                 jwtSecurityToken = await ValidateJwtAsync(jwtTokenString, trustedKeys, client);
@@ -122,8 +126,8 @@ namespace Duende.IdentityServer.Validation
                 return fail;
             }
 
-            if (jwtSecurityToken.Payload.ContainsKey(OidcConstants.AuthorizeRequest.Request) ||
-                jwtSecurityToken.Payload.ContainsKey(OidcConstants.AuthorizeRequest.RequestUri))
+            if (jwtSecurityToken.TryGetPayloadValue<string>(OidcConstants.AuthorizeRequest.Request, out _) ||
+                jwtSecurityToken.TryGetPayloadValue<string>(OidcConstants.AuthorizeRequest.RequestUri, out _))
             {
                 Logger.LogError("JWT payload must not contain request or request_uri");
                 return fail;
@@ -158,7 +162,7 @@ namespace Duende.IdentityServer.Validation
         /// <param name="keys">The keys</param>
         /// <param name="client">The client</param>
         /// <returns></returns>
-        protected virtual async Task<JwtSecurityToken> ValidateJwtAsync(string jwtTokenString, IEnumerable<SecurityKey> keys,
+        protected virtual async Task<JsonWebToken> ValidateJwtAsync(string jwtTokenString, IEnumerable<SecurityKey> keys,
             Client client)
         {
             var tokenValidationParameters = new TokenValidationParameters
@@ -181,9 +185,13 @@ namespace Duende.IdentityServer.Validation
                 tokenValidationParameters.ValidTypes = new[] { JwtClaimTypes.JwtTypes.AuthorizationRequest };
             }
 
-            Handler.ValidateToken(jwtTokenString, tokenValidationParameters, out var token);
+            var result = Handler.ValidateToken(jwtTokenString, tokenValidationParameters);
+            if (!result.IsValid)
+            {
+                throw result.Exception;
+            }
 
-            return (JwtSecurityToken)token;
+            return (JsonWebToken)result.SecurityToken;
         }
 
         /// <summary>
@@ -191,20 +199,11 @@ namespace Duende.IdentityServer.Validation
         /// </summary>
         /// <param name="token">The JWT token</param>
         /// <returns></returns>
-        protected virtual Task<Dictionary<string, string>> ProcessPayloadAsync(JwtSecurityToken token)
+        protected virtual Task<List<Claim>> ProcessPayloadAsync(JsonWebToken token)
         {
             // filter JWT validation values
-            var payload = new Dictionary<string, string>();
-            foreach (var key in token.Payload.Keys)
-            {
-                if (!Constants.Filters.JwtRequestClaimTypesFilter.Contains(key))
-                {
-                    var value = token.Payload[key];
-                    payload.Add(key, value.ToString());
-                }
-            }
-
-            return Task.FromResult(payload);
+            var filtered = token.Claims.Where(claim => !Constants.Filters.JwtRequestClaimTypesFilter.Contains(claim.Type));
+            return Task.FromResult(filtered.ToList());
         }
     }
 }

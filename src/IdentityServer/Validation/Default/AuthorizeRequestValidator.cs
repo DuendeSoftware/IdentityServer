@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Services;
+using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -27,7 +28,7 @@ namespace Duende.IdentityServer.Validation
         private readonly IRedirectUriValidator _uriValidator;
         private readonly IResourceValidator _resourceValidator;
         private readonly IUserSession _userSession;
-        private readonly JwtRequestValidator _jwtRequestValidator;
+        private readonly IJwtRequestValidator _jwtRequestValidator;
         private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
         private readonly ILogger _logger;
 
@@ -42,7 +43,7 @@ namespace Duende.IdentityServer.Validation
             IRedirectUriValidator uriValidator,
             IResourceValidator resourceValidator,
             IUserSession userSession,
-            JwtRequestValidator jwtRequestValidator,
+            IJwtRequestValidator jwtRequestValidator,
             IJwtRequestUriHttpClient jwtRequestUriHttpClient,
             ILogger<AuthorizeRequestValidator> logger)
         {
@@ -243,7 +244,11 @@ namespace Duende.IdentityServer.Validation
                 var responseType = request.Raw.Get(OidcConstants.AuthorizeRequest.ResponseType);
                 if (responseType != null)
                 {
-                    if (jwtRequestValidationResult.Payload.TryGetValue(OidcConstants.AuthorizeRequest.ResponseType, out var payloadResponseType))
+                    var payloadResponseType =
+                        jwtRequestValidationResult.Payload.SingleOrDefault(c =>
+                            c.Type == OidcConstants.AuthorizeRequest.ResponseType)?.Value;
+
+                    if (!string.IsNullOrEmpty(payloadResponseType))
                     {
                         if (payloadResponseType != responseType)
                         {
@@ -254,7 +259,11 @@ namespace Duende.IdentityServer.Validation
                 }
 
                 // validate client_id mismatch
-                if (jwtRequestValidationResult.Payload.TryGetValue(OidcConstants.AuthorizeRequest.ClientId, out var payloadClientId))
+                var payloadClientId =
+                    jwtRequestValidationResult.Payload.SingleOrDefault(c =>
+                        c.Type == OidcConstants.AuthorizeRequest.ClientId)?.Value;
+
+                if (!string.IsNullOrEmpty(payloadClientId))
                 {
                     if (!string.Equals(request.Client.ClientId, payloadClientId, StringComparison.Ordinal))
                     {
@@ -266,34 +275,40 @@ namespace Duende.IdentityServer.Validation
                 {
                     LogError("client_id is missing in JWT payload", request);
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestObject, description: "Invalid JWT request");
+                    
                 }
-
+                
                 var ignoreKeys = new[]
                 {
                     JwtClaimTypes.Issuer,
                     JwtClaimTypes.Audience
                 };
-
+                
                 // merge jwt payload values into original request parameters
-                foreach (var key in jwtRequestValidationResult.Payload.Keys)
+                // 1. clear the keys in the raw collection for every key found in the request object
+                foreach (var claimType in jwtRequestValidationResult.Payload.Select(c => c.Type).Distinct())
                 {
-                    if (ignoreKeys.Contains(key)) continue;
-
-                    var value = jwtRequestValidationResult.Payload[key];
-
-                    var qsValue = request.Raw.Get(key);
+                    var qsValue = request.Raw.Get(claimType);
                     if (qsValue != null)
                     {
-                        if (!string.Equals(value, qsValue, StringComparison.Ordinal))
-                        {
-                            LogError("parameter mismatch between request object and query string parameter.", request);
-                            return Invalid(request, description: "Parameter mismatch in JWT request");
-                        }
+                        request.Raw.Remove(claimType);
                     }
-
-                    request.Raw.Set(key, value);
                 }
-
+                
+                // 2. copy over the value
+                foreach (var claim in jwtRequestValidationResult.Payload)
+                {
+                    request.Raw.Add(claim.Type, claim.Value);
+                }
+                
+                var ruri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
+                if (ruri != null)
+                {
+                    request.Raw.Remove(OidcConstants.AuthorizeRequest.RequestUri);
+                    request.Raw.Add(OidcConstants.AuthorizeRequest.Request, request.RequestObject);
+                }
+                
+                
                 request.RequestObjectValues = jwtRequestValidationResult.Payload;
             }
 
@@ -703,15 +718,10 @@ namespace Duende.IdentityServer.Validation
             }
             else
             {
-                if (request.GrantType == GrantType.Implicit ||
-                    request.GrantType == GrantType.Hybrid)
+                if (request.ResponseType.FromSpaceSeparatedString().Contains(TokenTypes.IdentityToken))
                 {
-                    // only openid requests require nonce
-                    if (request.IsOpenIdRequest)
-                    {
-                        LogError("Nonce required for implicit and hybrid flow with openid scope", request);
-                        return Invalid(request, description: "Invalid nonce");
-                    }
+                    LogError("Nonce required for flow with id_token response type", request);
+                    return Invalid(request, description: "Invalid nonce");
                 }
             }
 
