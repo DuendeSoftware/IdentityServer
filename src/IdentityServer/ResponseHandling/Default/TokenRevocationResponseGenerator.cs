@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Stores;
@@ -56,8 +57,9 @@ namespace Duende.IdentityServer.ResponseHandling
         /// Creates the revocation endpoint response and processes the revocation request.
         /// </summary>
         /// <param name="validationResult">The userinfo request validation result.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public virtual async Task<TokenRevocationResponse> ProcessAsync(TokenRevocationRequestValidationResult validationResult)
+        public virtual async Task<TokenRevocationResponse> ProcessAsync(TokenRevocationRequestValidationResult validationResult, CancellationToken cancellationToken)
         {
             var response = new TokenRevocationResponse
             {
@@ -69,7 +71,7 @@ namespace Duende.IdentityServer.ResponseHandling
             if (validationResult.TokenTypeHint == Constants.TokenTypeHints.AccessToken)
             {
                 Logger.LogTrace("Hint was for access token");
-                response.Success = await RevokeAccessTokenAsync(validationResult);
+                response.Success = await RevokeAccessTokenAsync(validationResult, cancellationToken);
             }
             else if (validationResult.TokenTypeHint == Constants.TokenTypeHints.RefreshToken)
             {
@@ -80,7 +82,7 @@ namespace Duende.IdentityServer.ResponseHandling
             {
                 Logger.LogTrace("No hint for token type");
 
-                response.Success = await RevokeAccessTokenAsync(validationResult);
+                response.Success = await RevokeAccessTokenAsync(validationResult, cancellationToken);
 
                 if (!response.Success)
                 {
@@ -99,16 +101,16 @@ namespace Duende.IdentityServer.ResponseHandling
         /// <summary>
         /// Revoke access token only if it belongs to client doing the request.
         /// </summary>
-        protected virtual async Task<bool> RevokeAccessTokenAsync(TokenRevocationRequestValidationResult validationResult)
+        protected virtual async Task<bool> RevokeAccessTokenAsync(TokenRevocationRequestValidationResult validationResult, CancellationToken cancellationToken)
         {
-            var token = await ReferenceTokenStore.GetReferenceTokenAsync(validationResult.Token);
+            var token = await ReferenceTokenStore.GetReferenceTokenAsync(validationResult.Token, cancellationToken);
 
             if (token != null)
             {
                 if (token.ClientId == validationResult.Client.ClientId)
                 {
                     Logger.LogDebug("Access token revoked");
-                    await ReferenceTokenStore.RemoveReferenceTokenAsync(validationResult.Token);
+                    await ReferenceTokenStore.RemoveReferenceTokenAsync(validationResult.Token, cancellationToken);
                 }
                 else
                 {
