@@ -1,17 +1,18 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
-using System.Linq;
-using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Cors.Infrastructure;
-using Duende.IdentityServer.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Services;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Hosting
 {
@@ -19,19 +20,19 @@ namespace Duende.IdentityServer.Hosting
     {
         private readonly ILogger _logger;
         private readonly ICorsPolicyProvider _inner;
+        private readonly IServiceProvider _provider;
         private readonly IdentityServerOptions _options;
-        private readonly IHttpContextAccessor _httpContext;
 
         public CorsPolicyProvider(
             ILogger<CorsPolicyProvider> logger,
             Decorator<ICorsPolicyProvider> inner,
             IdentityServerOptions options,
-            IHttpContextAccessor httpContext)
+            IServiceProvider provider)
         {
             _logger = logger;
             _inner = inner.Instance;
             _options = options;
-            _httpContext = httpContext;
+            _provider = provider;
         }
 
         public Task<CorsPolicy> GetPolicyAsync(HttpContext context, string policyName)
@@ -58,7 +59,7 @@ namespace Duende.IdentityServer.Hosting
 
                     // manually resolving this from DI because this: 
                     // https://github.com/aspnet/CORS/issues/105
-                    var corsPolicyService = _httpContext.HttpContext.RequestServices.GetRequiredService<ICorsPolicyService>();
+                    var corsPolicyService = _provider.GetRequiredService<ICorsPolicyService>();
 
                     if (await corsPolicyService.IsOriginAllowedAsync(origin))
                     {

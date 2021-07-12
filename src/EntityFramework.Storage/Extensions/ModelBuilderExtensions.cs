@@ -148,6 +148,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
                 grant.HasIndex(x => new { x.SubjectId, x.ClientId, x.Type });
                 grant.HasIndex(x => new { x.SubjectId, x.SessionId, x.Type });
                 grant.HasIndex(x => x.Expiration);
+                grant.HasIndex(x => x.ConsumedTime);
             });
 
             modelBuilder.Entity<DeviceFlowCodes>(codes =>
@@ -292,8 +293,25 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
                 property.Property(x => x.Key).HasMaxLength(250).IsRequired();
                 property.Property(x => x.Value).HasMaxLength(2000).IsRequired();
             });
+        }
 
+        /// <summary>
+        /// Configures the identity providers.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder.</param>
+        /// <param name="storeOptions">The store options.</param>
+        public static void ConfigureIdentityProviderContext(this ModelBuilder modelBuilder, ConfigurationStoreOptions storeOptions)
+        {
+            if (!string.IsNullOrWhiteSpace(storeOptions.DefaultSchema)) modelBuilder.HasDefaultSchema(storeOptions.DefaultSchema);
 
+            modelBuilder.Entity<IdentityProvider>(entity =>
+            {
+                entity.ToTable(storeOptions.IdentityProvider).HasKey(x => x.Id);
+
+                entity.Property(x => x.Scheme).HasMaxLength(200).IsRequired();
+                entity.Property(x => x.Type).HasMaxLength(20).IsRequired();
+                entity.Property(x => x.DisplayName).HasMaxLength(200);
+            });
         }
     }
 }

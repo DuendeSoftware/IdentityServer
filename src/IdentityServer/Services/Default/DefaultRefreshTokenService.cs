@@ -5,13 +5,11 @@
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Stores;
 using Microsoft.Extensions.Logging;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
-using System;
 
 namespace Duende.IdentityServer.Services
 {
@@ -86,7 +84,7 @@ namespace Duende.IdentityServer.Services
             /////////////////////////////////////////////
             // check if refresh token has expired
             /////////////////////////////////////////////
-            if (refreshToken.CreationTime.HasExceeded(refreshToken.Lifetime, Clock.UtcNow.DateTime))
+            if (refreshToken.CreationTime.HasExceeded(refreshToken.Lifetime, Clock.UtcNow.UtcDateTime))
             {
                 Logger.LogWarning("Refresh token has expired.");
                 return invalidGrant;

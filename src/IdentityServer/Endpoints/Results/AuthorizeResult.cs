@@ -49,10 +49,10 @@ namespace Duende.IdentityServer.Endpoints.Results
 
         private void Init(HttpContext context)
         {
-            _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            _userSession = _userSession ?? context.RequestServices.GetRequiredService<IUserSession>();
-            _errorMessageStore = _errorMessageStore ?? context.RequestServices.GetRequiredService<IMessageStore<ErrorMessage>>();
-            _clock = _clock ?? context.RequestServices.GetRequiredService<ISystemClock>();
+            _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            _userSession ??= context.RequestServices.GetRequiredService<IUserSession>();
+            _errorMessageStore ??= context.RequestServices.GetRequiredService<IMessageStore<ErrorMessage>>();
+            _clock ??= context.RequestServices.GetRequiredService<ISystemClock>();
         }
 
         public async Task ExecuteAsync(HttpContext context)

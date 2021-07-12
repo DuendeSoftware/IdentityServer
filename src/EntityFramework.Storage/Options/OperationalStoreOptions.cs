@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -61,6 +61,14 @@ namespace Duende.IdentityServer.EntityFramework.Options
         ///   <c>true</c> if [enable token cleanup]; otherwise, <c>false</c>.
         /// </value>
         public bool EnableTokenCleanup { get; set; } = false;
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether consumed tokens will included in the automatic clean up.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if consumed tokens are to be included in cleanup; otherwise, <c>false</c>.
+        /// </value>
+        public bool RemoveConsumedTokens { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the token cleanup interval (in seconds). The default is 3600 (1 hour).

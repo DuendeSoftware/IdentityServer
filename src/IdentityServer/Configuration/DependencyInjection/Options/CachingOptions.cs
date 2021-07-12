@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -33,5 +33,10 @@ namespace Duende.IdentityServer.Configuration
         /// Gets or sets the CORS origin expiration.
         /// </summary>
         public TimeSpan CorsExpiration { get; set; } = Default;
+
+        /// <summary>
+        /// Duration identity provider store cache duration
+        /// </summary>
+        public TimeSpan IdentityProviderCacheDuration { get; set; } = TimeSpan.FromMinutes(60);
     }
 }

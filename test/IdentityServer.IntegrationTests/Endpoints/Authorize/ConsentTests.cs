@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Stores.Default;
@@ -132,7 +133,8 @@ namespace IntegrationTests.Endpoints.Authorize
                 _mockPipeline.Initialize();
             }
 
-            await _mockPipeline.LoginAsync("bob");
+            var user = new IdentityServerUser("bob") { Tenant = "tenant_value" };
+            await _mockPipeline.LoginAsync(user.CreatePrincipal());
 
             var url = _mockPipeline.CreateAuthorizeUrl(
                 clientId: "client2",

@@ -10,6 +10,9 @@ using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Models;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Endpoints.Results
 {
@@ -44,17 +47,21 @@ namespace Duende.IdentityServer.Endpoints.Results
         internal CustomRedirectResult(
             ValidatedAuthorizeRequest request,
             string url,
-            IdentityServerOptions options) 
+            IdentityServerOptions options,
+            IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
             : this(request, url)
         {
             _options = options;
+            _authorizationParametersMessageStore = authorizationParametersMessageStore;
         }
 
         private IdentityServerOptions _options;
+        private IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
         private void Init(HttpContext context)
         {
             _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            _authorizationParametersMessageStore = _authorizationParametersMessageStore ?? context.RequestServices.GetService<IAuthorizationParametersMessageStore>();
         }
 
         /// <summary>
@@ -62,12 +69,22 @@ namespace Duende.IdentityServer.Endpoints.Results
         /// </summary>
         /// <param name="context">The HTTP context.</param>
         /// <returns></returns>
-        public Task ExecuteAsync(HttpContext context)
+        public async Task ExecuteAsync(HttpContext context)
         {
             Init(context);
 
-            var returnUrl = context.GetIdentityServerBasePath().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.Authorize;
-            returnUrl = returnUrl.AddQueryString(_request.Raw.ToQueryString());
+            var returnUrl = context.GetIdentityServerBasePath().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.AuthorizeCallback;
+
+            if (_authorizationParametersMessageStore != null)
+            {
+                var msg = new Message<IDictionary<string, string[]>>(_request.ToOptimizedFullDictionary());
+                var id = await _authorizationParametersMessageStore.WriteAsync(msg);
+                returnUrl = returnUrl.AddQueryString(Constants.AuthorizationParamsStore.MessageStoreIdParameterName, id);
+            }
+            else
+            {
+                returnUrl = returnUrl.AddQueryString(_request.ToOptimizedQueryString());
+            }
 
             if (!_url.IsLocalUrl())
             {
@@ -78,8 +95,6 @@ namespace Duende.IdentityServer.Endpoints.Results
 
             var url = _url.AddQueryString(_options.UserInteraction.CustomRedirectReturnUrlParameter, returnUrl);
             context.Response.RedirectToAbsoluteUrl(url);
-
-            return Task.CompletedTask;
         }
     }
 }

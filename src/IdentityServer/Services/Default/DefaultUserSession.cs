@@ -160,9 +160,22 @@ namespace Duende.IdentityServer.Services
             var currentSubjectId = (await GetUserAsync())?.GetSubjectId();
             var newSubjectId = principal.GetSubjectId();
 
-            if (properties.GetSessionId() == null || currentSubjectId != newSubjectId)
+            if (properties.GetSessionId() == null)
             {
-                properties.SetSessionId(CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex));
+                var currSid = await GetSessionIdAsync();
+                if (newSubjectId == currentSubjectId && currSid != null)
+                {
+                    properties.SetSessionId(currSid);
+                    var clients = Properties.GetClientList();
+                    if (clients.Any())
+                    {
+                        properties.SetClientList(clients);
+                    }
+                }
+                else
+                {
+                    properties.SetSessionId(CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex));
+                }
             }
 
             var sid = properties.GetSessionId();

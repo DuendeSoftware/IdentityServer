@@ -61,8 +61,6 @@ namespace Duende.IdentityServer.Validation
 
             foreach (var nameSecret in nameSecrets)
             {
-                var secretDescription = string.IsNullOrEmpty(nameSecret.Description) ? "no description" : nameSecret.Description;
-
                 if (name.Equals(nameSecret.Value, StringComparison.Ordinal))
                 {
                     var result = new SecretValidationResult

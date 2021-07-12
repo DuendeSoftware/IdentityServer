@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services.KeyManagement;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -51,7 +50,7 @@ namespace UnitTests.Services.Default.KeyManagement
         {
             var key = _options.CreateRsaSecurityKey();
 
-            var date = _mockClock.UtcNow.DateTime;
+            var date = _mockClock.UtcNow.UtcDateTime;
             if (age.HasValue) date = date.Subtract(age.Value);
 
             var container = x509 ?
@@ -898,7 +897,7 @@ namespace UnitTests.Services.Default.KeyManagement
             _mockKeyProtector.ProtectWasCalled.Should().BeTrue();
             _mockKeyStore.Keys.Count.Should().Be(1);
             _mockKeyStore.Keys.Single().Id.Should().Be(result.Id);
-            result.Created.Should().Be(_mockClock.UtcNow.DateTime);
+            result.Created.Should().Be(_mockClock.UtcNow.UtcDateTime);
             result.Algorithm.Should().Be("RS256");
         }
 

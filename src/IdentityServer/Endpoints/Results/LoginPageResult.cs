@@ -65,13 +65,13 @@ namespace Duende.IdentityServer.Endpoints.Results
             var returnUrl = context.GetIdentityServerBasePath().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.AuthorizeCallback;
             if (_authorizationParametersMessageStore != null)
             {
-                var msg = new Message<IDictionary<string, string[]>>(_request.Raw.ToFullDictionary());
+                var msg = new Message<IDictionary<string, string[]>>(_request.ToOptimizedFullDictionary());
                 var id = await _authorizationParametersMessageStore.WriteAsync(msg);
                 returnUrl = returnUrl.AddQueryString(Constants.AuthorizationParamsStore.MessageStoreIdParameterName, id);
             }
             else
             {
-                returnUrl = returnUrl.AddQueryString(_request.Raw.ToQueryString());
+                returnUrl = returnUrl.AddQueryString(_request.ToOptimizedQueryString());
             }
 
             var loginUrl = _options.UserInteraction.LoginUrl;

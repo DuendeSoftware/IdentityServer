@@ -71,6 +71,24 @@ namespace Duende.IdentityServer.Extensions
         }
 
         /// <summary>
+        /// Sets the list of client ids.
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <param name="clientIds"></param>
+        public static void SetClientList(this AuthenticationProperties properties, IEnumerable<string> clientIds)
+        {
+            var value = EncodeList(clientIds);
+            if (value == null)
+            {
+                properties.Items.Remove(ClientListKey);
+            }
+            else
+            {
+                properties.Items[ClientListKey] = value;
+            }
+        }
+
+        /// <summary>
         /// Adds a client to the list of clients the user has signed into during their session.
         /// </summary>
         /// <param name="properties"></param>
@@ -84,16 +102,8 @@ namespace Duende.IdentityServer.Extensions
             {
                 var update = clients.ToList();
                 update.Add(clientId);
-
-                var value = EncodeList(update);
-                if (value == null)
-                {
-                    properties.Items.Remove(ClientListKey);
-                }
-                else
-                {
-                    properties.Items[ClientListKey] = value;
-                }
+                
+                properties.SetClientList(update);
             }
         }
 

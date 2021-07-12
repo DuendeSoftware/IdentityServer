@@ -61,6 +61,7 @@ namespace IdentityServerHost.Configuration
             {
                 new ApiResource("urn:resource1", "Resource 1")
                 {
+                    Description = "Something very long and descriptive",
                     ApiSecrets = { new Secret("secret".Sha256()) },
 
                     Scopes = { "resource1.scope1", "resource1.scope2", "shared.scope" }
@@ -68,6 +69,7 @@ namespace IdentityServerHost.Configuration
                 
                 new ApiResource("urn:resource2", "Resource 2")
                 {
+                    Description = "Something very long and descriptive",
                     ApiSecrets = { new Secret("secret".Sha256()) },
 
                     // additional claims to put into access token

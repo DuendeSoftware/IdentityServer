@@ -2,17 +2,17 @@
 // See LICENSE in the project root for license information.
 
 
-using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.IO;
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
-using System.Security.Claims;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -47,24 +47,30 @@ namespace Duende.IdentityServer.Validation
             return null;
         }
 
-        // todo: check this periodcally?
         public static void ValidateLicense()
         {
             var errors = new List<string>();
 
             if (_license == null)
             {
-                // todo: more wording on license options? URL to license details?
-                // error? or info?
-                _logger.LogWarning("You do not have a valid license key for Duende IdentityServer.");
+                var message = "You do not have a valid license key for Duende IdentityServer. " +
+                              "This is allowed for development and testing scenarios. " +
+                              "If you are running in production you are required to have a licensed version. Please start a conversation with us: https://duendesoftware.com/contact";
+
+                _logger.LogWarning(message);
                 return;
             }
             else
             {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("The validated licence key details: {@license}", _license);
+                }
+
                 if (_license.Expiration.HasValue)
                 {
                     var diff = DateTime.UtcNow.Date.Subtract(_license.Expiration.Value.Date).TotalDays;
-                    if (diff > 0)
+                    if (diff > 0 && !_license.ISV)
                     {
                         errors.Add($"Your license for Duende IdentityServer expired {diff} days ago.");
                     }
@@ -72,7 +78,8 @@ namespace Duende.IdentityServer.Validation
 
                 if (_options.KeyManagement.Enabled && !_license.KeyManagement)
                 {
-                    errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer.");
+                    errors.Add(
+                        "You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer.");
                 }
             }
 
@@ -82,21 +89,27 @@ namespace Duende.IdentityServer.Validation
                 {
                     _logger.LogError(err);
                 }
-                
+
                 if (_license != null)
                 {
-                    _logger.LogError("Please contact {licenceContact} from {licenseCompany} to obtain a valid license for Duende IdentityServer.", _license.ContactInfo, _license.CompanyName);
+                    _logger.LogError(
+                        "Please contact {licenceContact} from {licenseCompany} to obtain a valid license for Duende IdentityServer.",
+                        _license.ContactInfo, _license.CompanyName);
                 }
             }
             else
             {
                 if (_license.Expiration.HasValue)
                 {
-                    _logger.LogInformation("You have a valid license key for Duende IdentityServer for use at {licenseCompany}. The license expires on {licenseExpiration}.", _license.CompanyName, _license.Expiration.Value.ToLongDateString());
+                    _logger.LogInformation(
+                        "You have a valid license key for Duende IdentityServer {edition} edition for use at {licenseCompany}. The license expires on {licenseExpiration}.",
+                        _license.Edition, _license.CompanyName, _license.Expiration.Value.ToLongDateString());
                 }
                 else
                 {
-                    _logger.LogInformation("You have a valid license key for Duende IdentityServer for use at {licenseCompany}.", _license.CompanyName);
+                    _logger.LogInformation(
+                        "You have a valid license key for Duende IdentityServer {edition} edition for use at {licenseCompany}.",
+                        _license.Edition, _license.CompanyName);
                 }
             }
         }
@@ -110,7 +123,9 @@ namespace Duende.IdentityServer.Validation
                     _clientIds.TryAdd(clientId, 1);
                     if (_clientIds.Count > _license.ClientLimit)
                     {
-                        _logger.LogError("Your license for Duende IdentityServer only permits {clientLimit} number of clients. You have processed requests for {clientCount}.", _license.ClientLimit, _clientIds.Count);
+                        _logger.LogError(
+                            "Your license for Duende IdentityServer only permits {clientLimit} number of clients. You have processed requests for {clientCount}. The clients used were: {clients}.",
+                            _license.ClientLimit, _clientIds.Count, _clientIds.Keys.ToArray());
                     }
                 }
             }
@@ -125,7 +140,9 @@ namespace Duende.IdentityServer.Validation
                     _issuers.TryAdd(iss, 1);
                     if (_issuers.Count > _license.IssuerLimit)
                     {
-                        _logger.LogError("Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}.", _license.IssuerLimit, _issuers.Count);
+                        _logger.LogError(
+                            "Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}. The issuers used were: {issuers}.",
+                            _license.IssuerLimit, _issuers.Count, _issuers.Keys.ToArray());
                     }
                 }
             }
@@ -135,14 +152,25 @@ namespace Duende.IdentityServer.Validation
         {
             if (_license != null && !String.IsNullOrWhiteSpace(resourceIndicator) && !_license.ResourceIsolation)
             {
-                _logger.LogError("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.");
+                _logger.LogError(
+                    "A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.");
             }
         }
+
         public static void ValidateResourceIndicators(IEnumerable<string> resourceIndicators)
         {
             if (_license != null && resourceIndicators?.Any() == true && !_license.ResourceIsolation)
             {
-                _logger.LogError("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.");
+                _logger.LogError(
+                    "A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.");
+            }
+        }
+
+        public static void ValidateDynamicProviders()
+        {
+            if (_license != null && !_license.DynamicProviders)
+            {
+                _logger.LogError("A request was made invoking a dynamic provider. Your license for Duende IdentityServer does not permit dynamic providers.");
             }
         }
 
@@ -150,89 +178,41 @@ namespace Duende.IdentityServer.Validation
         {
             if (!String.IsNullOrWhiteSpace(licenseKey))
             {
-                var handler = new JwtSecurityTokenHandler();
+                var handler = new JsonWebTokenHandler();
 
-                try
+
+                var rsa = new RSAParameters
                 {
-                    var rsa = new RSAParameters
-                    {
-                        Exponent = Convert.FromBase64String("AQAB"),
-                        Modulus = Convert.FromBase64String("tAHAfvtmGBng322TqUXF/Aar7726jFELj73lywuCvpGsh3JTpImuoSYsJxy5GZCRF7ppIIbsJBmWwSiesYfxWxBsfnpOmAHU3OTMDt383mf0USdqq/F0yFxBL9IQuDdvhlPfFcTrWEL0U2JsAzUjt9AfsPHNQbiEkOXlIwtNkqMP2naynW8y4WbaGG1n2NohyN6nfNb42KoNSR83nlbBJSwcc3heE3muTt3ZvbpguanyfFXeoP6yyqatnymWp/C0aQBEI5kDahOU641aDiSagG7zX1WaF9+hwfWCbkMDKYxeSWUkQOUOdfUQ89CQS5wrLpcU0D0xf7/SrRdY2TRHvQ=="),
-                    };
+                    Exponent = Convert.FromBase64String("AQAB"),
+                    Modulus = Convert.FromBase64String(
+                        "tAHAfvtmGBng322TqUXF/Aar7726jFELj73lywuCvpGsh3JTpImuoSYsJxy5GZCRF7ppIIbsJBmWwSiesYfxWxBsfnpOmAHU3OTMDt383mf0USdqq/F0yFxBL9IQuDdvhlPfFcTrWEL0U2JsAzUjt9AfsPHNQbiEkOXlIwtNkqMP2naynW8y4WbaGG1n2NohyN6nfNb42KoNSR83nlbBJSwcc3heE3muTt3ZvbpguanyfFXeoP6yyqatnymWp/C0aQBEI5kDahOU641aDiSagG7zX1WaF9+hwfWCbkMDKYxeSWUkQOUOdfUQ89CQS5wrLpcU0D0xf7/SrRdY2TRHvQ=="),
+                };
 
-                    var key = new RsaSecurityKey(rsa)
-                    {
-                        KeyId = "IdentityServerLicensekey/7ceadbb78130469e8806891025414f16"
-                    };
+                var key = new RsaSecurityKey(rsa)
+                {
+                    KeyId = "IdentityServerLicensekey/7ceadbb78130469e8806891025414f16"
+                };
 
-                    var parms = new TokenValidationParameters
-                    {
-                        ValidIssuer = "https://duendesoftware.com",
-                        ValidAudience = "IdentityServer",
-                        IssuerSigningKey = key,
-                        ValidateLifetime = false
-                    };
+                var parms = new TokenValidationParameters
+                {
+                    ValidIssuer = "https://duendesoftware.com",
+                    ValidAudience = "IdentityServer",
+                    IssuerSigningKey = key,
+                    ValidateLifetime = false
+                };
 
-                    var validateResult = handler.ValidateToken(licenseKey, parms, out _);
-                    return new License(validateResult);
+                var validateResult = handler.ValidateToken(licenseKey, parms);
+                if (validateResult.IsValid)
+                {
+                    return new License(new ClaimsPrincipal(validateResult.ClaimsIdentity));
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogCritical(ex, "Error validating Duende IdentityServer license key");
+                    _logger.LogCritical(validateResult.Exception, "Error validating Duende IdentityServer license key");
                 }
             }
 
             return null;
         }
-    }
-
-    internal class License
-    {
-        public License(ClaimsPrincipal claims)
-        {
-            CompanyName = claims.FindFirst("company_name")?.Value;
-            ContactInfo = claims.FindFirst("contact_info")?.Value;
-
-            if (Int64.TryParse(claims.FindFirst("exp")?.Value, out var exp))
-            {
-                var expDate = DateTimeOffset.FromUnixTimeSeconds(exp);
-                Expiration = expDate.UtcDateTime;
-            }
-            
-            Edition = claims.FindFirst("edition")?.Value;
-            IsEnterprise = "enterprise".Equals(Edition, StringComparison.OrdinalIgnoreCase);
-            IsBusiness = IsEnterprise || "business".Equals(Edition, StringComparison.OrdinalIgnoreCase);
-
-            KeyManagement = IsBusiness || claims.HasClaim("feature", "key_management");
-            ResourceIsolation = IsEnterprise || claims.HasClaim("feature", "resource_isolation");
-
-            if (!IsEnterprise)
-            {
-                if (Int32.TryParse(claims.FindFirst("client_limit")?.Value, out var clientLimit))
-                {
-                    ClientLimit = clientLimit;
-                }
-
-                if (Int32.TryParse(claims.FindFirst("issuer_limit")?.Value, out var issuerLimit))
-                {
-                    IssuerLimit = issuerLimit;
-                }
-            }
-        }
-
-        public string CompanyName { get; set; }
-        public string ContactInfo { get; set; }
-        
-        public DateTime? Expiration { get; set; }
-        
-        public string Edition { get; set; }
-        public bool IsEnterprise { get; set; }
-        public bool IsBusiness { get; set; }
-
-        public int? ClientLimit { get; set; }
-        public int? IssuerLimit { get; set; }
-        
-        public bool KeyManagement { get; set; }
-        public bool ResourceIsolation { get; set; } 
     }
 }

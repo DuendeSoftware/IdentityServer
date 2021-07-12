@@ -12,6 +12,7 @@ using System.Net.Http;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Microsoft.Extensions.Logging;
+using Duende.IdentityServer.Hosting.DynamicProviders;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -270,6 +271,21 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Adds the identity provider store cache.
+        /// </summary>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddIdentityProviderStoreCache<T>(this IIdentityServerBuilder builder)
+            where T : IIdentityProviderStore
+        {
+            builder.Services.TryAddTransient(typeof(T));
+            builder.Services.AddTransient<IIdentityProviderStore, CachingIdentityProviderStore<T>>();
+            return builder;
+        }
+        
+
+
+        /// <summary>
         /// Adds the authorize interaction response generator.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -467,6 +483,21 @@ namespace Microsoft.Extensions.DependencyInjection
             // This is added as scoped due to the note regarding the AuthenticateAsync
             // method in the Duende.Services.DefaultUserSession implementation.
             builder.Services.AddScoped<IUserSession, T>();
+
+            return builder;
+        }
+
+
+        /// <summary>
+        /// Adds an identity provider store.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddIdentityProviderStore<T>(this IIdentityServerBuilder builder)
+           where T : class, IIdentityProviderStore
+        {
+            builder.Services.AddTransient<IIdentityProviderStore, T>();
 
             return builder;
         }

@@ -126,11 +126,6 @@ namespace IntegrationTests.Common
 
             services.AddIdentityServer(options =>
             {
-                //if (Options != null)
-                //{
-                //    options.EmitStateHash = Options.EmitStateHash;
-                //}
-
                 options.Events = new EventsOptions
                 {
                     RaiseErrorEvents = true,
@@ -176,6 +171,10 @@ namespace IntegrationTests.Common
             app.Map(Constants.UIConstants.DefaultRoutePaths.Consent.EnsureLeadingSlash(), path =>
             {
                 path.Run(ctx => OnConsent(ctx));
+            });
+            app.Map("/custom", path =>
+            {
+                path.Run(ctx => OnCustom(ctx));
             });
             app.Map(Constants.UIConstants.DefaultRoutePaths.Error.EnsureLeadingSlash(), path =>
             {
@@ -245,13 +244,11 @@ namespace IntegrationTests.Common
             await ReadConsentMessage(ctx);
             await CreateConsentResponse(ctx);
         }
-
         private async Task ReadConsentMessage(HttpContext ctx)
         {
             var interaction = ctx.RequestServices.GetRequiredService<IIdentityServerInteractionService>();
             ConsentRequest = await interaction.GetAuthorizationContextAsync(ctx.Request.Query["returnUrl"].FirstOrDefault());
         }
-
         private async Task CreateConsentResponse(HttpContext ctx)
         {
             if (ConsentRequest != null && ConsentResponse != null)
@@ -266,6 +263,16 @@ namespace IntegrationTests.Common
                     ctx.Response.Redirect(url);
                 }
             }
+        }
+
+        public bool CustomWasCalled { get; set; }
+        public AuthorizationRequest CustomRequest { get; set; }
+
+        private async Task OnCustom(HttpContext ctx)
+        {
+            CustomWasCalled = true;
+            var interaction = ctx.RequestServices.GetRequiredService<IIdentityServerInteractionService>();
+            CustomRequest = await interaction.GetAuthorizationContextAsync(ctx.Request.Query[Options.UserInteraction.ConsentReturnUrlParameter].FirstOrDefault());
         }
 
         public bool ErrorWasCalled { get; set; }

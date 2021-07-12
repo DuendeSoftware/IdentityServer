@@ -7,13 +7,10 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer.Models;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Services.KeyManagement
 {
@@ -263,7 +260,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             _logger.LogDebug("Creating new key.");
 
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
             var iss = await _issuerNameService.GetCurrentAsync();
 
             KeyContainer container = null;

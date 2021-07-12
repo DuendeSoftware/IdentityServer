@@ -25,8 +25,12 @@
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">True</ContinuousIntegrationBuild>
  </PropertyGroup>
 
- <ItemGroup>
-    <None Include="../../LICENSE" Pack="true" Visible="false" PackagePath="" />
-    <None Include="../../icon.png" Pack="true" Visible="false" PackagePath="" />
-  </ItemGroup>
+   <ItemGroup>
+      <None Include="../../LICENSE" Pack="true" Visible="false" PackagePath="" />
+      <None Include="../../icon.png" Pack="true" Visible="false" PackagePath="" />
+   </ItemGroup>
+
+   <PropertyGroup>
+      <MinVerAutoIncrement>minor</MinVerAutoIncrement>
+   </PropertyGroup>
 </Project>

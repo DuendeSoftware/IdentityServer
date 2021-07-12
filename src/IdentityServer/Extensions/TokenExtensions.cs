@@ -8,12 +8,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using Duende.IdentityServer.Configuration;
-using Microsoft.AspNetCore.Routing;
 
 namespace Duende.IdentityServer.Extensions
 {

@@ -399,7 +399,7 @@ namespace UnitTests.Validation
         // ResourceValidationResult FilterByResourceIndicator
         [Fact]
         [Trait("Category", Category)]
-        public async Task FilterByResourceIndicator_should_filter_properly()
+        public void FilterByResourceIndicator_should_filter_properly()
         {
             var resources = new Resources(
                 new IdentityResource[]

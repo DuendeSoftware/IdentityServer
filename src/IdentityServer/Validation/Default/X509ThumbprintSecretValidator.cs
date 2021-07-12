@@ -61,8 +61,6 @@ namespace Duende.IdentityServer.Validation
 
             foreach (var thumbprintSecret in thumbprintSecrets)
             {
-                var secretDescription = string.IsNullOrEmpty(thumbprintSecret.Description) ? "no description" : thumbprintSecret.Description;
-
                 if (thumbprint.Equals(thumbprintSecret.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     var result = new SecretValidationResult

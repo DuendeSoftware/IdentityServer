@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Collections.Specialized;
 
 #pragma warning disable 1591
 
@@ -31,7 +32,7 @@ namespace Duende.IdentityServer.Validation
                 }
                 suppress.Append(OidcConstants.PromptModes.SelectAccount);
             }
-            
+
             request.Raw.Add(Constants.SuppressedPrompt, suppress.ToString());
             request.PromptModes = request.PromptModes.Except(new[] { OidcConstants.PromptModes.Login, OidcConstants.PromptModes.SelectAccount }).ToArray();
         }
@@ -114,7 +115,7 @@ namespace Duende.IdentityServer.Validation
         {
             if (request == null) return null;
             if (!request.IsOpenIdRequest) return null;
-            
+
             if (request.SessionId == null) return null;
 
             if (request.ClientId.IsMissing()) return null;
@@ -140,6 +141,40 @@ namespace Duende.IdentityServer.Validation
             }
 
             return Base64Url.Encode(hash) + "." + salt;
+        }
+
+        private static NameValueCollection ToOptimizedRawValues(this ValidatedAuthorizeRequest request)
+        {
+            if (request.Raw.AllKeys.Contains(OidcConstants.AuthorizeRequest.Request))
+            {
+                // if we already have a request object in the URL, then we can filter out the duplicate entries in the Raw collection
+                var collection = new NameValueCollection();
+                foreach (var key in request.Raw.AllKeys)
+                {
+                    // https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests 
+                    // requires client id and response type to always be in URL
+                    if (key == OidcConstants.AuthorizeRequest.ClientId ||
+                        key == OidcConstants.AuthorizeRequest.ResponseType ||
+                        !request.RequestObjectValues.Any(x => x.Type == key))
+                    {
+                        collection.Add(key, request.Raw[key]);
+                    }
+                }
+
+                return collection;
+            }
+
+            return request.Raw;
+        }
+        
+        public static string ToOptimizedQueryString(this ValidatedAuthorizeRequest request)
+        {
+            return request.ToOptimizedRawValues().ToQueryString();
+        }
+
+        public static IDictionary<string, string[]> ToOptimizedFullDictionary(this ValidatedAuthorizeRequest request)
+        {
+            return request.ToOptimizedRawValues().ToFullDictionary();
         }
     }
 }

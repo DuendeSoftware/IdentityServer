@@ -33,22 +33,24 @@ namespace IdentityServerHost.Quickstart.UI
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
+        private readonly IIdentityProviderStore _identityProviderStore;
         private readonly IEventService _events;
 
         public AccountController(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
+            IIdentityProviderStore identityProviderStore,
             IEventService events,
             TestUserStore users = null)
         {
-            // if the TestUserStore is not in DI, then we'll just use the global users collection
             // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
-            _users = users ?? new TestUserStore(TestUsers.Users);
+            _users = users ?? throw new Exception("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
 
             _interaction = interaction;
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
+            _identityProviderStore = identityProviderStore;
             _events = events;
         }
 
@@ -269,6 +271,15 @@ namespace IdentityServerHost.Quickstart.UI
                     DisplayName = x.DisplayName ?? x.Name,
                     AuthenticationScheme = x.Name
                 }).ToList();
+
+            var dyanmicSchemes = (await _identityProviderStore.GetAllSchemeNamesAsync())
+                .Where(x => x.Enabled)
+                .Select(x => new ExternalProvider
+                {
+                    AuthenticationScheme = x.Scheme,
+                    DisplayName = x.DisplayName
+                });
+            providers.AddRange(dyanmicSchemes);
 
             var allowLocal = true;
             if (context?.Client.ClientId != null)

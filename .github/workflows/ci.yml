@@ -25,12 +25,9 @@ jobs:
     
     - name: Setup dotnet (main)
       uses: actions/setup-dotnet@v1
-      
-    - name: Setup dotnet (testing)
-      uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.x'
-
+        dotnet-version: '6.0.100-preview.5.21302.13'
+    
     - run: dotnet --info
     
     - if: contains(matrix.runs-on, 'macOS') || contains(matrix.runs-on, 'ubuntu')
@@ -38,6 +35,8 @@ jobs:
     - if: matrix.runs-on == 'windows-latest' && github.ref != 'refs/heads/main' && !contains(github.ref, 'refs/tags/')
       run: ./build.ps1
     - if: (matrix.runs-on == 'windows-latest') && (github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/'))
+      env:
+        SignClientSecret: ${{ secrets.SIGNCLIENTSECRET }}
       run: |
-        ./build.ps1
+        ./build.ps1 sign
         dotnet nuget push .\artifacts\*.nupkg -s https://www.myget.org/F/duende_identityserver/api/v2/package -k ${{ secrets.MYGET }}
