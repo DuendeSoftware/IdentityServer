@@ -3,6 +3,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace UnitTests.Services.Default.KeyManagement
@@ -13,7 +14,7 @@ namespace UnitTests.Services.Default.KeyManagement
         public bool LoadKeysAsyncWasCalled { get; set; }
         public bool DeleteWasCalled { get; set; }
 
-        public Task DeleteKeyAsync(string id)
+        public Task DeleteKeyAsync(string id, CancellationToken cancellationToken)
         {
             DeleteWasCalled = true;
             if (Keys != null)
@@ -23,13 +24,13 @@ namespace UnitTests.Services.Default.KeyManagement
             return Task.CompletedTask;
         }
 
-        public Task<IEnumerable<SerializedKey>> LoadKeysAsync()
+        public Task<IEnumerable<SerializedKey>> LoadKeysAsync(CancellationToken cancellationToken)
         {
             LoadKeysAsyncWasCalled = true;
             return Task.FromResult<IEnumerable<SerializedKey>>(Keys);
         }
 
-        public Task StoreKeyAsync(SerializedKey key)
+        public Task StoreKeyAsync(SerializedKey key, CancellationToken cancellationToken)
         {
             if (Keys == null)
             {

@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Extensions;
@@ -82,9 +83,9 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// Saves the changes.
         /// </summary>
         /// <returns></returns>
-        public virtual Task<int> SaveChangesAsync()
+        public virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            return base.SaveChangesAsync();
+            return base.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>

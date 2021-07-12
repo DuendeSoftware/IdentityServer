@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Services.KeyManagement
@@ -44,11 +45,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
             _logger = logger;
         }
 
-        /// <summary>
-        /// Returns all the keys in storage.
-        /// </summary>
-        /// <returns></returns>
-        public async Task<IEnumerable<SerializedKey>> LoadKeysAsync()
+        ///<inheritdoc/>
+        public async Task<IEnumerable<SerializedKey>> LoadKeysAsync(CancellationToken cancellationToken)
         {
             var list = new List<SerializedKey>();
 
@@ -65,6 +63,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 {
                     using (var reader = new StreamReader(file.OpenRead()))
                     {
+                        // Cancellation not yet supported on this API https://github.com/dotnet/runtime/issues/20824
                         var json = await reader.ReadToEndAsync();
                         var item = KeySerializer.Deserialize<SerializedKey>(json);
                         list.Add(item);
