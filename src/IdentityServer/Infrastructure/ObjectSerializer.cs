@@ -3,14 +3,15 @@
 
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Duende.IdentityServer
 {
     internal static class ObjectSerializer
     {
-        private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions Options = new()
         {
-            IgnoreNullValues = true
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
         
         public static string ToString(object o)

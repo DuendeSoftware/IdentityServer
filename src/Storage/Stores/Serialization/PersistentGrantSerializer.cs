@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Duende.IdentityServer.Stores.Serialization
 {
@@ -36,8 +37,9 @@ namespace Duende.IdentityServer.Stores.Serialization
             {
                 IgnoreReadOnlyFields = true,
                 IgnoreReadOnlyProperties = true,
-                IgnoreNullValues = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
+            
             _settings.Converters.Add(new ClaimConverter());
             _settings.Converters.Add(new ClaimsPrincipalConverter());
         }
