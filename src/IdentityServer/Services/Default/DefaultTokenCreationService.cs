@@ -87,20 +87,10 @@ namespace Duende.IdentityServer.Services
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-#if NET5_0
         protected virtual ValueTask<string> CreatePayloadAsync(Token token)
-#endif
-#if NETCOREAPP3_1
-        protected virtual Task<string> CreatePayloadAsync(Token token)
-#endif
         {
             var payload = token.CreateJwtPayloadDictionary(Options, Clock, Logger);
-#if NET5_0
             return ValueTask.FromResult(JsonSerializer.Serialize(payload));
-#endif
-#if NETCOREAPP3_1
-            return Task.FromResult(JsonSerializer.Serialize(payload));
-#endif
         }
 
 
@@ -109,12 +99,7 @@ namespace Duende.IdentityServer.Services
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-#if NET5_0
         protected virtual ValueTask<Dictionary<string, object>> CreateHeaderElementsAsync(Token token)
-#endif
-#if NETCOREAPP3_1
-        protected virtual Task<Dictionary<string, object>> CreateHeaderElementsAsync(Token token)
-#endif
         {
             var additionalHeaderElements = new Dictionary<string, object>();
 
@@ -125,12 +110,8 @@ namespace Duende.IdentityServer.Services
                     additionalHeaderElements.Add("typ", Options.AccessTokenJwtType);
                 }
             }
-#if NET5_0
+            
             return ValueTask.FromResult(additionalHeaderElements);
-#endif
-#if NETCOREAPP3_1
-            return Task.FromResult(additionalHeaderElements);
-#endif
         }
 
         /// <summary>
