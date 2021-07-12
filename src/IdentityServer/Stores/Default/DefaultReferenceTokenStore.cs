@@ -51,7 +51,7 @@ namespace Duende.IdentityServer.Stores
         /// <returns></returns>
         public Task<Token> GetReferenceTokenAsync(string handle, CancellationToken cancellationToken)
         {
-            return GetItemAsync(handle);
+            return GetItemAsync(handle, cancellationToken);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Duende.IdentityServer.Stores
         /// <returns></returns>
         public Task RemoveReferenceTokenAsync(string handle, CancellationToken cancellationToken)
         {
-            return RemoveItemAsync(handle);
+            return RemoveItemAsync(handle, cancellationToken);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Duende.IdentityServer.Stores
         /// <returns></returns>
         public Task RemoveReferenceTokensAsync(string subjectId, string clientId, CancellationToken cancellationToken)
         {
-            return RemoveAllAsync(subjectId, clientId);
+            return RemoveAllAsync(subjectId, clientId, cancellationToken);
         }
     }
 }

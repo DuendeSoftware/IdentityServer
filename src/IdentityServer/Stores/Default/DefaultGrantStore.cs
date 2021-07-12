@@ -7,6 +7,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores.Serialization;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
 
@@ -83,12 +84,13 @@ namespace Duende.IdentityServer.Stores
         /// Gets the item.
         /// </summary>
         /// <param name="key">The key.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        protected virtual async Task<T> GetItemAsync(string key)
+        protected virtual async Task<T> GetItemAsync(string key, CancellationToken cancellationToken = default)
         {
             var hashedKey = GetHashedKey(key);
 
-            var grant = await Store.GetAsync(hashedKey);
+            var grant = await Store.GetAsync(hashedKey, cancellationToken);
             if (grant != null && grant.Type == GrantType)
             {
                 try
@@ -118,8 +120,9 @@ namespace Duende.IdentityServer.Stores
         /// <param name="description">The description.</param>
         /// <param name="created">The created.</param>
         /// <param name="lifetime">The lifetime.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        protected virtual async Task<string> CreateItemAsync(T item, string clientId, string subjectId, string sessionId, string description, DateTime created, int lifetime)
+        protected virtual async Task<string> CreateItemAsync(T item, string clientId, string subjectId, string sessionId, string description, DateTime created, int lifetime, CancellationToken cancellationToken = default)
         {
             var handle = await HandleGenerationService.GenerateAsync();
             await StoreItemAsync(handle, item, clientId, subjectId, sessionId, description, created, created.AddSeconds(lifetime));
@@ -138,8 +141,9 @@ namespace Duende.IdentityServer.Stores
         /// <param name="created">The created time.</param>
         /// <param name="expiration">The expiration.</param>
         /// <param name="consumedTime">The consumed time.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        protected virtual async Task StoreItemAsync(string key, T item, string clientId, string subjectId, string sessionId, string description, DateTime created, DateTime? expiration, DateTime? consumedTime = null)
+        protected virtual async Task StoreItemAsync(string key, T item, string clientId, string subjectId, string sessionId, string description, DateTime created, DateTime? expiration, DateTime? consumedTime = null, CancellationToken cancellationToken = default)
         {
             key = GetHashedKey(key);
 
@@ -159,34 +163,36 @@ namespace Duende.IdentityServer.Stores
                 Data = json
             };
 
-            await Store.StoreAsync(grant);
+            await Store.StoreAsync(grant, cancellationToken);
         }
 
         /// <summary>
         /// Removes the item.
         /// </summary>
         /// <param name="key">The key.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        protected virtual async Task RemoveItemAsync(string key)
+        protected virtual async Task RemoveItemAsync(string key, CancellationToken cancellationToken = default)
         {
             key = GetHashedKey(key);
-            await Store.RemoveAsync(key);
+            await Store.RemoveAsync(key, cancellationToken);
         }
 
         /// <summary>
-        /// Removes all items for a subject id / cliend id combination.
+        /// Removes all items for a subject id / client id combination.
         /// </summary>
         /// <param name="subjectId">The subject identifier.</param>
         /// <param name="clientId">The client identifier.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        protected virtual async Task RemoveAllAsync(string subjectId, string clientId)
+        protected virtual async Task RemoveAllAsync(string subjectId, string clientId, CancellationToken cancellationToken = default)
         {
             await Store.RemoveAllAsync(new PersistedGrantFilter
             {
                 SubjectId = subjectId,
                 ClientId = clientId,
                 Type = GrantType
-            });
+            }, cancellationToken);
         }
     }
 }

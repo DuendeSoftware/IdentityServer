@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Models;
@@ -40,8 +41,9 @@ namespace Duende.IdentityServer.Stores
         /// Stores the user consent asynchronous.
         /// </summary>
         /// <param name="consent">The consent.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task StoreUserConsentAsync(Consent consent)
+        public Task StoreUserConsentAsync(Consent consent, CancellationToken cancellationToken = default)
         {
             var key = GetConsentKey(consent.SubjectId, consent.ClientId);
             return StoreItemAsync(key, consent, consent.ClientId, consent.SubjectId, null, null, consent.CreationTime, consent.Expiration);
@@ -52,8 +54,9 @@ namespace Duende.IdentityServer.Stores
         /// </summary>
         /// <param name="subjectId">The subject identifier.</param>
         /// <param name="clientId">The client identifier.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task<Consent> GetUserConsentAsync(string subjectId, string clientId)
+        public Task<Consent> GetUserConsentAsync(string subjectId, string clientId, CancellationToken cancellationToken = default)
         {
             var key = GetConsentKey(subjectId, clientId);
             return GetItemAsync(key);
@@ -64,8 +67,9 @@ namespace Duende.IdentityServer.Stores
         /// </summary>
         /// <param name="subjectId">The subject identifier.</param>
         /// <param name="clientId">The client identifier.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task RemoveUserConsentAsync(string subjectId, string clientId)
+        public Task RemoveUserConsentAsync(string subjectId, string clientId, CancellationToken cancellationToken = default)
         {
             var key = GetConsentKey(subjectId, clientId);
             return RemoveItemAsync(key);

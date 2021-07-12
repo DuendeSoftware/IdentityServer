@@ -82,8 +82,9 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// Persists new key in storage.
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task StoreKeyAsync(SerializedKey key)
+        public Task StoreKeyAsync(SerializedKey key, CancellationToken cancellationToken)
         {
             if (!_directory.Exists)
             {
@@ -102,8 +103,9 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// Deletes key from storage.
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task DeleteKeyAsync(string id)
+        public Task DeleteKeyAsync(string id, CancellationToken cancellationToken)
         {
             var path = Path.Combine(_directory.FullName, KeyFilePrefix + id + KeyFileExtension);
             try
