@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Threading;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
@@ -45,9 +46,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
-        public virtual async Task StoreAsync(Duende.IdentityServer.Models.PersistedGrant token)
+        public virtual async Task StoreAsync(Models.PersistedGrant token, CancellationToken cancellationToken = default)
         {
-            var existing = (await Context.PersistedGrants.Where(x => x.Key == token.Key).ToArrayAsync())
+            var existing = (await Context.PersistedGrants.Where(x => x.Key == token.Key).ToArrayAsync(cancellationToken))
                 .SingleOrDefault(x => x.Key == token.Key);
             if (existing == null)
             {
@@ -74,9 +75,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
-        public virtual async Task<Duende.IdentityServer.Models.PersistedGrant> GetAsync(string key)
+        public virtual async Task<Models.PersistedGrant> GetAsync(string key, CancellationToken cancellationToken = default)
         {
-            var persistedGrant = (await Context.PersistedGrants.AsNoTracking().Where(x => x.Key == key).ToArrayAsync())
+            var persistedGrant = (await Context.PersistedGrants.AsNoTracking().Where(x => x.Key == key).ToArrayAsync(cancellationToken))
                 .SingleOrDefault(x => x.Key == key);
             var model = persistedGrant?.ToModel();
 
@@ -86,11 +87,11 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<Duende.IdentityServer.Models.PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
+        public async Task<IEnumerable<Models.PersistedGrant>> GetAllAsync(PersistedGrantFilter filter, CancellationToken cancellationToken = default)
         {
             filter.Validate();
 
-            var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter).ToArrayAsync();
+            var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter).ToArrayAsync(cancellationToken);
             persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
             
             var model = persistedGrants.Select(x => x.ToModel());
@@ -101,9 +102,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
-        public virtual async Task RemoveAsync(string key)
+        public virtual async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
         {
-            var persistedGrant = (await Context.PersistedGrants.Where(x => x.Key == key).ToArrayAsync())
+            var persistedGrant = (await Context.PersistedGrants.Where(x => x.Key == key).ToArrayAsync(cancellationToken))
                 .SingleOrDefault(x => x.Key == key);
             if (persistedGrant!= null)
             {
@@ -127,11 +128,11 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
-        public async Task RemoveAllAsync(PersistedGrantFilter filter)
+        public async Task RemoveAllAsync(PersistedGrantFilter filter, CancellationToken cancellationToken = default)
         {
             filter.Validate();
 
-            var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter).ToArrayAsync();
+            var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter).ToArrayAsync(cancellationToken);
             persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
 
             Logger.LogDebug("removing {persistedGrantCount} persisted grants from database for {@filter}", persistedGrants.Length, filter);
