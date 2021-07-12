@@ -12,9 +12,9 @@ namespace Duende.IdentityServer.Logging
     /// </summary>
     internal static class LogSerializer
     {
-        static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+        static readonly JsonSerializerOptions Options = new()
         {
-            IgnoreNullValues = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             WriteIndented = true
         };
 
