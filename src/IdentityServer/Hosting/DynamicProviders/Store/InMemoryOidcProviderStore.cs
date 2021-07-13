@@ -5,6 +5,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Hosting.DynamicProviders
@@ -18,7 +19,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
             _providers = providers;
         }
 
-        public Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
+        public Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync(CancellationToken cancellationToken = default)
         {
             var items = _providers.Select(x => new IdentityProviderName { 
                 Enabled = x.Enabled,
@@ -28,7 +29,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
             return Task.FromResult(items);
         }
 
-        public Task<IdentityProvider> GetBySchemeAsync(string scheme)
+        public Task<IdentityProvider> GetBySchemeAsync(string scheme, CancellationToken cancellationToken = default)
         {
             var item = _providers.FirstOrDefault(x => x.Scheme == scheme);
             return Task.FromResult<IdentityProvider>(item);

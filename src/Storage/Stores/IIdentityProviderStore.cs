@@ -4,6 +4,7 @@
 using Duende.IdentityServer.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Stores
@@ -16,13 +17,15 @@ namespace Duende.IdentityServer.Stores
         /// <summary>
         /// Gets all identity providers name.
         /// </summary>
-        Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync();
-        
+        /// <param name="cancellationToken">The cancellation instruction.</param>
+        Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync(CancellationToken cancellationToken = default);
+
         /// <summary>
         /// Gets the identity provider by scheme name.
         /// </summary>
         /// <param name="scheme"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        Task<IdentityProvider> GetBySchemeAsync(string scheme);
+        Task<IdentityProvider> GetBySchemeAsync(string scheme, CancellationToken cancellationToken = default);
     }
 }
