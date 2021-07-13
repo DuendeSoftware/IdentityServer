@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.EntityFramework.Services
@@ -34,12 +35,8 @@ namespace Duende.IdentityServer.EntityFramework.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// Determines whether origin is allowed.
-        /// </summary>
-        /// <param name="origin">The origin.</param>
-        /// <returns></returns>
-        public async Task<bool> IsOriginAllowedAsync(string origin)
+        /// <inheritdoc/>
+        public async Task<bool> IsOriginAllowedAsync(string origin, CancellationToken cancellationToken = default)
         {
             origin = origin.ToLowerInvariant();
 
@@ -50,7 +47,7 @@ namespace Duende.IdentityServer.EntityFramework.Services
                         where o.Origin == origin
                         select o;
 
-            var isAllowed = await query.AnyAsync();
+            var isAllowed = await query.AnyAsync(cancellationToken);
 
             _logger.LogDebug("Origin {origin} is allowed: {originAllowed}", origin, isAllowed);
 
