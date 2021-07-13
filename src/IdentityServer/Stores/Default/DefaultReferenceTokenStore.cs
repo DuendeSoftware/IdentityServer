@@ -40,7 +40,7 @@ namespace Duende.IdentityServer.Stores
         /// <returns></returns>
         public Task<string> StoreReferenceTokenAsync(Token token, CancellationToken cancellationToken)
         {
-            return CreateItemAsync(token, token.ClientId, token.SubjectId, token.SessionId, token.Description, token.CreationTime, token.Lifetime);
+            return CreateItemAsync(token, token.ClientId, token.SubjectId, token.SessionId, token.Description, token.CreationTime, token.Lifetime, cancellationToken);
         }
 
         /// <summary>
