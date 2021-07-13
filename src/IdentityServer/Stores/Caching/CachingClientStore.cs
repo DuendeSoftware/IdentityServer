@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using System.Threading.Tasks;
@@ -39,18 +40,12 @@ namespace Duende.IdentityServer.Stores
             _logger = logger;
         }
 
-        /// <summary>
-        /// Finds a client by id
-        /// </summary>
-        /// <param name="clientId">The client id</param>
-        /// <returns>
-        /// The client
-        /// </returns>
-        public async Task<Client> FindClientByIdAsync(string clientId)
+        /// <inheritdoc/>
+        public async Task<Client> FindClientByIdAsync(string clientId, CancellationToken cancellationToken)
         {
             var client = await _cache.GetAsync(clientId,
                 _options.Caching.ClientStoreExpiration,
-                async () => await _inner.FindClientByIdAsync(clientId),
+                async () => await _inner.FindClientByIdAsync(clientId, cancellationToken),
                 _logger);
 
             return client;

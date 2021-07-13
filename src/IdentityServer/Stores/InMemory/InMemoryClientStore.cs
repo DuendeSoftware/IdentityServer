@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,6 +7,7 @@ using Duende.IdentityServer.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Stores
@@ -31,14 +32,8 @@ namespace Duende.IdentityServer.Stores
             _clients = clients;
         }
 
-        /// <summary>
-        /// Finds a client by id
-        /// </summary>
-        /// <param name="clientId">The client id</param>
-        /// <returns>
-        /// The client
-        /// </returns>
-        public Task<Client> FindClientByIdAsync(string clientId)
+        /// <inheritdoc/>
+        public Task<Client> FindClientByIdAsync(string clientId, CancellationToken cancellationToken)
         {
             var query =
                 from client in _clients

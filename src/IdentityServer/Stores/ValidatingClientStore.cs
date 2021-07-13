@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
@@ -44,12 +45,13 @@ namespace Duende.IdentityServer.Stores
         /// Finds a client by id (and runs the validation logic)
         /// </summary>
         /// <param name="clientId">The client id</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns>
         /// The client or an InvalidOperationException
         /// </returns>
-        public async Task<Client> FindClientByIdAsync(string clientId)
+        public async Task<Client> FindClientByIdAsync(string clientId, CancellationToken cancellationToken)
         {
-            var client = await _inner.FindClientByIdAsync(clientId);
+            var client = await _inner.FindClientByIdAsync(clientId, cancellationToken);
 
             if (client != null)
             {
