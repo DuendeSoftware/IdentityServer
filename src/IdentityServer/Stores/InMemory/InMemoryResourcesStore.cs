@@ -7,6 +7,7 @@ using Duende.IdentityServer.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Stores
@@ -49,14 +50,14 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task<Resources> GetAllResourcesAsync()
+        public Task<Resources> GetAllResourcesAsync(CancellationToken cancellationToken = default)
         {
             var result = new Resources(_identityResources, _apiResources, _apiScopes);
             return Task.FromResult(result);
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
+        public Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames, CancellationToken cancellationToken = default)
         {
             if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
@@ -67,7 +68,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
+        public Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames, CancellationToken cancellationToken = default)
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
@@ -79,7 +80,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
+        public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames, CancellationToken cancellationToken = default)
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
@@ -91,7 +92,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
+        public Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames, CancellationToken cancellationToken = default)
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 

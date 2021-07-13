@@ -27,27 +27,27 @@ namespace UnitTests.Extensions
 
         private class CustomResourceStore : IResourceStore
         {
-            public Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
+            public Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames, CancellationToken cancellationToken = default)
             {
                 throw new System.NotImplementedException();
             }
 
-            public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
+            public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames, CancellationToken cancellationToken = default)
             {
                 throw new System.NotImplementedException();
             }
 
-            public Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> names)
+            public Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> names, CancellationToken cancellationToken = default)
             {
                 throw new System.NotImplementedException();
             }
 
-            public Task<Resources> GetAllResourcesAsync()
+            public Task<Resources> GetAllResourcesAsync(CancellationToken cancellationToken = default)
             {
                 throw new System.NotImplementedException();
             }
 
-            public Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
+            public Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames, CancellationToken cancellationToken = default)
             {
                 throw new System.NotImplementedException();
             }
