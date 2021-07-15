@@ -22,7 +22,7 @@ namespace IntegrationTests.Stores
         {
             foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<ConfigurationDbContext>)y)).ToList())
             {
-                using (var context = new ConfigurationDbContext(options, StoreOptions))
+                using (var context = new ConfigurationDbContext(options))
                     context.Database.EnsureCreated();
             }
         }
@@ -32,7 +32,7 @@ namespace IntegrationTests.Stores
         [Theory, MemberData(nameof(TestDatabaseProviders))]
         public async Task GetBySchemeAsync_should_find_by_scheme(DbContextOptions<ConfigurationDbContext> options)
         {
-            using (var context = new ConfigurationDbContext(options, StoreOptions))
+            using (var context = new ConfigurationDbContext(options))
             {
                 var idp = new OidcProvider
                 {
@@ -42,7 +42,7 @@ namespace IntegrationTests.Stores
                 context.SaveChanges();
             }
 
-            using (var context = new ConfigurationDbContext(options, StoreOptions))
+            using (var context = new ConfigurationDbContext(options))
             {
                 var store = new IdentityProviderStore(context, FakeLogger<IdentityProviderStore>.Create());
                 var item = await store.GetBySchemeAsync("scheme1");
@@ -55,7 +55,7 @@ namespace IntegrationTests.Stores
         [Theory, MemberData(nameof(TestDatabaseProviders))]
         public async Task GetBySchemeAsync_should_filter_by_type(DbContextOptions<ConfigurationDbContext> options)
         {
-            using (var context = new ConfigurationDbContext(options, StoreOptions))
+            using (var context = new ConfigurationDbContext(options))
             {
                 var idp = new OidcProvider
                 {
@@ -65,7 +65,7 @@ namespace IntegrationTests.Stores
                 context.SaveChanges();
             }
 
-            using (var context = new ConfigurationDbContext(options, StoreOptions))
+            using (var context = new ConfigurationDbContext(options))
             {
                 var store = new IdentityProviderStore(context, FakeLogger<IdentityProviderStore>.Create());
                 var item = await store.GetBySchemeAsync("scheme2");
@@ -78,7 +78,7 @@ namespace IntegrationTests.Stores
         [Theory, MemberData(nameof(TestDatabaseProviders))]
         public async Task GetBySchemeAsync_should_filter_by_scheme_casing(DbContextOptions<ConfigurationDbContext> options)
         {
-            using (var context = new ConfigurationDbContext(options, StoreOptions))
+            using (var context = new ConfigurationDbContext(options))
             {
                 var idp = new OidcProvider
                 {
@@ -88,7 +88,7 @@ namespace IntegrationTests.Stores
                 context.SaveChanges();
             }
 
-            using (var context = new ConfigurationDbContext(options, StoreOptions))
+            using (var context = new ConfigurationDbContext(options))
             {
                 var store = new IdentityProviderStore(context, FakeLogger<IdentityProviderStore>.Create());
                 var item = await store.GetBySchemeAsync("scheme3");

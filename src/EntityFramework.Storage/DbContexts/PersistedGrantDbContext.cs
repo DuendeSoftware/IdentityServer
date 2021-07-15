@@ -9,6 +9,7 @@ using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Duende.IdentityServer.EntityFramework.DbContexts
 {
@@ -23,10 +24,9 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// Initializes a new instance of the <see cref="PersistedGrantDbContext"/> class.
         /// </summary>
         /// <param name="options">The options.</param>
-        /// <param name="storeOptions">The store options.</param>
         /// <exception cref="ArgumentNullException">storeOptions</exception>
-        public PersistedGrantDbContext(DbContextOptions<PersistedGrantDbContext> options, OperationalStoreOptions storeOptions)
-            : base(options, storeOptions)
+        public PersistedGrantDbContext(DbContextOptions<PersistedGrantDbContext> options)
+            : base(options)
         {
         }
     }
@@ -39,19 +39,14 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
     public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbContext
         where TContext : DbContext, IPersistedGrantDbContext
     {
-        private readonly OperationalStoreOptions storeOptions;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="PersistedGrantDbContext"/> class.
         /// </summary>
         /// <param name="options">The options.</param>
-        /// <param name="storeOptions">The store options.</param>
         /// <exception cref="ArgumentNullException">storeOptions</exception>
-        public PersistedGrantDbContext(DbContextOptions options, OperationalStoreOptions storeOptions)
+        public PersistedGrantDbContext(DbContextOptions options)
             : base(options)
         {
-            if (storeOptions == null) throw new ArgumentNullException(nameof(storeOptions));
-            this.storeOptions = storeOptions;
         }
 
         /// <summary>
@@ -101,6 +96,12 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// </remarks>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            var storeOptions = this.GetService<OperationalStoreOptions>();
+
+            if (storeOptions is null)
+            {
+                throw new ArgumentNullException(nameof(storeOptions));
+            }
             modelBuilder.ConfigurePersistedGrantContext(storeOptions);
 
             base.OnModelCreating(modelBuilder);
