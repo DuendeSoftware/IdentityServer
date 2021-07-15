@@ -80,15 +80,6 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         public DbSet<Key> Keys { get; set; }
 
         /// <summary>
-        /// Saves the changes.
-        /// </summary>
-        /// <returns></returns>
-        public virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return base.SaveChangesAsync(cancellationToken);
-        }
-
-        /// <summary>
         /// Override this method to further configure the model that was discovered by convention from the entity types
         /// exposed in <see cref="T:Microsoft.EntityFrameworkCore.DbSet`1" /> properties on your derived context. The resulting model may be cached
         /// and re-used for subsequent instances of your derived context.
