@@ -58,11 +58,6 @@ namespace IdentityServerHost
 
                     options.EmitScopesAsSpaceDelimitedStringInJwt = true;
                     options.Endpoints.EnableJwtRequestUri = true;
-
-                    options.UserInteraction.LoginUrl = "/login";
-                    options.UserInteraction.LogoutUrl = "/logout";
-                    options.UserInteraction.ConsentUrl = "/consent";
-                    options.UserInteraction.ErrorUrl = "/error";
                 })
                 .AddInMemoryClients(Clients.Get())
                 .AddInMemoryIdentityResources(Resources.IdentityResources)

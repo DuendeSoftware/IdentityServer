@@ -90,7 +90,7 @@ namespace IdentityServerHost.Pages.Logout
                 }
             }
 
-            return RedirectToPage("/logout/loggedout", new { logoutId = LogoutId });
+            return RedirectToPage("/Account/Logout/LoggedOut", new { logoutId = LogoutId });
         }
     }
 }
