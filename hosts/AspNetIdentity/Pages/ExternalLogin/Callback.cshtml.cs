@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Test;
 using IdentityModel;
+using IdentityServerHost.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,8 @@ namespace IdentityServerHost.Pages.ExternalLogin
     [SecurityHeaders]
     public class Callback : PageModel
     {
-        private readonly TestUserStore _users;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly ILogger<Callback> _logger;
         private readonly IEventService _events;
@@ -28,11 +30,11 @@ namespace IdentityServerHost.Pages.ExternalLogin
             IIdentityServerInteractionService interaction,
             IEventService events,
             ILogger<Callback> logger,
-            TestUserStore users = null)
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
-            // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
-            _users = users ?? throw new Exception("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
-
+            _userManager = userManager;
+            _signInManager = signInManager;
             _interaction = interaction;
             _logger = logger;
             _events = events;
@@ -54,13 +56,13 @@ namespace IdentityServerHost.Pages.ExternalLogin
             }
 
             // lookup our user and external provider info
-            var (user, provider, providerUserId, claims) = FindUserFromExternalProvider(result);
+            var (user, provider, providerUserId, claims) = await FindUserFromExternalProviderAsync(result);
             if (user == null)
             {
                 // this might be where you might initiate a custom workflow for user registration
                 // in this sample we don't show how that would be done, as our sample implementation
                 // simply auto-provisions new external user
-                user = AutoProvisionUser(provider, providerUserId, claims);
+                user = await AutoProvisionUserAsync(provider, providerUserId, claims);
             }
 
             // this allows us to collect any additional claims or properties
@@ -69,16 +71,9 @@ namespace IdentityServerHost.Pages.ExternalLogin
             var additionalLocalClaims = new List<Claim>();
             var localSignInProps = new AuthenticationProperties();
             ProcessLoginCallback(result, additionalLocalClaims, localSignInProps);
-            
-            // issue authentication cookie for user
-            var isuser = new IdentityServerUser(user.SubjectId)
-            {
-                DisplayName = user.Username,
-                IdentityProvider = provider,
-                AdditionalClaims = additionalLocalClaims
-            };
 
-            await HttpContext.SignInAsync(isuser, localSignInProps);
+            // issue authentication cookie for user
+            await _signInManager.SignInWithClaimsAsync(user, localSignInProps, additionalLocalClaims);
 
             // delete temporary cookie used during external authentication
             await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
@@ -88,7 +83,7 @@ namespace IdentityServerHost.Pages.ExternalLogin
 
             // check if external login is in the context of an OIDC request
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
-            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.SubjectId, user.Username, true, context?.Client.ClientId));
+            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.Id, user.UserName, true, context?.Client.ClientId));
 
             if (context != null)
             {
@@ -103,7 +98,8 @@ namespace IdentityServerHost.Pages.ExternalLogin
             return Redirect(returnUrl);
         }
 
-        private (TestUser user, string provider, string providerUserId, IEnumerable<Claim> claims) FindUserFromExternalProvider(AuthenticateResult result)
+        private async Task<(ApplicationUser user, string provider, string providerUserId, IEnumerable<Claim> claims)>
+            FindUserFromExternalProviderAsync(AuthenticateResult result)
         {
             var externalUser = result.Principal;
 
@@ -122,14 +118,71 @@ namespace IdentityServerHost.Pages.ExternalLogin
             var providerUserId = userIdClaim.Value;
 
             // find external user
-            var user = _users.FindByExternalProvider(provider, providerUserId);
+            var user = await _userManager.FindByLoginAsync(provider, providerUserId);
 
             return (user, provider, providerUserId, claims);
         }
 
-        private TestUser AutoProvisionUser(string provider, string providerUserId, IEnumerable<Claim> claims)
+        private async Task<ApplicationUser> AutoProvisionUserAsync(string provider, string providerUserId, IEnumerable<Claim> claims)
         {
-            var user = _users.AutoProvisionUser(provider, providerUserId, claims.ToList());
+            var sub = Guid.NewGuid().ToString();
+            
+            var user = new ApplicationUser
+            {
+                Id = sub,
+                UserName = sub, // don't need a username, since the user will be using an external provider to login
+            };
+
+            // email
+            var email = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Email)?.Value ??
+               claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            if (email != null)
+            {
+                user.Email = email;
+            }
+            
+            // create a list of claims that we want to transfer into our store
+            var filtered = new List<Claim>();
+
+            // user's display name
+            var name = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Name)?.Value ??
+                claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
+            if (name != null)
+            {
+                filtered.Add(new Claim(JwtClaimTypes.Name, name));
+            }
+            else
+            {
+                var first = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.GivenName)?.Value ??
+                    claims.FirstOrDefault(x => x.Type == ClaimTypes.GivenName)?.Value;
+                var last = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.FamilyName)?.Value ??
+                    claims.FirstOrDefault(x => x.Type == ClaimTypes.Surname)?.Value;
+                if (first != null && last != null)
+                {
+                    filtered.Add(new Claim(JwtClaimTypes.Name, first + " " + last));
+                }
+                else if (first != null)
+                {
+                    filtered.Add(new Claim(JwtClaimTypes.Name, first));
+                }
+                else if (last != null)
+                {
+                    filtered.Add(new Claim(JwtClaimTypes.Name, last));
+                }
+            }
+
+            var identityResult = await _userManager.CreateAsync(user);
+            if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
+
+            if (filtered.Any())
+            {
+                identityResult = await _userManager.AddClaimsAsync(user, filtered);
+                if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
+            }
+
+            identityResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerUserId, provider));
+            if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
+
             return user;
         }
 

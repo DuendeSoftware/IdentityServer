@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Test;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
@@ -22,13 +21,11 @@ namespace IdentityServerHost.Pages.ExternalLogin
     {
         private readonly TestUserStore _users;
         private readonly IIdentityServerInteractionService _interaction;
-        private readonly IClientStore _clientStore;
         private readonly ILogger<Callback> _logger;
         private readonly IEventService _events;
 
         public Callback(
             IIdentityServerInteractionService interaction,
-            IClientStore clientStore,
             IEventService events,
             ILogger<Callback> logger,
             TestUserStore users = null)
@@ -37,7 +34,6 @@ namespace IdentityServerHost.Pages.ExternalLogin
             _users = users ?? throw new Exception("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
 
             _interaction = interaction;
-            _clientStore = clientStore;
             _logger = logger;
             _events = events;
         }
