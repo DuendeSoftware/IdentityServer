@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using IdentityServerHost.Quickstart.UI;
 
 namespace IdentityServerHost
 {
@@ -21,7 +20,7 @@ namespace IdentityServerHost
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddRazorPages();
 
             var connectionString = _config.GetConnectionString("db");
 
@@ -61,7 +60,7 @@ namespace IdentityServerHost
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
             });
         }
     }

@@ -16,7 +16,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using IdentityServerHost.Extensions;
-using Microsoft.Extensions.Hosting;
 using Serilog.Events;
 using Microsoft.AspNetCore.Hosting;
 
@@ -39,13 +38,9 @@ namespace IdentityServerHost
         {
             services.AddRazorPages()
                 .AddRazorRuntimeCompilation();
-            
-            var mvc = services.AddControllersWithViews();
-            if (_environment.IsDevelopment())
-            {
-                mvc.AddRazorRuntimeCompilation();
-            }
 
+            services.AddControllers();
+            
             // cookie policy to deal with temporary browser incompatibilities
             services.AddSameSiteCookiePolicy();
 
@@ -100,7 +95,7 @@ namespace IdentityServerHost
 
             app.UseEndpoints(endpoints => 
             {
-                endpoints.MapDefaultControllerRoute();
+                endpoints.MapControllers();
                 endpoints.MapRazorPages();
             });
         }

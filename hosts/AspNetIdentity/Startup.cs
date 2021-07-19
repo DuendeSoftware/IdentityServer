@@ -30,7 +30,7 @@ namespace IdentityServerHost
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddControllersWithViews();
+            services.AddRazorPages();
 
             services.AddIdentityServer()
                 .AddInMemoryIdentityResources(IdentityServerHost.Configuration.Resources.IdentityResources)
@@ -58,7 +58,6 @@ namespace IdentityServerHost
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                //app.UseDatabaseErrorPage();
             }
             else
             {
@@ -75,7 +74,7 @@ namespace IdentityServerHost
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
             });
         }
     }
