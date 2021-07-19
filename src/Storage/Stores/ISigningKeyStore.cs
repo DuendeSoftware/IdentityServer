@@ -3,6 +3,7 @@
 
 using Duende.IdentityServer.Models;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Stores
@@ -15,21 +16,24 @@ namespace Duende.IdentityServer.Stores
         /// <summary>
         /// Returns all the keys in storage.
         /// </summary>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        Task<IEnumerable<SerializedKey>> LoadKeysAsync();
+        Task<IEnumerable<SerializedKey>> LoadKeysAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Persists new key in storage.
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        Task StoreKeyAsync(SerializedKey key);
+        Task StoreKeyAsync(SerializedKey key, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes key from storage.
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        Task DeleteKeyAsync(string id);
+        Task DeleteKeyAsync(string id, CancellationToken cancellationToken = default);
     }
 }

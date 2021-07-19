@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IdentityModel;
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -59,22 +60,19 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <param name="deviceCode">The device code.</param>
         /// <param name="userCode">The user code.</param>
         /// <param name="data">The data.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public virtual async Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
+        public virtual async Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data, CancellationToken cancellationToken = default)
         {
             Context.DeviceFlowCodes.Add(ToEntity(data, deviceCode, userCode));
 
-            await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Finds device authorization by user code.
-        /// </summary>
-        /// <param name="userCode">The user code.</param>
-        /// <returns></returns>
-        public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
+        /// <inheritdoc/>
+        public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode, CancellationToken cancellationToken = default)
         {
-            var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.UserCode == userCode).ToArrayAsync())
+            var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.UserCode == userCode).ToArrayAsync(cancellationToken))
                 .SingleOrDefault(x => x.UserCode == userCode);
             var model = ToModel(deviceFlowCodes?.Data);
 
@@ -83,14 +81,10 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             return model;
         }
 
-        /// <summary>
-        /// Finds device authorization by device code.
-        /// </summary>
-        /// <param name="deviceCode">The device code.</param>
-        /// <returns></returns>
-        public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
+        /// <inheritdoc/>
+        public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode, CancellationToken cancellationToken = default)
         {
-            var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.DeviceCode == deviceCode).ToArrayAsync())
+            var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.DeviceCode == deviceCode).ToArrayAsync(cancellationToken))
                 .SingleOrDefault(x => x.DeviceCode == deviceCode);
             var model = ToModel(deviceFlowCodes?.Data);
 
@@ -99,15 +93,10 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             return model;
         }
 
-        /// <summary>
-        /// Updates device authorization, searching by user code.
-        /// </summary>
-        /// <param name="userCode">The user code.</param>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public virtual async Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
+        /// <inheritdoc/>
+        public virtual async Task UpdateByUserCodeAsync(string userCode, DeviceCode data, CancellationToken cancellationToken = default)
         {
-            var existing = (await Context.DeviceFlowCodes.Where(x => x.UserCode == userCode).ToArrayAsync())
+            var existing = (await Context.DeviceFlowCodes.Where(x => x.UserCode == userCode).ToArrayAsync(cancellationToken))
                 .SingleOrDefault(x => x.UserCode == userCode);
             if (existing == null)
             {
@@ -123,7 +112,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
 
             try
             {
-                await Context.SaveChangesAsync();
+                await Context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -131,14 +120,10 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             }
         }
 
-        /// <summary>
-        /// Removes the device authorization, searching by device code.
-        /// </summary>
-        /// <param name="deviceCode">The device code.</param>
-        /// <returns></returns>
-        public virtual async Task RemoveByDeviceCodeAsync(string deviceCode)
+        /// <inheritdoc/>
+        public virtual async Task RemoveByDeviceCodeAsync(string deviceCode, CancellationToken cancellationToken = default)
         {
-            var deviceFlowCodes = (await Context.DeviceFlowCodes.Where(x => x.DeviceCode == deviceCode).ToArrayAsync())
+            var deviceFlowCodes = (await Context.DeviceFlowCodes.Where(x => x.DeviceCode == deviceCode).ToArrayAsync(cancellationToken))
                 .SingleOrDefault(x => x.DeviceCode == deviceCode);
 
             if(deviceFlowCodes != null)
@@ -149,7 +134,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
 
                 try
                 {
-                    await Context.SaveChangesAsync();
+                    await Context.SaveChangesAsync(cancellationToken);
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {

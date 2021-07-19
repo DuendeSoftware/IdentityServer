@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 
@@ -16,7 +17,8 @@ namespace Duende.IdentityServer.Stores
         /// Finds a client by id
         /// </summary>
         /// <param name="clientId">The client id</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns>The client</returns>
-        Task<Client> FindClientByIdAsync(string clientId);
+        Task<Client> FindClientByIdAsync(string clientId, CancellationToken cancellationToken = default);
     }
 }

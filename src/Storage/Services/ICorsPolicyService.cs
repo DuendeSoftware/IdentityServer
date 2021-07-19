@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Services
@@ -15,7 +16,8 @@ namespace Duende.IdentityServer.Services
         /// Determines whether origin is allowed.
         /// </summary>
         /// <param name="origin">The origin.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        Task<bool> IsOriginAllowedAsync(string origin);
+        Task<bool> IsOriginAllowedAsync(string origin, CancellationToken cancellationToken = default);
     }
 }

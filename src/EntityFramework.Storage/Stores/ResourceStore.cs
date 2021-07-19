@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
@@ -47,8 +48,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Finds the API resources by name.
         /// </summary>
         /// <param name="apiResourceNames">The names.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
+        public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames, CancellationToken cancellationToken = default)
         {
             if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
@@ -64,7 +66,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .Include(x => x.Properties)
                 .AsNoTracking();
 
-            var result = (await apis.ToArrayAsync())
+            var result = (await apis.ToArrayAsync(cancellationToken))
                 .Where(x => apiResourceNames.Contains(x.Name))
                 .Select(x => x.ToModel()).ToArray();
 
@@ -84,8 +86,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Gets API resources by scope name.
         /// </summary>
         /// <param name="scopeNames"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
+        public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames, CancellationToken cancellationToken = default)
         {
             var names = scopeNames.ToArray();
 
@@ -101,7 +104,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .Include(x => x.Properties)
                 .AsNoTracking();
 
-            var results = (await apis.ToArrayAsync())
+            var results = (await apis.ToArrayAsync(cancellationToken))
                 .Where(api => api.Scopes.Any(x => names.Contains(x.Scope)));
             var models = results.Select(x => x.ToModel()).ToArray();
 
@@ -114,8 +117,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Gets identity resources by scope name.
         /// </summary>
         /// <param name="scopeNames"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public virtual async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
+        public virtual async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames, CancellationToken cancellationToken = default)
         {
             var scopes = scopeNames.ToArray();
 
@@ -129,7 +133,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .Include(x => x.Properties)
                 .AsNoTracking();
 
-            var results = (await resources.ToArrayAsync())
+            var results = (await resources.ToArrayAsync(cancellationToken))
                 .Where(x => scopes.Contains(x.Name));
 
             Logger.LogDebug("Found {scopes} identity scopes in database", results.Select(x => x.Name));
@@ -141,8 +145,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Gets scopes by scope name.
         /// </summary>
         /// <param name="scopeNames"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public virtual async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
+        public virtual async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames, CancellationToken cancellationToken = default)
         {
             var scopes = scopeNames.ToArray();
 
@@ -156,7 +161,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .Include(x => x.Properties)
                 .AsNoTracking();
 
-            var results = (await resources.ToArrayAsync())
+            var results = (await resources.ToArrayAsync(cancellationToken))
                 .Where(x => scopes.Contains(x.Name));
 
             Logger.LogDebug("Found {scopes} scopes in database", results.Select(x => x.Name));
@@ -167,8 +172,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <summary>
         /// Gets all resources.
         /// </summary>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public virtual async Task<Resources> GetAllResourcesAsync()
+        public virtual async Task<Resources> GetAllResourcesAsync(CancellationToken cancellationToken = default)
         {
             var identity = Context.IdentityResources
               .Include(x => x.UserClaims)
@@ -187,9 +193,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .AsNoTracking();
 
             var result = new Resources(
-                (await identity.ToArrayAsync()).Select(x => x.ToModel()),
-                (await apis.ToArrayAsync()).Select(x => x.ToModel()),
-                (await scopes.ToArrayAsync()).Select(x => x.ToModel())
+                (await identity.ToArrayAsync(cancellationToken)).Select(x => x.ToModel()),
+                (await apis.ToArrayAsync(cancellationToken)).Select(x => x.ToModel()),
+                (await scopes.ToArrayAsync(cancellationToken)).Select(x => x.ToModel())
             );
 
             Logger.LogDebug("Found {scopes} as all scopes, and {apis} as API resources", 

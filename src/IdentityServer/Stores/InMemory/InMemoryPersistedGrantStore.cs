@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using System.Threading;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -20,7 +21,7 @@ namespace Duende.IdentityServer.Stores
         private readonly ConcurrentDictionary<string, PersistedGrant> _repository = new ConcurrentDictionary<string, PersistedGrant>();
 
         /// <inheritdoc/>
-        public Task StoreAsync(PersistedGrant grant)
+        public Task StoreAsync(PersistedGrant grant, CancellationToken cancellationToken = default)
         {
             _repository[grant.Key] = grant;
 
@@ -28,7 +29,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task<PersistedGrant> GetAsync(string key)
+        public Task<PersistedGrant> GetAsync(string key, CancellationToken cancellationToken = default)
         {
             if (_repository.TryGetValue(key, out PersistedGrant token))
             {
@@ -39,7 +40,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
+        public Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter, CancellationToken cancellationToken = default)
         {
             filter.Validate();
             
@@ -49,7 +50,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task RemoveAsync(string key)
+        public Task RemoveAsync(string key, CancellationToken cancellationToken = default)
         {
             _repository.TryRemove(key, out _);
 
@@ -57,7 +58,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task RemoveAllAsync(PersistedGrantFilter filter)
+        public Task RemoveAllAsync(PersistedGrantFilter filter, CancellationToken cancellationToken = default)
         {
             filter.Validate();
 

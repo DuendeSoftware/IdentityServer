@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
@@ -24,19 +25,19 @@ namespace UnitTests.Common
                TestLogger.Create<DefaultUserConsentStore>());
         }
 
-        public Task StoreUserConsentAsync(Consent consent)
+        public Task StoreUserConsentAsync(Consent consent, CancellationToken cancellationToken = default)
         {
-            return _userConsentStore.StoreUserConsentAsync(consent);
+            return _userConsentStore.StoreUserConsentAsync(consent, cancellationToken);
         }
 
-        public Task<Consent> GetUserConsentAsync(string subjectId, string clientId)
+        public Task<Consent> GetUserConsentAsync(string subjectId, string clientId, CancellationToken cancellationToken = default)
         {
-            return _userConsentStore.GetUserConsentAsync(subjectId, clientId);
+            return _userConsentStore.GetUserConsentAsync(subjectId, clientId, cancellationToken);
         }
 
-        public Task RemoveUserConsentAsync(string subjectId, string clientId)
+        public Task RemoveUserConsentAsync(string subjectId, string clientId, CancellationToken cancellationToken = default)
         {
-            return _userConsentStore.RemoveUserConsentAsync(subjectId, clientId);
+            return _userConsentStore.RemoveUserConsentAsync(subjectId, clientId, cancellationToken);
         }
     }
 }

@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Models;
@@ -35,30 +36,33 @@ namespace Duende.IdentityServer.Stores
         /// Stores the reference token asynchronous.
         /// </summary>
         /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task<string> StoreReferenceTokenAsync(Token token)
+        public Task<string> StoreReferenceTokenAsync(Token token, CancellationToken cancellationToken)
         {
-            return CreateItemAsync(token, token.ClientId, token.SubjectId, token.SessionId, token.Description, token.CreationTime, token.Lifetime);
+            return CreateItemAsync(token, token.ClientId, token.SubjectId, token.SessionId, token.Description, token.CreationTime, token.Lifetime, cancellationToken);
         }
 
         /// <summary>
         /// Gets the reference token asynchronous.
         /// </summary>
         /// <param name="handle">The handle.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task<Token> GetReferenceTokenAsync(string handle)
+        public Task<Token> GetReferenceTokenAsync(string handle, CancellationToken cancellationToken)
         {
-            return GetItemAsync(handle);
+            return GetItemAsync(handle, cancellationToken);
         }
 
         /// <summary>
         /// Removes the reference token asynchronous.
         /// </summary>
         /// <param name="handle">The handle.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task RemoveReferenceTokenAsync(string handle)
+        public Task RemoveReferenceTokenAsync(string handle, CancellationToken cancellationToken)
         {
-            return RemoveItemAsync(handle);
+            return RemoveItemAsync(handle, cancellationToken);
         }
 
         /// <summary>
@@ -66,10 +70,11 @@ namespace Duende.IdentityServer.Stores
         /// </summary>
         /// <param name="subjectId">The subject identifier.</param>
         /// <param name="clientId">The client identifier.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task RemoveReferenceTokensAsync(string subjectId, string clientId)
+        public Task RemoveReferenceTokensAsync(string subjectId, string clientId, CancellationToken cancellationToken)
         {
-            return RemoveAllAsync(subjectId, clientId);
+            return RemoveAllAsync(subjectId, clientId, cancellationToken);
         }
     }
 }

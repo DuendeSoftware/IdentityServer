@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
@@ -44,22 +45,22 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
+        public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync(CancellationToken cancellationToken = default)
         {
             var query = Context.IdentityProviders.Select(x => new IdentityProviderName { 
                 Enabled = x.Enabled,
                 Scheme = x.Scheme,
                 DisplayName  = x.DisplayName
             });
-            return await query.ToArrayAsync();
+            return await query.ToArrayAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
-        public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
+        public async Task<IdentityProvider> GetBySchemeAsync(string scheme, CancellationToken cancellationToken = default)
         {
             var query = Context.IdentityProviders.Where(x => x.Scheme == scheme);
 
-            var idp = (await query.ToArrayAsync()).SingleOrDefault(x => x.Scheme == scheme);
+            var idp = (await query.ToArrayAsync(cancellationToken)).SingleOrDefault(x => x.Scheme == scheme);
             if (idp == null) return null;
 
             var result = MapIdp(idp);

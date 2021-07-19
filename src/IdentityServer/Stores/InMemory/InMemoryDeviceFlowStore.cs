@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 
@@ -23,8 +24,9 @@ namespace Duende.IdentityServer.Stores
         /// <param name="deviceCode">The device code.</param>
         /// <param name="userCode">The user code.</param>
         /// <param name="data">The data.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
+        public Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data, CancellationToken cancellationToken = default)
         {
             lock (_repository)
             {
@@ -38,7 +40,8 @@ namespace Duende.IdentityServer.Stores
         /// Finds device authorization by user code.
         /// </summary>
         /// <param name="userCode">The user code.</param>
-        public Task<DeviceCode> FindByUserCodeAsync(string userCode)
+        /// <param name="cancellationToken">The cancellation instruction.</param>
+        public Task<DeviceCode> FindByUserCodeAsync(string userCode, CancellationToken cancellationToken = default)
         {
             DeviceCode foundDeviceCode;
 
@@ -54,7 +57,8 @@ namespace Duende.IdentityServer.Stores
         /// Finds device authorization by device code.
         /// </summary>
         /// <param name="deviceCode">The device code.</param>
-        public Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
+        /// <param name="cancellationToken">The cancellation instruction.</param>
+        public Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode, CancellationToken cancellationToken = default)
         {
             DeviceCode foundDeviceCode;
 
@@ -71,7 +75,8 @@ namespace Duende.IdentityServer.Stores
         /// </summary>
         /// <param name="userCode">The user code.</param>
         /// <param name="data">The data.</param>
-        public Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
+        /// <param name="cancellationToken">The cancellation instruction.</param>
+        public Task UpdateByUserCodeAsync(string userCode, DeviceCode data, CancellationToken cancellationToken = default)
         {
             lock (_repository)
             {
@@ -90,8 +95,9 @@ namespace Duende.IdentityServer.Stores
         /// Removes the device authorization, searching by device code.
         /// </summary>
         /// <param name="deviceCode">The device code.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task RemoveByDeviceCodeAsync(string deviceCode)
+        public Task RemoveByDeviceCodeAsync(string deviceCode, CancellationToken cancellationToken = default)
         {
             lock (_repository)
             {

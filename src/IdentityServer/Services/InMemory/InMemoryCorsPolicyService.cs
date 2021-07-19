@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Services
@@ -37,12 +38,8 @@ namespace Duende.IdentityServer.Services
             Clients = clients ?? Enumerable.Empty<Client>();
         }
 
-        /// <summary>
-        /// Determines whether origin is allowed.
-        /// </summary>
-        /// <param name="origin">The origin.</param>
-        /// <returns></returns>
-        public virtual Task<bool> IsOriginAllowedAsync(string origin)
+        /// <inheritdoc/>
+        public virtual Task<bool> IsOriginAllowedAsync(string origin, CancellationToken cancellationToken = default)
         {
             var query =
                 from client in Clients

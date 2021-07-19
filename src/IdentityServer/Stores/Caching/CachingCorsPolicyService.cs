@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using Duende.IdentityServer.Extensions;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
@@ -59,16 +60,12 @@ namespace Duende.IdentityServer.Stores
             Logger = logger;
         }
 
-        /// <summary>
-        /// Determines whether origin is allowed.
-        /// </summary>
-        /// <param name="origin">The origin.</param>
-        /// <returns></returns>
-        public virtual async Task<bool> IsOriginAllowedAsync(string origin)
+        /// <inheritdoc/>
+        public virtual async Task<bool> IsOriginAllowedAsync(string origin, CancellationToken cancellationToken = default)
         {
             var entry = await CorsCache.GetAsync(origin,
                           Options.Caching.CorsExpiration,
-                          async () => new CorsCacheEntry(await Inner.IsOriginAllowedAsync(origin)),
+                          async () => new CorsCacheEntry(await Inner.IsOriginAllowedAsync(origin, cancellationToken)),
                           Logger);
 
             return entry.Allowed;

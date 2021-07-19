@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Extensions;
@@ -77,15 +78,6 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// The keys.
         /// </value>
         public DbSet<Key> Keys { get; set; }
-
-        /// <summary>
-        /// Saves the changes.
-        /// </summary>
-        /// <returns></returns>
-        public virtual Task<int> SaveChangesAsync()
-        {
-            return base.SaveChangesAsync();
-        }
 
         /// <summary>
         /// Override this method to further configure the model that was discovered by convention from the entity types

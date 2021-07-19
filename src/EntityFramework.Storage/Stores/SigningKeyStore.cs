@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Interfaces;
@@ -48,10 +49,11 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <summary>
         /// Loads all keys from store.
         /// </summary>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<SerializedKey>> LoadKeysAsync()
+        public async Task<IEnumerable<SerializedKey>> LoadKeysAsync(CancellationToken cancellationToken)
         {
-            var entities = await Context.Keys.Where(x => x.Use == Use).ToArrayAsync();
+            var entities = await Context.Keys.Where(x => x.Use == Use).ToArrayAsync(cancellationToken);
             return entities.Select(key => new SerializedKey
             {
                 Id = key.Id,
@@ -68,8 +70,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Persists new key in store.
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public Task StoreKeyAsync(SerializedKey key)
+        public Task StoreKeyAsync(SerializedKey key, CancellationToken cancellationToken)
         {
             var entity = new Key
             {
@@ -83,23 +86,24 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 IsX509Certificate = key.IsX509Certificate
             };
             Context.Keys.Add(entity);
-            return Context.SaveChangesAsync();
+            return Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
         /// Deletes key from storage.
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns></returns>
-        public async Task DeleteKeyAsync(string id)
+        public async Task DeleteKeyAsync(string id, CancellationToken cancellationToken)
         {
-            var item = await Context.Keys.FirstOrDefaultAsync(x => x.Use == Use && x.Id == id);
+            var item = await Context.Keys.FirstOrDefaultAsync(x => x.Use == Use && x.Id == id, cancellationToken);
             if (item != null)
             {
                 try
                 {
                     Context.Keys.Remove(item);
-                    await Context.SaveChangesAsync();
+                    await Context.SaveChangesAsync(cancellationToken);
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {

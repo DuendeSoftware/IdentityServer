@@ -8,6 +8,7 @@ using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Hosting.DynamicProviders
@@ -47,12 +48,12 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
+        public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync(CancellationToken cancellationToken = default)
         {
             var result = await _allCache.GetAsync("::all::");
             if (result == null)
             {
-                result = await _inner.GetAllSchemeNamesAsync();
+                result = await _inner.GetAllSchemeNamesAsync(cancellationToken);
                 if (result != null)
                 {
                     await _allCache.SetAsync("::all::", result, _options.Caching.IdentityProviderCacheDuration);
@@ -63,12 +64,12 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         }
 
         /// <inheritdoc/>
-        public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
+        public async Task<IdentityProvider> GetBySchemeAsync(string scheme, CancellationToken cancellationToken = default)
         {
             var result = await _cache.GetAsync(scheme);
             if (result == null)
             {
-                result = await _inner.GetBySchemeAsync(scheme);
+                result = await _inner.GetBySchemeAsync(scheme, cancellationToken);
                 if (result != null)
                 {
                     RemoveCacheEntry(result);

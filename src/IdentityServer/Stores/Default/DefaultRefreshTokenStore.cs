@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Models;
@@ -31,35 +32,22 @@ namespace Duende.IdentityServer.Stores
         {
         }
 
-        /// <summary>
-        /// Stores the refresh token.
-        /// </summary>
-        /// <param name="refreshToken">The refresh token.</param>
-        /// <returns></returns>
-        public async Task<string> StoreRefreshTokenAsync(RefreshToken refreshToken)
+        /// <inheritdoc/>
+        public async Task<string> StoreRefreshTokenAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
         {
-            return await CreateItemAsync(refreshToken, refreshToken.ClientId, refreshToken.SubjectId, refreshToken.SessionId, refreshToken.Description, refreshToken.CreationTime, refreshToken.Lifetime);
+            return await CreateItemAsync(refreshToken, refreshToken.ClientId, refreshToken.SubjectId, refreshToken.SessionId, refreshToken.Description, refreshToken.CreationTime, refreshToken.Lifetime, cancellationToken);
         }
 
-        /// <summary>
-        /// Updates the refresh token.
-        /// </summary>
-        /// <param name="handle">The handle.</param>
-        /// <param name="refreshToken">The refresh token.</param>
-        /// <returns></returns>
-        public Task UpdateRefreshTokenAsync(string handle, RefreshToken refreshToken)
+        /// <inheritdoc/>
+        public Task UpdateRefreshTokenAsync(string handle, RefreshToken refreshToken, CancellationToken cancellationToken = default)
         {
-            return StoreItemAsync(handle, refreshToken, refreshToken.ClientId, refreshToken.SubjectId, refreshToken.SessionId, refreshToken.Description, refreshToken.CreationTime, refreshToken.CreationTime.AddSeconds(refreshToken.Lifetime), refreshToken.ConsumedTime);
+            return StoreItemAsync(handle, refreshToken, refreshToken.ClientId, refreshToken.SubjectId, refreshToken.SessionId, refreshToken.Description, refreshToken.CreationTime, refreshToken.CreationTime.AddSeconds(refreshToken.Lifetime), refreshToken.ConsumedTime, cancellationToken);
         }
 
-        /// <summary>
-        /// Gets the refresh token.
-        /// </summary>
-        /// <param name="refreshTokenHandle">The refresh token handle.</param>
-        /// <returns></returns>
-        public async Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle)
+        /// <inheritdoc/>
+        public async Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle, CancellationToken cancellationToken = default)
         {
-            var refreshToken = await GetItemAsync(refreshTokenHandle);
+            var refreshToken = await GetItemAsync(refreshTokenHandle, cancellationToken);
 
             if (refreshToken != null && refreshToken.Version < 5)
             {
@@ -86,25 +74,16 @@ namespace Duende.IdentityServer.Stores
             return refreshToken;
         }
 
-        /// <summary>
-        /// Removes the refresh token.
-        /// </summary>
-        /// <param name="refreshTokenHandle">The refresh token handle.</param>
-        /// <returns></returns>
-        public Task RemoveRefreshTokenAsync(string refreshTokenHandle)
+        /// <inheritdoc/>
+        public Task RemoveRefreshTokenAsync(string refreshTokenHandle, CancellationToken cancellationToken = default)
         {
-            return RemoveItemAsync(refreshTokenHandle);
+            return RemoveItemAsync(refreshTokenHandle, cancellationToken);
         }
 
-        /// <summary>
-        /// Removes the refresh tokens.
-        /// </summary>
-        /// <param name="subjectId">The subject identifier.</param>
-        /// <param name="clientId">The client identifier.</param>
-        /// <returns></returns>
-        public Task RemoveRefreshTokensAsync(string subjectId, string clientId)
+        /// <inheritdoc/>
+        public Task RemoveRefreshTokensAsync(string subjectId, string clientId, CancellationToken cancellationToken = default)
         {
-            return RemoveAllAsync(subjectId, clientId);
+            return RemoveAllAsync(subjectId, clientId, cancellationToken);
         }
     }
 }

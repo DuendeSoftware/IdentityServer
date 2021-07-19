@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
@@ -45,27 +46,28 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Finds a client by id
         /// </summary>
         /// <param name="clientId">The client id</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns>
         /// The client
         /// </returns>
-        public virtual async Task<Duende.IdentityServer.Models.Client> FindClientByIdAsync(string clientId)
+        public virtual async Task<Duende.IdentityServer.Models.Client> FindClientByIdAsync(string clientId, CancellationToken cancellationToken = default)
         {
             IQueryable<Duende.IdentityServer.EntityFramework.Entities.Client> baseQuery = Context.Clients
                 .Where(x => x.ClientId == clientId);
 
-            var client = (await baseQuery.ToArrayAsync())
+            var client = (await baseQuery.ToArrayAsync(cancellationToken))
                 .SingleOrDefault(x => x.ClientId == clientId);
             if (client == null) return null;
 
-            await baseQuery.Include(x => x.AllowedCorsOrigins).SelectMany(c => c.AllowedCorsOrigins).LoadAsync();
-            await baseQuery.Include(x => x.AllowedGrantTypes).SelectMany(c => c.AllowedGrantTypes).LoadAsync();
-            await baseQuery.Include(x => x.AllowedScopes).SelectMany(c => c.AllowedScopes).LoadAsync();
-            await baseQuery.Include(x => x.Claims).SelectMany(c => c.Claims).LoadAsync();
-            await baseQuery.Include(x => x.ClientSecrets).SelectMany(c => c.ClientSecrets).LoadAsync();
-            await baseQuery.Include(x => x.IdentityProviderRestrictions).SelectMany(c => c.IdentityProviderRestrictions).LoadAsync();
-            await baseQuery.Include(x => x.PostLogoutRedirectUris).SelectMany(c => c.PostLogoutRedirectUris).LoadAsync();
-            await baseQuery.Include(x => x.Properties).SelectMany(c => c.Properties).LoadAsync();
-            await baseQuery.Include(x => x.RedirectUris).SelectMany(c => c.RedirectUris).LoadAsync();
+            await baseQuery.Include(x => x.AllowedCorsOrigins).SelectMany(c => c.AllowedCorsOrigins).LoadAsync(cancellationToken);
+            await baseQuery.Include(x => x.AllowedGrantTypes).SelectMany(c => c.AllowedGrantTypes).LoadAsync(cancellationToken);
+            await baseQuery.Include(x => x.AllowedScopes).SelectMany(c => c.AllowedScopes).LoadAsync(cancellationToken);
+            await baseQuery.Include(x => x.Claims).SelectMany(c => c.Claims).LoadAsync(cancellationToken);
+            await baseQuery.Include(x => x.ClientSecrets).SelectMany(c => c.ClientSecrets).LoadAsync(cancellationToken);
+            await baseQuery.Include(x => x.IdentityProviderRestrictions).SelectMany(c => c.IdentityProviderRestrictions).LoadAsync(cancellationToken);
+            await baseQuery.Include(x => x.PostLogoutRedirectUris).SelectMany(c => c.PostLogoutRedirectUris).LoadAsync(cancellationToken);
+            await baseQuery.Include(x => x.Properties).SelectMany(c => c.Properties).LoadAsync(cancellationToken);
+            await baseQuery.Include(x => x.RedirectUris).SelectMany(c => c.RedirectUris).LoadAsync(cancellationToken);
 
             var model = client.ToModel();
 

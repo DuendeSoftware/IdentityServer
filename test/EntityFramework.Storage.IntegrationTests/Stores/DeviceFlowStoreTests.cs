@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -120,7 +120,7 @@ namespace IntegrationTests.Stores
                     Expiration = deviceCodeData.CreationTime.AddSeconds(deviceCodeData.Lifetime),
                     Data = serializer.Serialize(deviceCodeData)
                 });
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
 
             using (var context = new PersistedGrantDbContext(options, StoreOptions))
