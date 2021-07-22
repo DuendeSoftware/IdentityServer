@@ -4,7 +4,7 @@
     <FrameworkVersion>6.0.0-preview.6.*</FrameworkVersion>
     <ExtensionsVersion>6.0.0-preview.6.*</ExtensionsVersion>
     <EntityFrameworkVersion>6.0.0-preview.6.*</EntityFrameworkVersion>
-    <WilsonVersion>6.10.0</WilsonVersion>
+    <WilsonVersion>6.12.0</WilsonVersion>
   </PropertyGroup>
 
   <ItemGroup>
