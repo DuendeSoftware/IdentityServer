@@ -58,15 +58,15 @@ namespace Duende.IdentityServer.EntityFramework.Storage
             {
                 if (options.EnablePooling)
                 {
+                    services.AddDbContextPool<TContext>(
+                        dbCtxBuilder => { options.ConfigureDbContext?.Invoke(dbCtxBuilder); }, options.PoolSize);
+                }
+                else
+                {
                     services.AddDbContext<TContext>(dbCtxBuilder =>
                     {
                         options.ConfigureDbContext?.Invoke(dbCtxBuilder);
                     });
-                }
-                else
-                {
-                    services.AddDbContextPool<TContext>(
-                        dbCtxBuilder => { options.ConfigureDbContext?.Invoke(dbCtxBuilder); }, options.PoolSize);
                 }
             }
 
