@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Services.KeyManagement
@@ -15,12 +16,12 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// Returns the current signing keys.
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync();
+        Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Returns all the validation keys.
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<KeyContainer>> GetAllKeysAsync();
+        Task<IEnumerable<KeyContainer>> GetAllKeysAsync(CancellationToken cancellationToken = default);
     }
 }

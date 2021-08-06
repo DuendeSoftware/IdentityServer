@@ -1,8 +1,9 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
 using Microsoft.IdentityModel.Tokens;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Stores
@@ -16,6 +17,6 @@ namespace Duende.IdentityServer.Stores
         /// Gets the signing credentials.
         /// </summary>
         /// <returns></returns>
-        Task<SigningCredentials> GetSigningCredentialsAsync();
+        Task<SigningCredentials> GetSigningCredentialsAsync(CancellationToken cancellationToken = default);
     }
 }
