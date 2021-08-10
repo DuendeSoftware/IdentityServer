@@ -1,8 +1,9 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
@@ -13,7 +14,7 @@ namespace UnitTests.Common
     {
         public Dictionary<string, Message<ConsentResponse>> Messages { get; set; } = new Dictionary<string, Message<ConsentResponse>>();
 
-        public Task DeleteAsync(string id)
+        public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             if (id != null && Messages.ContainsKey(id))
             {
@@ -22,7 +23,7 @@ namespace UnitTests.Common
             return Task.CompletedTask;
         }
 
-        public Task<Message<ConsentResponse>> ReadAsync(string id)
+        public Task<Message<ConsentResponse>> ReadAsync(string id, CancellationToken cancellationToken = default)
         {
             Message<ConsentResponse> val = null;
             if (id != null)
@@ -32,7 +33,7 @@ namespace UnitTests.Common
             return Task.FromResult(val);
         }
 
-        public Task WriteAsync(string id, Message<ConsentResponse> message)
+        public Task WriteAsync(string id, Message<ConsentResponse> message, CancellationToken cancellationToken = default)
         {
             Messages[id] = message;
             return Task.CompletedTask;

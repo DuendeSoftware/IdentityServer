@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 
@@ -16,18 +17,18 @@ namespace Duende.IdentityServer.Stores
             Cookie = cookie;
         }
 
-        public virtual Task DeleteAsync(string id)
+        public virtual Task DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             Cookie.Clear(id);
             return Task.CompletedTask;
         }
 
-        public virtual Task<Message<ConsentResponse>> ReadAsync(string id)
+        public virtual Task<Message<ConsentResponse>> ReadAsync(string id, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Cookie.Read(id));
         }
 
-        public virtual Task WriteAsync(string id, Message<ConsentResponse> message)
+        public virtual Task WriteAsync(string id, Message<ConsentResponse> message, CancellationToken cancellationToken = default)
         {
             Cookie.Write(id, message);
             return Task.CompletedTask;

@@ -9,6 +9,7 @@ using System.Text;
 using System;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -42,7 +43,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc />
-        public virtual Task<Message<TModel>> ReadAsync(string value)
+        public virtual Task<Message<TModel>> ReadAsync(string value, CancellationToken cancellationToken = default)
         {
             Message<TModel> result = null;
 
@@ -65,7 +66,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc />
-        public virtual Task<string> WriteAsync(Message<TModel> message)
+        public virtual Task<string> WriteAsync(Message<TModel> message, CancellationToken cancellationToken = default)
         {
             string value = null;
 

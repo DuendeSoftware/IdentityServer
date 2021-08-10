@@ -11,6 +11,7 @@ using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Extensions;
+using System.Threading;
 
 namespace Duende.IdentityServer.Services.KeyManagement
 {
@@ -62,11 +63,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync()
+        public async Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync(CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("Getting the current key.");
 
-            var (_, currentKeys) = await GetAllKeysInternalAsync();
+            var (_, currentKeys) = await GetAllKeysInternalAsync(cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Information))
             {
@@ -83,24 +84,24 @@ namespace Duende.IdentityServer.Services.KeyManagement
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<KeyContainer>> GetAllKeysAsync()
+        public async Task<IEnumerable<KeyContainer>> GetAllKeysAsync(CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("Getting all the keys.");
 
-            var (keys, _) = await GetAllKeysInternalAsync();
+            var (keys, _) = await GetAllKeysInternalAsync(cancellationToken);
             return keys;
         }
 
 
 
-        internal async Task<(IEnumerable<KeyContainer> allKeys, IEnumerable<KeyContainer> signingKeys)> GetAllKeysInternalAsync()
+        internal async Task<(IEnumerable<KeyContainer> allKeys, IEnumerable<KeyContainer> signingKeys)> GetAllKeysInternalAsync(CancellationToken cancellationToken = default)
         {
             var cached = true;
             var keys = await GetKeysFromCacheAsync();
             if (!keys.Any())
             {
                 cached = false;
-                keys = await GetKeysFromStoreAsync();
+                keys = await GetKeysFromStoreAsync(cancellationToken:cancellationToken);
             }
 
             // ensure we have all of our active signing keys
@@ -148,7 +149,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                     if (!signingKeysSuccess || rotationRequired)
                     {
                         // still need to do the work, but check if another server did the work already
-                        keys = await GetKeysFromStoreAsync();
+                        keys = await GetKeysFromStoreAsync(cancellationToken:cancellationToken);
 
                         if (!signingKeysSuccess)
                         {
@@ -171,7 +172,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                             }
 
                             // now we know we need to create new keys
-                            (keys, signingKeys) = await CreateNewKeysAndAddToCacheAsync();
+                            (keys, signingKeys) = await CreateNewKeysAndAddToCacheAsync(cancellationToken);
                         }
                         else
                         {
@@ -256,7 +257,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return false;
         }
 
-        internal async Task<KeyContainer> CreateAndStoreNewKeyAsync(SigningAlgorithmOptions alg)
+        internal async Task<KeyContainer> CreateAndStoreNewKeyAsync(SigningAlgorithmOptions alg, CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("Creating new key.");
 
@@ -286,7 +287,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
 
             var key = _protector.Protect(container);
-            await _store.StoreKeyAsync(key);
+            await _store.StoreKeyAsync(key, cancellationToken);
 
             _logger.LogInformation("Created and stored new key with kid {kid}.", container.Id);
 
@@ -326,7 +327,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal async Task<IEnumerable<KeyContainer>> FilterAndDeleteRetiredKeysAsync(IEnumerable<KeyContainer> keys)
+        internal async Task<IEnumerable<KeyContainer>> FilterAndDeleteRetiredKeysAsync(IEnumerable<KeyContainer> keys, CancellationToken cancellationToken = default)
         {
             var retired = keys
                 .Where(x =>
@@ -352,7 +353,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                     {
                         _logger.LogDebug("Deleting retired keys from store: {kids}", ids.Aggregate((x, y) => $"{x},{y}"));
                     }
-                    await DeleteKeysAsync(ids);
+                    await DeleteKeysAsync(ids, cancellationToken);
                 }
             }
 
@@ -360,13 +361,13 @@ namespace Duende.IdentityServer.Services.KeyManagement
             return result;
         }
 
-        internal async Task DeleteKeysAsync(IEnumerable<string> keys)
+        internal async Task DeleteKeysAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
         {
             if (keys == null || !keys.Any()) return;
 
             foreach (var key in keys)
             {
-                await _store.DeleteKeyAsync(key);
+                await _store.DeleteKeyAsync(key, cancellationToken);
             }
         }
 
@@ -412,11 +413,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
         }
 
-        internal async Task<IEnumerable<KeyContainer>> GetKeysFromStoreAsync(bool cache = true)
+        internal async Task<IEnumerable<KeyContainer>> GetKeysFromStoreAsync(bool cache = true, CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("Loading keys from store.");
             
-            var protectedKeys = await _store.LoadKeysAsync();
+            var protectedKeys = await _store.LoadKeysAsync(cancellationToken);
             if (protectedKeys != null && protectedKeys.Any())
             {
                 var keys = protectedKeys.Select(x =>
@@ -447,7 +448,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 }
 
                 // retired keys are those that are beyond inclusion, thus we act as if they don't exist.
-                keys = await FilterAndDeleteRetiredKeysAsync(keys);
+                keys = await FilterAndDeleteRetiredKeysAsync(keys, cancellationToken);
                 
                 if (_logger.IsEnabled(LogLevel.Trace) && keys.Any())
                 {
@@ -484,14 +485,14 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
 
 
-        internal async Task<(IEnumerable<KeyContainer> allKeys, IEnumerable<KeyContainer> activeKeys)> CreateNewKeysAndAddToCacheAsync()
+        internal async Task<(IEnumerable<KeyContainer> allKeys, IEnumerable<KeyContainer> activeKeys)> CreateNewKeysAndAddToCacheAsync(CancellationToken cancellationToken = default)
         {
             var keys = new List<KeyContainer>();
             keys.AddRange(await _cache.GetKeysAsync() ?? Enumerable.Empty<KeyContainer>());
 
             foreach (var alg in _options.SigningAlgorithms)
             {
-                var newKey = await CreateAndStoreNewKeyAsync(alg);
+                var newKey = await CreateAndStoreNewKeyAsync(alg, cancellationToken);
                 keys.Add(newKey);
             }
             
@@ -514,7 +515,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 }
 
                 // reload in case other new keys were recently created
-                keys = new List<KeyContainer>(await GetKeysFromStoreAsync(false));
+                keys = new List<KeyContainer>(await GetKeysFromStoreAsync(false, cancellationToken));
             }
 
             // explicitly cache here since we didn't when we loaded above

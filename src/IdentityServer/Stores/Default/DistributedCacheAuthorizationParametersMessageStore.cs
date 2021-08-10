@@ -1,8 +1,9 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
@@ -33,7 +34,7 @@ namespace Duende.IdentityServer.Stores.Default
         private string CacheKeyPrefix => "DistributedCacheAuthorizationParametersMessageStore";
         
         /// <inheritdoc/>
-        public virtual async Task<string> WriteAsync(Message<IDictionary<string, string[]>> message)
+        public virtual async Task<string> WriteAsync(Message<IDictionary<string, string[]>> message, CancellationToken cancellationToken = default)
         {
             // since this store is trusted and the JWT request processing has provided redundant entries
             // in the NameValueCollection, we are removing the JWT "request_uri" param so that when they
@@ -49,16 +50,16 @@ namespace Duende.IdentityServer.Stores.Default
             var options = new DistributedCacheEntryOptions();
             options.SetSlidingExpiration(Constants.DefaultCacheDuration);
 
-            await _distributedCache.SetStringAsync(cacheKey, json, options);
+            await _distributedCache.SetStringAsync(cacheKey, json, options, cancellationToken);
 
             return key;
         }
 
         /// <inheritdoc/>
-        public virtual async Task<Message<IDictionary<string, string[]>>> ReadAsync(string id)
+        public virtual async Task<Message<IDictionary<string, string[]>>> ReadAsync(string id, CancellationToken cancellationToken = default)
         {
             var cacheKey = $"{CacheKeyPrefix}-{id}";
-            var json = await _distributedCache.GetStringAsync(cacheKey);
+            var json = await _distributedCache.GetStringAsync(cacheKey, cancellationToken);
 
             if (json == null)
             {
@@ -69,9 +70,9 @@ namespace Duende.IdentityServer.Stores.Default
         }
 
         /// <inheritdoc/>
-        public virtual Task DeleteAsync(string id)
+        public virtual Task DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
-            return _distributedCache.RemoveAsync(id);
+            return _distributedCache.RemoveAsync(id, cancellationToken);
         }
     }
 }

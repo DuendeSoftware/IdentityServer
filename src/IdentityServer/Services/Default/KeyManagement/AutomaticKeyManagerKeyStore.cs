@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
@@ -21,7 +22,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// Gets all the signing credentials.
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync();
+        Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync(CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -30,19 +31,19 @@ namespace Duende.IdentityServer.Services.KeyManagement
     internal class NopAutomaticKeyManagerKeyStore : IAutomaticKeyManagerKeyStore
     {
         /// <inheritdoc/>
-        public Task<SigningCredentials> GetSigningCredentialsAsync()
+        public Task<SigningCredentials> GetSigningCredentialsAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult<SigningCredentials>(null);
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync()
+        public Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Enumerable.Empty<SigningCredentials>());
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
+        public Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Enumerable.Empty<SecurityKeyInfo>());
         }
@@ -68,41 +69,41 @@ namespace Duende.IdentityServer.Services.KeyManagement
         }
 
         /// <inheritdoc/>
-        public async Task<SigningCredentials> GetSigningCredentialsAsync()
+        public async Task<SigningCredentials> GetSigningCredentialsAsync(CancellationToken cancellationToken = default)
         {
             if (!_options.Enabled)
             {
                 return null;
             }
 
-            var credentials = await GetAllSigningCredentialsAsync();
+            var credentials = await GetAllSigningCredentialsAsync(cancellationToken);
             var alg = _options.DefaultSigningAlgorithm;
             var credential = credentials.FirstOrDefault(x => alg == x.Algorithm);
             return credential;
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync()
+        public async Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync(CancellationToken cancellationToken = default)
         {
             if (!_options.Enabled)
             {
                 return Enumerable.Empty<SigningCredentials>();
             }
 
-            var keyContainers = await _keyManager.GetCurrentKeysAsync();
+            var keyContainers = await _keyManager.GetCurrentKeysAsync(cancellationToken);
             var credentials = keyContainers.Select(x => new SigningCredentials(x.ToSecurityKey(), x.Algorithm));
             return credentials;
         }
         
         /// <inheritdoc/>
-        public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
+        public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync(CancellationToken cancellationToken = default)
         {
             if (!_options.Enabled)
             {
                 return Enumerable.Empty<SecurityKeyInfo>();
             }
             
-            var containers = await _keyManager.GetAllKeysAsync();
+            var containers = await _keyManager.GetAllKeysAsync(cancellationToken);
             var keys = containers.Select(x => new SecurityKeyInfo
             {
                 Key = x.ToSecurityKey(),
