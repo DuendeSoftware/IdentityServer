@@ -51,6 +51,14 @@ namespace Duende.IdentityServer.EntityFramework.Options
         /// The device flow codes.
         /// </value>
         public TableConfiguration DeviceFlowCodes { get; set; } = new TableConfiguration("DeviceCodes");
+        
+        /// <summary>
+        /// Gets or sets the keys table configuration.
+        /// </summary>
+        /// <value>
+        /// The keys.
+        /// </value>
+        public TableConfiguration Keys { get; set; } = new TableConfiguration("Keys");
 
         /// <summary>
         /// Gets or sets a value indicating whether stale entries will be automatically cleaned up from the database.
