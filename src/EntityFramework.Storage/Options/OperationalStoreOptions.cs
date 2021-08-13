@@ -88,6 +88,6 @@ namespace Duende.IdentityServer.EntityFramework.Options
 
         public bool EnablePooling { get; set; } = false;
 
-        public int PoolSize { get; set; } = 1024;
+        public int? PoolSize { get; set; }
     }
 }
