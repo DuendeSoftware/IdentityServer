@@ -106,7 +106,15 @@ namespace Duende.IdentityServer.EntityFramework.Storage
             {
                 if (storeOptions.EnablePooling)
                 {
-                    services.AddDbContextPool<TContext>(storeOptions.ResolveDbContextOptions, storeOptions.PoolSize);
+                    if (storeOptions.PoolSize.HasValue)
+                    {
+                        services.AddDbContextPool<TContext>(storeOptions.ResolveDbContextOptions,
+                            storeOptions.PoolSize.Value);
+                    }
+                    else
+                    {
+                        services.AddDbContextPool<TContext>(storeOptions.ResolveDbContextOptions);
+                    }
                 }
                 else
                 {
@@ -117,9 +125,17 @@ namespace Duende.IdentityServer.EntityFramework.Storage
             {
                 if (storeOptions.EnablePooling)
                 {
-                    services.AddDbContextPool<TContext>(
-                        dbCtxBuilder => { storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder); },
-                        storeOptions.PoolSize);
+                    if (storeOptions.PoolSize.HasValue)
+                    {
+                        services.AddDbContextPool<TContext>(
+                            dbCtxBuilder => { storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder); },
+                            storeOptions.PoolSize.Value);
+                    }
+                    else
+                    {
+                        services.AddDbContextPool<TContext>(
+                            dbCtxBuilder => { storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder); });
+                    }
                 }
                 else
                 {
