@@ -6,7 +6,9 @@ BEGIN
         CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
     );
 END;
+GO
 
+BEGIN TRANSACTION;
 GO
 
 CREATE TABLE [DeviceCodes] (
@@ -21,7 +23,6 @@ CREATE TABLE [DeviceCodes] (
     [Data] nvarchar(max) NOT NULL,
     CONSTRAINT [PK_DeviceCodes] PRIMARY KEY ([UserCode])
 );
-
 GO
 
 CREATE TABLE [Keys] (
@@ -35,7 +36,6 @@ CREATE TABLE [Keys] (
     [Data] nvarchar(max) NOT NULL,
     CONSTRAINT [PK_Keys] PRIMARY KEY ([Id])
 );
-
 GO
 
 CREATE TABLE [PersistedGrants] (
@@ -51,39 +51,33 @@ CREATE TABLE [PersistedGrants] (
     [Data] nvarchar(max) NOT NULL,
     CONSTRAINT [PK_PersistedGrants] PRIMARY KEY ([Key])
 );
-
 GO
 
 CREATE UNIQUE INDEX [IX_DeviceCodes_DeviceCode] ON [DeviceCodes] ([DeviceCode]);
-
 GO
 
 CREATE INDEX [IX_DeviceCodes_Expiration] ON [DeviceCodes] ([Expiration]);
-
 GO
 
 CREATE INDEX [IX_Keys_Use] ON [Keys] ([Use]);
-
 GO
 
 CREATE INDEX [IX_PersistedGrants_ConsumedTime] ON [PersistedGrants] ([ConsumedTime]);
-
 GO
 
 CREATE INDEX [IX_PersistedGrants_Expiration] ON [PersistedGrants] ([Expiration]);
-
 GO
 
 CREATE INDEX [IX_PersistedGrants_SubjectId_ClientId_Type] ON [PersistedGrants] ([SubjectId], [ClientId], [Type]);
-
 GO
 
 CREATE INDEX [IX_PersistedGrants_SubjectId_SessionId_Type] ON [PersistedGrants] ([SubjectId], [SessionId], [Type]);
-
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20210505191106_Grants', N'3.1.0');
+VALUES (N'20210825140219_Grants', N'6.0.0-preview.6.21352.1');
+GO
 
+COMMIT;
 GO
 
