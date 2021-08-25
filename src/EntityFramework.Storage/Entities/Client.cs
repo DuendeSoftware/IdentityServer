@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -58,12 +58,12 @@ namespace Duende.IdentityServer.EntityFramework.Entities
         public string PairWiseSubjectSalt { get; set; }
         public List<ClientCorsOrigin> AllowedCorsOrigins { get; set; }
         public List<ClientProperty> Properties { get; set; }
-        public DateTime Created { get; set; } = DateTime.UtcNow;
-        public DateTime? Updated { get; set; }
-        public DateTime? LastAccessed { get; set; }
         public int? UserSsoLifetime { get; set; }
         public string UserCodeType { get; set; }
         public int DeviceCodeLifetime { get; set; } = 300;
+        public DateTime Created { get; set; } = DateTime.UtcNow;
+        public DateTime? Updated { get; set; }
+        public DateTime? LastAccessed { get; set; }
         public bool NonEditable { get; set; }
     }
 }
