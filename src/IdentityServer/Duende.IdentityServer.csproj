@@ -3,7 +3,6 @@
   <PropertyGroup>
     <PackageId>Duende.IdentityServer</PackageId>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>10.0</LangVersion>
       
     <Description>OpenID Connect and OAuth 2.0 Framework for ASP.NET Core</Description>
     
