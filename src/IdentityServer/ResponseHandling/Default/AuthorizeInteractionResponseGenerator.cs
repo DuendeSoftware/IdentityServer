@@ -90,6 +90,7 @@ namespace Duende.IdentityServer.ResponseHandling
                     AuthorizationError.ConsentRequired => OidcConstants.AuthorizeErrors.ConsentRequired,
                     AuthorizationError.InteractionRequired => OidcConstants.AuthorizeErrors.InteractionRequired,
                     AuthorizationError.LoginRequired => OidcConstants.AuthorizeErrors.LoginRequired,
+                    AuthorizationError.TemporarilyUnavailable => OidcConstants.AuthorizeErrors.TemporarilyUnavailable,
                     _ => OidcConstants.AuthorizeErrors.AccessDenied
                 };
                 
@@ -306,6 +307,7 @@ namespace Duende.IdentityServer.ResponseHandling
                             AuthorizationError.ConsentRequired => OidcConstants.AuthorizeErrors.ConsentRequired,
                             AuthorizationError.InteractionRequired => OidcConstants.AuthorizeErrors.InteractionRequired,
                             AuthorizationError.LoginRequired => OidcConstants.AuthorizeErrors.LoginRequired,
+                            AuthorizationError.TemporarilyUnavailable => OidcConstants.AuthorizeErrors.TemporarilyUnavailable,
                             _ => OidcConstants.AuthorizeErrors.AccessDenied
                         };
                         

@@ -273,5 +273,48 @@ namespace IntegrationTests.Endpoints.Authorize
             authorization.Error.Should().Be("access_denied");
             authorization.State.Should().Be("123_state");
         }
+
+        [Theory]
+        [InlineData((Type) null)]
+        [InlineData(typeof(QueryStringAuthorizationParametersMessageStore))]
+        [InlineData(typeof(DistributedCacheAuthorizationParametersMessageStore))]
+        [Trait("Category", Category)]
+        public async Task consent_response_of_temporarily_unavailable_should_return_error_to_client(Type storeType)
+        {
+            if (storeType != null)
+            {
+                _mockPipeline.OnPostConfigureServices += services =>
+                {
+                    services.AddTransient(typeof(IAuthorizationParametersMessageStore), storeType);
+                };
+                _mockPipeline.Initialize();
+            }
+
+            await _mockPipeline.LoginAsync("bob");
+
+            _mockPipeline.ConsentResponse = new ConsentResponse()
+            {
+                Error = AuthorizationError.TemporarilyUnavailable,
+                ErrorDescription = "some description"
+            };
+            _mockPipeline.BrowserClient.StopRedirectingAfter = 2;
+
+            var url = _mockPipeline.CreateAuthorizeUrl(
+                clientId: "client2",
+                responseType: "id_token token",
+                scope: "openid profile api1 api2",
+                redirectUri: "https://client2/callback",
+                state: "123_state",
+                nonce: "123_nonce");
+            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+            response.Headers.Location.ToString().Should().StartWith("https://client2/callback");
+
+            var authorization = new IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
+            authorization.IsError.Should().BeTrue();
+            authorization.Error.Should().Be("temporarily_unavailable");
+            authorization.ErrorDescription.Should().Be("some description");
+        }
     }
 }

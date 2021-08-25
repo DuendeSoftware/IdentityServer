@@ -78,7 +78,8 @@ namespace Duende.IdentityServer.Endpoints.Results
                 Response.Error == OidcConstants.AuthorizeErrors.AccountSelectionRequired ||
                 Response.Error == OidcConstants.AuthorizeErrors.LoginRequired ||
                 Response.Error == OidcConstants.AuthorizeErrors.ConsentRequired ||
-                Response.Error == OidcConstants.AuthorizeErrors.InteractionRequired;
+                Response.Error == OidcConstants.AuthorizeErrors.InteractionRequired || 
+                Response.Error == OidcConstants.AuthorizeErrors.TemporarilyUnavailable;
 
             if (isSafeError)
             {
