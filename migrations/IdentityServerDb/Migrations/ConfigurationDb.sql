@@ -286,7 +286,7 @@ GO
 CREATE UNIQUE INDEX [IX_ApiResourceClaims_ApiResourceId_Type] ON [ApiResourceClaims] ([ApiResourceId], [Type]);
 GO
 
-CREATE UNIQUE INDEX [IX_ApiResourceProperties_ApiResourceId_Key_Value] ON [ApiResourceProperties] ([ApiResourceId], [Key], [Value]);
+CREATE UNIQUE INDEX [IX_ApiResourceProperties_ApiResourceId_Key] ON [ApiResourceProperties] ([ApiResourceId], [Key]);
 GO
 
 CREATE UNIQUE INDEX [IX_ApiResources_Name] ON [ApiResources] ([Name]);
@@ -301,13 +301,13 @@ GO
 CREATE UNIQUE INDEX [IX_ApiScopeClaims_ScopeId_Type] ON [ApiScopeClaims] ([ScopeId], [Type]);
 GO
 
-CREATE UNIQUE INDEX [IX_ApiScopeProperties_ScopeId_Key_Value] ON [ApiScopeProperties] ([ScopeId], [Key], [Value]);
+CREATE UNIQUE INDEX [IX_ApiScopeProperties_ScopeId_Key] ON [ApiScopeProperties] ([ScopeId], [Key]);
 GO
 
 CREATE UNIQUE INDEX [IX_ApiScopes_Name] ON [ApiScopes] ([Name]);
 GO
 
-CREATE UNIQUE INDEX [IX_ClientClaims_ClientId_Type] ON [ClientClaims] ([ClientId], [Type]);
+CREATE UNIQUE INDEX [IX_ClientClaims_ClientId_Type_Value] ON [ClientClaims] ([ClientId], [Type], [Value]);
 GO
 
 CREATE UNIQUE INDEX [IX_ClientCorsOrigins_ClientId_Origin] ON [ClientCorsOrigins] ([ClientId], [Origin]);
@@ -322,7 +322,7 @@ GO
 CREATE UNIQUE INDEX [IX_ClientPostLogoutRedirectUris_ClientId_PostLogoutRedirectUri] ON [ClientPostLogoutRedirectUris] ([ClientId], [PostLogoutRedirectUri]);
 GO
 
-CREATE UNIQUE INDEX [IX_ClientProperties_ClientId_Key_Value] ON [ClientProperties] ([ClientId], [Key], [Value]);
+CREATE UNIQUE INDEX [IX_ClientProperties_ClientId_Key] ON [ClientProperties] ([ClientId], [Key]);
 GO
 
 CREATE UNIQUE INDEX [IX_ClientRedirectUris_ClientId_RedirectUri] ON [ClientRedirectUris] ([ClientId], [RedirectUri]);
@@ -343,14 +343,14 @@ GO
 CREATE UNIQUE INDEX [IX_IdentityResourceClaims_IdentityResourceId_Type] ON [IdentityResourceClaims] ([IdentityResourceId], [Type]);
 GO
 
-CREATE UNIQUE INDEX [IX_IdentityResourceProperties_IdentityResourceId_Key_Value] ON [IdentityResourceProperties] ([IdentityResourceId], [Key], [Value]);
+CREATE UNIQUE INDEX [IX_IdentityResourceProperties_IdentityResourceId_Key] ON [IdentityResourceProperties] ([IdentityResourceId], [Key]);
 GO
 
 CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20210813143756_Configuration', N'6.0.0-preview.6.21352.1');
+VALUES (N'20210825140225_Configuration', N'6.0.0-preview.6.21352.1');
 GO
 
 COMMIT;

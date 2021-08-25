@@ -503,9 +503,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ApiResourceProperties_ApiResourceId_Key_Value",
+                name: "IX_ApiResourceProperties_ApiResourceId_Key",
                 table: "ApiResourceProperties",
-                columns: new[] { "ApiResourceId", "Key", "Value" },
+                columns: new[] { "ApiResourceId", "Key" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -532,9 +532,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ApiScopeProperties_ScopeId_Key_Value",
+                name: "IX_ApiScopeProperties_ScopeId_Key",
                 table: "ApiScopeProperties",
-                columns: new[] { "ScopeId", "Key", "Value" },
+                columns: new[] { "ScopeId", "Key" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -544,9 +544,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClientClaims_ClientId_Type",
+                name: "IX_ClientClaims_ClientId_Type_Value",
                 table: "ClientClaims",
-                columns: new[] { "ClientId", "Type" },
+                columns: new[] { "ClientId", "Type", "Value" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -574,9 +574,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClientProperties_ClientId_Key_Value",
+                name: "IX_ClientProperties_ClientId_Key",
                 table: "ClientProperties",
-                columns: new[] { "ClientId", "Key", "Value" },
+                columns: new[] { "ClientId", "Key" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -615,9 +615,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_IdentityResourceProperties_IdentityResourceId_Key_Value",
+                name: "IX_IdentityResourceProperties_IdentityResourceId_Key",
                 table: "IdentityResourceProperties",
-                columns: new[] { "IdentityResourceId", "Key", "Value" },
+                columns: new[] { "IdentityResourceId", "Key" },
                 unique: true);
 
             migrationBuilder.CreateIndex(

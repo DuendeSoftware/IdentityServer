@@ -106,7 +106,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
                 claim.Property(x => x.Type).HasMaxLength(250).IsRequired();
                 claim.Property(x => x.Value).HasMaxLength(250).IsRequired();
 
-                claim.HasIndex(x => new { x.ClientId, x.Type }).IsUnique();
+                claim.HasIndex(x => new { x.ClientId, x.Type, x.Value }).IsUnique();
             });
 
             modelBuilder.Entity<ClientIdPRestriction>(idPRestriction =>
@@ -131,7 +131,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
                 property.Property(x => x.Key).HasMaxLength(250).IsRequired();
                 property.Property(x => x.Value).HasMaxLength(2000).IsRequired();
 
-                property.HasIndex(x => new { x.ClientId, x.Key, x.Value }).IsUnique();
+                property.HasIndex(x => new { x.ClientId, x.Key }).IsUnique();
             });
         }
 
@@ -236,7 +236,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
                 property.Property(x => x.Key).HasMaxLength(250).IsRequired();
                 property.Property(x => x.Value).HasMaxLength(2000).IsRequired();
 
-                property.HasIndex(x => new { x.IdentityResourceId, x.Key, x.Value }).IsUnique();
+                property.HasIndex(x => new { x.IdentityResourceId, x.Key }).IsUnique();
             });
 
 
@@ -291,7 +291,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
                 property.Property(x => x.Key).HasMaxLength(250).IsRequired();
                 property.Property(x => x.Value).HasMaxLength(2000).IsRequired();
 
-                property.HasIndex(x => new { x.ApiResourceId, x.Key, x.Value }).IsUnique();
+                property.HasIndex(x => new { x.ApiResourceId, x.Key }).IsUnique();
             });
 
 
@@ -321,7 +321,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
                 property.Property(x => x.Key).HasMaxLength(250).IsRequired();
                 property.Property(x => x.Value).HasMaxLength(2000).IsRequired();
 
-                property.HasIndex(x => new { x.ScopeId, x.Key, x.Value }).IsUnique();
+                property.HasIndex(x => new { x.ScopeId, x.Key }).IsUnique();
             });
         }
 

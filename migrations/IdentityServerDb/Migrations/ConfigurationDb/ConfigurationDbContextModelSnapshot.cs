@@ -117,7 +117,7 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApiResourceId", "Key", "Value")
+                    b.HasIndex("ApiResourceId", "Key")
                         .IsUnique();
 
                     b.ToTable("ApiResourceProperties", (string)null);
@@ -268,7 +268,7 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ScopeId", "Key", "Value")
+                    b.HasIndex("ScopeId", "Key")
                         .IsUnique();
 
                     b.ToTable("ApiScopeProperties", (string)null);
@@ -454,7 +454,7 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId", "Type")
+                    b.HasIndex("ClientId", "Type", "Value")
                         .IsUnique();
 
                     b.ToTable("ClientClaims", (string)null);
@@ -574,7 +574,7 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId", "Key", "Value")
+                    b.HasIndex("ClientId", "Key")
                         .IsUnique();
 
                     b.ToTable("ClientProperties", (string)null);
@@ -792,7 +792,7 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdentityResourceId", "Key", "Value")
+                    b.HasIndex("IdentityResourceId", "Key")
                         .IsUnique();
 
                     b.ToTable("IdentityResourceProperties", (string)null);
