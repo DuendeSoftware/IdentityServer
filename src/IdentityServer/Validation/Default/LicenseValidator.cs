@@ -62,10 +62,8 @@ namespace Duende.IdentityServer.Validation
             }
             else
             {
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug("The validated licence key details: {@license}", _license);
-                }
+                Action<string, object[]> func = _license.ISV ? _logger.LogTrace : _logger.LogDebug;
+                func.Invoke("The validated licence key details: {@license}", new[] { _license });
 
                 if (_license.Expiration.HasValue)
                 {
@@ -101,15 +99,16 @@ namespace Duende.IdentityServer.Validation
             {
                 if (_license.Expiration.HasValue)
                 {
-                    _logger.LogInformation(
-                        "You have a valid license key for Duende IdentityServer {edition} edition for use at {licenseCompany}. The license expires on {licenseExpiration}.",
-                        _license.Edition, _license.CompanyName, _license.Expiration.Value.ToLongDateString());
+                    Action<string, object[]> log = _license.ISV ? _logger.LogTrace : _logger.LogInformation;
+                    log.Invoke("You have a valid license key for Duende IdentityServer {edition} edition for use at {licenseCompany}. The license expires on {licenseExpiration}.",
+                        new object[] { _license.Edition, _license.CompanyName, _license.Expiration.Value.ToLongDateString() });
                 }
                 else
                 {
-                    _logger.LogInformation(
+                    Action<string, object[]> log = _license.ISV ? _logger.LogTrace : _logger.LogInformation;
+                    log.Invoke(
                         "You have a valid license key for Duende IdentityServer {edition} edition for use at {licenseCompany}.",
-                        _license.Edition, _license.CompanyName);
+                        new object[] { _license.Edition, _license.CompanyName });
                 }
             }
         }
