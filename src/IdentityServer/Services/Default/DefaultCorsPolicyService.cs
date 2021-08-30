@@ -15,6 +15,9 @@ namespace Duende.IdentityServer.Services
     /// </summary>
     public class DefaultCorsPolicyService : ICorsPolicyService
     {
+        private static readonly Task<bool> TrueTask = Task.FromResult(true);
+        private static readonly Task<bool> FalseTask = Task.FromResult(false);
+
         /// <summary>
         /// Logger
         /// </summary>
@@ -57,7 +60,7 @@ namespace Duende.IdentityServer.Services
                 if (AllowAll)
                 {
                     Logger.LogDebug("AllowAll true, so origin: {0} is allowed", origin);
-                    return Task.FromResult(true);
+                    return TrueTask;
                 }
 
                 if (AllowedOrigins != null)
@@ -65,7 +68,7 @@ namespace Duende.IdentityServer.Services
                     if (AllowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
                     {
                         Logger.LogDebug("AllowedOrigins configured and origin {0} is allowed", origin);
-                        return Task.FromResult(true);
+                        return TrueTask;
                     }
                     else
                     {
@@ -76,7 +79,7 @@ namespace Duende.IdentityServer.Services
                 Logger.LogDebug("Exiting; origin {0} is not allowed", origin);
             }
 
-            return Task.FromResult(false);
+            return FalseTask;
         }
     }
 }
