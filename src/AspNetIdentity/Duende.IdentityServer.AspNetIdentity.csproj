@@ -1,20 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <PackageId>Duende.IdentityServer.AspNetIdentity</PackageId>
-    <TargetFrameworks>net6.0</TargetFrameworks>
-    
-    <Description>ASP.NET Core Identity Integration for Duende IdentityServer</Description>
-    <AssemblyName>Duende.IdentityServer.AspNetIdentity</AssemblyName>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+    <PropertyGroup>
+        <PackageId>Duende.IdentityServer.AspNetIdentity</PackageId>
+        <TargetFramework>net6.0</TargetFramework>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-    
-  <ItemGroup>
-    <ProjectReference Include="..\IdentityServer\Duende.IdentityServer.csproj" />
-  </ItemGroup>
+        <Description>ASP.NET Core Identity Integration for Duende IdentityServer</Description>
+        <AssemblyName>Duende.IdentityServer.AspNetIdentity</AssemblyName>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\IdentityServer\Duende.IdentityServer.csproj" />
+    </ItemGroup>
 
 </Project>
