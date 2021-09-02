@@ -1,16 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <PackageId>Duende.IdentityServer.EntityFramework</PackageId>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <PropertyGroup>
+        <PackageId>Duende.IdentityServer.EntityFramework</PackageId>
+        <TargetFramework>net6.0</TargetFramework>
 
-    <Description>EntityFramework persistence layer for Duende IdentityServer</Description>
-    <AssemblyName>Duende.IdentityServer.EntityFramework</AssemblyName>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+        <Description>EntityFramework persistence layer for Duende IdentityServer</Description>
+        <AssemblyName>Duende.IdentityServer.EntityFramework</AssemblyName>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\EntityFramework.Storage\Duende.IdentityServer.EntityFramework.Storage.csproj" />
-    <ProjectReference Include="..\IdentityServer\Duende.IdentityServer.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\EntityFramework.Storage\Duende.IdentityServer.EntityFramework.Storage.csproj" />
+        <ProjectReference Include="..\IdentityServer\Duende.IdentityServer.csproj" />
+    </ItemGroup>
 </Project>
