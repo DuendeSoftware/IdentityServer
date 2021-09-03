@@ -339,7 +339,7 @@ namespace Duende.IdentityServer.Validation
                 return Invalid(request, description: "Invalid redirect_uri");
             }
 
-            if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out _))
+            if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
             {
                 LogError("malformed redirect_uri", redirectUri, request);
                 return Invalid(request, description: "Invalid redirect_uri");
