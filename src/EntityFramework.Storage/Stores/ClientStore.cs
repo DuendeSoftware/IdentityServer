@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.Stores;
@@ -50,23 +51,32 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </returns>
         public virtual async Task<Duende.IdentityServer.Models.Client> FindClientByIdAsync(string clientId)
         {
-            var query = Context.Clients
-                        .Where(x => x.ClientId == clientId)
-                        .Include(x => x.AllowedCorsOrigins)
-                        .Include(x => x.AllowedGrantTypes)
-                        .Include(x => x.AllowedScopes)
-                        .Include(x => x.Claims)
-                        .Include(x => x.ClientSecrets)
-                        .Include(x => x.IdentityProviderRestrictions)
-                        .Include(x => x.PostLogoutRedirectUris)
-                        .Include(x => x.Properties)
-                        .Include(x => x.RedirectUris)
-                        .AsNoTracking(); 
-            
-            var client = await query.SingleOrDefaultAsync();
-            if (client == null) return null;
+            var results = await Context.Clients
+                .Where(x => x.ClientId == clientId)
+                .Include(x => x.AllowedCorsOrigins)
+                .Include(x => x.AllowedGrantTypes)
+                .Include(x => x.AllowedScopes)
+                .Include(x => x.Claims)
+                .Include(x => x.ClientSecrets)
+                .Include(x => x.IdentityProviderRestrictions)
+                .Include(x => x.PostLogoutRedirectUris)
+                .Include(x => x.Properties)
+                .Include(x => x.RedirectUris)
+                .AsNoTracking()
+                .ToArrayAsync();
 
-            var model = client.ToModel();
+            Client entity;
+            try
+            {
+                entity = results.SingleOrDefault(x => x.ClientId == clientId);
+            }
+            catch (InvalidOperationException)
+            {
+                Logger.LogError("Duplicate Client entries found for clientId {clientId}", clientId);
+                return null;
+            }
+
+            var model = entity.ToModel();
 
             Logger.LogDebug("{clientId} found in database: {clientIdFound}", clientId, model != null);
 
