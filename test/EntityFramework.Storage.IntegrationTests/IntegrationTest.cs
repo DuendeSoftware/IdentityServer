@@ -37,8 +37,8 @@ namespace IntegrationTests
                 TestDatabaseProviders = new TheoryData<DbContextOptions<TDbContext>>
                 {
                     DatabaseProviderBuilder.BuildInMemory<TDbContext>(typeof(TClass).Name),
-                    //DatabaseProviderBuilder.BuildSqlite<TDbContext>(typeof(TClass).Name),
-                    //DatabaseProviderBuilder.BuildLocalDb<TDbContext>(typeof(TClass).Name)
+                    DatabaseProviderBuilder.BuildSqlite<TDbContext>(typeof(TClass).Name),
+                    DatabaseProviderBuilder.BuildLocalDb<TDbContext>(typeof(TClass).Name)
                 };
             }
             else
