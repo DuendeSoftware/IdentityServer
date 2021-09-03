@@ -47,8 +47,8 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <inheritdoc/>
         public virtual async Task StoreAsync(Duende.IdentityServer.Models.PersistedGrant token)
         {
-            var existing = (await Context.PersistedGrants.Where(x => x.Key == token.Key).ToArrayAsync())
-                .SingleOrDefault(x => x.Key == token.Key);
+            var existing = await GetEntityAsync(token.Key);
+
             if (existing == null)
             {
                 Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
@@ -76,8 +76,8 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <inheritdoc/>
         public virtual async Task<Duende.IdentityServer.Models.PersistedGrant> GetAsync(string key)
         {
-            var persistedGrant = (await Context.PersistedGrants.AsNoTracking().Where(x => x.Key == key).ToArrayAsync())
-                .SingleOrDefault(x => x.Key == key);
+            var persistedGrant = await GetEntityAsync(key, true);
+
             var model = persistedGrant?.ToModel();
 
             Logger.LogDebug("{persistedGrantKey} found in database: {persistedGrantKeyFound}", key, model != null);
@@ -92,7 +92,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
 
             var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter).ToArrayAsync();
             persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
-            
+
             var model = persistedGrants.Select(x => x.ToModel());
 
             Logger.LogDebug("{persistedGrantCount} persisted grants found for {@filter}", persistedGrants.Length, filter);
@@ -103,9 +103,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <inheritdoc/>
         public virtual async Task RemoveAsync(string key)
         {
-            var persistedGrant = (await Context.PersistedGrants.Where(x => x.Key == key).ToArrayAsync())
-                .SingleOrDefault(x => x.Key == key);
-            if (persistedGrant!= null)
+            var persistedGrant = await GetEntityAsync(key);
+
+            if (persistedGrant != null)
             {
                 Logger.LogDebug("removing {persistedGrantKey} persisted grant from database", key);
 
@@ -115,7 +115,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 {
                     await Context.SaveChangesAsync();
                 }
-                catch(DbUpdateConcurrencyException ex)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     Logger.LogInformation("exception removing {persistedGrantKey} persisted grant from database: {error}", key, ex.Message);
                 }
@@ -169,6 +169,31 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             }
 
             return query;
+        }
+
+
+        private async Task<PersistedGrant> GetEntityAsync(string key, bool readOnly = false)
+        {
+            var query = Context.PersistedGrants.AsQueryable();
+            if (readOnly)
+            {
+                query = query.AsNoTracking();
+            }
+
+            var results = (await query.Where(x => x.Key == key).ToArrayAsync());
+
+            PersistedGrant entity;
+            try
+            {
+                entity = results.SingleOrDefault(x => x.Key == key);
+            }
+            catch (InvalidOperationException)
+            {
+                Logger.LogError("Duplicate PersistedGrant entries found for key {key}", key);
+                return null;
+            }
+
+            return entity;
         }
     }
 }

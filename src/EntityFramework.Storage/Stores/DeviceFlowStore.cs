@@ -44,8 +44,8 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <param name="serializer">The serializer</param>
         /// <param name="logger">The logger.</param>
         public DeviceFlowStore(
-            IPersistedGrantDbContext context, 
-            IPersistentGrantSerializer serializer, 
+            IPersistedGrantDbContext context,
+            IPersistentGrantSerializer serializer,
             ILogger<DeviceFlowStore> logger)
         {
             Context = context;
@@ -74,8 +74,8 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <returns></returns>
         public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
         {
-            var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.UserCode == userCode).ToArrayAsync())
-                .SingleOrDefault(x => x.UserCode == userCode);
+            var deviceFlowCodes = await FindEntityByUserCodeAsync(userCode, true);
+
             var model = ToModel(deviceFlowCodes?.Data);
 
             Logger.LogDebug("{userCode} found in database: {userCodeFound}", userCode, model != null);
@@ -90,8 +90,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <returns></returns>
         public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
         {
-            var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.DeviceCode == deviceCode).ToArrayAsync())
-                .SingleOrDefault(x => x.DeviceCode == deviceCode);
+            var deviceFlowCodes = await FindEntityByDeviceCodeAsync(deviceCode, true);
             var model = ToModel(deviceFlowCodes?.Data);
 
             Logger.LogDebug("{deviceCode} found in database: {deviceCodeFound}", deviceCode, model != null);
@@ -107,8 +106,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <returns></returns>
         public virtual async Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
         {
-            var existing = (await Context.DeviceFlowCodes.Where(x => x.UserCode == userCode).ToArrayAsync())
-                .SingleOrDefault(x => x.UserCode == userCode);
+            var existing = await FindEntityByUserCodeAsync(userCode);
             if (existing == null)
             {
                 Logger.LogError("{userCode} not found in database", userCode);
@@ -138,10 +136,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <returns></returns>
         public virtual async Task RemoveByDeviceCodeAsync(string deviceCode)
         {
-            var deviceFlowCodes = (await Context.DeviceFlowCodes.Where(x => x.DeviceCode == deviceCode).ToArrayAsync())
-                .SingleOrDefault(x => x.DeviceCode == deviceCode);
+            var deviceFlowCodes = await FindEntityByDeviceCodeAsync(deviceCode);
 
-            if(deviceFlowCodes != null)
+            if (deviceFlowCodes != null)
             {
                 Logger.LogDebug("removing {deviceCode} device code from database", deviceCode);
 
@@ -195,6 +192,51 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             if (entity == null) return null;
 
             return Serializer.Deserialize<DeviceCode>(entity);
+        }
+
+        private async Task<DeviceFlowCodes> FindEntityByUserCodeAsync(string userCode, bool readOnly = false)
+        {
+            var query = Context.DeviceFlowCodes.AsQueryable();
+            if (readOnly)
+            {
+                query = query.AsNoTracking();
+            }
+            var results = (await query.Where(x => x.UserCode == userCode).ToArrayAsync());
+
+            DeviceFlowCodes entity;
+            try
+            {
+                entity = results.SingleOrDefault(x => x.UserCode == userCode);
+            }
+            catch (InvalidOperationException)
+            {
+                Logger.LogError("Duplicate DeviceFlowCodes entries found for userCode {userCode}", userCode);
+                return null;
+            }
+
+            return entity;
+        }
+        private async Task<DeviceFlowCodes> FindEntityByDeviceCodeAsync(string deviceCode, bool readOnly = false)
+        {
+            var query = Context.DeviceFlowCodes.AsQueryable();
+            if (readOnly)
+            {
+                query = query.AsNoTracking();
+            }
+            var results = (await query.Where(x => x.DeviceCode == deviceCode).ToArrayAsync());
+
+            DeviceFlowCodes entity;
+            try
+            {
+                entity = results.SingleOrDefault(x => x.DeviceCode == deviceCode);
+            }
+            catch (InvalidOperationException)
+            {
+                Logger.LogError("Duplicate DeviceFlowCodes entries found for deviceCode {deviceCode}", deviceCode);
+                return null;
+            }
+
+            return entity;
         }
     }
 }
