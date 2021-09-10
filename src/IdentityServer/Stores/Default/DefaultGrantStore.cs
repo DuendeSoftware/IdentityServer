@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -68,6 +70,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         private const string KeySeparator = ":";
+        const string HexEncodingFormatSuffix = "-1";
 
         /// <summary>
         /// Gets the hashed key.
@@ -76,7 +79,21 @@ namespace Duende.IdentityServer.Stores
         /// <returns></returns>
         protected virtual string GetHashedKey(string value)
         {
-            return (value + KeySeparator + GrantType).Sha256();
+            var key = (value + KeySeparator + GrantType);
+
+            if (value.EndsWith(HexEncodingFormatSuffix))
+            {
+                // newer format >= v6; uses hex encoding to avoid colation issues
+                using (var sha = SHA256.Create())
+                {
+                    var bytes = Encoding.UTF8.GetBytes(key);
+                    var hash = sha.ComputeHash(bytes);
+                    return BitConverter.ToString(hash).Replace("-", "");
+                }
+            }
+
+            // old format <= v5
+            return key.Sha256();
         }
 
         /// <summary>
@@ -121,7 +138,7 @@ namespace Duende.IdentityServer.Stores
         /// <returns></returns>
         protected virtual async Task<string> CreateItemAsync(T item, string clientId, string subjectId, string sessionId, string description, DateTime created, int lifetime)
         {
-            var handle = await HandleGenerationService.GenerateAsync();
+            var handle = await HandleGenerationService.GenerateAsync() + HexEncodingFormatSuffix;
             await StoreItemAsync(handle, item, clientId, subjectId, sessionId, description, created, created.AddSeconds(lifetime));
             return handle;
         }
