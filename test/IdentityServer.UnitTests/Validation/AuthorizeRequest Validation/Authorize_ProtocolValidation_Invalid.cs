@@ -157,14 +157,16 @@ namespace UnitTests.Validation.AuthorizeRequest_Validation
             result.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
         }
 
-        [Fact]
+        [Theory]
+        [InlineData("malformed")]
+        [InlineData("/malformed")]
         [Trait("Category", Category)]
-        public async Task Malformed_RedirectUri()
+        public async Task Malformed_RedirectUri(string redirectUri)
         {
             var parameters = new NameValueCollection();
             parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "client");
             parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid");
-            parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "malformed");
+            parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, redirectUri);
             parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Code);
 
             var validator = Factory.CreateAuthorizeRequestValidator();

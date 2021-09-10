@@ -146,7 +146,7 @@ namespace Duende.IdentityServer.Models
             {
                 foreach (var item in list)
                 {
-                    if (!Uri.TryCreate(item, UriKind.Absolute, out _))
+                    if (!Uri.IsWellFormedUriString(item, UriKind.Absolute))
                     {
                         logger.LogDebug("Resource indicator {resource} is not a valid URI.", item);
                         return false;
