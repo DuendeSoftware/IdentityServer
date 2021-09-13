@@ -42,7 +42,6 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// Initializes a new instance of the <see cref="ConfigurationDbContext"/> class.
         /// </summary>
         /// <param name="options">The options.</param>
-        /// <param name="storeOptions">The store options.</param>
         /// <exception cref="ArgumentNullException">storeOptions</exception>
         public ConfigurationDbContext(DbContextOptions<TContext> options)
             : base(options)
