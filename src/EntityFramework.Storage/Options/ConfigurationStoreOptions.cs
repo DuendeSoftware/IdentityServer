@@ -212,8 +212,14 @@ namespace Duende.IdentityServer.EntityFramework.Options
         /// </summary>
         public TableConfiguration IdentityProvider { get; set; } = new TableConfiguration("IdentityProviders");
 
+        /// <summary>
+        /// Gets or set if EF DbContext pooling is enabled.
+        /// </summary>
         public bool EnablePooling { get; set; } = false;
 
-        public int PoolSize { get; set; } = 1024;
+        /// <summary>
+        /// Gets or set the pool size to use when DbContext pooling is enabled. If not set, the EF default is used.
+        /// </summary>
+        public int? PoolSize { get; set; }
     }
 }

@@ -94,8 +94,14 @@ namespace Duende.IdentityServer.EntityFramework.Options
         /// </value>
         public int TokenCleanupBatchSize { get; set; } = 100;
 
+        /// <summary>
+        /// Gets or set if EF DbContext pooling is enabled.
+        /// </summary>
         public bool EnablePooling { get; set; } = false;
 
+        /// <summary>
+        /// Gets or set the pool size to use when DbContext pooling is enabled. If not set, the EF default is used.
+        /// </summary>
         public int? PoolSize { get; set; }
     }
 }
