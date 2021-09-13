@@ -17,7 +17,7 @@ namespace IntegrationTests.DbContexts
         {
             foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<ConfigurationDbContext>)y)).ToList())
             {
-                using (var context = new ConfigurationDbContext(options, StoreOptions))
+                using (var context = new ConfigurationDbContext(options))
                     context.Database.EnsureCreated();
             }
         }
@@ -25,7 +25,7 @@ namespace IntegrationTests.DbContexts
         [Theory, MemberData(nameof(TestDatabaseProviders))]
         public void CanAddAndDeleteClientScopes(DbContextOptions<ConfigurationDbContext> options)
         {
-            using (var db = new ConfigurationDbContext(options, StoreOptions))
+            using (var db = new ConfigurationDbContext(options))
             {
                 db.Clients.Add(new Client
                 {
@@ -36,7 +36,7 @@ namespace IntegrationTests.DbContexts
                 db.SaveChanges();
             }
 
-            using (var db = new ConfigurationDbContext(options, StoreOptions))
+            using (var db = new ConfigurationDbContext(options))
             {
                 // explicit include due to lack of EF Core lazy loading
                 var client = db.Clients.Include(x => x.AllowedScopes).First();
@@ -49,7 +49,7 @@ namespace IntegrationTests.DbContexts
                 db.SaveChanges();
             }
 
-            using (var db = new ConfigurationDbContext(options, StoreOptions))
+            using (var db = new ConfigurationDbContext(options))
             {
                 var client = db.Clients.Include(x => x.AllowedScopes).First();
                 var scope = client.AllowedScopes.First();
@@ -59,7 +59,7 @@ namespace IntegrationTests.DbContexts
                 db.SaveChanges();
             }
 
-            using (var db = new ConfigurationDbContext(options, StoreOptions))
+            using (var db = new ConfigurationDbContext(options))
             {
                 var client = db.Clients.Include(x => x.AllowedScopes).First();
 
@@ -70,7 +70,7 @@ namespace IntegrationTests.DbContexts
         [Theory, MemberData(nameof(TestDatabaseProviders))]
         public void CanAddAndDeleteClientRedirectUri(DbContextOptions<ConfigurationDbContext> options)
         {
-            using (var db = new ConfigurationDbContext(options, StoreOptions))
+            using (var db = new ConfigurationDbContext(options))
             {
                 db.Clients.Add(new Client
                 {
@@ -81,7 +81,7 @@ namespace IntegrationTests.DbContexts
                 db.SaveChanges();
             }
 
-            using (var db = new ConfigurationDbContext(options, StoreOptions))
+            using (var db = new ConfigurationDbContext(options))
             {
                 var client = db.Clients.Include(x => x.RedirectUris).First();
 
@@ -93,7 +93,7 @@ namespace IntegrationTests.DbContexts
                 db.SaveChanges();
             }
 
-            using (var db = new ConfigurationDbContext(options, StoreOptions))
+            using (var db = new ConfigurationDbContext(options))
             {
                 var client = db.Clients.Include(x => x.RedirectUris).First();
                 var redirectUri = client.RedirectUris.First();
@@ -103,7 +103,7 @@ namespace IntegrationTests.DbContexts
                 db.SaveChanges();
             }
 
-            using (var db = new ConfigurationDbContext(options, StoreOptions))
+            using (var db = new ConfigurationDbContext(options))
             {
                 var client = db.Clients.Include(x => x.RedirectUris).First();
 
