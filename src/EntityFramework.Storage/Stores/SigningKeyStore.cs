@@ -59,7 +59,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <returns></returns>
         public async Task<IEnumerable<SerializedKey>> LoadKeysAsync()
         {
-            var entities = await Context.Keys.Where(x => x.Use == Use).ToArrayAsync();
+            var entities = await Context.Keys.Where(x => x.Use == Use)
+                .AsNoTracking()
+                .ToArrayAsync(CancellationTokenService?.CancellationToken ?? default);
             return entities.Select(key => new SerializedKey
             {
                 Id = key.Id,
@@ -91,7 +93,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 IsX509Certificate = key.IsX509Certificate
             };
             Context.Keys.Add(entity);
-            return Context.SaveChangesAsync();
+            return Context.SaveChangesAsync(CancellationTokenService?.CancellationToken ?? default);
         }
 
         /// <summary>
@@ -101,13 +103,14 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <returns></returns>
         public async Task DeleteKeyAsync(string id)
         {
-            var item = await Context.Keys.FirstOrDefaultAsync(x => x.Use == Use && x.Id == id);
+            var item = await Context.Keys.Where(x => x.Use == Use && x.Id == id)
+                .FirstOrDefaultAsync(CancellationTokenService?.CancellationToken ?? default);
             if (item != null)
             {
                 try
                 {
                     Context.Keys.Remove(item);
-                    await Context.SaveChangesAsync();
+                    await Context.SaveChangesAsync(CancellationTokenService?.CancellationToken ?? default);
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {

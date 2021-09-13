@@ -69,9 +69,10 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                         .Include(x => x.PostLogoutRedirectUris)
                         .Include(x => x.Properties)
                         .Include(x => x.RedirectUris)
-                        .AsNoTracking(); 
+                        .AsNoTracking();
             
-            var client = await query.SingleOrDefaultAsync();
+            var client = (await query.ToArrayAsync(CancellationTokenService?.CancellationToken ?? default))
+                .SingleOrDefault(x => x.ClientId == clientId);
             if (client == null) return null;
 
             var model = client.ToModel();

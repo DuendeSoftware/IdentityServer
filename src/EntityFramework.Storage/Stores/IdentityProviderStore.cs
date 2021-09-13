@@ -59,15 +59,15 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 Scheme = x.Scheme,
                 DisplayName  = x.DisplayName
             });
-            return await query.ToArrayAsync();
+            return await query.ToArrayAsync(CancellationTokenService?.CancellationToken ?? default);
         }
 
         /// <inheritdoc/>
         public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
         {
-            var query = Context.IdentityProviders.Where(x => x.Scheme == scheme);
-
-            var idp = (await query.ToArrayAsync()).SingleOrDefault(x => x.Scheme == scheme);
+            var idp = (await Context.IdentityProviders.AsNoTracking().Where(x => x.Scheme == scheme)
+                .ToArrayAsync(CancellationTokenService?.CancellationToken ?? default))
+                .SingleOrDefault(x => x.Scheme == scheme);
             if (idp == null) return null;
 
             var result = MapIdp(idp);

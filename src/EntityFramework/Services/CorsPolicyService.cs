@@ -64,7 +64,7 @@ namespace Duende.IdentityServer.EntityFramework.Services
                         where o.Origin == origin
                         select o;
 
-            var isAllowed = await query.AnyAsync();
+            var isAllowed = await query.AnyAsync(CancellationTokenService?.CancellationToken ?? default);
 
             Logger.LogDebug("Origin {origin} is allowed: {originAllowed}", origin, isAllowed);
 
