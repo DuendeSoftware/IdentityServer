@@ -46,7 +46,7 @@ namespace IntegrationTests
             {
                 TestDatabaseProviders = new TheoryData<DbContextOptions<TDbContext>>
                 {
-                    DatabaseProviderBuilder.BuildInMemory<TDbContext>(typeof(TClass).Name),
+                    DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions),
                     //DatabaseProviderBuilder.BuildSqlite<TDbContext>(typeof(TClass).Name)
                 };
                 Console.WriteLine("Skipping DB integration tests on non-Windows");
