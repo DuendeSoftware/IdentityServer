@@ -69,30 +69,11 @@ namespace UnitTests.Extensions
             CheckOrigin("https://localhost:8080/", "https://localhost:8080");
             CheckOrigin("https://localhost:8080/test", "https://localhost:8080");
             CheckOrigin("https://localhost:8080/test/resource", "https://localhost:8080");
-            CheckOrigin("test://idsvr.com", null);
-            CheckOrigin("test://idsvr.com/", null);
-            CheckOrigin("test://idsvr.com/test", null);
-            CheckOrigin("test://idsvr.com/test/resource", null);
-            CheckOrigin("test://idsvr.com:8080", null);
-            CheckOrigin("test://idsvr.com:8080/", null);
-            CheckOrigin("test://idsvr.com:8080/test", null);
-            CheckOrigin("test://idsvr.com:8080/test/resource", null);
-            CheckOrigin("test://127.0.0.1", null);
-            CheckOrigin("test://127.0.0.1/", null);
-            CheckOrigin("test://127.0.0.1/test", null);
-            CheckOrigin("test://127.0.0.1/test/resource", null);
-            CheckOrigin("test://127.0.0.1:8080", null);
-            CheckOrigin("test://127.0.0.1:8080/", null);
-            CheckOrigin("test://127.0.0.1:8080/test", null);
-            CheckOrigin("test://127.0.0.1:8080/test/resource", null);
-            CheckOrigin("test://localhost", null);
-            CheckOrigin("test://localhost/", null);
-            CheckOrigin("test://localhost/test", null);
-            CheckOrigin("test://localhost/test/resource", null);
-            CheckOrigin("test://localhost:8080", null);
-            CheckOrigin("test://localhost:8080/", null);
-            CheckOrigin("test://localhost:8080/test", null);
-            CheckOrigin("test://localhost:8080/test/resource", null);
+            CheckOrigin("test://idsvr.com/test/resource", "test://idsvr.com");
+            CheckOrigin("test://idsvr.com:8080/test/resource", "test://idsvr.com:8080");
+            CheckOrigin("test://127.0.0.1:8080/test/resource", "test://127.0.0.1:8080");
+            CheckOrigin("test://localhost/test/resource", "test://localhost");
+            CheckOrigin("test://localhost:8080/test/resource", "test://localhost:8080");
         }
 
 

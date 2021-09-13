@@ -3,6 +3,8 @@
 
 #pragma warning disable 1591
 
+using System;
+
 namespace Duende.IdentityServer.EntityFramework.Entities
 {
     /// <summary>
@@ -36,5 +38,10 @@ namespace Duende.IdentityServer.EntityFramework.Entities
         /// Seralized value for the identity provider properties dictionary.
         /// </summary>
         public string Properties { get; set; }
+
+        public DateTime Created { get; set; } = DateTime.UtcNow;
+        public DateTime? Updated { get; set; }
+        public DateTime? LastAccessed { get; set; }
+        public bool NonEditable { get; set; }
     }
 }

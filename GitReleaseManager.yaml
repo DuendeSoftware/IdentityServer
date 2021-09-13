@@ -15,6 +15,7 @@ issue-labels-include:
 - new feature
 - enhancement
 - breaking change
+- schema change
 - internal
 issue-labels-exclude:
 - planned feature

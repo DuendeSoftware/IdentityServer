@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
 
-    <PackageId>Duende.IdentityServer.Storage</PackageId>
-    <Description>Storage interfaces and models for Duende IdentityServer</Description>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+        <PackageId>Duende.IdentityServer.Storage</PackageId>
+        <Description>Storage interfaces and models for Duende IdentityServer</Description>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="IdentityModel" />
-    <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="IdentityModel" />
+        <PackageReference Include="System.Text.Json" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+    </ItemGroup>
 
 </Project>

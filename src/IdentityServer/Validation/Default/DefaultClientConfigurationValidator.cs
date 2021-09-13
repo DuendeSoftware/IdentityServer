@@ -151,8 +151,10 @@ namespace Duende.IdentityServer.Validation
                 {
                     var fail = true;
 
-                    if (!string.IsNullOrWhiteSpace(origin) && Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                    if (!string.IsNullOrWhiteSpace(origin) && Uri.IsWellFormedUriString(origin, UriKind.Absolute))
                     {
+                        var uri = new Uri(origin);
+                        
                         if (uri.AbsolutePath == "/" && !origin.EndsWith("/"))
                         {
                             fail = false;
