@@ -8,7 +8,6 @@ using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Duende.IdentityServer.EntityFramework.DbContexts
 {
@@ -23,9 +22,10 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// Initializes a new instance of the <see cref="ConfigurationDbContext"/> class.
         /// </summary>
         /// <param name="options">The options.</param>
+        /// <param name="storeOptions">The store options.</param>
         /// <exception cref="ArgumentNullException">storeOptions</exception>
-        public ConfigurationDbContext(DbContextOptions<ConfigurationDbContext> options)
-            : base(options)
+        public ConfigurationDbContext(DbContextOptions<ConfigurationDbContext> options, ConfigurationStoreOptions storeOptions)
+            : base(options, storeOptions)
         {
         }
     }
@@ -38,15 +38,18 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
     public class ConfigurationDbContext<TContext> : DbContext, IConfigurationDbContext
         where TContext : DbContext, IConfigurationDbContext
     {
+        private readonly ConfigurationStoreOptions storeOptions;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationDbContext"/> class.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="storeOptions">The store options.</param>
         /// <exception cref="ArgumentNullException">storeOptions</exception>
-        public ConfigurationDbContext(DbContextOptions<TContext> options)
+        public ConfigurationDbContext(DbContextOptions<TContext> options, ConfigurationStoreOptions storeOptions)
             : base(options)
         {
+            this.storeOptions = storeOptions ?? throw new ArgumentNullException(nameof(storeOptions));
         }
 
         /// <summary>
@@ -96,7 +99,7 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// The identity providers.
         /// </value>
         public DbSet<IdentityProvider> IdentityProviders { get; set; }
-
+        
         /// <summary>
         /// Override this method to further configure the model that was discovered by convention from the entity types
         /// exposed in <see cref="T:Microsoft.EntityFrameworkCore.DbSet`1" /> properties on your derived context. The resulting model may be cached
@@ -105,20 +108,12 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
         /// <param name="modelBuilder">The builder being used to construct the model for this context. Databases (and other extensions) typically
         /// define extension methods on this object that allow you to configure aspects of the model that are specific
         /// to a given database.</param>
-        /// <exception cref="ArgumentNullException"></exception>
         /// <remarks>
         /// If a model is explicitly set on the options for this context (via <see cref="M:Microsoft.EntityFrameworkCore.DbContextOptionsBuilder.UseModel(Microsoft.EntityFrameworkCore.Metadata.IModel)" />)
         /// then this method will not be run.
         /// </remarks>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            var storeOptions = this.GetService<ConfigurationStoreOptions>();
-
-            if (storeOptions is null)
-            {
-                throw new ArgumentNullException(nameof(storeOptions));
-            }
-            
             modelBuilder.ConfigureClientContext(storeOptions);
             modelBuilder.ConfigureResourcesContext(storeOptions);
             modelBuilder.ConfigureIdentityProviderContext(storeOptions);

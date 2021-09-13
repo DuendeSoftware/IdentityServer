@@ -15,6 +15,7 @@ namespace IntegrationTests
     /// <typeparam name="T">DbContext of Type T</typeparam>
     public class DatabaseProviderFixture<T> : IDisposable where T : DbContext
     {
+        public object StoreOptions;
         public List<DbContextOptions<T>> Options;
 
         public void Dispose()
@@ -23,7 +24,7 @@ namespace IntegrationTests
             {
                 foreach (var option in Options.ToList())
                 {
-                    using (var context = (T)Activator.CreateInstance(typeof(T), option))
+                    using (var context = (T)Activator.CreateInstance(typeof(T), option, StoreOptions))
                     {
                         context.Database.EnsureDeleted();
                     }

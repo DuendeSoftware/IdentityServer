@@ -3,7 +3,6 @@
 
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace IntegrationTests
 {
@@ -12,48 +11,25 @@ namespace IntegrationTests
     /// </summary>
     public class DatabaseProviderBuilder
     {
-        public static DbContextOptions<TDbContext> BuildInMemory<TDbContext, TStoreOptions>(string name,
-            TStoreOptions storeOptions)
-            where TDbContext : DbContext
-            where TStoreOptions : class
-
+        public static DbContextOptions<T> BuildInMemory<T>(string name) where T : DbContext
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(storeOptions);
-
-            var builder = new DbContextOptionsBuilder<TDbContext>();
+            var builder = new DbContextOptionsBuilder<T>();
             builder.UseInMemoryDatabase(name);
-            builder.UseApplicationServiceProvider(serviceCollection.BuildServiceProvider());
             return builder.Options;
         }
 
-        public static DbContextOptions<TDbContext> BuildSqlite<TDbContext, TStoreOptions>(string name,
-            TStoreOptions storeOptions)
-            where TDbContext : DbContext
-            where TStoreOptions : class
+        public static DbContextOptions<T> BuildSqlite<T>(string name) where T : DbContext
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(storeOptions);
-
-            var builder = new DbContextOptionsBuilder<TDbContext>();
+            var builder = new DbContextOptionsBuilder<T>();
             builder.UseSqlite($"Filename=./Test.IdentityServer4.EntityFramework-3.1.0.{name}.db");
-            builder.UseApplicationServiceProvider(serviceCollection.BuildServiceProvider());
-            
             return builder.Options;
         }
 
-        public static DbContextOptions<TDbContext> BuildLocalDb<TDbContext, TStoreOptions>(string name,
-            TStoreOptions storeOptions)
-            where TDbContext : DbContext
-            where TStoreOptions : class
+        public static DbContextOptions<T> BuildLocalDb<T>(string name) where T : DbContext
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(storeOptions);
-
-            var builder = new DbContextOptionsBuilder<TDbContext>();
+            var builder = new DbContextOptionsBuilder<T>();
             builder.UseSqlServer(
                 $@"Data Source=(LocalDb)\MSSQLLocalDB;database=Test.IdentityServer4.EntityFramework-3.1.0.{name};trusted_connection=yes;");
-            builder.UseApplicationServiceProvider(serviceCollection.BuildServiceProvider());
             return builder.Options;
         }
     }

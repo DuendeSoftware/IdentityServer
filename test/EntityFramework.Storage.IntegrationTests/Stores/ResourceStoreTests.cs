@@ -23,7 +23,7 @@ namespace IntegrationTests.Stores
         {
             foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<ConfigurationDbContext>)y)).ToList())
             {
-                using (var context = new ConfigurationDbContext(options))
+                using (var context = new ConfigurationDbContext(options, StoreOptions))
                     context.Database.EnsureCreated();
             }
         }
@@ -78,14 +78,14 @@ namespace IntegrationTests.Stores
         {
             var resource = CreateApiResourceTestResource();
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.ApiResources.Add(resource.ToEntity());
                 context.SaveChanges();
             }
 
             ApiResource foundResource;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create());
                 foundResource = (await store.FindApiResourcesByNameAsync(new[] { resource.Name })).SingleOrDefault();
@@ -107,7 +107,7 @@ namespace IntegrationTests.Stores
         {
             var resource = CreateApiResourceTestResource();
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.ApiResources.Add(resource.ToEntity());
                 context.ApiResources.Add(CreateApiResourceTestResource().ToEntity());
@@ -115,7 +115,7 @@ namespace IntegrationTests.Stores
             }
 
             ApiResource foundResource;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create());
                 foundResource = (await store.FindApiResourcesByNameAsync(new[] { resource.Name })).SingleOrDefault();
@@ -142,7 +142,7 @@ namespace IntegrationTests.Stores
             var testApiScope = CreateApiScopeTestResource();
             testApiResource.Scopes.Add(testApiScope.Name);
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.ApiResources.Add(testApiResource.ToEntity());
                 context.ApiScopes.Add(testApiScope.ToEntity());
@@ -150,7 +150,7 @@ namespace IntegrationTests.Stores
             }
 
             IEnumerable<ApiResource> resources;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create());
                 resources = await store.FindApiResourcesByScopeNameAsync(new List<string>
@@ -172,7 +172,7 @@ namespace IntegrationTests.Stores
             var testApiScope = CreateApiScopeTestResource();
             testApiResource.Scopes.Add(testApiScope.Name);
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.IdentityResources.Add(testIdentityResource.ToEntity());
                 context.ApiResources.Add(testApiResource.ToEntity());
@@ -184,7 +184,7 @@ namespace IntegrationTests.Stores
             }
 
             IEnumerable<ApiResource> resources;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create());
                 resources = await store.FindApiResourcesByScopeNameAsync(new[] { testApiScope.Name });
@@ -203,14 +203,14 @@ namespace IntegrationTests.Stores
         {
             var resource = CreateIdentityTestResource();
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.IdentityResources.Add(resource.ToEntity());
                 context.SaveChanges();
             }
 
             IList<IdentityResource> resources;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create());
                 resources = (await store.FindIdentityResourcesByScopeNameAsync(new List<string>
@@ -233,7 +233,7 @@ namespace IntegrationTests.Stores
         {
             var resource = CreateIdentityTestResource();
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.IdentityResources.Add(resource.ToEntity());
                 context.IdentityResources.Add(CreateIdentityTestResource().ToEntity());
@@ -241,7 +241,7 @@ namespace IntegrationTests.Stores
             }
 
             IList<IdentityResource> resources;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create());
                 resources = (await store.FindIdentityResourcesByScopeNameAsync(new List<string>
@@ -262,14 +262,14 @@ namespace IntegrationTests.Stores
         {
             var resource = CreateApiScopeTestResource();
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.ApiScopes.Add(resource.ToEntity());
                 context.SaveChanges();
             }
 
             IList<ApiScope> resources;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create());
                 resources = (await store.FindApiScopesByNameAsync(new List<string>
@@ -292,7 +292,7 @@ namespace IntegrationTests.Stores
         {
             var resource = CreateApiScopeTestResource();
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.ApiScopes.Add(resource.ToEntity());
                 context.ApiScopes.Add(CreateApiScopeTestResource().ToEntity());
@@ -300,7 +300,7 @@ namespace IntegrationTests.Stores
             }
 
             IList<ApiScope> resources;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create());
                 resources = (await store.FindApiScopesByNameAsync(new List<string>
@@ -336,7 +336,7 @@ namespace IntegrationTests.Stores
                 ShowInDiscoveryDocument = false
             };
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.IdentityResources.Add(visibleIdentityResource.ToEntity());
                 context.ApiResources.Add(visibleApiResource.ToEntity());
@@ -350,7 +350,7 @@ namespace IntegrationTests.Stores
             }
 
             Resources resources;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create());
                 resources = await store.GetAllResourcesAsync();
