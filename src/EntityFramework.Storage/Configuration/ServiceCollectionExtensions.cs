@@ -36,8 +36,8 @@ namespace Duende.IdentityServer.EntityFramework.Storage
         /// <param name="storeOptionsAction">The store options action.</param>
         /// <returns></returns>
         public static IServiceCollection AddConfigurationDbContext<TContext>(this IServiceCollection services,
-        Action<ConfigurationStoreOptions> storeOptionsAction = null)
-        where TContext : DbContext, IConfigurationDbContext
+            Action<ConfigurationStoreOptions> storeOptionsAction = null)
+            where TContext : DbContext, IConfigurationDbContext
         {
             var options = new ConfigurationStoreOptions();
             services.AddSingleton(options);
@@ -45,15 +45,46 @@ namespace Duende.IdentityServer.EntityFramework.Storage
 
             if (options.ResolveDbContextOptions != null)
             {
-                services.AddDbContext<TContext>(options.ResolveDbContextOptions);
+                if (options.EnablePooling)
+                {
+                    if (options.PoolSize.HasValue)
+                    {
+                        services.AddDbContextPool<TContext>(options.ResolveDbContextOptions, options.PoolSize.Value);
+                    }
+                    else
+                    {
+                        services.AddDbContextPool<TContext>(options.ResolveDbContextOptions);
+                    }
+                }
+                else
+                {
+                    services.AddDbContext<TContext>(options.ResolveDbContextOptions);
+                }
             }
             else
             {
-                services.AddDbContext<TContext>(dbCtxBuilder =>
+                if (options.EnablePooling)
                 {
-                    options.ConfigureDbContext?.Invoke(dbCtxBuilder);
-                });
+                    if (options.PoolSize.HasValue)
+                    {
+                        services.AddDbContextPool<TContext>(
+                            dbCtxBuilder => { options.ConfigureDbContext?.Invoke(dbCtxBuilder); }, options.PoolSize.Value);
+                    }
+                    else
+                    {
+                        services.AddDbContextPool<TContext>(
+                            dbCtxBuilder => { options.ConfigureDbContext?.Invoke(dbCtxBuilder); });
+                    }
+                }
+                else
+                {
+                    services.AddDbContext<TContext>(dbCtxBuilder =>
+                    {
+                        options.ConfigureDbContext?.Invoke(dbCtxBuilder);
+                    });
+                }
             }
+
             services.AddScoped<IConfigurationDbContext, TContext>();
 
             return services;
@@ -88,14 +119,46 @@ namespace Duende.IdentityServer.EntityFramework.Storage
 
             if (storeOptions.ResolveDbContextOptions != null)
             {
-                services.AddDbContext<TContext>(storeOptions.ResolveDbContextOptions);
+                if (storeOptions.EnablePooling)
+                {
+                    if (storeOptions.PoolSize.HasValue)
+                    {
+                        services.AddDbContextPool<TContext>(storeOptions.ResolveDbContextOptions,
+                            storeOptions.PoolSize.Value);
+                    }
+                    else
+                    {
+                        services.AddDbContextPool<TContext>(storeOptions.ResolveDbContextOptions);
+                    }
+                }
+                else
+                {
+                    services.AddDbContext<TContext>(storeOptions.ResolveDbContextOptions);
+                }
             }
             else
             {
-                services.AddDbContext<TContext>(dbCtxBuilder =>
+                if (storeOptions.EnablePooling)
                 {
-                    storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder);
-                });
+                    if (storeOptions.PoolSize.HasValue)
+                    {
+                        services.AddDbContextPool<TContext>(
+                            dbCtxBuilder => { storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder); },
+                            storeOptions.PoolSize.Value);
+                    }
+                    else
+                    {
+                        services.AddDbContextPool<TContext>(
+                            dbCtxBuilder => { storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder); });
+                    }
+                }
+                else
+                {
+                    services.AddDbContext<TContext>(dbCtxBuilder =>
+                    {
+                        storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder);
+                    });
+                }
             }
 
             services.AddScoped<IPersistedGrantDbContext, TContext>();
@@ -111,7 +174,7 @@ namespace Duende.IdentityServer.EntityFramework.Storage
         /// <param name="services"></param>
         /// <returns></returns>
         public static IServiceCollection AddOperationalStoreNotification<T>(this IServiceCollection services)
-           where T : class, IOperationalStoreNotification
+            where T : class, IOperationalStoreNotification
         {
             services.AddTransient<IOperationalStoreNotification, T>();
             return services;
