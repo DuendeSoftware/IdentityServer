@@ -23,7 +23,7 @@ namespace Tests.Services
         {
             foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<ConfigurationDbContext>) y)).ToList())
             {
-                using (var context = new ConfigurationDbContext(options))
+                using (var context = new ConfigurationDbContext(options, StoreOptions))
                     context.Database.EnsureCreated();
             }
         }
@@ -33,7 +33,7 @@ namespace Tests.Services
         {
             const string testCorsOrigin = "https://identityserver.io/";
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.Clients.Add(new Client
                 {
@@ -51,7 +51,7 @@ namespace Tests.Services
             }
 
             bool result;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var svcs = new ServiceCollection();
                 svcs.AddSingleton<IConfigurationDbContext>(context);
@@ -67,7 +67,7 @@ namespace Tests.Services
         [Theory, MemberData(nameof(TestDatabaseProviders))]
         public void IsOriginAllowedAsync_WhenOriginIsNotAllowed_ExpectFalse(DbContextOptions<ConfigurationDbContext> options)
         {
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.Clients.Add(new Client
                 {
@@ -79,7 +79,7 @@ namespace Tests.Services
             }
 
             bool result;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var svcs = new ServiceCollection();
                 svcs.AddSingleton<IConfigurationDbContext>(context);

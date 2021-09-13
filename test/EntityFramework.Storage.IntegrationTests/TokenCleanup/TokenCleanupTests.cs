@@ -28,7 +28,7 @@ namespace IntegrationTests.TokenCleanup
         {
             foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<PersistedGrantDbContext>)y)).ToList())
             {
-                using (var context = new PersistedGrantDbContext(options))
+                using (var context = new PersistedGrantDbContext(options, StoreOptions))
                 {
                     context.Database.EnsureCreated();
                 }
@@ -48,7 +48,7 @@ namespace IntegrationTests.TokenCleanup
                 Data = "{!}"
             };
 
-            using (var context = new PersistedGrantDbContext(options))
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
             {
                 context.PersistedGrants.Add(expiredGrant);
                 context.SaveChanges();
@@ -56,7 +56,7 @@ namespace IntegrationTests.TokenCleanup
 
             await CreateSut(options).RemoveExpiredGrantsAsync();
 
-            using (var context = new PersistedGrantDbContext(options))
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
             {
                 context.PersistedGrants.FirstOrDefault(x => x.Key == expiredGrant.Key).Should().BeNull();
             }
@@ -75,7 +75,7 @@ namespace IntegrationTests.TokenCleanup
                 Data = "{!}"
             };
 
-            using (var context = new PersistedGrantDbContext(options))
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
             {
                 context.PersistedGrants.Add(validGrant);
                 context.SaveChanges();
@@ -83,7 +83,7 @@ namespace IntegrationTests.TokenCleanup
 
             await CreateSut(options).RemoveExpiredGrantsAsync();
 
-            using (var context = new PersistedGrantDbContext(options))
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
             {
                 context.PersistedGrants.FirstOrDefault(x => x.Key == validGrant.Key).Should().NotBeNull();
             }
@@ -103,7 +103,7 @@ namespace IntegrationTests.TokenCleanup
                 Data = "{!}"
             };
 
-            using (var context = new PersistedGrantDbContext(options))
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
             {
                 context.DeviceFlowCodes.Add(expiredGrant);
                 context.SaveChanges();
@@ -111,7 +111,7 @@ namespace IntegrationTests.TokenCleanup
 
             await CreateSut(options).RemoveExpiredGrantsAsync();
 
-            using (var context = new PersistedGrantDbContext(options))
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
             {
                 context.DeviceFlowCodes.FirstOrDefault(x => x.DeviceCode == expiredGrant.DeviceCode).Should().BeNull();
             }
@@ -131,7 +131,7 @@ namespace IntegrationTests.TokenCleanup
                 Data = "{!}"
             };
 
-            using (var context = new PersistedGrantDbContext(options))
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
             {
                 context.DeviceFlowCodes.Add(validGrant);
                 context.SaveChanges();
@@ -139,7 +139,7 @@ namespace IntegrationTests.TokenCleanup
 
             await CreateSut(options).RemoveExpiredGrantsAsync();
 
-            using (var context = new PersistedGrantDbContext(options))
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
             {
                 context.DeviceFlowCodes.FirstOrDefault(x => x.DeviceCode == validGrant.DeviceCode).Should().NotBeNull();
             }
@@ -155,7 +155,7 @@ namespace IntegrationTests.TokenCleanup
                 .AddInMemoryApiResources(new List<Duende.IdentityServer.Models.ApiResource>());
 
             services.AddScoped<IPersistedGrantDbContext, PersistedGrantDbContext>(_ =>
-                new PersistedGrantDbContext(options));
+                new PersistedGrantDbContext(options, StoreOptions));
             services.AddTransient<IPersistedGrantStore, PersistedGrantStore>();
             services.AddTransient<IDeviceFlowStore, DeviceFlowStore>();
             

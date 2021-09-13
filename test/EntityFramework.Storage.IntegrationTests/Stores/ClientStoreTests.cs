@@ -23,7 +23,7 @@ namespace IntegrationTests.Stores
         {
             foreach (var options in TestDatabaseProviders.SelectMany(x => x.Select(y => (DbContextOptions<ConfigurationDbContext>) y)).ToList())
             {
-                using (var context = new ConfigurationDbContext(options))
+                using (var context = new ConfigurationDbContext(options, StoreOptions))
                 {
                     context.Database.EnsureCreated();
                 }
@@ -33,7 +33,7 @@ namespace IntegrationTests.Stores
         [Theory, MemberData(nameof(TestDatabaseProviders))]
         public async Task FindClientByIdAsync_WhenClientDoesNotExist_ExpectNull(DbContextOptions<ConfigurationDbContext> options)
         {
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ClientStore(context, FakeLogger<ClientStore>.Create());
                 var client = await store.FindClientByIdAsync(Guid.NewGuid().ToString());
@@ -50,14 +50,14 @@ namespace IntegrationTests.Stores
                 ClientName = "Test Client"
             };
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.Clients.Add(testClient.ToEntity());
                 context.SaveChanges();
             }
 
             Client client;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ClientStore(context, FakeLogger<ClientStore>.Create());
                 client = await store.FindClientByIdAsync(testClient.ClientId);
@@ -84,14 +84,14 @@ namespace IntegrationTests.Stores
                 RedirectUris = {"https://locahost/signin"}
             };
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.Clients.Add(testClient.ToEntity());
                 context.SaveChanges();
             }
 
             Client client;
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ClientStore(context, FakeLogger<ClientStore>.Create());
                 client = await store.FindClientByIdAsync(testClient.ClientId);
@@ -118,7 +118,7 @@ namespace IntegrationTests.Stores
                 testClient.AllowedCorsOrigins.Add($"https://localhost:{i}");
             }
 
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 context.Clients.Add(testClient.ToEntity());
 
@@ -139,7 +139,7 @@ namespace IntegrationTests.Stores
                 context.SaveChanges();
             }
             
-            using (var context = new ConfigurationDbContext(options))
+            using (var context = new ConfigurationDbContext(options, StoreOptions))
             {
                 var store = new ClientStore(context, FakeLogger<ClientStore>.Create());
 
