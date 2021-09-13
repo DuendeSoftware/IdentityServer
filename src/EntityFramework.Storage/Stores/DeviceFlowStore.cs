@@ -73,7 +73,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         {
             Context.DeviceFlowCodes.Add(ToEntity(data, deviceCode, userCode));
 
-            await Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
+            await Context.SaveChangesAsync();
         }
 
         /// <summary>
