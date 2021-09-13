@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -37,22 +37,17 @@ namespace Tests
 
                 TestDatabaseProviders = new TheoryData<DbContextOptions<TDbContext>>
                 {
-                    DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name,
-                        Activator.CreateInstance<TStoreOption>()),
-                    DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name,
-                        Activator.CreateInstance<TStoreOption>()),
-                    DatabaseProviderBuilder.BuildLocalDb<TDbContext, TStoreOption>(typeof(TClass).Name,
-                        Activator.CreateInstance<TStoreOption>())
+                    DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>()),
+                    //DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>()),
+                    //DatabaseProviderBuilder.BuildLocalDb<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>())
                 };
             }
             else
             {
                 TestDatabaseProviders = new TheoryData<DbContextOptions<TDbContext>>
                 {
-                    DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name,
-                        Activator.CreateInstance<TStoreOption>()),
-                    DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name,
-                        Activator.CreateInstance<TStoreOption>())
+                    DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>()),
+                    //DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>())
                 };
                 Console.WriteLine("Skipping DB integration tests on non-Windows");
             }
