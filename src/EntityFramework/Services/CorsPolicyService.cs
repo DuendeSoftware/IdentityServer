@@ -38,14 +38,14 @@ namespace Duende.IdentityServer.EntityFramework.Services
         /// Initializes a new instance of the <see cref="CorsPolicyService"/> class.
         /// </summary>
         /// <param name="provider">The provider.</param>
-        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
+        /// <param name="cancellationTokenService"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public CorsPolicyService(IServiceProvider provider, ICancellationTokenService cancellationTokenService, ILogger<CorsPolicyService> logger)
+        public CorsPolicyService(IServiceProvider provider, ILogger<CorsPolicyService> logger, ICancellationTokenService cancellationTokenService = null)
         {
             Provider = provider;
-            CancellationTokenService = cancellationTokenService;
             Logger = logger;
+            CancellationTokenService = cancellationTokenService;
         }
 
         /// <summary>

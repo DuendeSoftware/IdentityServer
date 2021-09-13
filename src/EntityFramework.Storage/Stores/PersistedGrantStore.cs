@@ -42,13 +42,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Initializes a new instance of the <see cref="PersistedGrantStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
-        public PersistedGrantStore(IPersistedGrantDbContext context, ICancellationTokenService cancellationTokenService, ILogger<PersistedGrantStore> logger)
+        /// <param name="cancellationTokenService"></param>
+        public PersistedGrantStore(IPersistedGrantDbContext context, ILogger<PersistedGrantStore> logger, ICancellationTokenService cancellationTokenService = null)
         {
             Context = context;
-            CancellationTokenService = cancellationTokenService;
             Logger = logger;
+            CancellationTokenService = cancellationTokenService;
         }
 
         /// <inheritdoc/>

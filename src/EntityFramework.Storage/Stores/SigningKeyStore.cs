@@ -43,14 +43,14 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Initializes a new instance of the <see cref="SigningKeyStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
+        /// <param name="cancellationTokenService"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public SigningKeyStore(IPersistedGrantDbContext context, ICancellationTokenService cancellationTokenService, ILogger<SigningKeyStore> logger)
+        public SigningKeyStore(IPersistedGrantDbContext context, ILogger<SigningKeyStore> logger, ICancellationTokenService cancellationTokenService = null)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            CancellationTokenService = cancellationTokenService;
             Logger = logger;
+            CancellationTokenService = cancellationTokenService;
         }
 
         /// <summary>

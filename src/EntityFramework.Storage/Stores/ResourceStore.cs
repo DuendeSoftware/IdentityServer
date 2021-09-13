@@ -41,14 +41,14 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Initializes a new instance of the <see cref="ResourceStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
+        /// <param name="cancellationTokenService"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public ResourceStore(IConfigurationDbContext context, ICancellationTokenService cancellationTokenService, ILogger<ResourceStore> logger)
+        public ResourceStore(IConfigurationDbContext context, ILogger<ResourceStore> logger, ICancellationTokenService cancellationTokenService = null)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            CancellationTokenService = cancellationTokenService;
             Logger = logger;
+            CancellationTokenService = cancellationTokenService;
         }
 
         /// <summary>

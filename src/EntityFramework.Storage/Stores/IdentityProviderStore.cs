@@ -41,14 +41,14 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Initializes a new instance of the <see cref="IdentityProviderStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
+        /// <param name="cancellationTokenService"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public IdentityProviderStore(IConfigurationDbContext context, ICancellationTokenService cancellationTokenService, ILogger<IdentityProviderStore> logger)
+        public IdentityProviderStore(IConfigurationDbContext context, ILogger<IdentityProviderStore> logger, ICancellationTokenService cancellationTokenService = null)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            CancellationTokenService = cancellationTokenService;
             Logger = logger;
+            CancellationTokenService = cancellationTokenService;
         }
 
         /// <inheritdoc/>

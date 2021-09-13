@@ -48,18 +48,18 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="serializer">The serializer</param>
-        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
+        /// <param name="cancellationTokenService"></param>
         public DeviceFlowStore(
             IPersistedGrantDbContext context, 
             IPersistentGrantSerializer serializer,
-            ICancellationTokenService cancellationTokenService, 
-            ILogger<DeviceFlowStore> logger)
+            ILogger<DeviceFlowStore> logger, 
+            ICancellationTokenService cancellationTokenService = null)
         {
             Context = context;
             Serializer = serializer;
-            CancellationTokenService = cancellationTokenService;
             Logger = logger;
+            CancellationTokenService = cancellationTokenService;
         }
 
         /// <summary>
