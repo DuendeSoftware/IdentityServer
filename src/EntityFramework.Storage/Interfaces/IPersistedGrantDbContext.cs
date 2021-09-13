@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,6 @@ namespace Duende.IdentityServer.EntityFramework.Interfaces
         /// Saves the changes.
         /// </summary>
         /// <returns></returns>
-        Task<int> SaveChangesAsync();
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

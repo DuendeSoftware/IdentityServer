@@ -13,6 +13,7 @@ using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Stores.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer.EntityFramework.Stores
 {
@@ -33,6 +34,11 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IPersistentGrantSerializer Serializer;
 
         /// <summary>
+        /// The CancellationToken service.
+        /// </summary>
+        protected readonly ICancellationTokenService CancellationTokenService;
+
+        /// <summary>
         /// The logger.
         /// </summary>
         protected readonly ILogger Logger;
@@ -42,14 +48,17 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="serializer">The serializer</param>
+        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
         public DeviceFlowStore(
             IPersistedGrantDbContext context, 
-            IPersistentGrantSerializer serializer, 
+            IPersistentGrantSerializer serializer,
+            ICancellationTokenService cancellationTokenService, 
             ILogger<DeviceFlowStore> logger)
         {
             Context = context;
             Serializer = serializer;
+            CancellationTokenService = cancellationTokenService;
             Logger = logger;
         }
 
@@ -64,7 +73,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         {
             Context.DeviceFlowCodes.Add(ToEntity(data, deviceCode, userCode));
 
-            await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
         }
 
         /// <summary>

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,11 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IConfigurationDbContext Context;
 
         /// <summary>
+        /// The CancellationToken service.
+        /// </summary>
+        protected readonly ICancellationTokenService CancellationTokenService;
+
+        /// <summary>
         /// The logger.
         /// </summary>
         protected readonly ILogger<IdentityProviderStore> Logger;
@@ -35,11 +41,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Initializes a new instance of the <see cref="IdentityProviderStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
+        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public IdentityProviderStore(IConfigurationDbContext context, ILogger<IdentityProviderStore> logger)
+        public IdentityProviderStore(IConfigurationDbContext context, ICancellationTokenService cancellationTokenService, ILogger<IdentityProviderStore> logger)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            CancellationTokenService = cancellationTokenService;
             Logger = logger;
         }
 

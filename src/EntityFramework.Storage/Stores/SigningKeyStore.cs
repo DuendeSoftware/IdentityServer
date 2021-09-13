@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,11 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IPersistedGrantDbContext Context;
 
         /// <summary>
+        /// The CancellationToken service.
+        /// </summary>
+        protected readonly ICancellationTokenService CancellationTokenService;
+
+        /// <summary>
         /// The logger.
         /// </summary>
         protected readonly ILogger<SigningKeyStore> Logger;
@@ -37,11 +43,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Initializes a new instance of the <see cref="SigningKeyStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
+        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public SigningKeyStore(IPersistedGrantDbContext context, ILogger<SigningKeyStore> logger)
+        public SigningKeyStore(IPersistedGrantDbContext context, ICancellationTokenService cancellationTokenService, ILogger<SigningKeyStore> logger)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            CancellationTokenService = cancellationTokenService;
             Logger = logger;
         }
 

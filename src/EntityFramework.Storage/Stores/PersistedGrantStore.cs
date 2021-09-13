@@ -13,7 +13,7 @@ using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Stores;
-
+using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer.EntityFramework.Stores
 {
@@ -29,6 +29,11 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IPersistedGrantDbContext Context;
 
         /// <summary>
+        /// The CancellationToken service.
+        /// </summary>
+        protected readonly ICancellationTokenService CancellationTokenService;
+        
+        /// <summary>
         /// The logger.
         /// </summary>
         protected readonly ILogger Logger;
@@ -37,10 +42,12 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// Initializes a new instance of the <see cref="PersistedGrantStore"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
+        /// <param name="cancellationTokenService"></param>
         /// <param name="logger">The logger.</param>
-        public PersistedGrantStore(IPersistedGrantDbContext context, ILogger<PersistedGrantStore> logger)
+        public PersistedGrantStore(IPersistedGrantDbContext context, ICancellationTokenService cancellationTokenService, ILogger<PersistedGrantStore> logger)
         {
             Context = context;
+            CancellationTokenService = cancellationTokenService;
             Logger = logger;
         }
 
