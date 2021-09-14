@@ -442,5 +442,34 @@ namespace UnitTests.Services.Default
 
             result.IsError.Should().BeFalse();
         }
+
+        [Fact]
+        public async Task ValidateRefreshToken_valid_token_should_accept_v5_token()
+        {
+            var client = new Client
+            {
+                ClientId = "client1",
+                AllowOfflineAccess = true,
+                RefreshTokenUsage = TokenUsage.OneTimeOnly
+            };
+
+            var refreshToken = new RefreshToken
+            {
+                ClientId = client.ClientId,
+                Subject = _user,
+                CreationTime = DateTime.UtcNow,
+                Lifetime = 10,
+            };
+
+            // force create in DB with this key value (pre-v6 format)
+            await _store.UpdateRefreshTokenAsync("key", refreshToken);
+
+            var now = DateTime.UtcNow;
+            _clock.UtcNowFunc = () => now;
+
+            var result = await _subject.ValidateRefreshTokenAsync("key", client);
+
+            result.IsError.Should().BeFalse();
+        }
     }
 }
