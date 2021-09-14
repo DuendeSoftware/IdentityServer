@@ -14,6 +14,7 @@ using Duende.IdentityServer.Stores.Serialization;
 using FluentAssertions;
 using UnitTests.Validation.Setup;
 using Xunit;
+using Duende.IdentityServer.Configuration;
 
 namespace UnitTests.Services.Default
 {
@@ -21,6 +22,7 @@ namespace UnitTests.Services.Default
     {
         private DefaultRefreshTokenService _subject;
         private DefaultRefreshTokenStore _store;
+        private IdentityServerOptions _options = new IdentityServerOptions();
 
         private ClaimsPrincipal _user = new IdentityServerUser("123").CreatePrincipal();
         private StubClock _clock = new StubClock();
@@ -28,6 +30,7 @@ namespace UnitTests.Services.Default
         public DefaultRefreshTokenServiceTests()
         {
             _store = new DefaultRefreshTokenStore(
+                _options,
                 new InMemoryPersistedGrantStore(),
                 new PersistentGrantSerializer(),
                 new DefaultHandleGenerationService(),

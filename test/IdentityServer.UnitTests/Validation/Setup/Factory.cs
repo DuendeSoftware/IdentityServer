@@ -88,12 +88,12 @@ namespace UnitTests.Validation.Setup
 
             if (authorizationCodeStore == null)
             {
-                authorizationCodeStore = CreateAuthorizationCodeStore();
+                authorizationCodeStore = CreateAuthorizationCodeStore(options);
             }
 
             if (refreshTokenStore == null)
             {
-                refreshTokenStore = CreateRefreshTokenStore();
+                refreshTokenStore = CreateRefreshTokenStore(options);
             }
 
             if (resourceValidator == null)
@@ -344,25 +344,37 @@ namespace UnitTests.Validation.Setup
             return new ClientSecretValidator(clients, parser, validator, new TestEventService(), TestLogger.Create<ClientSecretValidator>());
         }
 
-        public static IAuthorizationCodeStore CreateAuthorizationCodeStore()
+        public static IAuthorizationCodeStore CreateAuthorizationCodeStore(IdentityServerOptions options = null)
         {
-            return new DefaultAuthorizationCodeStore(new InMemoryPersistedGrantStore(),
+            options ??= new IdentityServerOptions();
+            
+            return new DefaultAuthorizationCodeStore(
+                options,
+                new InMemoryPersistedGrantStore(),
                 new PersistentGrantSerializer(),
                 new DefaultHandleGenerationService(),
                 TestLogger.Create<DefaultAuthorizationCodeStore>());
         }
         
-        public static IRefreshTokenStore CreateRefreshTokenStore()
+        public static IRefreshTokenStore CreateRefreshTokenStore(IdentityServerOptions options = null)
         {
-            return new DefaultRefreshTokenStore(new InMemoryPersistedGrantStore(),
+            options ??= new IdentityServerOptions();
+            
+            return new DefaultRefreshTokenStore(
+                options,
+                new InMemoryPersistedGrantStore(),
                 new PersistentGrantSerializer(),
                 new DefaultHandleGenerationService(),
                 TestLogger.Create<DefaultRefreshTokenStore>());
         }
         
-        public static IReferenceTokenStore CreateReferenceTokenStore()
+        public static IReferenceTokenStore CreateReferenceTokenStore(IdentityServerOptions options = null)
         {
-            return new DefaultReferenceTokenStore(new InMemoryPersistedGrantStore(),
+            options ??= new IdentityServerOptions();
+            
+            return new DefaultReferenceTokenStore(
+                options,
+                new InMemoryPersistedGrantStore(),
                 new PersistentGrantSerializer(),
                 new DefaultHandleGenerationService(),
                 TestLogger.Create<DefaultReferenceTokenStore>());
@@ -373,9 +385,13 @@ namespace UnitTests.Validation.Setup
             return new DefaultDeviceFlowCodeService(new InMemoryDeviceFlowStore(), new DefaultHandleGenerationService());
         }
         
-        public static IUserConsentStore CreateUserConsentStore()
+        public static IUserConsentStore CreateUserConsentStore(IdentityServerOptions options = null)
         {
-            return new DefaultUserConsentStore(new InMemoryPersistedGrantStore(),
+            options ??= new IdentityServerOptions();
+
+            return new DefaultUserConsentStore(
+                options,
+                new InMemoryPersistedGrantStore(),
                 new PersistentGrantSerializer(),
                 new DefaultHandleGenerationService(),
                 TestLogger.Create<DefaultUserConsentStore>());

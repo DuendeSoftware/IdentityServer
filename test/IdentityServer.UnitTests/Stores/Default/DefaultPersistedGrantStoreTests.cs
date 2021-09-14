@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
@@ -26,24 +27,29 @@ namespace UnitTests.Stores.Default
         private IReferenceTokenStore _referenceTokens;
         private IUserConsentStore _userConsent;
         private StubHandleGenerationService _stubHandleGenerationService = new StubHandleGenerationService();
+        private IdentityServerOptions _options = new IdentityServerOptions();
 
         private ClaimsPrincipal _user = new IdentityServerUser("123").CreatePrincipal();
 
         public DefaultPersistedGrantStoreTests()
         {
-            _codes = new DefaultAuthorizationCodeStore(_store,
+            _codes = new DefaultAuthorizationCodeStore(_options, 
+                _store,
                 new PersistentGrantSerializer(),
                 _stubHandleGenerationService,
                 TestLogger.Create<DefaultAuthorizationCodeStore>());
-            _refreshTokens = new DefaultRefreshTokenStore(_store,
+            _refreshTokens = new DefaultRefreshTokenStore(_options, 
+                _store,
                 new PersistentGrantSerializer(),
                 _stubHandleGenerationService,
                 TestLogger.Create<DefaultRefreshTokenStore>());
-            _referenceTokens = new DefaultReferenceTokenStore(_store,
+            _referenceTokens = new DefaultReferenceTokenStore(_options, 
+                _store,
                 new PersistentGrantSerializer(),
                 _stubHandleGenerationService,
                 TestLogger.Create<DefaultReferenceTokenStore>());
-            _userConsent = new DefaultUserConsentStore(_store,
+            _userConsent = new DefaultUserConsentStore(_options, 
+                _store,
                 new PersistentGrantSerializer(),
                 _stubHandleGenerationService,
                 TestLogger.Create<DefaultUserConsentStore>());
@@ -375,10 +381,10 @@ namespace UnitTests.Stores.Default
                 RequestedScopes = new string[] { "quux1", "quux2" }
             });
 
-            // the -1 is needed because internally we append a version/suffix the handle for encoding
-            (await _codes.GetAuthorizationCodeAsync("key-1")).Lifetime.Should().Be(30);
-            (await _refreshTokens.GetRefreshTokenAsync("key-1")).Lifetime.Should().Be(20);
-            (await _referenceTokens.GetReferenceTokenAsync("key-1")).Lifetime.Should().Be(10);
+            // the suffix is needed because internally we append a version/suffix the handle for encoding
+            (await _codes.GetAuthorizationCodeAsync("key" + _options.GrantVersionDelimiter + "1")).Lifetime.Should().Be(30);
+            (await _refreshTokens.GetRefreshTokenAsync("key" + _options.GrantVersionDelimiter + "1")).Lifetime.Should().Be(20);
+            (await _referenceTokens.GetReferenceTokenAsync("key" + _options.GrantVersionDelimiter + "1")).Lifetime.Should().Be(10);
         }
     }
 }

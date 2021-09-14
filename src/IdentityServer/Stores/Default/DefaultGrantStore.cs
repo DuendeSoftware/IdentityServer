@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
 using System.Text;
 using System.Security.Cryptography;
+using Duende.IdentityServer.Configuration;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -49,12 +50,14 @@ namespace Duende.IdentityServer.Stores
         /// Initializes a new instance of the <see cref="DefaultGrantStore{T}"/> class.
         /// </summary>
         /// <param name="grantType">Type of the grant.</param>
+        /// <param name="identityServerOptions"></param>
         /// <param name="store">The store.</param>
         /// <param name="serializer">The serializer.</param>
         /// <param name="handleGenerationService">The handle generation service.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">grantType</exception>
         protected DefaultGrantStore(string grantType,
+            IdentityServerOptions identityServerOptions,
             IPersistedGrantStore store,
             IPersistentGrantSerializer serializer,
             IHandleGenerationService handleGenerationService,
@@ -67,10 +70,13 @@ namespace Duende.IdentityServer.Stores
             Serializer = serializer;
             HandleGenerationService = handleGenerationService;
             Logger = logger;
+            
+            _hexEncodingFormatSuffix = identityServerOptions.GrantVersionDelimiter + "1";
         }
 
+        private readonly string _hexEncodingFormatSuffix;
+
         private const string KeySeparator = ":";
-        const string HexEncodingFormatSuffix = "-1";
 
         /// <summary>
         /// Gets the hashed key.
@@ -81,7 +87,7 @@ namespace Duende.IdentityServer.Stores
         {
             var key = (value + KeySeparator + GrantType);
 
-            if (value.EndsWith(HexEncodingFormatSuffix))
+            if (value.EndsWith(_hexEncodingFormatSuffix))
             {
                 // newer format >= v6; uses hex encoding to avoid colation issues
                 using (var sha = SHA256.Create())
@@ -138,7 +144,7 @@ namespace Duende.IdentityServer.Stores
         /// <returns></returns>
         protected virtual async Task<string> CreateItemAsync(T item, string clientId, string subjectId, string sessionId, string description, DateTime created, int lifetime)
         {
-            var handle = await HandleGenerationService.GenerateAsync() + HexEncodingFormatSuffix;
+            var handle = await HandleGenerationService.GenerateAsync() + _hexEncodingFormatSuffix;
             await StoreItemAsync(handle, item, clientId, subjectId, sessionId, description, created, created.AddSeconds(lifetime));
             return handle;
         }

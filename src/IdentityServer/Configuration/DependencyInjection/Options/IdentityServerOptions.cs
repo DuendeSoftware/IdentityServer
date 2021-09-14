@@ -167,5 +167,13 @@ namespace Duende.IdentityServer.Configuration
         /// Options for dynamic external providers.
         /// </summary>
         public DynamicProviderOptions DynamicProviders { get; set; } = new DynamicProviderOptions();
+
+        /// <summary>
+        /// Gets or sets a value that is used as a delimiter for versioning handles used by the grant store.
+        /// The value used should not be used in the output produced by the IHandleGenerationService.
+        /// For example, if a custom IHandleGenerationService generates a value that contains the "-" character (e.g. a GUID), 
+        /// then a delimiter of "-" should not be used and some other value that will not appear should be used instead (e.g. ":").
+        /// </summary>
+        public string GrantVersionDelimiter { get; set; } = "-";
     }
 }

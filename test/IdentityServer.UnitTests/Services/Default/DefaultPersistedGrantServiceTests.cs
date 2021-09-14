@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
@@ -26,6 +27,7 @@ namespace UnitTests.Services.Default
         private IRefreshTokenStore _refreshTokens;
         private IReferenceTokenStore _referenceTokens;
         private IUserConsentStore _userConsent;
+        private IdentityServerOptions _options = new IdentityServerOptions();
 
         private ClaimsPrincipal _user = new IdentityServerUser("123").CreatePrincipal();
 
@@ -35,19 +37,26 @@ namespace UnitTests.Services.Default
                 _store, 
                 new PersistentGrantSerializer(), 
                 TestLogger.Create<DefaultPersistedGrantService>());
-            _codes = new DefaultAuthorizationCodeStore(_store,
+            _codes = new DefaultAuthorizationCodeStore(
+                _options, 
+                _store,
                 new PersistentGrantSerializer(),
                 new DefaultHandleGenerationService(),
                 TestLogger.Create<DefaultAuthorizationCodeStore>());
-            _refreshTokens = new DefaultRefreshTokenStore(_store,
+            _refreshTokens = new DefaultRefreshTokenStore(
+                _options, 
+                _store,
                 new PersistentGrantSerializer(),
                 new DefaultHandleGenerationService(),
                 TestLogger.Create<DefaultRefreshTokenStore>());
-            _referenceTokens = new DefaultReferenceTokenStore(_store,
+            _referenceTokens = new DefaultReferenceTokenStore(_options, 
+                _store,
                 new PersistentGrantSerializer(),
                 new DefaultHandleGenerationService(),
                 TestLogger.Create<DefaultReferenceTokenStore>());
-            _userConsent = new DefaultUserConsentStore(_store,
+            _userConsent = new DefaultUserConsentStore(
+                _options,
+                _store,
                 new PersistentGrantSerializer(),
                 new DefaultHandleGenerationService(),
                 TestLogger.Create<DefaultUserConsentStore>());

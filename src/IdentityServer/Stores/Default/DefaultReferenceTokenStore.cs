@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,6 +7,7 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores.Serialization;
 using Microsoft.Extensions.Logging;
+using Duende.IdentityServer.Configuration;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -18,16 +19,18 @@ namespace Duende.IdentityServer.Stores
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultReferenceTokenStore"/> class.
         /// </summary>
+        /// <param name="identityServerOptions"></param>
         /// <param name="store">The store.</param>
         /// <param name="serializer">The serializer.</param>
         /// <param name="handleGenerationService">The handle generation service.</param>
         /// <param name="logger">The logger.</param>
         public DefaultReferenceTokenStore(
+            IdentityServerOptions identityServerOptions,
             IPersistedGrantStore store, 
             IPersistentGrantSerializer serializer,
             IHandleGenerationService handleGenerationService,
             ILogger<DefaultReferenceTokenStore> logger) 
-            : base(IdentityServerConstants.PersistedGrantTypes.ReferenceToken, store, serializer, handleGenerationService, logger)
+            : base(IdentityServerConstants.PersistedGrantTypes.ReferenceToken, identityServerOptions, store, serializer, handleGenerationService, logger)
         {
         }
 
