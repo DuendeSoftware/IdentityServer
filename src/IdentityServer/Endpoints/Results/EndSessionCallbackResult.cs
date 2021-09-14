@@ -13,6 +13,7 @@ using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 using System.Text.Encodings.Web;
+using System.Text;
 
 namespace Duende.IdentityServer.Endpoints.Results
 {
@@ -62,29 +63,37 @@ namespace Duende.IdentityServer.Endpoints.Results
         {
             if (_options.Authentication.RequireCspFrameSrcForSignout)
             {
-                string frameSources = null;
+                var sb = new StringBuilder();
                 var origins = _result.FrontChannelLogoutUrls?.Select(x => x.GetOrigin());
-                if (origins != null && origins.Any())
+                if (origins != null)
                 {
-                    frameSources = origins.Distinct().Aggregate((x, y) => $"{x} {y}");
+                    foreach (var origin in origins.Distinct())
+                    {
+                        sb.Append(origin);
+                        if (sb.Length > 0) sb.Append(" ");
+                    }
                 }
 
                 // the hash matches the embedded style element being used below
-                context.Response.AddStyleCspHeaders(_options.Csp, "sha256-u+OupXgfekP+x/f6rMdoEAspPCYUtca912isERnoEjY=", frameSources);
+                context.Response.AddStyleCspHeaders(_options.Csp, "sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4=", sb.ToString());
             }
         }
 
         private string GetHtml()
         {
-            string framesHtml = null;
+            var sb = new StringBuilder();
+            sb.Append("<!DOCTYPE html><html><style>iframe{{display:none;width:0;height:0;}}</style><body>");
 
-            if (_result.FrontChannelLogoutUrls != null && _result.FrontChannelLogoutUrls.Any())
+            if (_result.FrontChannelLogoutUrls != null)
             {
-                var frameUrls = _result.FrontChannelLogoutUrls.Select(url => $"<iframe src='{HtmlEncoder.Default.Encode(url)}'></iframe>"); 
-                framesHtml = frameUrls.Aggregate((x, y) => x + y);
+                foreach (var url in _result.FrontChannelLogoutUrls)
+                {
+                    sb.AppendFormat("<iframe loading='eager' allow='' src='{0}'></iframe>", HtmlEncoder.Default.Encode(url));
+                    sb.AppendLine();
+                }
             }
 
-            return $"<!DOCTYPE html><html><style>iframe{{display:none;width:0;height:0;}}</style><body>{framesHtml}</body></html>";
+            return sb.ToString();
         }
     }
 }
