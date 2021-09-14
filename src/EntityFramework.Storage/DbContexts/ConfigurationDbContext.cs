@@ -8,7 +8,9 @@ using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.EntityFramework.DbContexts
 {
@@ -123,6 +125,13 @@ namespace Duende.IdentityServer.EntityFramework.DbContexts
             modelBuilder.ConfigureIdentityProviderContext(storeOptions);
 
             base.OnModelCreating(modelBuilder);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.ConfigureWarnings(w => w.Ignore(new EventId[] { RelationalEventId.MultipleCollectionIncludeWarning }));
         }
     }
 }
