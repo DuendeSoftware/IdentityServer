@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace IdentityServerHost
 {
@@ -29,12 +31,15 @@ namespace IdentityServerHost
                 // this adds the config data from DB (clients, resources, CORS)
                 .AddConfigurationStore(options =>
                 {
-                    options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
+                    options.ConfigureDbContext = builder =>
+                        builder.UseSqlServer(connectionString)
+                            .ConfigureWarnings(w => w.Ignore(new EventId[] { RelationalEventId.MultipleCollectionIncludeWarning }));
                 })
                 // this adds the operational data from DB (codes, tokens, consents)
                 .AddOperationalStore(options =>
                 {
-                    options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
+                    options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString)
+                        .ConfigureWarnings(w => w.Ignore(new EventId[] { RelationalEventId.MultipleCollectionIncludeWarning }));
 
                     // this enables automatic token cleanup. this is optional.
                     options.EnableTokenCleanup = true;
