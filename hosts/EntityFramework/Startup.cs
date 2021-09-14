@@ -31,15 +31,12 @@ namespace IdentityServerHost
                 // this adds the config data from DB (clients, resources, CORS)
                 .AddConfigurationStore(options =>
                 {
-                    options.ConfigureDbContext = builder =>
-                        builder.UseSqlServer(connectionString)
-                            .ConfigureWarnings(w => w.Ignore(new EventId[] { RelationalEventId.MultipleCollectionIncludeWarning }));
+                    options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
                 })
                 // this adds the operational data from DB (codes, tokens, consents)
                 .AddOperationalStore(options =>
                 {
-                    options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString)
-                        .ConfigureWarnings(w => w.Ignore(new EventId[] { RelationalEventId.MultipleCollectionIncludeWarning }));
+                    options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
 
                     // this enables automatic token cleanup. this is optional.
                     options.EnableTokenCleanup = true;
