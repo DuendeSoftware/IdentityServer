@@ -42,7 +42,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <param name="logger">The logger.</param>
         /// <param name="cancellationTokenService"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public ClientStore(IConfigurationDbContext context, ILogger<ClientStore> logger, ICancellationTokenService cancellationTokenService = null)
+        public ClientStore(IConfigurationDbContext context, ILogger<ClientStore> logger, ICancellationTokenService cancellationTokenService)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
@@ -71,7 +71,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                         .Include(x => x.RedirectUris)
                         .AsNoTracking();
             
-            var client = (await query.ToArrayAsync(CancellationTokenService?.CancellationToken ?? default))
+            var client = (await query.ToArrayAsync(CancellationTokenService.CancellationToken))
                 .SingleOrDefault(x => x.ClientId == clientId);
             if (client == null) return null;
 

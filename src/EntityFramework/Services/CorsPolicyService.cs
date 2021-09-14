@@ -41,7 +41,7 @@ namespace Duende.IdentityServer.EntityFramework.Services
         /// <param name="logger">The logger.</param>
         /// <param name="cancellationTokenService"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public CorsPolicyService(IServiceProvider provider, ILogger<CorsPolicyService> logger, ICancellationTokenService cancellationTokenService = null)
+        public CorsPolicyService(IServiceProvider provider, ILogger<CorsPolicyService> logger, ICancellationTokenService cancellationTokenService)
         {
             Provider = provider;
             Logger = logger;
@@ -64,7 +64,7 @@ namespace Duende.IdentityServer.EntityFramework.Services
                         where o.Origin == origin
                         select o;
 
-            var isAllowed = await query.AnyAsync(CancellationTokenService?.CancellationToken ?? default);
+            var isAllowed = await query.AnyAsync(CancellationTokenService.CancellationToken);
 
             Logger.LogDebug("Origin {origin} is allowed: {originAllowed}", origin, isAllowed);
 

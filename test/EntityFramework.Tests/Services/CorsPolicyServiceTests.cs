@@ -8,6 +8,7 @@ using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.EntityFramework.Services;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -57,7 +58,7 @@ namespace Tests.Services
                 svcs.AddSingleton<IConfigurationDbContext>(context);
                 var provider = svcs.BuildServiceProvider();
 
-                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create());
+                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenService());
                 result = service.IsOriginAllowedAsync(testCorsOrigin).Result;
             }
 
@@ -85,7 +86,7 @@ namespace Tests.Services
                 svcs.AddSingleton<IConfigurationDbContext>(context);
                 var provider = svcs.BuildServiceProvider();
 
-                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create());
+                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenService());
                 result = service.IsOriginAllowedAsync("InvalidOrigin").Result;
             }
 

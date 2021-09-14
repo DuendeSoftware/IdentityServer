@@ -46,7 +46,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <param name="logger">The logger.</param>
         /// <param name="cancellationTokenService"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public SigningKeyStore(IPersistedGrantDbContext context, ILogger<SigningKeyStore> logger, ICancellationTokenService cancellationTokenService = null)
+        public SigningKeyStore(IPersistedGrantDbContext context, ILogger<SigningKeyStore> logger, ICancellationTokenService cancellationTokenService)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
@@ -61,7 +61,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         {
             var entities = await Context.Keys.Where(x => x.Use == Use)
                 .AsNoTracking()
-                .ToArrayAsync(CancellationTokenService?.CancellationToken ?? default);
+                .ToArrayAsync(CancellationTokenService.CancellationToken);
             return entities.Select(key => new SerializedKey
             {
                 Id = key.Id,
@@ -93,7 +93,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 IsX509Certificate = key.IsX509Certificate
             };
             Context.Keys.Add(entity);
-            return Context.SaveChangesAsync(CancellationTokenService?.CancellationToken ?? default);
+            return Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
         }
 
         /// <summary>
@@ -104,13 +104,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         public async Task DeleteKeyAsync(string id)
         {
             var item = await Context.Keys.Where(x => x.Use == Use && x.Id == id)
-                .FirstOrDefaultAsync(CancellationTokenService?.CancellationToken ?? default);
+                .FirstOrDefaultAsync(CancellationTokenService.CancellationToken);
             if (item != null)
             {
                 try
                 {
                     Context.Keys.Remove(item);
-                    await Context.SaveChangesAsync(CancellationTokenService?.CancellationToken ?? default);
+                    await Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {

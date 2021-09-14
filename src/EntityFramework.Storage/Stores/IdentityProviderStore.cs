@@ -44,7 +44,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <param name="logger">The logger.</param>
         /// <param name="cancellationTokenService"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public IdentityProviderStore(IConfigurationDbContext context, ILogger<IdentityProviderStore> logger, ICancellationTokenService cancellationTokenService = null)
+        public IdentityProviderStore(IConfigurationDbContext context, ILogger<IdentityProviderStore> logger, ICancellationTokenService cancellationTokenService)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
@@ -59,14 +59,14 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 Scheme = x.Scheme,
                 DisplayName  = x.DisplayName
             });
-            return await query.ToArrayAsync(CancellationTokenService?.CancellationToken ?? default);
+            return await query.ToArrayAsync(CancellationTokenService.CancellationToken);
         }
 
         /// <inheritdoc/>
         public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
         {
             var idp = (await Context.IdentityProviders.AsNoTracking().Where(x => x.Scheme == scheme)
-                .ToArrayAsync(CancellationTokenService?.CancellationToken ?? default))
+                .ToArrayAsync(CancellationTokenService.CancellationToken))
                 .SingleOrDefault(x => x.Scheme == scheme);
             if (idp == null) return null;
 

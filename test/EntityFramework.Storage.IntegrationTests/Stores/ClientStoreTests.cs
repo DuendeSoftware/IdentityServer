@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -10,6 +10,7 @@ using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.EntityFramework.Stores;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -35,7 +36,7 @@ namespace IntegrationTests.Stores
         {
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ClientStore(context, FakeLogger<ClientStore>.Create());
+                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenService());
                 var client = await store.FindClientByIdAsync(Guid.NewGuid().ToString());
                 client.Should().BeNull();
             }
@@ -59,7 +60,7 @@ namespace IntegrationTests.Stores
             Client client;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ClientStore(context, FakeLogger<ClientStore>.Create());
+                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenService());
                 client = await store.FindClientByIdAsync(testClient.ClientId);
             }
 
@@ -93,7 +94,7 @@ namespace IntegrationTests.Stores
             Client client;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ClientStore(context, FakeLogger<ClientStore>.Create());
+                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenService());
                 client = await store.FindClientByIdAsync(testClient.ClientId);
             }
 
@@ -141,7 +142,7 @@ namespace IntegrationTests.Stores
             
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ClientStore(context, FakeLogger<ClientStore>.Create());
+                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenService());
 
                 const int timeout = 5000;
                 var task = Task.Run(() => store.FindClientByIdAsync(testClient.ClientId));

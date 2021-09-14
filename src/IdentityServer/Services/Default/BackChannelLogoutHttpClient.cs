@@ -25,7 +25,7 @@ namespace Duende.IdentityServer.Services
         /// <param name="client"></param>
         /// <param name="loggerFactory"></param>
         /// <param name="cancellationTokenService"></param>
-        public DefaultBackChannelLogoutHttpClient(HttpClient client, ILoggerFactory loggerFactory, ICancellationTokenService cancellationTokenService = null)
+        public DefaultBackChannelLogoutHttpClient(HttpClient client, ILoggerFactory loggerFactory, ICancellationTokenService cancellationTokenService)
         {
             _client = client;
             _logger = loggerFactory.CreateLogger<DefaultBackChannelLogoutHttpClient>();
@@ -42,7 +42,7 @@ namespace Duende.IdentityServer.Services
         {
             try
             {
-                var response = await _client.PostAsync(url, new FormUrlEncodedContent(payload), _cancellationTokenService?.CancellationToken ?? default);
+                var response = await _client.PostAsync(url, new FormUrlEncodedContent(payload), _cancellationTokenService.CancellationToken);
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogDebug("Response from back-channel logout endpoint: {url} status code: {status}", url, (int)response.StatusCode);

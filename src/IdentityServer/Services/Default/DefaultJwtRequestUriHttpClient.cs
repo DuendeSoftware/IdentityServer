@@ -30,7 +30,7 @@ namespace Duende.IdentityServer.Services
         /// <param name="options">The options.</param>
         /// <param name="loggerFactory">The logger factory</param>
         /// <param name="cancellationTokenService"></param>
-        public DefaultJwtRequestUriHttpClient(HttpClient client, IdentityServerOptions options, ILoggerFactory loggerFactory, ICancellationTokenService cancellationTokenService = null)
+        public DefaultJwtRequestUriHttpClient(HttpClient client, IdentityServerOptions options, ILoggerFactory loggerFactory, ICancellationTokenService cancellationTokenService)
         {
             _client = client;
             _options = options;
@@ -50,7 +50,7 @@ namespace Duende.IdentityServer.Services
             req.Properties.Add(IdentityServerConstants.JwtRequestClientKey, client);
 #endif
          
-            var response = await _client.SendAsync(req, _cancellationTokenService?.CancellationToken ?? default);
+            var response = await _client.SendAsync(req, _cancellationTokenService.CancellationToken);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 if (_options.StrictJarValidation)

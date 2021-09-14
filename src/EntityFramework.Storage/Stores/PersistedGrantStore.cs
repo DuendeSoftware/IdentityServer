@@ -44,7 +44,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="cancellationTokenService"></param>
-        public PersistedGrantStore(IPersistedGrantDbContext context, ILogger<PersistedGrantStore> logger, ICancellationTokenService cancellationTokenService = null)
+        public PersistedGrantStore(IPersistedGrantDbContext context, ILogger<PersistedGrantStore> logger, ICancellationTokenService cancellationTokenService)
         {
             Context = context;
             Logger = logger;
@@ -55,7 +55,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         public virtual async Task StoreAsync(Duende.IdentityServer.Models.PersistedGrant token)
         {
             var existing = (await Context.PersistedGrants.Where(x => x.Key == token.Key)
-                .ToArrayAsync(CancellationTokenService?.CancellationToken ?? default))
+                .ToArrayAsync(CancellationTokenService.CancellationToken))
                 .SingleOrDefault(x => x.Key == token.Key);
             if (existing == null)
             {
@@ -73,7 +73,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
 
             try
             {
-                await Context.SaveChangesAsync(CancellationTokenService?.CancellationToken ?? default);
+                await Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -85,7 +85,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         public virtual async Task<Duende.IdentityServer.Models.PersistedGrant> GetAsync(string key)
         {
             var persistedGrant = (await Context.PersistedGrants.AsNoTracking().Where(x => x.Key == key)
-                .ToArrayAsync(CancellationTokenService?.CancellationToken ?? default))
+                .ToArrayAsync(CancellationTokenService.CancellationToken))
                 .SingleOrDefault(x => x.Key == key);
             var model = persistedGrant?.ToModel();
 
@@ -100,7 +100,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             filter.Validate();
 
             var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter)
-                .ToArrayAsync(CancellationTokenService?.CancellationToken ?? default);
+                .ToArrayAsync(CancellationTokenService.CancellationToken);
             persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
             
             var model = persistedGrants.Select(x => x.ToModel());
@@ -114,7 +114,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         public virtual async Task RemoveAsync(string key)
         {
             var persistedGrant = (await Context.PersistedGrants.Where(x => x.Key == key)
-                .ToArrayAsync(CancellationTokenService?.CancellationToken ?? default))
+                .ToArrayAsync(CancellationTokenService.CancellationToken))
                 .SingleOrDefault(x => x.Key == key);
             if (persistedGrant!= null)
             {
@@ -124,7 +124,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
 
                 try
                 {
-                    await Context.SaveChangesAsync(CancellationTokenService?.CancellationToken ?? default);
+                    await Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
                 }
                 catch(DbUpdateConcurrencyException ex)
                 {
@@ -143,7 +143,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
             filter.Validate();
 
             var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter)
-                .ToArrayAsync(CancellationTokenService?.CancellationToken ?? default);
+                .ToArrayAsync(CancellationTokenService.CancellationToken);
             persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
 
             Logger.LogDebug("removing {persistedGrantCount} persisted grants from database for {@filter}", persistedGrants.Length, filter);
@@ -152,7 +152,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
 
             try
             {
-                await Context.SaveChangesAsync(CancellationTokenService?.CancellationToken ?? default);
+                await Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {

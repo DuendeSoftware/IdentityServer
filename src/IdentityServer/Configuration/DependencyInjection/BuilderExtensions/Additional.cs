@@ -413,7 +413,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var httpClient = httpClientFactory.CreateClient(name);
                 var loggerFactory = s.GetRequiredService<ILoggerFactory>();
                 
-                return new DefaultBackChannelLogoutHttpClient(httpClient, loggerFactory);
+                return new DefaultBackChannelLogoutHttpClient(httpClient, loggerFactory, new NoneCancellationTokenService());
             });
 
             return httpBuilder;
@@ -451,7 +451,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var loggerFactory = s.GetRequiredService<ILoggerFactory>();
                 var options = s.GetRequiredService<IdentityServerOptions>();
 
-                return new DefaultJwtRequestUriHttpClient(httpClient, options, loggerFactory);
+                return new DefaultJwtRequestUriHttpClient(httpClient, options, loggerFactory, new NoneCancellationTokenService());
             });
 
             return httpBuilder;
