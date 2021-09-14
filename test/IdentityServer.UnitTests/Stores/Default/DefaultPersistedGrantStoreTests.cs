@@ -375,9 +375,10 @@ namespace UnitTests.Stores.Default
                 RequestedScopes = new string[] { "quux1", "quux2" }
             });
 
-            (await _codes.GetAuthorizationCodeAsync("key")).Lifetime.Should().Be(30);
-            (await _refreshTokens.GetRefreshTokenAsync("key")).Lifetime.Should().Be(20);
-            (await _referenceTokens.GetReferenceTokenAsync("key")).Lifetime.Should().Be(10);
+            // the -1 is needed because internally we append a version/suffix the handle for encoding
+            (await _codes.GetAuthorizationCodeAsync("key-1")).Lifetime.Should().Be(30);
+            (await _refreshTokens.GetRefreshTokenAsync("key-1")).Lifetime.Should().Be(20);
+            (await _referenceTokens.GetReferenceTokenAsync("key-1")).Lifetime.Should().Be(10);
         }
     }
 }
