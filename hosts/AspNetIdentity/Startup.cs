@@ -30,7 +30,8 @@ namespace IdentityServerHost
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddRazorPages();
+            services.AddRazorPages()
+                .AddRazorRuntimeCompilation();
 
             services.AddIdentityServer()
                 .AddInMemoryIdentityResources(IdentityServerHost.Configuration.Resources.IdentityResources)
