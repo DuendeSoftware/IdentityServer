@@ -22,7 +22,8 @@ namespace IdentityServerHost
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages();
+            services.AddRazorPages()
+                .AddRazorRuntimeCompilation();
 
             var connectionString = _config.GetConnectionString("db");
 
