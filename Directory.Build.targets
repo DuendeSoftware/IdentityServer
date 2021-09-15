@@ -1,9 +1,9 @@
 <Project>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
-    <FrameworkVersion>6.0.0-preview.7.*</FrameworkVersion>
-    <ExtensionsVersion>6.0.0-preview.7.*</ExtensionsVersion>
-    <EntityFrameworkVersion>6.0.0-preview.7.*</EntityFrameworkVersion>
+    <FrameworkVersion>6.0.0-rc.1.*</FrameworkVersion>
+    <ExtensionsVersion>6.0.0-rc.1.*</ExtensionsVersion>
+    <EntityFrameworkVersion>6.0.0-rc.1.*</EntityFrameworkVersion>
     <WilsonVersion>6.10.0</WilsonVersion>
   </PropertyGroup>
 
