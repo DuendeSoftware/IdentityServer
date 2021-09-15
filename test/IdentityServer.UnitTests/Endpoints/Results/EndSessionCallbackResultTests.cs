@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -58,17 +58,17 @@ namespace UnitTests.Endpoints.Results
             _context.Response.Headers["Cache-Control"].First().Should().Contain("no-cache");
             _context.Response.Headers["Cache-Control"].First().Should().Contain("max-age=0");
             _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("default-src 'none';");
-            _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("style-src 'sha256-u+OupXgfekP+x/f6rMdoEAspPCYUtca912isERnoEjY=';");
+            _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("style-src 'sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4=';");
             _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("frame-src http://foo.com http://bar.com");
             _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("default-src 'none';");
-            _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("style-src 'sha256-u+OupXgfekP+x/f6rMdoEAspPCYUtca912isERnoEjY=';");
+            _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("style-src 'sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4=';");
             _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("frame-src http://foo.com http://bar.com");
             _context.Response.Body.Seek(0, SeekOrigin.Begin);
             using (var rdr = new StreamReader(_context.Response.Body))
             {
                 var html = rdr.ReadToEnd();
-                html.Should().Contain("<iframe src='http://foo.com'></iframe>");
-                html.Should().Contain("<iframe src='http://bar.com'></iframe>");
+                html.Should().Contain("<iframe loading='eager' allow='' src='http://foo.com'></iframe>");
+                html.Should().Contain("<iframe loading='eager' allow='' src='http://bar.com'></iframe>");
             }
         }
 
@@ -81,8 +81,8 @@ namespace UnitTests.Endpoints.Results
 
             await _subject.ExecuteAsync(_context);
 
-            _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("style-src 'unsafe-inline' 'sha256-u+OupXgfekP+x/f6rMdoEAspPCYUtca912isERnoEjY='");
-            _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("style-src 'unsafe-inline' 'sha256-u+OupXgfekP+x/f6rMdoEAspPCYUtca912isERnoEjY='");
+            _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("style-src 'unsafe-inline' 'sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4='");
+            _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("style-src 'unsafe-inline' 'sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4='");
         }
 
         [Fact]
@@ -94,7 +94,7 @@ namespace UnitTests.Endpoints.Results
 
             await _subject.ExecuteAsync(_context);
 
-            _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("style-src 'sha256-u+OupXgfekP+x/f6rMdoEAspPCYUtca912isERnoEjY='");
+            _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("style-src 'sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4='");
             _context.Response.Headers["X-Content-Security-Policy"].Should().BeEmpty();
         }
     }
