@@ -25,6 +25,7 @@ namespace Duende.IdentityServer.Validation
         private readonly IHttpContextAccessor _contextAccessor; 
         private readonly IIssuerNameService _issuerNameService;
         private readonly IReplayCache _replayCache;
+        private readonly IServerUrls _urls;
         private readonly IdentityServerOptions _options;
         private readonly ILogger _logger;
 
@@ -37,12 +38,14 @@ namespace Duende.IdentityServer.Validation
             IHttpContextAccessor contextAccessor,
             IIssuerNameService issuerNameService, 
             IReplayCache replayCache,
+            IServerUrls urls,
             IdentityServerOptions options,
             ILogger<PrivateKeyJwtSecretValidator> logger)
         {
             _contextAccessor = contextAccessor;
             _issuerNameService = issuerNameService;
             _replayCache = replayCache;
+            _urls = urls;
             _options = options;
             _logger = logger;
         }
@@ -92,12 +95,10 @@ namespace Duende.IdentityServer.Validation
             var validAudiences = new[]
             {
                 // token endpoint URL
-                string.Concat(_contextAccessor.HttpContext.GetIdentityServerBaseUrl().EnsureTrailingSlash(),
-                    Constants.ProtocolRoutePaths.Token),
+                string.Concat(_urls.BaseUrl.EnsureTrailingSlash(), Constants.ProtocolRoutePaths.Token),
                 // TODO: remove the issuer URL in a future major release?
                 // issuer URL
-                string.Concat((await _issuerNameService.GetCurrentAsync()).EnsureTrailingSlash(),
-                    Constants.ProtocolRoutePaths.Token)
+                string.Concat((await _issuerNameService.GetCurrentAsync()).EnsureTrailingSlash(), Constants.ProtocolRoutePaths.Token)
             }.Distinct();
 
             var tokenValidationParameters = new TokenValidationParameters

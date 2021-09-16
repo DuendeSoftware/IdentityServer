@@ -39,6 +39,11 @@ namespace Duende.IdentityServer.Services
         protected readonly ISystemClock Clock;
 
         /// <summary>
+        /// The server URL service.
+        /// </summary>
+        protected readonly IServerUrls Urls;
+
+        /// <summary>
         /// The logger
         /// </summary>
         protected readonly ILogger Logger;
@@ -92,18 +97,21 @@ namespace Duende.IdentityServer.Services
         /// <param name="handlers">The handlers.</param>
         /// <param name="options">The options.</param>
         /// <param name="clock">The clock.</param>
+        /// <param name="urls"></param>
         /// <param name="logger">The logger.</param>
         public DefaultUserSession(
             IHttpContextAccessor httpContextAccessor,
             IAuthenticationHandlerProvider handlers,
             IdentityServerOptions options,
             ISystemClock clock,
+            IServerUrls urls,
             ILogger<IUserSession> logger)
         {
             HttpContextAccessor = httpContextAccessor;
             Handlers = handlers;
             Options = options;
             Clock = clock;
+            Urls = urls;
             Logger = logger;
         }
 
@@ -250,7 +258,7 @@ namespace Duende.IdentityServer.Services
         public virtual CookieOptions CreateSessionIdCookieOptions()
         {
             var secure = HttpContext.Request.IsHttps;
-            var path = HttpContext.GetIdentityServerBasePath().CleanUrlPath();
+            var path = Urls.BasePath.CleanUrlPath();
 
             var options = new CookieOptions
             {

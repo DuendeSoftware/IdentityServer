@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Validation;
@@ -18,6 +17,7 @@ using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Xunit;
+using Duende.IdentityServer.Services;
 
 namespace UnitTests.Endpoints.Results
 {
@@ -29,19 +29,22 @@ namespace UnitTests.Endpoints.Results
         private IdentityServerOptions _options = new IdentityServerOptions();
         private MockUserSession _mockUserSession = new MockUserSession();
         private MockMessageStore<Duende.IdentityServer.Models.ErrorMessage> _mockErrorMessageStore = new MockMessageStore<Duende.IdentityServer.Models.ErrorMessage>();
-
+        
+        private DefaultServerUrls _urls;
         private DefaultHttpContext _context = new DefaultHttpContext();
 
         public AuthorizeResultTests()
         {
-            _context.SetIdentityServerOrigin("https://server");
-            _context.SetIdentityServerBasePath("/");
+            _urls = new DefaultServerUrls(new HttpContextAccessor { HttpContext = _context });
+
+            _context.Request.Scheme = "https";
+            _context.Request.Host = new HostString("server");
             _context.Response.Body = new MemoryStream();
 
             _options.UserInteraction.ErrorUrl = "~/error";
             _options.UserInteraction.ErrorIdParameter = "errorId";
 
-            _subject = new AuthorizeResult(_response, _options, _mockUserSession, _mockErrorMessageStore, new StubClock());
+            _subject = new AuthorizeResult(_response, _options, _mockUserSession, _mockErrorMessageStore, _urls, new StubClock());
         }
 
         [Fact]

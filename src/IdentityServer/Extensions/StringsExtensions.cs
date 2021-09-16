@@ -97,6 +97,7 @@ namespace Duende.IdentityServer.Extensions
             return url;
         }
 
+        // TODO: check usage and see if it's really needed
         [DebuggerStepThrough]
         public static string EnsureTrailingSlash(this string url)
         {

@@ -63,6 +63,7 @@ namespace Duende.IdentityServer.Validation
         /// The HTTP context accessor.
         /// </summary>
         protected readonly IHttpContextAccessor Context;
+        // TODO: remove?
 
         /// <summary>
         /// Creates a new instance of the EndSessionRequestValidator.

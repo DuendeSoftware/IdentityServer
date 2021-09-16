@@ -27,6 +27,7 @@ namespace Duende.IdentityServer.Endpoints
         private readonly IDeviceAuthorizationRequestValidator _requestValidator;
         private readonly IDeviceAuthorizationResponseGenerator _responseGenerator;
         private readonly IEventService _events;
+        private readonly IServerUrls _urls;
         private readonly ILogger<DeviceAuthorizationEndpoint> _logger;
 
         public DeviceAuthorizationEndpoint(
@@ -34,12 +35,14 @@ namespace Duende.IdentityServer.Endpoints
             IDeviceAuthorizationRequestValidator requestValidator,
             IDeviceAuthorizationResponseGenerator responseGenerator,
             IEventService events,
+            IServerUrls urls,
             ILogger<DeviceAuthorizationEndpoint> logger)
         {
             _clientValidator = clientValidator;
             _requestValidator = requestValidator;
             _responseGenerator = responseGenerator;
             _events = events;
+            _urls = urls;
             _logger = logger;
         }
 
@@ -81,7 +84,8 @@ namespace Duende.IdentityServer.Endpoints
                 return Error(requestResult.Error, requestResult.ErrorDescription);
             }
 
-            var baseUrl = context.GetIdentityServerBaseUrl().EnsureTrailingSlash();
+            // TODO: why do we need EnsureTrailingSlash?
+            var baseUrl = _urls.BaseUrl.EnsureTrailingSlash();
 
             // create response
             _logger.LogTrace("Calling into device authorize response generator: {type}", _responseGenerator.GetType().FullName);

@@ -227,6 +227,7 @@ namespace Duende.IdentityServer.Services
             {
                 if (Options.MutualTls.AlwaysEmitConfirmationClaim)
                 {
+                    // TODO: Request feature for client certs?
                     var clientCertificate = await ContextAccessor.HttpContext.Connection.GetClientCertificateAsync();
                     if (clientCertificate != null)
                     {

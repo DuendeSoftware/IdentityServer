@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
@@ -28,8 +27,8 @@ namespace UnitTests.Endpoints.Results
 
         public EndSessionCallbackResultTests()
         {
-            _context.SetIdentityServerOrigin("https://server");
-            _context.SetIdentityServerBasePath("/");
+            _context.Request.Scheme = "https";
+            _context.Request.Host = new HostString("server");
             _context.Response.Body = new MemoryStream();
 
             _subject = new EndSessionCallbackResult(_result, _options);

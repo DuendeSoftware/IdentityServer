@@ -40,6 +40,7 @@ namespace UnitTests.Validation.Secrets
                  new HttpContextAccessor { HttpContext = ctx },
                  new TestIssuerNameService("https://idsrv3.com"),
                  new DefaultReplayCache(new TestCache()), 
+                 new MockServerUrls() { Origin = "https://idsrv3.com" },
                  new IdentityServerOptions(),
                  new LoggerFactory().CreateLogger<PrivateKeyJwtSecretValidator>());
             

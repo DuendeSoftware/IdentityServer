@@ -5,9 +5,8 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
+using UnitTests.Common;
 using Xunit;
 
 namespace UnitTests.Services.Default
@@ -17,17 +16,16 @@ namespace UnitTests.Services.Default
         private OidcReturnUrlParser _subject;
 
         IdentityServerOptions _options = new IdentityServerOptions();
-        DefaultHttpContext _httpContext = new DefaultHttpContext();
+        MockServerUrls _urls = new MockServerUrls();
 
         public OidcReturnUrlParserTests()
         {
-            _httpContext.Request.Scheme = "https";
-            _httpContext.Request.Host = new HostString("server");
+            _urls.Origin = "https://server";
 
             _subject = new OidcReturnUrlParser(
                 _options,
                 null, null, 
-                new HttpContextAccessor { HttpContext = _httpContext }, 
+                _urls,
                 new LoggerFactory().CreateLogger<OidcReturnUrlParser>());
         }
 
@@ -106,7 +104,7 @@ namespace UnitTests.Services.Default
         public void IsValidReturnUrl_accepts_urls_with_unicode()
         {
             _options.UserInteraction.AllowOriginInReturnUrl = true;
-            _httpContext.Request.Host = new HostString("грант.рф");
+            _urls.Origin = "https://" + new HostString("грант.рф").ToUriComponent();
 
             var valid = _subject.IsValidReturnUrl("https://xn--80af5akm.xn--p1ai/connect/authorize");
             valid.Should().BeTrue();
@@ -119,7 +117,7 @@ namespace UnitTests.Services.Default
         public void IsValidReturnUrl_accepts_urls_with_current_port(string url)
         {
             _options.UserInteraction.AllowOriginInReturnUrl = true;
-            _httpContext.Request.Host = new HostString("server:443");
+            _urls.Origin = "https://server:443";
 
             var valid = _subject.IsValidReturnUrl(url);
             valid.Should().BeTrue();
@@ -138,8 +136,8 @@ namespace UnitTests.Services.Default
         public void IsValidReturnUrl_rejects_urls_with_incorrect_current_port(string url)
         {
             _options.UserInteraction.AllowOriginInReturnUrl = true;
-            _httpContext.Request.Host = new HostString("server:443");
-            
+            _urls.Origin = "https://server:443";
+
             var valid = _subject.IsValidReturnUrl(url);
             valid.Should().BeFalse();
         }
