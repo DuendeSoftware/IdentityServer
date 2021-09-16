@@ -62,8 +62,8 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// The HTTP context accessor.
         /// </summary>
+        [Obsolete("Unused. Will remove in a future release.")]
         protected readonly IHttpContextAccessor Context;
-        // TODO: remove?
 
         /// <summary>
         /// Creates a new instance of the EndSessionRequestValidator.

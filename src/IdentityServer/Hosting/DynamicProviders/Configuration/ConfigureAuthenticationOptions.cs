@@ -33,6 +33,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         /// <inheritdoc/>
         public void Configure(string name, TAuthenticationOptions options)
         {
+            // we have to resolve these here due to DI lifetime issues
             var providerOptions = _httpContextAccessor.HttpContext.RequestServices.GetRequiredService<DynamicProviderOptions>();
             var cache = _httpContextAccessor.HttpContext.RequestServices.GetRequiredService<DynamicAuthenticationSchemeCache>();
             

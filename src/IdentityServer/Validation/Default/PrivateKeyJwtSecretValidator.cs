@@ -22,7 +22,6 @@ namespace Duende.IdentityServer.Validation
     /// </summary>
     public class PrivateKeyJwtSecretValidator : ISecretValidator
     {
-        private readonly IHttpContextAccessor _contextAccessor; 
         private readonly IIssuerNameService _issuerNameService;
         private readonly IReplayCache _replayCache;
         private readonly IServerUrls _urls;
@@ -35,14 +34,12 @@ namespace Duende.IdentityServer.Validation
         /// Instantiates an instance of private_key_jwt secret validator
         /// </summary>
         public PrivateKeyJwtSecretValidator(
-            IHttpContextAccessor contextAccessor,
             IIssuerNameService issuerNameService, 
             IReplayCache replayCache,
             IServerUrls urls,
             IdentityServerOptions options,
             ILogger<PrivateKeyJwtSecretValidator> logger)
         {
-            _contextAccessor = contextAccessor;
             _issuerNameService = issuerNameService;
             _replayCache = replayCache;
             _urls = urls;
