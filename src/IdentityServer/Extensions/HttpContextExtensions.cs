@@ -42,7 +42,6 @@ namespace Duende.IdentityServer.Extensions
         }
 
         [Obsolete("Use IIssuerNameService instead.")]
-        // TODO: unused now, remove in v7
         public static string GetIdentityServerOrigin(this HttpContext context)
         {
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
@@ -130,7 +129,6 @@ namespace Duende.IdentityServer.Extensions
         public static string GetIdentityServerIssuerUri(this HttpContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
-            // TODO: why did we make the IIssuerNameService async????
             return context.RequestServices.GetRequiredService<IIssuerNameService>().GetCurrentAsync().GetAwaiter().GetResult();
         }
 

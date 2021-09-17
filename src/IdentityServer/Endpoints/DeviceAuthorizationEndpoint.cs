@@ -84,12 +84,9 @@ namespace Duende.IdentityServer.Endpoints
                 return Error(requestResult.Error, requestResult.ErrorDescription);
             }
 
-            // TODO: why do we need EnsureTrailingSlash?
-            var baseUrl = _urls.BaseUrl.EnsureTrailingSlash();
-
             // create response
             _logger.LogTrace("Calling into device authorize response generator: {type}", _responseGenerator.GetType().FullName);
-            var response = await _responseGenerator.ProcessAsync(requestResult, baseUrl);
+            var response = await _responseGenerator.ProcessAsync(requestResult, _urls.BaseUrl);
 
             await _events.RaiseAsync(new DeviceAuthorizationSuccessEvent(response, requestResult));
 

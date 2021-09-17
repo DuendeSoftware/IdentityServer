@@ -62,8 +62,6 @@ namespace Duende.IdentityServer
             return CookiePrefix + id;
         }
 
-        // TODO: Request feature for IdentityServer paths?
-        // odd mixing IServerUrls and http request usage
         private string CookiePath => _urls.BasePath.CleanUrlPath();
 
         private IEnumerable<string> GetCookieNames()
