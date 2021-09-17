@@ -13,7 +13,7 @@ namespace Duende.IdentityServer.Events
     public class InvalidClientConfigurationEvent : Event
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="UnhandledExceptionEvent" /> class.
+        /// Initializes a new instance of the <see cref="InvalidClientConfigurationEvent" /> class.
         /// </summary>
         /// <param name="client">The client.</param>
         /// <param name="errorMessage">The error message.</param>
