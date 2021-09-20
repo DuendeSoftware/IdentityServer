@@ -193,6 +193,7 @@ namespace Duende.IdentityServer.Services
             var refreshToken = new RefreshToken
             {
                 Subject = request.Subject,
+                SessionId = request.AccessToken.SessionId,
                 ClientId = request.Client.ClientId,
                 Description = request.Description,
                 AuthorizedScopes = request.AuthorizedScopes,
