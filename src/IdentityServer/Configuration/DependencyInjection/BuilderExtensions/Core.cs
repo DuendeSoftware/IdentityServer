@@ -150,7 +150,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddPluggableServices(this IIdentityServerBuilder builder)
         {
-            builder.Services.TryAddTransient<ICancellationTokenService, DefaultCancellationTokenService>();
+            builder.Services.TryAddTransient<ICancellationTokenService, DefaultHttpContextCancellationTokenService>();
             builder.Services.TryAddTransient<IPersistedGrantService, DefaultPersistedGrantService>();
             builder.Services.TryAddTransient<IKeyMaterialService, DefaultKeyMaterialService>();
             builder.Services.TryAddTransient<ITokenService, DefaultTokenService>();
