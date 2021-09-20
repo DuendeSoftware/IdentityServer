@@ -9,7 +9,7 @@ namespace Duende.IdentityServer.Services
     /// </summary>
     public class DefaultReplayCache : IReplayCache
     {
-        private const string Prefix = nameof(DefaultReplayCache) + ":";
+        private const string Prefix = nameof(DefaultReplayCache) + "-";
         
         private readonly IDistributedCache _cache;
         

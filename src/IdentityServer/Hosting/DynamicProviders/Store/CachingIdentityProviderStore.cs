@@ -49,13 +49,13 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         /// <inheritdoc/>
         public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
         {
-            var result = await _allCache.GetAsync("::all::");
+            var result = await _allCache.GetAsync("__all__");
             if (result == null)
             {
                 result = await _inner.GetAllSchemeNamesAsync();
                 if (result != null)
                 {
-                    await _allCache.SetAsync("::all::", result, _options.Caching.IdentityProviderCacheDuration);
+                    await _allCache.SetAsync("__all__", result, _options.Caching.IdentityProviderCacheDuration);
                 }
             }
 
