@@ -115,7 +115,7 @@ namespace Duende.IdentityServer.Models
         /// <value>
         /// The session identifier.
         /// </value>
-        public string SessionId => Subject?.FindFirst(JwtClaimTypes.SessionId)?.Value;
+        public string SessionId { get; set; }
 
         /// <summary>
         /// Gets the description the user assigned to the device being authorized.

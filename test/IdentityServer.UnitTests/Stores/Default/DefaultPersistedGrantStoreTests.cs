@@ -106,6 +106,7 @@ namespace UnitTests.Stores.Default
             {
                 CreationTime = DateTime.UtcNow,
                 Lifetime = 10,
+                SessionId = "sessionid",
                 AccessToken = new Token
                 {
                     ClientId = "client",
@@ -119,7 +120,7 @@ namespace UnitTests.Stores.Default
                         new Claim("sid", "sessionid"),
                         new Claim("scope", "s1"),
                         new Claim("scope", "s2"),
-                    }
+                    },
                 },
                 Version = 4
             };

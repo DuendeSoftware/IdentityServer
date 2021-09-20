@@ -338,7 +338,8 @@ namespace UnitTests.Services.Default
                 var handle1 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client1",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -346,7 +347,8 @@ namespace UnitTests.Services.Default
                 var handle2 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client2",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -354,7 +356,8 @@ namespace UnitTests.Services.Default
                 var handle3 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client3",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session3") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session3",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -373,7 +376,8 @@ namespace UnitTests.Services.Default
                 var handle1 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client1",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -381,7 +385,8 @@ namespace UnitTests.Services.Default
                 var handle2 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client2",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -389,7 +394,8 @@ namespace UnitTests.Services.Default
                 var handle3 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client3",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session3") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session3",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -408,7 +414,8 @@ namespace UnitTests.Services.Default
                 var handle1 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client1",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -416,7 +423,8 @@ namespace UnitTests.Services.Default
                 var handle2 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client2",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -424,7 +432,8 @@ namespace UnitTests.Services.Default
                 var handle3 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client3",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -432,7 +441,8 @@ namespace UnitTests.Services.Default
                 var handle4 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client1",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session2") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session2",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -452,7 +462,8 @@ namespace UnitTests.Services.Default
                 var handle1 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client1",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -460,7 +471,8 @@ namespace UnitTests.Services.Default
                 var handle2 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client2",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -468,7 +480,8 @@ namespace UnitTests.Services.Default
                 var handle3 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client3",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session1") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session1",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
@@ -476,7 +489,8 @@ namespace UnitTests.Services.Default
                 var handle4 = await _refreshTokens.StoreRefreshTokenAsync(new RefreshToken()
                 {
                     ClientId = "client1",
-                    Subject = new IdentityServerUser("123") { AdditionalClaims = new[] { new Claim("sid", "session2") } }.CreatePrincipal(),
+                    Subject = new IdentityServerUser("123").CreatePrincipal(),
+                    SessionId = "session2",
                     AuthorizedScopes = new[] { "baz" },
                     CreationTime = DateTime.UtcNow,
                     Lifetime = 10,
