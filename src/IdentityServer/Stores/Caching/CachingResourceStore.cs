@@ -5,9 +5,9 @@
 using Duende.IdentityServer.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
+using System;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -23,10 +23,9 @@ namespace Duende.IdentityServer.Stores
 
         private readonly IdentityServerOptions _options;
         
-        private readonly ICache<IEnumerable<IdentityResource>> _identityCache;
-        private readonly ICache<IEnumerable<ApiResource>> _apiByScopeCache;
-        private readonly ICache<IEnumerable<ApiScope>> _apiScopeCache;
-        private readonly ICache<IEnumerable<ApiResource>> _apiResourceCache;
+        private readonly ICache<IdentityResource> _identityCache;
+        private readonly ICache<ApiScope> _apiScopeCache;
+        private readonly ICache<ApiResource> _apiResourceCache;
         private readonly ICache<Resources> _allCache;
         
         private readonly IResourceStore _inner;
@@ -37,30 +36,21 @@ namespace Duende.IdentityServer.Stores
         /// <param name="options">The options.</param>
         /// <param name="inner">The inner.</param>
         /// <param name="identityCache">The identity cache.</param>
-        /// <param name="apiByScopeCache">The API by scope cache.</param>
         /// <param name="apisCache">The API cache.</param>
         /// <param name="scopeCache"></param>
         /// <param name="allCache">All cache.</param>
         public CachingResourceStore(IdentityServerOptions options, T inner, 
-            ICache<IEnumerable<IdentityResource>> identityCache, 
-            ICache<IEnumerable<ApiResource>> apiByScopeCache,
-            ICache<IEnumerable<ApiResource>> apisCache,
-            ICache<IEnumerable<ApiScope>> scopeCache,
+            ICache<IdentityResource> identityCache, 
+            ICache<ApiResource> apisCache,
+            ICache<ApiScope> scopeCache,
             ICache<Resources> allCache)
         {
             _options = options;
             _inner = inner;
             _identityCache = identityCache;
-            _apiByScopeCache = apiByScopeCache;
             _apiResourceCache = apisCache;
             _apiScopeCache = scopeCache;
             _allCache = allCache;
-        }
-
-        private string GetKey(IEnumerable<string> names)
-        {
-            if (names == null || !names.Any()) return string.Empty;
-            return names.OrderBy(x => x).Aggregate((x, y) => x + "," + y);
         }
 
         /// <inheritdoc/>
@@ -78,50 +68,54 @@ namespace Duende.IdentityServer.Stores
         /// <inheritdoc/>
         public async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
         {
-            var key = GetKey(apiResourceNames);
-
-            var apis = await _apiResourceCache.GetOrAddAsync(key,
-                _options.Caching.ResourceStoreExpiration,
-                async () => await _inner.FindApiResourcesByNameAsync(apiResourceNames));
-
-            return apis;
+            return await FindItemsAsync(apiResourceNames, _apiResourceCache, async names => await _inner.FindApiResourcesByNameAsync(names), x => x.Name);
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> names)
+        public async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
         {
-            var key = GetKey(names);
-
-            var identities = await _identityCache.GetOrAddAsync(key,
-                _options.Caching.ResourceStoreExpiration,
-                async () => await _inner.FindIdentityResourcesByScopeNameAsync(names));
-
-            return identities;
+            return await FindItemsAsync(scopeNames, _identityCache, async names => await _inner.FindIdentityResourcesByScopeNameAsync(names), x => x.Name);
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> names)
+        public async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
         {
-            var key = GetKey(names);
-
-            // this cache key needs a prefix to disambiguate from the other ICache<IEnumerable<ApiResource>> _apiResourceCache cache
-            var apis = await _apiByScopeCache.GetOrAddAsync("ApiResourcesByScopeNames:" + key,
-                _options.Caching.ResourceStoreExpiration,
-                async () => await _inner.FindApiResourcesByScopeNameAsync(names));
-
-            return apis;
+            return await FindItemsAsync(scopeNames, _apiResourceCache, async names => await _inner.FindApiResourcesByScopeNameAsync(names), x => x.Name, "ApiResourcesByScopeNames-");
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
         {
-            var key = GetKey(scopeNames);
+            return await FindItemsAsync(scopeNames, _apiScopeCache, async names => await _inner.FindApiScopesByNameAsync(names), x => x.Name);
+        }
 
-            var apis = await _apiScopeCache.GetOrAddAsync(key,
-                _options.Caching.ResourceStoreExpiration,
-                async () => await _inner.FindApiScopesByNameAsync(scopeNames));
+        async Task<IEnumerable<TItem>> FindItemsAsync<TItem>(IEnumerable<string> names, ICache<TItem> cache, Func<IEnumerable<string>, Task<IEnumerable<TItem>>> getManyFunc, Func<TItem, string> getNameFunc, string keyPrefix = null)
+            where TItem : class
+        {
+            var uncachedNames = new List<string>();
+            var cachedItems = new List<TItem>();
+            foreach (var name in names)
+            {
+                var item = await cache.GetAsync(keyPrefix + name);
+                if (item != null)
+                {
+                    cachedItems.Add(item);
+                }
+                else
+                {
+                    uncachedNames.Add(name);
+                }
+            }
 
-            return apis;
+            var uncachedItems = await getManyFunc(uncachedNames);
+            foreach (var item in uncachedItems)
+            {
+                await cache.SetAsync(keyPrefix + getNameFunc(item), item, _options.Caching.ResourceStoreExpiration);
+            }
+
+            cachedItems.AddRange(uncachedItems);
+
+            return cachedItems;
         }
     }
 }
