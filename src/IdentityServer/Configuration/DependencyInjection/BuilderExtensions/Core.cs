@@ -29,6 +29,7 @@ using Duende.IdentityServer.Services.Default;
 using Duende.IdentityServer.Services.KeyManagement;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Hosting.DynamicProviders;
+using Duende.IdentityServer.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -140,6 +141,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddCors();
             builder.Services.AddTransientDecorator<ICorsPolicyProvider, CorsPolicyProvider>();
 
+            builder.Services.TryAddTransient(typeof(IConcurrencyLock<>), typeof(DefaultConcurrencyLock<>));
+
             return builder;
         }
 
@@ -202,7 +205,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             builder.Services.TryAddTransient<IAutomaticKeyManagerKeyStore, AutomaticKeyManagerKeyStore>();
             builder.Services.TryAddTransient<IKeyManager, KeyManager>();
-            builder.Services.TryAddTransient<INewKeyLock, DefaultKeyLock>();
             builder.Services.TryAddTransient<ISigningKeyProtector, DataProtectionKeyProtector>();
             builder.Services.TryAddSingleton<ISigningKeyStoreCache, InMemoryKeyStoreCache>();
             builder.Services.TryAddTransient(provider => provider.GetRequiredService<IdentityServerOptions>().KeyManagement);

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Internal;
 using Duende.IdentityServer.Services.KeyManagement;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -41,7 +42,7 @@ namespace UnitTests.Services.Default.KeyManagement
                 _mockKeyStoreCache,
                 _mockKeyProtector, 
                 _mockClock,
-                new NopKeyLock(),
+                new NopConcurrencyLock<KeyManager>(),
                 new LoggerFactory().CreateLogger<KeyManager>(),
                 new TestIssuerNameService());
         }
@@ -90,7 +91,7 @@ namespace UnitTests.Services.Default.KeyManagement
                   _mockKeyStoreCache,
                   _mockKeyProtector,
                   _mockClock,
-                  new NopKeyLock(),
+                  new NopConcurrencyLock<KeyManager>(),
                   new LoggerFactory().CreateLogger<KeyManager>(),
                   new TestIssuerNameService());
             };

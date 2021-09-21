@@ -2,28 +2,24 @@
 // See LICENSE in the project root for license information.
 
 
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services.KeyManagement
+namespace Duende.IdentityServer.Internal
 {
     /// <summary>
-    /// Default implementation.
+    /// Nop implementation.
     /// </summary>
-    public class DefaultKeyLock : INewKeyLock
+    public class NopConcurrencyLock<T> : IConcurrencyLock<T>
     {
-        static SemaphoreSlim __newKeyLock = new SemaphoreSlim(1);
-
         /// <inheritdoc/>
         public Task LockAsync()
         {
-            return __newKeyLock.WaitAsync();
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
         public void Unlock()
         {
-            __newKeyLock.Release();
         }
     }
 }

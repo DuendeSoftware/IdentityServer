@@ -11,6 +11,7 @@ using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Internal;
 
 namespace Duende.IdentityServer.Services.KeyManagement
 {
@@ -24,7 +25,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         private readonly ISigningKeyStoreCache _cache;
         private readonly ISigningKeyProtector _protector;
         private readonly ISystemClock _clock;
-        private readonly INewKeyLock _newKeyLock;
+        private readonly IConcurrencyLock<KeyManager> _newKeyLock;
         private readonly ILogger<KeyManager> _logger;
         private readonly IIssuerNameService _issuerNameService;
 
@@ -45,7 +46,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             ISigningKeyStoreCache cache,
             ISigningKeyProtector protector,
             ISystemClock clock,
-            INewKeyLock newKeyLock,
+            IConcurrencyLock<KeyManager> newKeyLock,
             ILogger<KeyManager> logger,
             IIssuerNameService issuerNameService)
         {
