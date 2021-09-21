@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using Microsoft.Extensions.Logging;
+using Duende.IdentityServer.Internal;
 
 namespace Duende.IdentityServer.Services
 {
@@ -25,6 +26,11 @@ namespace Duende.IdentityServer.Services
         protected IMemoryCache Cache { get; }
 
         /// <summary>
+        /// A lock used for concurrency.
+        /// </summary>
+        protected IConcurrencyLock<DefaultCache<T>> ConcurrencyLock { get; }
+
+        /// <summary>
         /// The logger.
         /// </summary>
         protected ILogger<DefaultCache<T>> Logger { get; }
@@ -33,10 +39,12 @@ namespace Duende.IdentityServer.Services
         /// Initializes a new instance of the <see cref="DefaultCache{T}"/> class.
         /// </summary>
         /// <param name="cache">The cache.</param>
+        /// <param name="concurrencyLock"></param>
         /// <param name="logger">The logger.</param>
-        public DefaultCache(IMemoryCache cache, ILogger<DefaultCache<T>> logger)
+        public DefaultCache(IMemoryCache cache, IConcurrencyLock<DefaultCache<T>> concurrencyLock, ILogger<DefaultCache<T>> logger)
         {
             Cache = cache;
+            ConcurrencyLock = concurrencyLock;
             Logger = logger;
         }
 
@@ -84,14 +92,33 @@ namespace Duende.IdentityServer.Services
 
             if (item == null)
             {
-                Logger.LogTrace("Cache miss for {cacheKey}", key);
+                await ConcurrencyLock.LockAsync();
 
-                item = await get();
-
-                if (item != null)
+                try
                 {
-                    Logger.LogTrace("Setting item in cache for {cacheKey}", key);
-                    await SetAsync(key, item, duration);
+                    // double check
+                    item = await GetAsync(key);
+
+                    if (item == null)
+                    {
+                        Logger.LogTrace("Cache miss for {cacheKey}", key);
+
+                        item = await get();
+
+                        if (item != null)
+                        {
+                            Logger.LogTrace("Setting item in cache for {cacheKey}", key);
+                            await SetAsync(key, item, duration);
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogTrace("Cache hit for {cacheKey}", key);
+                    }
+                }
+                finally
+                {
+                    ConcurrencyLock.Unlock();
                 }
             }
             else
