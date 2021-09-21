@@ -1,12 +1,10 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
-using Duende.IdentityServer.Extensions;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
-using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -39,7 +37,6 @@ namespace Duende.IdentityServer.Stores
         private readonly IdentityServerOptions Options;
         private readonly ICache<CorsCacheEntry> CorsCache;
         private readonly ICorsPolicyService Inner;
-        private readonly ILogger Logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CachingResourceStore{T}"/> class.
@@ -47,16 +44,13 @@ namespace Duende.IdentityServer.Stores
         /// <param name="options">The options.</param>
         /// <param name="inner">The inner.</param>
         /// <param name="corsCache">The CORS origin cache.</param>
-        /// <param name="logger">The logger.</param>
         public CachingCorsPolicyService(IdentityServerOptions options,
             T inner,
-            ICache<CorsCacheEntry> corsCache,
-            ILogger<CachingCorsPolicyService<T>> logger)
+            ICache<CorsCacheEntry> corsCache)
         {
             Options = options;
             Inner = inner;
             CorsCache = corsCache;
-            Logger = logger;
         }
 
         /// <summary>
@@ -66,10 +60,9 @@ namespace Duende.IdentityServer.Stores
         /// <returns></returns>
         public virtual async Task<bool> IsOriginAllowedAsync(string origin)
         {
-            var entry = await CorsCache.GetAsync(origin,
+            var entry = await CorsCache.GetOrAddAsync(origin,
                           Options.Caching.CorsExpiration,
-                          async () => new CorsCacheEntry(await Inner.IsOriginAllowedAsync(origin)),
-                          Logger);
+                          async () => new CorsCacheEntry(await Inner.IsOriginAllowedAsync(origin)));
 
             return entry.Allowed;
         }

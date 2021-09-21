@@ -318,7 +318,7 @@ namespace IdentityServer.IntegrationTests.Hosting
             redirectUri.Should().StartWith("https://server/federation/idp1/signin");
 
             var cache = _host.Resolve<ICache<IdentityProvider>>() as DefaultCache<IdentityProvider>;
-            cache.Remove("test");
+            await cache.RemoveAsync("test");
 
             response = await _host.BrowserClient.GetAsync(redirectUri);
             

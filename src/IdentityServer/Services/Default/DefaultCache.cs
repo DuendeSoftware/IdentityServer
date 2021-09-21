@@ -5,6 +5,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Services
 {
@@ -24,12 +25,19 @@ namespace Duende.IdentityServer.Services
         protected IMemoryCache Cache { get; }
 
         /// <summary>
+        /// The logger.
+        /// </summary>
+        protected ILogger<DefaultCache<T>> Logger { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DefaultCache{T}"/> class.
         /// </summary>
         /// <param name="cache">The cache.</param>
-        public DefaultCache(IMemoryCache cache)
+        /// <param name="logger">The logger.</param>
+        public DefaultCache(IMemoryCache cache, ILogger<DefaultCache<T>> logger)
         {
             Cache = cache;
+            Logger = logger;
         }
 
         /// <summary>
@@ -42,13 +50,7 @@ namespace Duende.IdentityServer.Services
             return typeof(T).FullName + KeySeparator + key;
         }
 
-        /// <summary>
-        /// Gets the cached data based upon a key index.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns>
-        /// The cached item, or <c>null</c> if no item matches the key.
-        /// </returns>
+        /// <inheritdoc/>
         public Task<T> GetAsync(string key)
         {
             key = GetKey(key);
@@ -56,13 +58,7 @@ namespace Duende.IdentityServer.Services
             return Task.FromResult(item);
         }
 
-        /// <summary>
-        /// Caches the data based upon a key
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="expiration">The expiration.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public Task SetAsync(string key, T item, TimeSpan expiration)
         {
             key = GetKey(key);
@@ -70,11 +66,40 @@ namespace Duende.IdentityServer.Services
             return Task.CompletedTask;
         }
 
-        // for testing
-        internal void Remove(string key)
+        /// <inheritdoc/>
+        public Task RemoveAsync(string key)
         {
             key = GetKey(key);
             Cache.Remove(key);
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public async Task<T> GetOrAddAsync(string key, TimeSpan duration, Func<Task<T>> get)
+        {
+            if (get == null) throw new ArgumentNullException(nameof(get));
+            if (key == null) return null;
+
+            var item = await GetAsync(key);
+
+            if (item == null)
+            {
+                Logger.LogTrace("Cache miss for {cacheKey}", key);
+
+                item = await get();
+
+                if (item != null)
+                {
+                    Logger.LogTrace("Setting item in cache for {cacheKey}", key);
+                    await SetAsync(key, item, duration);
+                }
+            }
+            else
+            {
+                Logger.LogTrace("Cache hit for {cacheKey}", key);
+            }
+
+            return item;
         }
     }
 }
