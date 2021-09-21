@@ -16,7 +16,7 @@ namespace Duende.IdentityServer.Services
     public class DefaultCache<T> : ICache<T>
         where T : class
     {
-        private const string KeySeparator = ":";
+        private const string KeySeparator = "-";
 
         /// <summary>
         /// The memory cache.
