@@ -2,10 +2,12 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,6 +26,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         private readonly ICache<IEnumerable<IdentityProviderName>> _allCache;
         private readonly IdentityServerOptions _options;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<CachingIdentityProviderStore<T>> _logger;
 
         /// <summary>
         /// Ctor
@@ -33,49 +36,33 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         /// <param name="allCache"></param>
         /// <param name="options"></param>
         /// <param name="httpContextAccessor"></param>
+        /// <param name="logger"></param>
         public CachingIdentityProviderStore(T inner, 
             ICache<IdentityProvider> cache,
             ICache<IEnumerable<IdentityProviderName>> allCache,
             IdentityServerOptions options,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<CachingIdentityProviderStore<T>> logger)
         {
             _inner = inner;
             _cache = cache;
             _allCache = allCache;
             _options = options;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
         {
-            var result = await _allCache.GetAsync("__all__");
-            if (result == null)
-            {
-                result = await _inner.GetAllSchemeNamesAsync();
-                if (result != null)
-                {
-                    await _allCache.SetAsync("__all__", result, _options.Caching.IdentityProviderCacheDuration);
-                }
-            }
-
+            var result = await _allCache.GetAsync("__all__", _options.Caching.IdentityProviderCacheDuration, () => _inner.GetAllSchemeNamesAsync(), _logger);
             return result;
         }
 
         /// <inheritdoc/>
         public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
         {
-            var result = await _cache.GetAsync(scheme);
-            if (result == null)
-            {
-                result = await _inner.GetBySchemeAsync(scheme);
-                if (result != null)
-                {
-                    RemoveCacheEntry(result);
-                    await _cache.SetAsync(scheme, result, _options.Caching.IdentityProviderCacheDuration);
-                }
-            }
-
+            var result = await _cache.GetAsync(scheme, _options.Caching.IdentityProviderCacheDuration, () => _inner.GetBySchemeAsync(scheme), _logger);
             return result;
         }
 
