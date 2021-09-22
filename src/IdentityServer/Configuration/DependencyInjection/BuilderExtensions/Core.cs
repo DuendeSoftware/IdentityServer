@@ -62,6 +62,18 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddCookieAuthentication(this IIdentityServerBuilder builder)
         {
+            return builder
+                .AddDefaultCookieHandlers()
+                .AddCookieAuthenticationExtensions();
+        }
+
+        /// <summary>
+        /// Adds the default cookie handlers and corresponding configuration
+        /// </summary>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddDefaultCookieHandlers(this IIdentityServerBuilder builder)
+        {
             builder.Services.AddAuthentication(IdentityServerConstants.DefaultCookieAuthenticationScheme)
                 .AddCookie(IdentityServerConstants.DefaultCookieAuthenticationScheme)
                 .AddCookie(IdentityServerConstants.ExternalCookieAuthenticationScheme);
@@ -69,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return builder;
         }
-        
+
         /// <summary>
         /// Adds the necessary decorators for cookie authentication required by IdentityServer
         /// </summary>
