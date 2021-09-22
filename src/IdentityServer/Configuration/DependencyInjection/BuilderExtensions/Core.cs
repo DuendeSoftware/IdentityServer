@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddOptions();
             builder.Services.AddSingleton(
                 resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value);
-            builder.Services.AddSingleton(
+            builder.Services.AddTransient(
                 resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value.PersistentGrants);
             builder.Services.AddHttpClient();
 
@@ -223,7 +223,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddDynamicProvidersCore(this IIdentityServerBuilder builder)
         {
-            builder.Services.AddSingleton(svcs => svcs.GetRequiredService<IdentityServerOptions>().DynamicProviders);
+            builder.Services.AddTransient(svcs => svcs.GetRequiredService<IdentityServerOptions>().DynamicProviders);
             builder.Services.AddTransientDecorator<IAuthenticationSchemeProvider, DynamicAuthenticationSchemeProvider>();
             builder.Services.TryAddSingleton<IIdentityProviderStore, NopIdentityProviderStore>();
             // the per-request cache is to ensure that a scheme loaded from the cache is still available later in the
