@@ -11,7 +11,6 @@ using Duende.IdentityServer.Extensions;
 using System;
 using IdentityModel;
 using System.Linq;
-using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.DependencyInjection;
 using Duende.IdentityServer.Services;
 

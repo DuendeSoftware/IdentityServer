@@ -65,8 +65,18 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddAuthentication(IdentityServerConstants.DefaultCookieAuthenticationScheme)
                 .AddCookie(IdentityServerConstants.DefaultCookieAuthenticationScheme)
                 .AddCookie(IdentityServerConstants.ExternalCookieAuthenticationScheme);
-
             builder.Services.AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureInternalCookieOptions>();
+
+            return builder;
+        }
+        
+        /// <summary>
+        /// Adds the necessary decorators for cookie authentication required by IdentityServer
+        /// </summary>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddCookieAuthenticationExtensions(this IIdentityServerBuilder builder)
+        {
             builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureInternalCookieOptions>();
             builder.Services.AddTransientDecorator<IAuthenticationService, IdentityServerAuthenticationService>();
             builder.Services.AddTransientDecorator<IAuthenticationHandlerProvider, FederatedSignoutAuthenticationHandlerProvider>();
