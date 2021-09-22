@@ -45,7 +45,7 @@ namespace IntegrationTests.Stores
 
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new IdentityProviderStore(context, FakeLogger<IdentityProviderStore>.Create(), new NoneCancellationTokenService());
+                var store = new IdentityProviderStore(context, FakeLogger<IdentityProviderStore>.Create(), new NoneCancellationTokenProvider());
                 var item = await store.GetBySchemeAsync("scheme1");
 
                 item.Should().NotBeNull();
@@ -68,7 +68,7 @@ namespace IntegrationTests.Stores
 
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new IdentityProviderStore(context, FakeLogger<IdentityProviderStore>.Create(), new NoneCancellationTokenService());
+                var store = new IdentityProviderStore(context, FakeLogger<IdentityProviderStore>.Create(), new NoneCancellationTokenProvider());
                 var item = await store.GetBySchemeAsync("scheme2");
 
                 item.Should().BeNull();
@@ -91,7 +91,7 @@ namespace IntegrationTests.Stores
 
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new IdentityProviderStore(context, FakeLogger<IdentityProviderStore>.Create(), new NoneCancellationTokenService());
+                var store = new IdentityProviderStore(context, FakeLogger<IdentityProviderStore>.Create(), new NoneCancellationTokenProvider());
                 var item = await store.GetBySchemeAsync("scheme3");
 
                 item.Should().BeNull();

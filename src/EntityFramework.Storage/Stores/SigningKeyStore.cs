@@ -30,9 +30,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IPersistedGrantDbContext Context;
 
         /// <summary>
-        /// The CancellationToken service.
+        /// The CancellationToken provider.
         /// </summary>
-        protected readonly ICancellationTokenService CancellationTokenService;
+        protected readonly ICancellationTokenProvider CancellationTokenProvider;
 
         /// <summary>
         /// The logger.
@@ -44,13 +44,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="cancellationTokenService"></param>
+        /// <param name="cancellationTokenProvider"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public SigningKeyStore(IPersistedGrantDbContext context, ILogger<SigningKeyStore> logger, ICancellationTokenService cancellationTokenService)
+        public SigningKeyStore(IPersistedGrantDbContext context, ILogger<SigningKeyStore> logger, ICancellationTokenProvider cancellationTokenProvider)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
-            CancellationTokenService = cancellationTokenService;
+            CancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         {
             var entities = await Context.Keys.Where(x => x.Use == Use)
                 .AsNoTracking()
-                .ToArrayAsync(CancellationTokenService.CancellationToken);
+                .ToArrayAsync(CancellationTokenProvider.CancellationToken);
             return entities.Select(key => new SerializedKey
             {
                 Id = key.Id,
@@ -93,7 +93,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 IsX509Certificate = key.IsX509Certificate
             };
             Context.Keys.Add(entity);
-            return Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
+            return Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
         }
 
         /// <summary>
@@ -104,13 +104,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         public async Task DeleteKeyAsync(string id)
         {
             var item = await Context.Keys.Where(x => x.Use == Use && x.Id == id)
-                .FirstOrDefaultAsync(CancellationTokenService.CancellationToken);
+                .FirstOrDefaultAsync(CancellationTokenProvider.CancellationToken);
             if (item != null)
             {
                 try
                 {
                     Context.Keys.Remove(item);
-                    await Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
+                    await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {

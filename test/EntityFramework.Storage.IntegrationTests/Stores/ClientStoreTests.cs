@@ -36,7 +36,7 @@ namespace IntegrationTests.Stores
         {
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenService());
+                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenProvider());
                 var client = await store.FindClientByIdAsync(Guid.NewGuid().ToString());
                 client.Should().BeNull();
             }
@@ -60,7 +60,7 @@ namespace IntegrationTests.Stores
             Client client;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenService());
+                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenProvider());
                 client = await store.FindClientByIdAsync(testClient.ClientId);
             }
 
@@ -94,7 +94,7 @@ namespace IntegrationTests.Stores
             Client client;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenService());
+                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenProvider());
                 client = await store.FindClientByIdAsync(testClient.ClientId);
             }
 
@@ -142,7 +142,7 @@ namespace IntegrationTests.Stores
             
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenService());
+                var store = new ClientStore(context, FakeLogger<ClientStore>.Create(), new NoneCancellationTokenProvider());
 
                 const int timeout = 5000;
                 var task = Task.Run(() => store.FindClientByIdAsync(testClient.ClientId));

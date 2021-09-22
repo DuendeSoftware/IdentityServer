@@ -25,9 +25,9 @@ namespace Duende.IdentityServer.EntityFramework.Services
         protected readonly IServiceProvider Provider;
 
         /// <summary>
-        /// The CancellationToken service.
+        /// The CancellationToken provider.
         /// </summary>
-        protected readonly ICancellationTokenService CancellationTokenService;
+        protected readonly ICancellationTokenProvider CancellationTokenProvider;
         
         /// <summary>
         /// The logger.
@@ -39,13 +39,13 @@ namespace Duende.IdentityServer.EntityFramework.Services
         /// </summary>
         /// <param name="provider">The provider.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="cancellationTokenService"></param>
+        /// <param name="cancellationTokenProvider"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public CorsPolicyService(IServiceProvider provider, ILogger<CorsPolicyService> logger, ICancellationTokenService cancellationTokenService)
+        public CorsPolicyService(IServiceProvider provider, ILogger<CorsPolicyService> logger, ICancellationTokenProvider cancellationTokenProvider)
         {
             Provider = provider;
             Logger = logger;
-            CancellationTokenService = cancellationTokenService;
+            CancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Duende.IdentityServer.EntityFramework.Services
                         where o.Origin == origin
                         select o;
 
-            var isAllowed = await query.AnyAsync(CancellationTokenService.CancellationToken);
+            var isAllowed = await query.AnyAsync(CancellationTokenProvider.CancellationToken);
 
             Logger.LogDebug("Origin {origin} is allowed: {originAllowed}", origin, isAllowed);
 

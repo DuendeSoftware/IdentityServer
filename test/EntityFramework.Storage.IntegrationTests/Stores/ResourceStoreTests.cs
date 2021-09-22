@@ -88,7 +88,7 @@ namespace IntegrationTests.Stores
             ApiResource foundResource;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenService());
+                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenProvider());
                 foundResource = (await store.FindApiResourcesByNameAsync(new[] { resource.Name })).SingleOrDefault();
             }
 
@@ -118,7 +118,7 @@ namespace IntegrationTests.Stores
             ApiResource foundResource;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenService());
+                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenProvider());
                 foundResource = (await store.FindApiResourcesByNameAsync(new[] { resource.Name })).SingleOrDefault();
             }
 
@@ -153,7 +153,7 @@ namespace IntegrationTests.Stores
             IEnumerable<ApiResource> resources;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenService());
+                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenProvider());
                 resources = await store.FindApiResourcesByScopeNameAsync(new List<string>
                 {
                     testApiScope.Name
@@ -187,7 +187,7 @@ namespace IntegrationTests.Stores
             IEnumerable<ApiResource> resources;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenService());
+                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenProvider());
                 resources = await store.FindApiResourcesByScopeNameAsync(new[] { testApiScope.Name });
             }
 
@@ -213,7 +213,7 @@ namespace IntegrationTests.Stores
             IList<IdentityResource> resources;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenService());
+                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenProvider());
                 resources = (await store.FindIdentityResourcesByScopeNameAsync(new List<string>
                 {
                     resource.Name
@@ -244,7 +244,7 @@ namespace IntegrationTests.Stores
             IList<IdentityResource> resources;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenService());
+                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenProvider());
                 resources = (await store.FindIdentityResourcesByScopeNameAsync(new List<string>
                 {
                     resource.Name
@@ -272,7 +272,7 @@ namespace IntegrationTests.Stores
             IList<ApiScope> resources;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenService());
+                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenProvider());
                 resources = (await store.FindApiScopesByNameAsync(new List<string>
                 {
                     resource.Name
@@ -303,7 +303,7 @@ namespace IntegrationTests.Stores
             IList<ApiScope> resources;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenService());
+                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenProvider());
                 resources = (await store.FindApiScopesByNameAsync(new List<string>
                 {
                     resource.Name
@@ -353,7 +353,7 @@ namespace IntegrationTests.Stores
             Resources resources;
             using (var context = new ConfigurationDbContext(options))
             {
-                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenService());
+                var store = new ResourceStore(context, FakeLogger<ResourceStore>.Create(), new NoneCancellationTokenProvider());
                 resources = await store.GetAllResourcesAsync();
             }
 

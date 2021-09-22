@@ -58,7 +58,7 @@ namespace Tests.Services
                 svcs.AddSingleton<IConfigurationDbContext>(context);
                 var provider = svcs.BuildServiceProvider();
 
-                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenService());
+                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
                 result = service.IsOriginAllowedAsync(testCorsOrigin).Result;
             }
 
@@ -86,7 +86,7 @@ namespace Tests.Services
                 svcs.AddSingleton<IConfigurationDbContext>(context);
                 var provider = svcs.BuildServiceProvider();
 
-                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenService());
+                var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
                 result = service.IsOriginAllowedAsync("InvalidOrigin").Result;
             }
 

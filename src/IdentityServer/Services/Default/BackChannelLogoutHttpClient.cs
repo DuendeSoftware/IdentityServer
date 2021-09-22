@@ -17,19 +17,19 @@ namespace Duende.IdentityServer.Services
     {
         private readonly HttpClient _client;
         private readonly ILogger<DefaultBackChannelLogoutHttpClient> _logger;
-        private readonly ICancellationTokenService _cancellationTokenService;
+        private readonly ICancellationTokenProvider _cancellationTokenProvider;
 
         /// <summary>
         /// Constructor for BackChannelLogoutHttpClient.
         /// </summary>
         /// <param name="client"></param>
         /// <param name="loggerFactory"></param>
-        /// <param name="cancellationTokenService"></param>
-        public DefaultBackChannelLogoutHttpClient(HttpClient client, ILoggerFactory loggerFactory, ICancellationTokenService cancellationTokenService)
+        /// <param name="cancellationTokenProvider"></param>
+        public DefaultBackChannelLogoutHttpClient(HttpClient client, ILoggerFactory loggerFactory, ICancellationTokenProvider cancellationTokenProvider)
         {
             _client = client;
             _logger = loggerFactory.CreateLogger<DefaultBackChannelLogoutHttpClient>();
-            _cancellationTokenService = cancellationTokenService;
+            _cancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Duende.IdentityServer.Services
         {
             try
             {
-                var response = await _client.PostAsync(url, new FormUrlEncodedContent(payload), _cancellationTokenService.CancellationToken);
+                var response = await _client.PostAsync(url, new FormUrlEncodedContent(payload), _cancellationTokenProvider.CancellationToken);
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogDebug("Response from back-channel logout endpoint: {url} status code: {status}", url, (int)response.StatusCode);

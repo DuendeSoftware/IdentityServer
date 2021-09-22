@@ -26,9 +26,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IConfigurationDbContext Context;
 
         /// <summary>
-        /// The CancellationToken service.
+        /// The CancellationToken provider.
         /// </summary>
-        protected readonly ICancellationTokenService CancellationTokenService;
+        protected readonly ICancellationTokenProvider CancellationTokenProvider;
 
         /// <summary>
         /// The logger.
@@ -40,13 +40,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="cancellationTokenService"></param>
+        /// <param name="cancellationTokenProvider"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public ClientStore(IConfigurationDbContext context, ILogger<ClientStore> logger, ICancellationTokenService cancellationTokenService)
+        public ClientStore(IConfigurationDbContext context, ILogger<ClientStore> logger, ICancellationTokenProvider cancellationTokenProvider)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
-            CancellationTokenService = cancellationTokenService;
+            CancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                         .Include(x => x.RedirectUris)
                         .AsNoTracking();
             
-            var client = (await query.ToArrayAsync(CancellationTokenService.CancellationToken))
+            var client = (await query.ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .SingleOrDefault(x => x.ClientId == clientId);
             if (client == null) return null;
 

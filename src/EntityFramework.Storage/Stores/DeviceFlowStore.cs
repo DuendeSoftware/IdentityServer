@@ -34,9 +34,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IPersistentGrantSerializer Serializer;
 
         /// <summary>
-        /// The CancellationToken service.
+        /// The CancellationToken provider.
         /// </summary>
-        protected readonly ICancellationTokenService CancellationTokenService;
+        protected readonly ICancellationTokenProvider CancellationTokenProvider;
 
         /// <summary>
         /// The logger.
@@ -49,17 +49,17 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// <param name="context">The context.</param>
         /// <param name="serializer">The serializer</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="cancellationTokenService"></param>
+        /// <param name="cancellationTokenProvider"></param>
         public DeviceFlowStore(
             IPersistedGrantDbContext context, 
             IPersistentGrantSerializer serializer,
             ILogger<DeviceFlowStore> logger, 
-            ICancellationTokenService cancellationTokenService)
+            ICancellationTokenProvider cancellationTokenProvider)
         {
             Context = context;
             Serializer = serializer;
             Logger = logger;
-            CancellationTokenService = cancellationTokenService;
+            CancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         {
             Context.DeviceFlowCodes.Add(ToEntity(data, deviceCode, userCode));
 
-            await Context.SaveChangesAsync(CancellationTokenService.CancellationToken);
+            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
         {
             var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.UserCode == userCode)
-                .ToArrayAsync(CancellationTokenService.CancellationToken))
+                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .SingleOrDefault(x => x.UserCode == userCode);
             var model = ToModel(deviceFlowCodes?.Data);
 
@@ -101,7 +101,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
         {
             var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.DeviceCode == deviceCode)
-                .ToArrayAsync(CancellationTokenService.CancellationToken))
+                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .SingleOrDefault(x => x.DeviceCode == deviceCode);
             var model = ToModel(deviceFlowCodes?.Data);
 
@@ -119,7 +119,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         public virtual async Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
         {
             var existing = (await Context.DeviceFlowCodes.Where(x => x.UserCode == userCode)
-                .ToArrayAsync(CancellationTokenService.CancellationToken))
+                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .SingleOrDefault(x => x.UserCode == userCode);
             if (existing == null)
             {
@@ -151,7 +151,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         public virtual async Task RemoveByDeviceCodeAsync(string deviceCode)
         {
             var deviceFlowCodes = (await Context.DeviceFlowCodes.Where(x => x.DeviceCode == deviceCode)
-                .ToArrayAsync(CancellationTokenService.CancellationToken))
+                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .SingleOrDefault(x => x.DeviceCode == deviceCode);
 
             if(deviceFlowCodes != null)

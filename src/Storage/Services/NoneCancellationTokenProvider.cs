@@ -7,9 +7,9 @@ using System.Threading;
 namespace Duende.IdentityServer.Services
 {
     /// <summary>
-    /// Implementation of ICancellationTokenService that returns CancellationToken.None
+    /// Implementation of ICancellationTokenProvider that returns CancellationToken.None
     /// </summary>
-    public class NoneCancellationTokenService : ICancellationTokenService
+    public class NoneCancellationTokenProvider : ICancellationTokenProvider
     {
         /// <inheritdoc/>
         public CancellationToken CancellationToken => CancellationToken.None;

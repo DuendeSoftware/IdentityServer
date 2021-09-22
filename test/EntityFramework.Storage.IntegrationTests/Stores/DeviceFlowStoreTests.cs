@@ -49,7 +49,7 @@ namespace IntegrationTests.Stores
 
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
                 await store.StoreDeviceAuthorizationAsync(deviceCode, userCode, data);
             }
 
@@ -77,7 +77,7 @@ namespace IntegrationTests.Stores
 
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
                 await store.StoreDeviceAuthorizationAsync(deviceCode, userCode, data);
             }
 
@@ -126,7 +126,7 @@ namespace IntegrationTests.Stores
 
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
 
                 // skip odd behaviour of in-memory provider
                 if (options.Extensions.All(x => x.GetType() != typeof(InMemoryOptionsExtension)))
@@ -169,7 +169,7 @@ namespace IntegrationTests.Stores
 
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
 
                 // skip odd behaviour of in-memory provider
                 if (options.Extensions.All(x => x.GetType() != typeof(InMemoryOptionsExtension)))
@@ -215,7 +215,7 @@ namespace IntegrationTests.Stores
             DeviceCode code;
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
                 code = await store.FindByUserCodeAsync(testUserCode);
             }
             
@@ -230,7 +230,7 @@ namespace IntegrationTests.Stores
         {
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
                 var code = await store.FindByUserCodeAsync($"user_{Guid.NewGuid().ToString()}");
                 code.Should().BeNull();
             }
@@ -271,7 +271,7 @@ namespace IntegrationTests.Stores
             DeviceCode code;
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
                 code = await store.FindByDeviceCodeAsync(testDeviceCode);
             }
 
@@ -286,7 +286,7 @@ namespace IntegrationTests.Stores
         {
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
                 var code = await store.FindByDeviceCodeAsync($"device_{Guid.NewGuid().ToString()}");
                 code.Should().BeNull();
             }
@@ -336,7 +336,7 @@ namespace IntegrationTests.Stores
 
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
                 await store.UpdateByUserCodeAsync(testUserCode, authorizedDeviceCode);
             }
 
@@ -389,7 +389,7 @@ namespace IntegrationTests.Stores
             
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
                 await store.RemoveByDeviceCodeAsync(testDeviceCode);
             }
             
@@ -403,7 +403,7 @@ namespace IntegrationTests.Stores
         {
             using (var context = new PersistedGrantDbContext(options))
             {
-                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenService());
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
                 await store.RemoveByDeviceCodeAsync($"device_{Guid.NewGuid().ToString()}");
             }
         }

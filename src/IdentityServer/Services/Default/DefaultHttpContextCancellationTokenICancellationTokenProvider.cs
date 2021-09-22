@@ -3,11 +3,11 @@ using System.Threading;
 
 namespace Duende.IdentityServer.Services.Default
 {
-    class DefaultHttpContextCancellationTokenService : ICancellationTokenService
+    class DefaultHttpContextCancellationTokenICancellationTokenProvider : ICancellationTokenProvider
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public DefaultHttpContextCancellationTokenService(IHttpContextAccessor httpContextAccessor)
+        public DefaultHttpContextCancellationTokenICancellationTokenProvider(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }

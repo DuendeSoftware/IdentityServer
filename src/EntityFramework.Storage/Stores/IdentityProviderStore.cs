@@ -28,9 +28,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IConfigurationDbContext Context;
 
         /// <summary>
-        /// The CancellationToken service.
+        /// The CancellationToken provider.
         /// </summary>
-        protected readonly ICancellationTokenService CancellationTokenService;
+        protected readonly ICancellationTokenProvider CancellationTokenProvider;
 
         /// <summary>
         /// The logger.
@@ -42,13 +42,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="cancellationTokenService"></param>
+        /// <param name="cancellationTokenProvider"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public IdentityProviderStore(IConfigurationDbContext context, ILogger<IdentityProviderStore> logger, ICancellationTokenService cancellationTokenService)
+        public IdentityProviderStore(IConfigurationDbContext context, ILogger<IdentityProviderStore> logger, ICancellationTokenProvider cancellationTokenProvider)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
-            CancellationTokenService = cancellationTokenService;
+            CancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <inheritdoc/>
@@ -59,14 +59,14 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 Scheme = x.Scheme,
                 DisplayName  = x.DisplayName
             });
-            return await query.ToArrayAsync(CancellationTokenService.CancellationToken);
+            return await query.ToArrayAsync(CancellationTokenProvider.CancellationToken);
         }
 
         /// <inheritdoc/>
         public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
         {
             var idp = (await Context.IdentityProviders.AsNoTracking().Where(x => x.Scheme == scheme)
-                .ToArrayAsync(CancellationTokenService.CancellationToken))
+                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .SingleOrDefault(x => x.Scheme == scheme);
             if (idp == null) return null;
 
