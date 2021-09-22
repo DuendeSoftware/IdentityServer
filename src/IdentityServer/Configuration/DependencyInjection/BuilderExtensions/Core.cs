@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds the default cookie handlers and corresponding configuration
+        /// Adds the default infrastructure for cookie authentication in IdentityServer.
         /// </summary>
         /// <param name="builder">The builder.</param>
         /// <returns></returns>
