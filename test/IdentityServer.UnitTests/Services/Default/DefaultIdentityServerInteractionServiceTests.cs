@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -29,12 +29,13 @@ namespace UnitTests.Services.Default
         private MockPersistedGrantService _mockPersistedGrantService = new MockPersistedGrantService();
         private MockUserSession _mockUserSession = new MockUserSession();
         private MockReturnUrlParser _mockReturnUrlParser = new MockReturnUrlParser();
+        private MockServerUrls _mockServerUrls = new MockServerUrls();
 
         private ResourceValidationResult _resourceValidationResult;
 
         public DefaultIdentityServerInteractionServiceTests()
         {
-            _mockMockHttpContextAccessor = new MockHttpContextAccessor(_options, _mockUserSession, _mockEndSessionStore);
+            _mockMockHttpContextAccessor = new MockHttpContextAccessor(_options, _mockUserSession, _mockEndSessionStore, _mockServerUrls);
 
             _subject = new DefaultIdentityServerInteractionService(new StubClock(), 
                 _mockMockHttpContextAccessor,

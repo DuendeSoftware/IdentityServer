@@ -39,6 +39,7 @@ namespace UnitTests.Services.Default
                 _mockAuthenticationHandlerProvider,
                 _options,
                 new StubClock(), 
+                new MockServerUrls { Origin = "https://server" },
                 TestLogger.Create<DefaultUserSession>());
         }
 

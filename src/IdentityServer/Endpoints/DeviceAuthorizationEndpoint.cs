@@ -27,6 +27,7 @@ namespace Duende.IdentityServer.Endpoints
         private readonly IDeviceAuthorizationRequestValidator _requestValidator;
         private readonly IDeviceAuthorizationResponseGenerator _responseGenerator;
         private readonly IEventService _events;
+        private readonly IServerUrls _urls;
         private readonly ILogger<DeviceAuthorizationEndpoint> _logger;
 
         public DeviceAuthorizationEndpoint(
@@ -34,12 +35,14 @@ namespace Duende.IdentityServer.Endpoints
             IDeviceAuthorizationRequestValidator requestValidator,
             IDeviceAuthorizationResponseGenerator responseGenerator,
             IEventService events,
+            IServerUrls urls,
             ILogger<DeviceAuthorizationEndpoint> logger)
         {
             _clientValidator = clientValidator;
             _requestValidator = requestValidator;
             _responseGenerator = responseGenerator;
             _events = events;
+            _urls = urls;
             _logger = logger;
         }
 
@@ -81,11 +84,9 @@ namespace Duende.IdentityServer.Endpoints
                 return Error(requestResult.Error, requestResult.ErrorDescription);
             }
 
-            var baseUrl = context.GetIdentityServerBaseUrl().EnsureTrailingSlash();
-
             // create response
             _logger.LogTrace("Calling into device authorize response generator: {type}", _responseGenerator.GetType().FullName);
-            var response = await _responseGenerator.ProcessAsync(requestResult, baseUrl);
+            var response = await _responseGenerator.ProcessAsync(requestResult, _urls.BaseUrl);
 
             await _events.RaiseAsync(new DeviceAuthorizationSuccessEvent(response, requestResult));
 

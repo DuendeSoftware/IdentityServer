@@ -7,7 +7,6 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -20,17 +19,20 @@ namespace Duende.IdentityServer.Endpoints
 
         private readonly IdentityServerOptions _options;
         private readonly IIssuerNameService _issuerNameService;
+        private readonly IServerUrls _urls;
         private readonly IDiscoveryResponseGenerator _responseGenerator;
 
         public DiscoveryEndpoint(
             IdentityServerOptions options,
             IIssuerNameService issuerNameService,
             IDiscoveryResponseGenerator responseGenerator,
+            IServerUrls urls,
             ILogger<DiscoveryEndpoint> logger)
         {
             _logger = logger;
             _options = options;
             _issuerNameService = issuerNameService;
+            _urls = urls;
             _responseGenerator = responseGenerator;
         }
 
@@ -53,7 +55,7 @@ namespace Duende.IdentityServer.Endpoints
                 return new StatusCodeResult(HttpStatusCode.NotFound);
             }
 
-            var baseUrl = context.GetIdentityServerBaseUrl().EnsureTrailingSlash();
+            var baseUrl = _urls.BaseUrl;
             var issuerUri = await _issuerNameService.GetCurrentAsync();
 
             // generate response

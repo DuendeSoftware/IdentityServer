@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -22,7 +22,8 @@ namespace UnitTests.Common
         public MockHttpContextAccessor(
             IdentityServerOptions options = null,
             IUserSession userSession = null,
-            IMessageStore<LogoutNotificationContext> endSessionStore = null)
+            IMessageStore<LogoutNotificationContext> endSessionStore = null,
+            IServerUrls urls = null)
         {
             options = options ?? TestIdentityServerOptions.Create();
 
@@ -53,6 +54,11 @@ namespace UnitTests.Common
             else
             {
                 services.AddSingleton(endSessionStore);
+            }
+
+            if (urls != null)
+            {
+                services.AddSingleton<IServerUrls>(urls);
             }
 
             _context.RequestServices = services.BuildServiceProvider();

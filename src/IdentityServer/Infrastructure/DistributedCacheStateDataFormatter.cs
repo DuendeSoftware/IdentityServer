@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Infrastructure
 {
@@ -55,7 +54,7 @@ namespace Duende.IdentityServer.Infrastructure
         {
             var key = Guid.NewGuid().ToString();
             var cacheKey = $"{CacheKeyPrefix}-{_name}-{purpose}-{key}";
-            var json = ObjectSerializer.ToString(data.Items);
+            var json = ObjectSerializer.ToString(data);
 
             var options = new DistributedCacheEntryOptions();
             if (data.ExpiresUtc.HasValue)
@@ -107,8 +106,7 @@ namespace Duende.IdentityServer.Infrastructure
                 return null;
             }
 
-            var items = ObjectSerializer.FromString<Dictionary<string, string>>(json);
-            var props = new AuthenticationProperties(items);
+            var props = ObjectSerializer.FromString<AuthenticationProperties>(json);
             return props;
         }
     }

@@ -10,7 +10,6 @@ using System.Collections.Specialized;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Configuration;
 
 namespace Duende.IdentityServer.Services
@@ -20,7 +19,7 @@ namespace Duende.IdentityServer.Services
         private readonly IdentityServerOptions _options;
         private readonly IAuthorizeRequestValidator _validator;
         private readonly IUserSession _userSession;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IServerUrls _urls;
         private readonly ILogger _logger;
         private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
@@ -28,14 +27,14 @@ namespace Duende.IdentityServer.Services
             IdentityServerOptions options,
             IAuthorizeRequestValidator validator,
             IUserSession userSession,
-            IHttpContextAccessor httpContextAccessor,
+            IServerUrls urls,
             ILogger<OidcReturnUrlParser> logger,
             IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
         {
             _options = options;
             _validator = validator;
             _userSession = userSession;
-            _httpContextAccessor = httpContextAccessor;
+            _urls = urls;
             _logger = logger;
             _authorizationParametersMessageStore = authorizationParametersMessageStore;
         }
@@ -75,7 +74,7 @@ namespace Duende.IdentityServer.Services
                     return false;
                 }
 
-                var host = _httpContextAccessor.HttpContext.GetIdentityServerHost();
+                var host = _urls.Origin;
                 if (returnUrl.StartsWith(host, StringComparison.OrdinalIgnoreCase) == true)
                 {
                     returnUrl = returnUrl.Substring(host.Length);
