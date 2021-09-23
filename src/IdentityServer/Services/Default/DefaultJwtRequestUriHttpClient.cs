@@ -3,7 +3,6 @@
 
 
 using System;
-using System.Collections.Generic;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
@@ -21,6 +20,7 @@ namespace Duende.IdentityServer.Services
         private readonly HttpClient _client;
         private readonly IdentityServerOptions _options;
         private readonly ILogger<DefaultJwtRequestUriHttpClient> _logger;
+        private readonly ICancellationTokenProvider _cancellationTokenProvider;
 
         /// <summary>
         /// ctor
@@ -28,11 +28,13 @@ namespace Duende.IdentityServer.Services
         /// <param name="client">An HTTP client</param>
         /// <param name="options">The options.</param>
         /// <param name="loggerFactory">The logger factory</param>
-        public DefaultJwtRequestUriHttpClient(HttpClient client, IdentityServerOptions options, ILoggerFactory loggerFactory)
+        /// <param name="cancellationTokenProvider"></param>
+        public DefaultJwtRequestUriHttpClient(HttpClient client, IdentityServerOptions options, ILoggerFactory loggerFactory, ICancellationTokenProvider cancellationTokenProvider)
         {
             _client = client;
             _options = options;
             _logger = loggerFactory.CreateLogger<DefaultJwtRequestUriHttpClient>();
+            _cancellationTokenProvider = cancellationTokenProvider;
         }
 
 
@@ -47,7 +49,7 @@ namespace Duende.IdentityServer.Services
             req.Properties.Add(IdentityServerConstants.JwtRequestClientKey, client);
 #endif
          
-            var response = await _client.SendAsync(req);
+            var response = await _client.SendAsync(req, _cancellationTokenProvider.CancellationToken);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 if (_options.StrictJarValidation)

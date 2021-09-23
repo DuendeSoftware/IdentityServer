@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -106,18 +106,18 @@ namespace Microsoft.Extensions.DependencyInjection
                     break;
                 }
 
-                await RemoveExpiredGrantsAsync();
+                await RemoveExpiredGrantsAsync(cancellationToken);
             }
         }
 
-        async Task RemoveExpiredGrantsAsync()
+        async Task RemoveExpiredGrantsAsync(CancellationToken cancellationToken = default)
         {
             try
             {
                 using (var serviceScope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
                 {
                     var tokenCleanupService = serviceScope.ServiceProvider.GetRequiredService<TokenCleanupService>();
-                    await tokenCleanupService.RemoveExpiredGrantsAsync();
+                    await tokenCleanupService.RemoveExpiredGrantsAsync(cancellationToken);
                 }
             }
             catch (Exception ex)

@@ -42,6 +42,7 @@ namespace Duende.IdentityServer.Events
 
         public const int UnhandledException = ErrorEventsStart + 0;
         public const int InvalidClientConfiguration = ErrorEventsStart + 1;
+        public const int InvalidIdentityProviderConfiguration = ErrorEventsStart + 2;
 
         //////////////////////////////////////////////////////
         /// Grants related events

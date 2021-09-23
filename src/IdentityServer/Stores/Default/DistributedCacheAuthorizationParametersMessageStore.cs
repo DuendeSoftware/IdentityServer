@@ -71,7 +71,8 @@ namespace Duende.IdentityServer.Stores.Default
         /// <inheritdoc/>
         public virtual Task DeleteAsync(string id)
         {
-            return _distributedCache.RemoveAsync(id);
+            var cacheKey = $"{CacheKeyPrefix}-{id}";
+            return _distributedCache.RemoveAsync(cacheKey);
         }
     }
 }

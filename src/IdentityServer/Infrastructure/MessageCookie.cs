@@ -12,6 +12,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer
 {
@@ -20,17 +21,20 @@ namespace Duende.IdentityServer
         private readonly ILogger _logger;
         private readonly IdentityServerOptions _options;
         private readonly IHttpContextAccessor _context;
+        private readonly IServerUrls _urls;
         private readonly IDataProtector _protector;
 
         public MessageCookie(
             ILogger<MessageCookie<TModel>> logger, 
             IdentityServerOptions options,
             IHttpContextAccessor context, 
+            IServerUrls urls,
             IDataProtectionProvider provider)
         {
             _logger = logger;
             _options = options;
             _context = context;
+            _urls = urls;
             _protector = provider.CreateProtector(MessageType);
         }
 
@@ -58,7 +62,7 @@ namespace Duende.IdentityServer
             return CookiePrefix + id;
         }
 
-        private string CookiePath => _context.HttpContext.GetIdentityServerBasePath().CleanUrlPath();
+        private string CookiePath => _urls.BasePath.CleanUrlPath();
 
         private IEnumerable<string> GetCookieNames()
         {

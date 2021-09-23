@@ -279,7 +279,9 @@ namespace Microsoft.Extensions.DependencyInjection
             where T : IIdentityProviderStore
         {
             builder.Services.TryAddTransient(typeof(T));
-            builder.Services.AddTransient<IIdentityProviderStore, CachingIdentityProviderStore<T>>();
+            builder.Services.AddTransient<ValidatingIdentityProviderStore<T>>();
+            builder.Services.AddTransient<IIdentityProviderStore, CachingIdentityProviderStore<ValidatingIdentityProviderStore<T>>>();
+
             return builder;
         }
         
@@ -355,6 +357,21 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+
+        /// <summary>
+        /// Adds an IdentityProvider configuration validator.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddIdentityProviderConfigurationValidator<T>(this IIdentityServerBuilder builder)
+            where T : class, IIdentityProviderConfigurationValidator
+        {
+            builder.Services.AddTransient<IIdentityProviderConfigurationValidator, T>();
+
+            return builder;
+        }
+
         /// <summary>
         /// Adds the X509 secret validators for mutual TLS.
         /// </summary>
@@ -413,7 +430,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var httpClient = httpClientFactory.CreateClient(name);
                 var loggerFactory = s.GetRequiredService<ILoggerFactory>();
                 
-                return new DefaultBackChannelLogoutHttpClient(httpClient, loggerFactory);
+                return new DefaultBackChannelLogoutHttpClient(httpClient, loggerFactory, new NoneCancellationTokenProvider());
             });
 
             return httpBuilder;
@@ -451,7 +468,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var loggerFactory = s.GetRequiredService<ILoggerFactory>();
                 var options = s.GetRequiredService<IdentityServerOptions>();
 
-                return new DefaultJwtRequestUriHttpClient(httpClient, options, loggerFactory);
+                return new DefaultJwtRequestUriHttpClient(httpClient, options, loggerFactory, new NoneCancellationTokenProvider());
             });
 
             return httpBuilder;
@@ -497,7 +514,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IIdentityServerBuilder AddIdentityProviderStore<T>(this IIdentityServerBuilder builder)
            where T : class, IIdentityProviderStore
         {
-            builder.Services.AddTransient<IIdentityProviderStore, T>();
+            builder.Services.TryAddTransient(typeof(T));
+            builder.Services.AddTransient<IIdentityProviderStore, ValidatingIdentityProviderStore<T>>();
 
             return builder;
         }

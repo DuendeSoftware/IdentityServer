@@ -18,6 +18,7 @@ using Duende.IdentityServer;
 using IdentityServerHost.Extensions;
 using Serilog.Events;
 using Microsoft.AspNetCore.Hosting;
+using Duende.IdentityServer.Hosting.DynamicProviders;
 
 namespace IdentityServerHost
 {
@@ -67,7 +68,18 @@ namespace IdentityServerHost
                 .AddProfileService<HostProfileService>()
                 .AddCustomTokenRequestValidator<ParameterizedScopeTokenRequestValidator>()
                 .AddScopeParser<ParameterizedScopeParser>()
-                .AddMutualTlsSecretValidators();
+                .AddMutualTlsSecretValidators()
+                .AddInMemoryOidcProviders(new[] { 
+                    new Duende.IdentityServer.Models.OidcProvider
+                    {
+                        Scheme = "dynamicprovider-idsvr",
+                        DisplayName = "IdentityServer (via Dynamic Providers)",
+                        Authority = "https://demo.duendesoftware.com",
+                        ClientId = "login",
+                        ResponseType = "id_token",
+                        Scope = "openid profile"
+                    }
+                });
 
             services.AddExternalIdentityProviders();
 

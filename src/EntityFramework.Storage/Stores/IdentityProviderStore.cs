@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,11 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IConfigurationDbContext Context;
 
         /// <summary>
+        /// The CancellationToken provider.
+        /// </summary>
+        protected readonly ICancellationTokenProvider CancellationTokenProvider;
+
+        /// <summary>
         /// The logger.
         /// </summary>
         protected readonly ILogger<IdentityProviderStore> Logger;
@@ -36,11 +42,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="cancellationTokenProvider"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public IdentityProviderStore(IConfigurationDbContext context, ILogger<IdentityProviderStore> logger)
+        public IdentityProviderStore(IConfigurationDbContext context, ILogger<IdentityProviderStore> logger, ICancellationTokenProvider cancellationTokenProvider)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
+            CancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <inheritdoc/>
@@ -51,15 +59,15 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 Scheme = x.Scheme,
                 DisplayName  = x.DisplayName
             });
-            return await query.ToArrayAsync();
+            return await query.ToArrayAsync(CancellationTokenProvider.CancellationToken);
         }
 
         /// <inheritdoc/>
         public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
         {
-            var query = Context.IdentityProviders.Where(x => x.Scheme == scheme);
-
-            var idp = (await query.ToArrayAsync()).SingleOrDefault(x => x.Scheme == scheme);
+            var idp = (await Context.IdentityProviders.AsNoTracking().Where(x => x.Scheme == scheme)
+                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
+                .SingleOrDefault(x => x.Scheme == scheme);
             if (idp == null) return null;
 
             var result = MapIdp(idp);

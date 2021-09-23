@@ -11,7 +11,6 @@ using Duende.IdentityServer.Extensions;
 using System;
 using IdentityModel;
 using System.Linq;
-using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.DependencyInjection;
 using Duende.IdentityServer.Services;
 
@@ -30,8 +29,6 @@ namespace Duende.IdentityServer.Hosting
         private readonly IAuthenticationSchemeProvider _schemes;
         private readonly ISystemClock _clock;
         private readonly IUserSession _session;
-        private readonly IBackChannelLogoutService _backChannelLogoutService;
-        private readonly IdentityServerOptions _options;
         private readonly ILogger<IdentityServerAuthenticationService> _logger;
 
         public IdentityServerAuthenticationService(
@@ -39,8 +36,6 @@ namespace Duende.IdentityServer.Hosting
             IAuthenticationSchemeProvider schemes,
             ISystemClock clock,
             IUserSession session,
-            IBackChannelLogoutService backChannelLogoutService,
-            IdentityServerOptions options,
             ILogger<IdentityServerAuthenticationService> logger)
         {
             _inner = decorator.Instance;
@@ -48,8 +43,6 @@ namespace Duende.IdentityServer.Hosting
             _schemes = schemes;
             _clock = clock;
             _session = session;
-            _backChannelLogoutService = backChannelLogoutService;
-            _options = options;
             _logger = logger;
         }
 

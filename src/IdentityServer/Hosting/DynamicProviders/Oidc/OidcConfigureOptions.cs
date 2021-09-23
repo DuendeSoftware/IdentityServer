@@ -5,7 +5,6 @@ using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Duende.IdentityServer.Hosting.DynamicProviders
 {

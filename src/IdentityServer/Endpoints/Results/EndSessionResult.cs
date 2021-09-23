@@ -13,6 +13,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
+using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer.Endpoints.Results
 {
@@ -38,22 +39,26 @@ namespace Duende.IdentityServer.Endpoints.Results
             EndSessionValidationResult result,
             IdentityServerOptions options,
             ISystemClock clock,
+            IServerUrls urls,
             IMessageStore<LogoutMessage> logoutMessageStore)
             : this(result)
         {
             _options = options;
             _clock = clock;
+            _urls = urls;
             _logoutMessageStore = logoutMessageStore;
         }
 
         private IdentityServerOptions _options;
         private ISystemClock _clock;
+        private IServerUrls _urls;
         private IMessageStore<LogoutMessage> _logoutMessageStore;
 
         private void Init(HttpContext context)
         {
             _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
             _clock = _clock ?? context.RequestServices.GetRequiredService<ISystemClock>();
+            _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
             _logoutMessageStore = _logoutMessageStore ?? context.RequestServices.GetRequiredService<IMessageStore<LogoutMessage>>();
         }
 
@@ -84,7 +89,7 @@ namespace Duende.IdentityServer.Endpoints.Results
 
             if (redirect.IsLocalUrl())
             {
-                redirect = context.GetIdentityServerRelativeUrl(redirect);
+                redirect = _urls.GetIdentityServerRelativeUrl(redirect);
             }
 
             if (id != null)

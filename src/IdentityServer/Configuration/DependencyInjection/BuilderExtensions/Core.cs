@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddOptions();
             builder.Services.AddSingleton(
                 resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value);
-            builder.Services.AddSingleton(
+            builder.Services.AddTransient(
                 resolver => resolver.GetRequiredService<IOptions<IdentityServerOptions>>().Value.PersistentGrants);
             builder.Services.AddHttpClient();
 
@@ -57,17 +57,39 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds the default cookie handlers and corresponding configuration
+        /// Adds the default infrastructure for cookie authentication in IdentityServer.
         /// </summary>
         /// <param name="builder">The builder.</param>
         /// <returns></returns>
         public static IIdentityServerBuilder AddCookieAuthentication(this IIdentityServerBuilder builder)
         {
+            return builder
+                .AddDefaultCookieHandlers()
+                .AddCookieAuthenticationExtensions();
+        }
+
+        /// <summary>
+        /// Adds the default cookie handlers and corresponding configuration
+        /// </summary>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddDefaultCookieHandlers(this IIdentityServerBuilder builder)
+        {
             builder.Services.AddAuthentication(IdentityServerConstants.DefaultCookieAuthenticationScheme)
                 .AddCookie(IdentityServerConstants.DefaultCookieAuthenticationScheme)
                 .AddCookie(IdentityServerConstants.ExternalCookieAuthenticationScheme);
-
             builder.Services.AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureInternalCookieOptions>();
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds the necessary decorators for cookie authentication required by IdentityServer
+        /// </summary>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddCookieAuthenticationExtensions(this IIdentityServerBuilder builder)
+        {
             builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureInternalCookieOptions>();
             builder.Services.AddTransientDecorator<IAuthenticationService, IdentityServerAuthenticationService>();
             builder.Services.AddTransientDecorator<IAuthenticationHandlerProvider, FederatedSignoutAuthenticationHandlerProvider>();
@@ -124,6 +146,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddCoreServices(this IIdentityServerBuilder builder)
         {
+            builder.Services.AddTransient<IServerUrls, DefaultServerUrls>();
             builder.Services.AddTransient<IIssuerNameService, DefaultIssuerNameService>();
             builder.Services.AddTransient<ISecretsListParser, SecretParser>();
             builder.Services.AddTransient<ISecretsListValidator, SecretValidator>();
@@ -153,6 +176,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddPluggableServices(this IIdentityServerBuilder builder)
         {
+            builder.Services.TryAddTransient<ICancellationTokenProvider, DefaultHttpContextCancellationTokenICancellationTokenProvider>();
             builder.Services.TryAddTransient<IPersistedGrantService, DefaultPersistedGrantService>();
             builder.Services.TryAddTransient<IKeyMaterialService, DefaultKeyMaterialService>();
             builder.Services.TryAddTransient<ITokenService, DefaultTokenService>();
@@ -225,7 +249,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IIdentityServerBuilder AddDynamicProvidersCore(this IIdentityServerBuilder builder)
         {
-            builder.Services.AddSingleton(svcs => svcs.GetRequiredService<IdentityServerOptions>().DynamicProviders);
+            builder.Services.AddTransient(svcs => svcs.GetRequiredService<IdentityServerOptions>().DynamicProviders);
             builder.Services.AddTransientDecorator<IAuthenticationSchemeProvider, DynamicAuthenticationSchemeProvider>();
             builder.Services.TryAddSingleton<IIdentityProviderStore, NopIdentityProviderStore>();
             // the per-request cache is to ensure that a scheme loaded from the cache is still available later in the
@@ -255,6 +279,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddTransient<ICustomTokenRequestValidator, DefaultCustomTokenRequestValidator>();
             builder.Services.TryAddTransient<IUserInfoRequestValidator, UserInfoRequestValidator>();
             builder.Services.TryAddTransient<IClientConfigurationValidator, DefaultClientConfigurationValidator>();
+            builder.Services.TryAddTransient<IIdentityProviderConfigurationValidator, DefaultIdentityProviderConfigurationValidator>();
             builder.Services.TryAddTransient<IDeviceAuthorizationRequestValidator, DeviceAuthorizationRequestValidator>();
             builder.Services.TryAddTransient<IDeviceCodeValidator, DeviceCodeValidator>();
 

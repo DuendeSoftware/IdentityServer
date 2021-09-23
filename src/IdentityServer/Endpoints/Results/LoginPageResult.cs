@@ -13,6 +13,7 @@ using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer.Endpoints.Results
 {
@@ -37,19 +38,23 @@ namespace Duende.IdentityServer.Endpoints.Results
         internal LoginPageResult(
             ValidatedAuthorizeRequest request,
             IdentityServerOptions options,
+            IServerUrls urls,
             IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
             : this(request)
         {
             _options = options;
+            _urls = urls;
             _authorizationParametersMessageStore = authorizationParametersMessageStore;
         }
 
         private IdentityServerOptions _options;
+        private IServerUrls _urls;
         private IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
         private void Init(HttpContext context)
         {
             _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
+            _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
             _authorizationParametersMessageStore = _authorizationParametersMessageStore ?? context.RequestServices.GetService<IAuthorizationParametersMessageStore>();
         }
 
@@ -62,7 +67,7 @@ namespace Duende.IdentityServer.Endpoints.Results
         {
             Init(context);
 
-            var returnUrl = context.GetIdentityServerBasePath().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.AuthorizeCallback;
+            var returnUrl = _urls.BasePath.EnsureTrailingSlash() + Constants.ProtocolRoutePaths.AuthorizeCallback;
             if (_authorizationParametersMessageStore != null)
             {
                 var msg = new Message<IDictionary<string, string[]>>(_request.ToOptimizedFullDictionary());
@@ -79,11 +84,11 @@ namespace Duende.IdentityServer.Endpoints.Results
             {
                 // this converts the relative redirect path to an absolute one if we're 
                 // redirecting to a different server
-                returnUrl = context.GetIdentityServerHost().EnsureTrailingSlash() + returnUrl.RemoveLeadingSlash();
+                returnUrl = _urls.Origin + returnUrl;
             }
 
             var url = loginUrl.AddQueryString(_options.UserInteraction.LoginReturnUrlParameter, returnUrl);
-            context.Response.RedirectToAbsoluteUrl(url);
+            context.Response.Redirect(_urls.GetAbsoluteUrl(url));
         }
     }
 }

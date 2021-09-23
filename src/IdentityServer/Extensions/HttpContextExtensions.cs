@@ -19,6 +19,7 @@ namespace Duende.IdentityServer.Extensions
 {
     public static class HttpContextExtensions
     {
+        [Obsolete("For a replacement, see here: xxx")]
         public static async Task<bool> GetSchemeSupportsSignOutAsync(this HttpContext context, string scheme)
         {
             var provider = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
@@ -26,25 +27,21 @@ namespace Duende.IdentityServer.Extensions
             return (handler is IAuthenticationSignOutHandler);
         }
 
+        [Obsolete("Use IServerUrls.Origin instead.")]
         public static void SetIdentityServerOrigin(this HttpContext context, string value)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
-            if (value == null) throw new ArgumentNullException(nameof(value));
-
-            var split = value.Split(new[] { "://" }, StringSplitOptions.RemoveEmptyEntries);
-
-            var request = context.Request;
-            request.Scheme = split.First();
-            request.Host = new HostString(split.Last());
+            context.RequestServices.GetRequiredService<IServerUrls>().Origin = value;
         }
 
+        [Obsolete("Use IServerUrls.BasePath instead.")]
         public static void SetIdentityServerBasePath(this HttpContext context, string value)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
-
-            context.Items[Constants.EnvironmentKeys.IdentityServerBasePath] = value;
+            context.RequestServices.GetRequiredService<IServerUrls>().BasePath = value;
         }
 
+        [Obsolete("Use IIssuerNameService instead.")]
         public static string GetIdentityServerOrigin(this HttpContext context)
         {
             var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
@@ -82,10 +79,10 @@ namespace Duende.IdentityServer.Extensions
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
+        [Obsolete("Use IServerUrls.Origin instead.")]
         public static string GetIdentityServerHost(this HttpContext context)
         {
-            var request = context.Request;
-            return request.Scheme + "://" + request.Host.ToUriComponent();
+            return context.RequestServices.GetRequiredService<IServerUrls>().Origin;
         }
 
         /// <summary>
@@ -93,9 +90,10 @@ namespace Duende.IdentityServer.Extensions
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
+        [Obsolete("Use IServerUrls.BasePath instead.")]
         public static string GetIdentityServerBasePath(this HttpContext context)
         {
-            return context.Items[Constants.EnvironmentKeys.IdentityServerBasePath] as string;
+            return context.RequestServices.GetRequiredService<IServerUrls>().BasePath;
         }
 
         /// <summary>
@@ -103,9 +101,10 @@ namespace Duende.IdentityServer.Extensions
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
+        [Obsolete("Use IServerUrls.BaseUrl instead.")]
         public static string GetIdentityServerBaseUrl(this HttpContext context)
         {
-            return context.GetIdentityServerHost() + context.GetIdentityServerBasePath();
+            return context.RequestServices.GetRequiredService<IServerUrls>().BaseUrl;
         }
 
         /// <summary>
@@ -114,16 +113,10 @@ namespace Duende.IdentityServer.Extensions
         /// <param name="context">The context.</param>
         /// <param name="path">The path.</param>
         /// <returns></returns>
+        [Obsolete("Use IServerUrls.GetIdentityServerRelativeUrl instead.")]
         public static string GetIdentityServerRelativeUrl(this HttpContext context, string path)
         {
-            if (!path.IsLocalUrl())
-            {
-                return null;
-            }
-
-            if (path.StartsWith("~/")) path = path.Substring(1);
-            path = context.GetIdentityServerBaseUrl().EnsureTrailingSlash() + path.RemoveLeadingSlash();
-            return path;
+            return context.RequestServices.GetRequiredService<IServerUrls>().GetIdentityServerRelativeUrl(path);
         }
 
         /// <summary>
@@ -132,25 +125,11 @@ namespace Duende.IdentityServer.Extensions
         /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">context</exception>
+        [Obsolete("Use the IIssuerNameService instead.")]
         public static string GetIdentityServerIssuerUri(this HttpContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
-
-            // if they've explicitly configured a URI then use it,
-            // otherwise dynamically calculate it
-            var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            var uri = options.IssuerUri;
-            if (uri.IsMissing())
-            {
-                uri = context.GetIdentityServerOrigin() + context.GetIdentityServerBasePath();
-                if (uri.EndsWith("/")) uri = uri.Substring(0, uri.Length - 1);
-                if (options.LowerCaseIssuerUri)
-                {
-                    uri = uri.ToLowerInvariant();
-                }
-            }
-
-            return uri;
+            return context.RequestServices.GetRequiredService<IIssuerNameService>().GetCurrentAsync().GetAwaiter().GetResult();
         }
 
         internal static async Task<string> GetIdentityServerSignoutFrameCallbackUrlAsync(this HttpContext context, LogoutMessage logoutMessage = null)
@@ -203,7 +182,8 @@ namespace Duende.IdentityServer.Extensions
                 var endSessionMessageStore = context.RequestServices.GetRequiredService<IMessageStore<LogoutNotificationContext>>();
                 var id = await endSessionMessageStore.WriteAsync(msg);
 
-                var signoutIframeUrl = context.GetIdentityServerBaseUrl().EnsureTrailingSlash() + Constants.ProtocolRoutePaths.EndSessionCallback;
+                var urls = context.RequestServices.GetRequiredService<IServerUrls>();
+                var signoutIframeUrl = urls.BaseUrl.EnsureTrailingSlash() + Constants.ProtocolRoutePaths.EndSessionCallback;
                 signoutIframeUrl = signoutIframeUrl.AddQueryString(Constants.UIConstants.DefaultRoutePathParams.EndSessionCallback, id);
 
                 return signoutIframeUrl;

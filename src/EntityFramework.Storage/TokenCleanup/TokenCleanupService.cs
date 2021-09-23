@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
@@ -48,14 +49,14 @@ namespace Duende.IdentityServer.EntityFramework
         /// Method to clear expired persisted grants.
         /// </summary>
         /// <returns></returns>
-        public async Task RemoveExpiredGrantsAsync()
+        public async Task RemoveExpiredGrantsAsync(CancellationToken cancellationToken = default)
         {
             try
             {
                 _logger.LogTrace("Querying for expired grants to remove");
 
-                await RemoveGrantsAsync();
-                await RemoveDeviceCodesAsync();
+                await RemoveGrantsAsync(cancellationToken);
+                await RemoveDeviceCodesAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -67,12 +68,12 @@ namespace Duende.IdentityServer.EntityFramework
         /// Removes the stale persisted grants.
         /// </summary>
         /// <returns></returns>
-        protected virtual async Task RemoveGrantsAsync()
+        protected virtual async Task RemoveGrantsAsync(CancellationToken cancellationToken = default)
         {
-            await RemoveExpiredPersistedGrantsAsync();
+            await RemoveExpiredPersistedGrantsAsync(cancellationToken);
             if (_options.RemoveConsumedTokens)
             {
-                await RemoveConsumedPersistedGrantsAsync();
+                await RemoveConsumedPersistedGrantsAsync(cancellationToken);
             }
         }
 
@@ -80,7 +81,7 @@ namespace Duende.IdentityServer.EntityFramework
         /// Removes the expired persisted grants.
         /// </summary>
         /// <returns></returns>
-        protected virtual async Task RemoveExpiredPersistedGrantsAsync()
+        protected virtual async Task RemoveExpiredPersistedGrantsAsync(CancellationToken cancellationToken = default)
         {
             var found = Int32.MaxValue;
 
@@ -90,7 +91,7 @@ namespace Duende.IdentityServer.EntityFramework
                     .Where(x => x.Expiration < DateTime.UtcNow)
                     .OrderBy(x => x.Expiration)
                     .Take(_options.TokenCleanupBatchSize)
-                    .ToArrayAsync();
+                    .ToArrayAsync(cancellationToken);
 
                 found = expiredGrants.Length;
                 _logger.LogInformation("Removing {grantCount} expired grants", found);
@@ -112,7 +113,7 @@ namespace Duende.IdentityServer.EntityFramework
         /// Removes the consumed persisted grants.
         /// </summary>
         /// <returns></returns>
-        protected virtual async Task RemoveConsumedPersistedGrantsAsync()
+        protected virtual async Task RemoveConsumedPersistedGrantsAsync(CancellationToken cancellationToken = default)
         {
             var found = Int32.MaxValue;
 
@@ -122,7 +123,7 @@ namespace Duende.IdentityServer.EntityFramework
                     .Where(x => x.ConsumedTime < DateTime.UtcNow)
                     .OrderBy(x => x.ConsumedTime)
                     .Take(_options.TokenCleanupBatchSize)
-                    .ToArrayAsync();
+                    .ToArrayAsync(cancellationToken);
 
                 found = expiredGrants.Length;
                 _logger.LogInformation("Removing {grantCount} consumed grants", found);
@@ -130,7 +131,7 @@ namespace Duende.IdentityServer.EntityFramework
                 if (found > 0)
                 {
                     _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
-                    await SaveChangesAsync();
+                    await SaveChangesAsync(cancellationToken);
 
                     if (_operationalStoreNotification != null)
                     {
@@ -145,7 +146,7 @@ namespace Duende.IdentityServer.EntityFramework
         /// Removes the stale device codes.
         /// </summary>
         /// <returns></returns>
-        protected virtual async Task RemoveDeviceCodesAsync()
+        protected virtual async Task RemoveDeviceCodesAsync(CancellationToken cancellationToken = default)
         {
             var found = Int32.MaxValue;
 
@@ -155,7 +156,7 @@ namespace Duende.IdentityServer.EntityFramework
                     .Where(x => x.Expiration < DateTime.UtcNow)
                     .OrderBy(x => x.DeviceCode)
                     .Take(_options.TokenCleanupBatchSize)
-                    .ToArrayAsync();
+                    .ToArrayAsync(cancellationToken);
 
                 found = expiredCodes.Length;
                 _logger.LogInformation("Removing {deviceCodeCount} device flow codes", found);
@@ -163,7 +164,7 @@ namespace Duende.IdentityServer.EntityFramework
                 if (found > 0)
                 {
                     _persistedGrantDbContext.DeviceFlowCodes.RemoveRange(expiredCodes);
-                    await SaveChangesAsync();
+                    await SaveChangesAsync(cancellationToken);
 
                     if (_operationalStoreNotification != null)
                     {
@@ -173,7 +174,7 @@ namespace Duende.IdentityServer.EntityFramework
             }
         }
 
-        private async Task SaveChangesAsync()
+        private async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var count = 3;
 
@@ -181,7 +182,7 @@ namespace Duende.IdentityServer.EntityFramework
             {
                 try
                 {
-                    await _persistedGrantDbContext.SaveChangesAsync();
+                    await _persistedGrantDbContext.SaveChangesAsync(cancellationToken);
                     return;
                 }
                 catch (DbUpdateConcurrencyException ex)
