@@ -20,7 +20,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
     /// </summary>
     public class KeyManager : IKeyManager
     {
-        private readonly KeyManagementOptions _options;
+        private readonly IdentityServerOptions _options;
         private readonly ISigningKeyStore _store;
         private readonly ISigningKeyStoreCache _cache;
         private readonly ISigningKeyProtector _protector;
@@ -41,7 +41,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         /// <param name="logger"></param>
         /// <param name="issuerNameService"></param>
         public KeyManager(
-            KeyManagementOptions options,
+            IdentityServerOptions options,
             ISigningKeyStore store,
             ISigningKeyStoreCache cache,
             ISigningKeyProtector protector,
@@ -50,7 +50,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             ILogger<KeyManager> logger,
             IIssuerNameService issuerNameService)
         {
-            options.Validate();
+            options.KeyManagement.Validate();
 
             _options = options;
             _store = store;
@@ -74,8 +74,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 foreach (var key in currentKeys)
                 {
                     var age = _clock.GetAge(key.Created);
-                    var expiresIn = _options.RotationInterval.Subtract(age);
-                    var retiresIn = _options.KeyRetirementAge.Subtract(age);
+                    var expiresIn = _options.KeyManagement.RotationInterval.Subtract(age);
+                    var retiresIn = _options.KeyManagement.KeyRetirementAge.Subtract(age);
                     _logger.LogInformation("Active signing key found with kid {kid} for alg {alg}. Expires in {KeyExpiration}. Retires in {KeyRetirement}", key.Id, key.Algorithm, expiresIn, retiresIn);
                 }
             }
@@ -131,7 +131,11 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 _logger.LogDebug("Entering new key lock.");
 
                 // need to create new key, but another thread might have already so acquiring lock.
-                await _newKeyLock.LockAsync();
+                if (false == await _newKeyLock.LockAsync((int)_options.Caching.CacheLockTimeout.TotalMilliseconds))
+                {
+                    throw new Exception($"Failed to obtain new key lock for: '{GetType()}'");
+                }
+
                 try
                 {
                     // check if another thread did the work already
@@ -206,8 +210,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             var groupedKeys = allKeys.GroupBy(x => x.Algorithm);
             
-            var success = groupedKeys.Count() == _options.AllowedSigningAlgorithmNames.Count() &&
-                groupedKeys.All(x => _options.AllowedSigningAlgorithmNames.Contains(x.Key));
+            var success = groupedKeys.Count() == _options.KeyManagement.AllowedSigningAlgorithmNames.Count() &&
+                groupedKeys.All(x => _options.KeyManagement.AllowedSigningAlgorithmNames.Contains(x.Key));
 
             if (!success)
             {
@@ -240,12 +244,12 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 // if no younger keys, then check if we're nearing the expiration of active key
                 // and see if that's within the window of activation delay.
                 var age = _clock.GetAge(activeKey.Created);
-                var diff = _options.RotationInterval.Subtract(age);
-                var needed = (diff <= _options.PropagationTime);
+                var diff = _options.KeyManagement.RotationInterval.Subtract(age);
+                var needed = (diff <= _options.KeyManagement.PropagationTime);
 
                 if (!needed)
                 {
-                    _logger.LogDebug("Key rotation not required for alg {alg}; New key expected to be created in {KeyRotiation}", item.Key, diff.Subtract(_options.PropagationTime));
+                    _logger.LogDebug("Key rotation not required for alg {alg}; New key expected to be created in {KeyRotiation}", item.Key, diff.Subtract(_options.KeyManagement.PropagationTime));
                 }
                 else
                 {
@@ -268,17 +272,17 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
             if (alg.IsRsaKey)
             {
-                var rsa = CryptoHelper.CreateRsaSecurityKey(_options.RsaKeySize);
+                var rsa = CryptoHelper.CreateRsaSecurityKey(_options.KeyManagement.RsaKeySize);
                 
                 container = alg.UseX509Certificate ?
-                    new X509KeyContainer(rsa, alg.Name, now, _options.KeyRetirementAge, iss) :
+                    new X509KeyContainer(rsa, alg.Name, now, _options.KeyManagement.KeyRetirementAge, iss) :
                     (KeyContainer)new RsaKeyContainer(rsa, alg.Name, now);
             }
             else if (alg.IsEcKey)
             {
                 var ec = CryptoHelper.CreateECDsaSecurityKey(CryptoHelper.GetCurveNameFromSigningAlgorithm(alg.Name));
                 // X509 certs don't currently work with EC keys.
-                container = //_options.WrapKeysInX509Certificate ? //new X509KeyContainer(ec, alg, now, _options.KeyRetirementAge, iss) :
+                container = //_options.KeyManagement.WrapKeysInX509Certificate ? //new X509KeyContainer(ec, alg, now, _options.KeyManagement.KeyRetirementAge, iss) :
                     (KeyContainer) new EcKeyContainer(ec, alg.Name, now);
             }
             else
@@ -309,7 +313,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
 
         internal bool AreAllKeysWithinInitializationDuration(IEnumerable<KeyContainer> keys)
         {
-            if (_options.InitializationDuration == TimeSpan.Zero)
+            if (_options.KeyManagement.InitializationDuration == TimeSpan.Zero)
             {
                 return false;
             }
@@ -320,7 +324,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             var result = keys.All(x =>
                 {
                     var age = _clock.GetAge(x.Created);
-                    var isNew = _options.IsWithinInitializationDuration(age);
+                    var isNew = _options.KeyManagement.IsWithinInitializationDuration(age);
                     return isNew;
                 });
 
@@ -333,7 +337,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 .Where(x =>
                 {
                     var age = _clock.GetAge(x.Created);
-                    var isRetired = _options.IsRetired(age);
+                    var isRetired = _options.KeyManagement.IsRetired(age);
                     return isRetired;
                 })
                 .ToArray();
@@ -346,7 +350,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                     _logger.LogTrace("Filtered retired keys from store: {kids}", ids.Aggregate((x, y) => $"{x},{y}"));
                 }
 
-                if (_options.DeleteRetiredKeys)
+                if (_options.KeyManagement.DeleteRetiredKeys)
                 {
                     var ids = retired.Select(x => x.Id).ToArray();
                     if (_logger.IsEnabled(LogLevel.Debug))
@@ -377,7 +381,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 .Where(x =>
                 {
                     var age = _clock.GetAge(x.Created);
-                    var isExpired = _options.IsExpired(age);
+                    var isExpired = _options.KeyManagement.IsExpired(age);
                     return !isExpired;
                 });
 
@@ -388,22 +392,22 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             if (keys?.Any() == true)
             {
-                var duration = _options.KeyCacheDuration;
+                var duration = _options.KeyManagement.KeyCacheDuration;
 
                 if (AreAllKeysWithinInitializationDuration(keys))
                 {
                     // if all key are new, then we want to use the shorter initialization key cache duration.
                     // this attempts to allow other servers that are slow to write new keys to complete, then we will
                     // have the most up to date keys in the cache sooner.
-                    duration = _options.InitializationKeyCacheDuration;
+                    duration = _options.KeyManagement.InitializationKeyCacheDuration;
                     if (duration > TimeSpan.Zero)
                     {
-                        _logger.LogDebug("Caching keys with InitializationKeyCacheDuration for {InitializationKeyCacheDuration}", _options.InitializationKeyCacheDuration);
+                        _logger.LogDebug("Caching keys with InitializationKeyCacheDuration for {InitializationKeyCacheDuration}", _options.KeyManagement.InitializationKeyCacheDuration);
                     }
                 }
-                else if (_options.KeyCacheDuration > TimeSpan.Zero)
+                else if (_options.KeyManagement.KeyCacheDuration > TimeSpan.Zero)
                 {
-                    _logger.LogDebug("Caching keys with KeyCacheDuration for {KeyCacheDuration}", _options.KeyCacheDuration);
+                    _logger.LogDebug("Caching keys with KeyCacheDuration for {KeyCacheDuration}", _options.KeyManagement.KeyCacheDuration);
                 }
 
                 if (duration > TimeSpan.Zero)
@@ -457,7 +461,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 }
 
                 // only use keys that are allowed
-                keys = keys.Where(x => _options.AllowedSigningAlgorithmNames.Contains(x.Algorithm)).ToArray();
+                keys = keys.Where(x => _options.KeyManagement.AllowedSigningAlgorithmNames.Contains(x.Algorithm)).ToArray();
                 if (_logger.IsEnabled(LogLevel.Trace) && keys.Any())
                 {
                     var ids = keys.Select(x => x.Id).ToArray();
@@ -490,7 +494,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             var keys = new List<KeyContainer>();
             keys.AddRange(await _cache.GetKeysAsync() ?? Enumerable.Empty<KeyContainer>());
 
-            foreach (var alg in _options.SigningAlgorithms)
+            foreach (var alg in _options.KeyManagement.SigningAlgorithms)
             {
                 var newKey = await CreateAndStoreNewKeyAsync(alg);
                 keys.Add(newKey);
@@ -504,10 +508,10 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 // it's intended to address the scenario where two servers start, server1 creates a key whose
                 // time is earlier than server2, but server1 is slow to write the key to the store.
                 // we don't want server2 to only see server2's key, as it's newer.
-                if (_options.InitializationSynchronizationDelay > TimeSpan.Zero)
+                if (_options.KeyManagement.InitializationSynchronizationDelay > TimeSpan.Zero)
                 {
-                    _logger.LogDebug("All keys are new; delaying before reloading keys from store by InitializationSynchronizationDelay for {InitializationSynchronizationDelay}.", _options.InitializationSynchronizationDelay);
-                    await Task.Delay(_options.InitializationSynchronizationDelay);
+                    _logger.LogDebug("All keys are new; delaying before reloading keys from store by InitializationSynchronizationDelay for {InitializationSynchronizationDelay}.", _options.KeyManagement.InitializationSynchronizationDelay);
+                    await Task.Delay(_options.KeyManagement.InitializationSynchronizationDelay);
                 }
                 else
                 {
@@ -530,8 +534,8 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             signingKeys = GetCurrentSigningKeys(keys);
             
-            var success = signingKeys.Count() == _options.AllowedSigningAlgorithmNames.Count() &&
-                signingKeys.All(x => _options.AllowedSigningAlgorithmNames.Contains(x.Algorithm));
+            var success = signingKeys.Count() == _options.KeyManagement.AllowedSigningAlgorithmNames.Count() &&
+                signingKeys.All(x => _options.KeyManagement.AllowedSigningAlgorithmNames.Contains(x.Algorithm));
             
             return success;
         }
@@ -620,7 +624,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
         {
             if (key == null) return false;
 
-            var alg = _options.SigningAlgorithms.SingleOrDefault(x => x.Name == key.Algorithm);
+            var alg = _options.KeyManagement.SigningAlgorithms.SingleOrDefault(x => x.Name == key.Algorithm);
             if (alg == null)
             {
                 _logger.LogTrace("Key {kid} signing algorithm {alg} not allowed by server options.", key.Id, key.Algorithm);
@@ -648,7 +652,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             if (!ignoreActiveDelay)
             {
                 _logger.LogTrace("Checking if key with kid {kid} is active (respecting activation delay).", key.Id);
-                start = start.Add(_options.PropagationTime);
+                start = start.Add(_options.KeyManagement.PropagationTime);
             }
             else
             {
@@ -662,7 +666,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
             }
 
             // expired key check
-            var end = key.Created.Add(_options.RotationInterval);
+            var end = key.Created.Add(_options.KeyManagement.RotationInterval);
             if (end < now)
             {
                 _logger.LogTrace("Key with kid {kid} is inactive: the current time is past its expiration.", key.Id);

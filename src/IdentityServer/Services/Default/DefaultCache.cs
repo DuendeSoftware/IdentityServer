@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using System;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Internal;
+using Duende.IdentityServer.Configuration;
 
 namespace Duende.IdentityServer.Services
 {
@@ -19,6 +20,11 @@ namespace Duende.IdentityServer.Services
         where T : class
     {
         private const string KeySeparator = "-";
+
+        /// <summary>
+        /// The IdentityServerOptions.
+        /// </summary>
+        public IdentityServerOptions IdentityServerOptions { get; }
 
         /// <summary>
         /// The memory cache.
@@ -38,11 +44,13 @@ namespace Duende.IdentityServer.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultCache{T}"/> class.
         /// </summary>
+        /// <param name="identityServerOptions"></param>
         /// <param name="cache">The cache.</param>
         /// <param name="concurrencyLock"></param>
         /// <param name="logger">The logger.</param>
-        public DefaultCache(IMemoryCache cache, IConcurrencyLock<DefaultCache<T>> concurrencyLock, ILogger<DefaultCache<T>> logger)
+        public DefaultCache(IdentityServerOptions identityServerOptions, IMemoryCache cache, IConcurrencyLock<DefaultCache<T>> concurrencyLock, ILogger<DefaultCache<T>> logger)
         {
+            IdentityServerOptions = identityServerOptions;
             Cache = cache;
             ConcurrencyLock = concurrencyLock;
             Logger = logger;
@@ -92,7 +100,10 @@ namespace Duende.IdentityServer.Services
 
             if (item == null)
             {
-                await ConcurrencyLock.LockAsync();
+                if (false == await ConcurrencyLock.LockAsync((int)IdentityServerOptions.Caching.CacheLockTimeout.TotalMilliseconds))
+                {
+                    throw new Exception($"Failed to obtain cache lock for: '{GetType()}'");
+                }
 
                 try
                 {
