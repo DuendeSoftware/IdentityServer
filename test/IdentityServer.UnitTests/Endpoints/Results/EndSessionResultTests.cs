@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
@@ -15,6 +14,7 @@ using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Xunit;
+using Duende.IdentityServer.Services;
 
 namespace UnitTests.Endpoints.Results
 {
@@ -26,17 +26,20 @@ namespace UnitTests.Endpoints.Results
         private IdentityServerOptions _options = new IdentityServerOptions();
         private MockMessageStore<LogoutMessage> _mockLogoutMessageStore = new MockMessageStore<LogoutMessage>();
 
+        private DefaultServerUrls _urls;
+
         private DefaultHttpContext _context = new DefaultHttpContext();
 
         public EndSessionResultTests()
         {
-            _context.SetIdentityServerOrigin("https://server");
-            _context.SetIdentityServerBasePath("/");
+            _urls = new DefaultServerUrls(new HttpContextAccessor { HttpContext = _context });
+
+            _urls.Origin = "https://server";
 
             _options.UserInteraction.LogoutUrl = "~/logout";
             _options.UserInteraction.LogoutIdParameter = "logoutId";
 
-            _subject = new EndSessionResult(_result, _options, new StubClock(), _mockLogoutMessageStore);
+            _subject = new EndSessionResult(_result, _options, new StubClock(), _urls, _mockLogoutMessageStore);
         }
 
         [Fact]

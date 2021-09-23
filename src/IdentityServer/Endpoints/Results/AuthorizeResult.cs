@@ -33,18 +33,21 @@ namespace Duende.IdentityServer.Endpoints.Results
             IdentityServerOptions options,
             IUserSession userSession,
             IMessageStore<ErrorMessage> errorMessageStore,
+            IServerUrls urls,
             ISystemClock clock)
             : this(response)
         {
             _options = options;
             _userSession = userSession;
             _errorMessageStore = errorMessageStore;
+            _urls = urls;
             _clock = clock;
         }
 
         private IdentityServerOptions _options;
         private IUserSession _userSession;
         private IMessageStore<ErrorMessage> _errorMessageStore;
+        private IServerUrls _urls;
         private ISystemClock _clock;
 
         private void Init(HttpContext context)
@@ -52,6 +55,7 @@ namespace Duende.IdentityServer.Endpoints.Results
             _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
             _userSession ??= context.RequestServices.GetRequiredService<IUserSession>();
             _errorMessageStore ??= context.RequestServices.GetRequiredService<IMessageStore<ErrorMessage>>();
+            _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
             _clock ??= context.RequestServices.GetRequiredService<ISystemClock>();
         }
 
@@ -199,7 +203,7 @@ namespace Duende.IdentityServer.Endpoints.Results
             var errorUrl = _options.UserInteraction.ErrorUrl;
 
             var url = errorUrl.AddQueryString(_options.UserInteraction.ErrorIdParameter, id);
-            context.Response.RedirectToAbsoluteUrl(url);
+            context.Response.Redirect(_urls.GetAbsoluteUrl(url));
         }
     }
 }

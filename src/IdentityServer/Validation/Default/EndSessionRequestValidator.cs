@@ -62,6 +62,7 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// The HTTP context accessor.
         /// </summary>
+        [Obsolete("Unused. Will remove in a future release.")]
         protected readonly IHttpContextAccessor Context;
 
         /// <summary>
@@ -85,7 +86,9 @@ namespace Duende.IdentityServer.Validation
             IMessageStore<LogoutNotificationContext> endSessionMessageStore,
             ILogger<EndSessionRequestValidator> logger)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             Context = context;
+#pragma warning restore CS0618 // Type or member is obsolete
             Options = options;
             TokenValidator = tokenValidator;
             UriValidator = uriValidator;
@@ -168,8 +171,7 @@ namespace Duende.IdentityServer.Validation
                 validatedRequest.ClientIds = await UserSession.GetClientListAsync();
             }
 
-            // todo: need OidcConstants.EndSession.UiLocales
-            var uilocales = parameters.Get(OidcConstants.AuthorizeRequest.UiLocales);
+            var uilocales = parameters.Get(OidcConstants.EndSessionRequest.UiLocales);
             if (uilocales.IsPresent())
             {
                 if (uilocales.Length > Options.InputLengthRestrictions.UiLocale)

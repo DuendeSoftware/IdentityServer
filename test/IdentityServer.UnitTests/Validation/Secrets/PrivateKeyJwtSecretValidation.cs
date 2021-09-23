@@ -32,14 +32,10 @@ namespace UnitTests.Validation.Secrets
 
         public PrivateKeyJwtSecretValidation()
         {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Scheme = "https";
-            ctx.Request.Host = new HostString("idsrv3.com");
-
             _validator = new PrivateKeyJwtSecretValidator(
-                 new HttpContextAccessor { HttpContext = ctx },
                  new TestIssuerNameService("https://idsrv3.com"),
                  new DefaultReplayCache(new TestCache()), 
+                 new MockServerUrls() { Origin = "https://idsrv3.com" },
                  new IdentityServerOptions(),
                  new LoggerFactory().CreateLogger<PrivateKeyJwtSecretValidator>());
             

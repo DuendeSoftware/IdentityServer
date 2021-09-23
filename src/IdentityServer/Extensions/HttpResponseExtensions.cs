@@ -8,6 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Duende.IdentityServer.Services;
+using System;
 
 #pragma warning disable 1591
 
@@ -78,13 +81,10 @@ namespace Duende.IdentityServer.Extensions
             await response.Body.FlushAsync();
         }
 
+        [Obsolete("Use IServerUrls.GetAbsoluteUrl instead.")]
         public static void RedirectToAbsoluteUrl(this HttpResponse response, string url)
         {
-            if (url.IsLocalUrl())
-            {
-                if (url.StartsWith("~/")) url = url.Substring(1);
-                url = response.HttpContext.GetIdentityServerBaseUrl().EnsureTrailingSlash() + url.RemoveLeadingSlash();
-            }
+            url = response.HttpContext.RequestServices.GetRequiredService<IServerUrls>().GetAbsoluteUrl(url);
             response.Redirect(url);
         }
 

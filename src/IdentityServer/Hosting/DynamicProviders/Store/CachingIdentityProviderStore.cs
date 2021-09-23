@@ -88,6 +88,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
             if (provider != null)
             {
                 var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
+                // need to resolve the provide type dynamically, thus the need for the http context accessor
                 var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
                 if (optionsCache != null)
                 {
