@@ -279,7 +279,9 @@ namespace Microsoft.Extensions.DependencyInjection
             where T : IIdentityProviderStore
         {
             builder.Services.TryAddTransient(typeof(T));
-            builder.Services.AddTransient<IIdentityProviderStore, CachingIdentityProviderStore<T>>();
+            builder.Services.AddTransient<ValidatingIdentityProviderStore<T>>();
+            builder.Services.AddTransient<IIdentityProviderStore, CachingIdentityProviderStore<ValidatingIdentityProviderStore<T>>>();
+
             return builder;
         }
         
@@ -351,6 +353,21 @@ namespace Microsoft.Extensions.DependencyInjection
             where T : class, IClientConfigurationValidator
         {
             builder.Services.AddTransient<IClientConfigurationValidator, T>();
+
+            return builder;
+        }
+
+
+        /// <summary>
+        /// Adds an IdentityProvider configuration validator.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddIdentityProviderConfigurationValidator<T>(this IIdentityServerBuilder builder)
+            where T : class, IIdentityProviderConfigurationValidator
+        {
+            builder.Services.AddTransient<IIdentityProviderConfigurationValidator, T>();
 
             return builder;
         }
@@ -497,7 +514,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IIdentityServerBuilder AddIdentityProviderStore<T>(this IIdentityServerBuilder builder)
            where T : class, IIdentityProviderStore
         {
-            builder.Services.AddTransient<IIdentityProviderStore, T>();
+            builder.Services.TryAddTransient(typeof(T));
+            builder.Services.AddTransient<IIdentityProviderStore, ValidatingIdentityProviderStore<T>>();
 
             return builder;
         }
