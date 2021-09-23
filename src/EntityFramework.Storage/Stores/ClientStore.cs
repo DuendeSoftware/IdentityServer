@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,11 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         protected readonly IConfigurationDbContext Context;
 
         /// <summary>
+        /// The CancellationToken provider.
+        /// </summary>
+        protected readonly ICancellationTokenProvider CancellationTokenProvider;
+
+        /// <summary>
         /// The logger.
         /// </summary>
         protected readonly ILogger<ClientStore> Logger;
@@ -34,11 +40,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="cancellationTokenProvider"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public ClientStore(IConfigurationDbContext context, ILogger<ClientStore> logger)
+        public ClientStore(IConfigurationDbContext context, ILogger<ClientStore> logger, ICancellationTokenProvider cancellationTokenProvider)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
+            CancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <summary>
@@ -61,9 +69,10 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                         .Include(x => x.PostLogoutRedirectUris)
                         .Include(x => x.Properties)
                         .Include(x => x.RedirectUris)
-                        .AsNoTracking(); 
+                        .AsNoTracking();
             
-            var client = await query.SingleOrDefaultAsync();
+            var client = (await query.ToArrayAsync(CancellationTokenProvider.CancellationToken))
+                .SingleOrDefault(x => x.ClientId == clientId);
             if (client == null) return null;
 
             var model = client.ToModel();

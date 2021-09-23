@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,12 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// The DbContext.
         /// </summary>
         protected readonly IConfigurationDbContext Context;
-        
+
+        /// <summary>
+        /// The CancellationToken provider.
+        /// </summary>
+        protected readonly ICancellationTokenProvider CancellationTokenProvider;
+
         /// <summary>
         /// The logger.
         /// </summary>
@@ -36,11 +42,13 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="cancellationTokenProvider"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public ResourceStore(IConfigurationDbContext context, ILogger<ResourceStore> logger)
+        public ResourceStore(IConfigurationDbContext context, ILogger<ResourceStore> logger, ICancellationTokenProvider cancellationTokenProvider)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Logger = logger;
+            CancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <summary>
@@ -64,7 +72,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .Include(x => x.Properties)
                 .AsNoTracking();
 
-            var result = (await apis.ToArrayAsync())
+            var result = (await apis.ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .Where(x => apiResourceNames.Contains(x.Name))
                 .Select(x => x.ToModel()).ToArray();
 
@@ -101,7 +109,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .Include(x => x.Properties)
                 .AsNoTracking();
 
-            var results = (await apis.ToArrayAsync())
+            var results = (await apis.ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .Where(api => api.Scopes.Any(x => names.Contains(x.Scope)));
             var models = results.Select(x => x.ToModel()).ToArray();
 
@@ -129,7 +137,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .Include(x => x.Properties)
                 .AsNoTracking();
 
-            var results = (await resources.ToArrayAsync())
+            var results = (await resources.ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .Where(x => scopes.Contains(x.Name));
 
             Logger.LogDebug("Found {scopes} identity scopes in database", results.Select(x => x.Name));
@@ -156,7 +164,7 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .Include(x => x.Properties)
                 .AsNoTracking();
 
-            var results = (await resources.ToArrayAsync())
+            var results = (await resources.ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .Where(x => scopes.Contains(x.Name));
 
             Logger.LogDebug("Found {scopes} scopes in database", results.Select(x => x.Name));
@@ -172,7 +180,8 @@ namespace Duende.IdentityServer.EntityFramework.Stores
         {
             var identity = Context.IdentityResources
               .Include(x => x.UserClaims)
-              .Include(x => x.Properties);
+              .Include(x => x.Properties)
+              .AsNoTracking();
 
             var apis = Context.ApiResources
                 .Include(x => x.Secrets)
@@ -187,9 +196,9 @@ namespace Duende.IdentityServer.EntityFramework.Stores
                 .AsNoTracking();
 
             var result = new Resources(
-                (await identity.ToArrayAsync()).Select(x => x.ToModel()),
-                (await apis.ToArrayAsync()).Select(x => x.ToModel()),
-                (await scopes.ToArrayAsync()).Select(x => x.ToModel())
+                (await identity.ToArrayAsync(CancellationTokenProvider.CancellationToken)).Select(x => x.ToModel()),
+                (await apis.ToArrayAsync(CancellationTokenProvider.CancellationToken)).Select(x => x.ToModel()),
+                (await scopes.ToArrayAsync(CancellationTokenProvider.CancellationToken)).Select(x => x.ToModel())
             );
 
             Logger.LogDebug("Found {scopes} as all scopes, and {apis} as API resources", 

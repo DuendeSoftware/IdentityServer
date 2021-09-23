@@ -1,9 +1,10 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework;
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -17,7 +18,7 @@ namespace IdentityServerHost
             Console.WriteLine("ctor");
         }
 
-        public Task PersistedGrantsRemovedAsync(IEnumerable<PersistedGrant> persistedGrants)
+        public Task PersistedGrantsRemovedAsync(IEnumerable<PersistedGrant> persistedGrants, CancellationToken cancellationToken = default)
         {
             foreach (var grant in persistedGrants)
             {
@@ -26,7 +27,7 @@ namespace IdentityServerHost
             return Task.CompletedTask;
         }
 
-        public Task DeviceCodesRemovedAsync(IEnumerable<DeviceFlowCodes> deviceCodes)
+        public Task DeviceCodesRemovedAsync(IEnumerable<DeviceFlowCodes> deviceCodes, CancellationToken cancellationToken = default)
         {
             foreach (var deviceCode in deviceCodes) 
             {

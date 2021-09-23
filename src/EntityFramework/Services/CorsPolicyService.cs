@@ -19,19 +19,33 @@ namespace Duende.IdentityServer.EntityFramework.Services
     /// <seealso cref="ICorsPolicyService" />
     public class CorsPolicyService : ICorsPolicyService
     {
-        private readonly IServiceProvider _provider;
-        private readonly ILogger<CorsPolicyService> _logger;
+        /// <summary>
+        /// The IServiceProvider.
+        /// </summary>
+        protected readonly IServiceProvider Provider;
+
+        /// <summary>
+        /// The CancellationToken provider.
+        /// </summary>
+        protected readonly ICancellationTokenProvider CancellationTokenProvider;
+        
+        /// <summary>
+        /// The logger.
+        /// </summary>
+        protected readonly ILogger<CorsPolicyService> Logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CorsPolicyService"/> class.
         /// </summary>
         /// <param name="provider">The provider.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="cancellationTokenProvider"></param>
         /// <exception cref="ArgumentNullException">context</exception>
-        public CorsPolicyService(IServiceProvider provider, ILogger<CorsPolicyService> logger)
+        public CorsPolicyService(IServiceProvider provider, ILogger<CorsPolicyService> logger, ICancellationTokenProvider cancellationTokenProvider)
         {
-            _provider = provider;
-            _logger = logger;
+            Provider = provider;
+            Logger = logger;
+            CancellationTokenProvider = cancellationTokenProvider;
         }
 
         /// <summary>
@@ -44,15 +58,15 @@ namespace Duende.IdentityServer.EntityFramework.Services
             origin = origin.ToLowerInvariant();
 
             // doing this here and not in the ctor because: https://github.com/aspnet/CORS/issues/105
-            var dbContext = _provider.GetRequiredService<IConfigurationDbContext>();
+            var dbContext = Provider.GetRequiredService<IConfigurationDbContext>();
 
             var query = from o in dbContext.ClientCorsOrigins
                         where o.Origin == origin
                         select o;
 
-            var isAllowed = await query.AnyAsync();
+            var isAllowed = await query.AnyAsync(CancellationTokenProvider.CancellationToken);
 
-            _logger.LogDebug("Origin {origin} is allowed: {originAllowed}", origin, isAllowed);
+            Logger.LogDebug("Origin {origin} is allowed: {originAllowed}", origin, isAllowed);
 
             return isAllowed;
         }

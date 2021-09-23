@@ -236,7 +236,7 @@ namespace UnitTests.Validation.Setup
 
             if (jwtRequestUriHttpClient == null)
             {
-                jwtRequestUriHttpClient = new DefaultJwtRequestUriHttpClient(new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options, new LoggerFactory());
+                jwtRequestUriHttpClient = new DefaultJwtRequestUriHttpClient(new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options, new LoggerFactory(), new NoneCancellationTokenProvider());
             }
 
 
