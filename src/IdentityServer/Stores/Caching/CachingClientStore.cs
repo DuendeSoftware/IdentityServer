@@ -2,12 +2,10 @@
 // See LICENSE in the project root for license information.
 
 
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
-using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -22,7 +20,6 @@ namespace Duende.IdentityServer.Stores
         private readonly IdentityServerOptions _options;
         private readonly ICache<Client> _cache;
         private readonly IClientStore _inner;
-        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CachingClientStore{T}"/> class.
@@ -30,13 +27,11 @@ namespace Duende.IdentityServer.Stores
         /// <param name="options">The options.</param>
         /// <param name="inner">The inner.</param>
         /// <param name="cache">The cache.</param>
-        /// <param name="logger">The logger.</param>
-        public CachingClientStore(IdentityServerOptions options, T inner, ICache<Client> cache, ILogger<CachingClientStore<T>> logger)
+        public CachingClientStore(IdentityServerOptions options, T inner, ICache<Client> cache)
         {
             _options = options;
             _inner = inner;
             _cache = cache;
-            _logger = logger;
         }
 
         /// <summary>
@@ -48,10 +43,9 @@ namespace Duende.IdentityServer.Stores
         /// </returns>
         public async Task<Client> FindClientByIdAsync(string clientId)
         {
-            var client = await _cache.GetAsync(clientId,
+            var client = await _cache.GetOrAddAsync(clientId,
                 _options.Caching.ClientStoreExpiration,
-                async () => await _inner.FindClientByIdAsync(clientId),
-                _logger);
+                async () => await _inner.FindClientByIdAsync(clientId));
 
             return client;
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -22,6 +22,16 @@ namespace Duende.IdentityServer.Services
         Task<T> GetAsync(string key);
 
         /// <summary>
+        /// Gets the cached data based upon a key index.
+        /// If the item is not found, the <c>get</c> function is used to obtain the item and populate the cache.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="duration">The duration.</param>
+        /// <param name="get">The function to obtain the item.</param>
+        /// <returns>The cached item.</returns>
+        Task<T> GetOrAddAsync(string key, TimeSpan duration, Func<Task<T>> get);
+
+        /// <summary>
         /// Caches the data based upon a key
         /// </summary>
         /// <param name="key">The key.</param>
@@ -29,5 +39,11 @@ namespace Duende.IdentityServer.Services
         /// <param name="expiration">The expiration.</param>
         /// <returns></returns>
         Task SetAsync(string key, T item, TimeSpan expiration);
+
+        /// <summary>
+        /// Removes the cached data based upon a key index.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        Task RemoveAsync(string key);
     }
 }

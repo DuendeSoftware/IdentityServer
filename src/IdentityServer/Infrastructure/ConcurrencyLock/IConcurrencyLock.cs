@@ -4,19 +4,19 @@
 
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services.KeyManagement
+namespace Duende.IdentityServer.Internal
 {
     /// <summary>
-    /// Interface to model locking when a new key is to be created.
+    /// Interface to model locking.
     /// </summary>
-    public interface INewKeyLock
+    public interface IConcurrencyLock<T>
     {
         /// <summary>
-        /// Locks
+        /// Locks. Returns false if lock was not obtained within in the timeout.
         /// </summary>
         /// <returns></returns>
-        Task LockAsync();
-        
+        Task<bool> LockAsync(int millisecondsTimeout);
+
         /// <summary>
         /// Unlocks
         /// </summary>

@@ -49,33 +49,23 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         /// <inheritdoc/>
         public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
         {
-            var result = await _allCache.GetAsync("__all__");
-            if (result == null)
-            {
-                result = await _inner.GetAllSchemeNamesAsync();
-                if (result != null)
-                {
-                    await _allCache.SetAsync("__all__", result, _options.Caching.IdentityProviderCacheDuration);
-                }
-            }
-
+            var result = await _allCache.GetOrAddAsync("__all__", 
+                _options.Caching.IdentityProviderCacheDuration, 
+                async () => await _inner.GetAllSchemeNamesAsync());
             return result;
         }
 
         /// <inheritdoc/>
         public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
         {
-            var result = await _cache.GetAsync(scheme);
-            if (result == null)
-            {
-                result = await _inner.GetBySchemeAsync(scheme);
-                if (result != null)
+            var result = await _cache.GetOrAddAsync(scheme,
+                _options.Caching.IdentityProviderCacheDuration,
+                async () =>
                 {
-                    RemoveCacheEntry(result);
-                    await _cache.SetAsync(scheme, result, _options.Caching.IdentityProviderCacheDuration);
-                }
-            }
-
+                    var item = await _inner.GetBySchemeAsync(scheme);
+                    RemoveCacheEntry(item);
+                    return item;
+                });
             return result;
         }
 
@@ -84,18 +74,26 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         // this keeps theirs in sync with ours when we re-load from the DB
         void RemoveCacheEntry(IdentityProvider idp)
         {
-            var provider = _options.DynamicProviders.FindProviderType(idp.Type);
-            if (provider != null)
+            if (idp != null)
             {
-                var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
-                // need to resolve the provide type dynamically, thus the need for the http context accessor
-                var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
-                if (optionsCache != null)
+                var provider = _options.DynamicProviders.FindProviderType(idp.Type);
+                if (provider != null)
                 {
-                    var mi = optionsMonitorType.GetMethod("TryRemove");
-                    if (mi != null)
+                    var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
+                    // need to resolve the provide type dynamically, thus the need for the http context accessor
+                    var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
+                    if (optionsCache != null)
                     {
-                        mi.Invoke(optionsCache, new[] { idp.Scheme });
+                        var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
+                        var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
+                        if (optionsCache != null)
+                        {
+                            var mi = optionsMonitorType.GetMethod("TryRemove");
+                            if (mi != null)
+                            {
+                                mi.Invoke(optionsCache, new[] { idp.Scheme });
+                            }
+                        }
                     }
                 }
             }

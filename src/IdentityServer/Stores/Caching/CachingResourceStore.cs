@@ -2,14 +2,12 @@
 // See LICENSE in the project root for license information.
 
 
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
-using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -32,7 +30,6 @@ namespace Duende.IdentityServer.Stores
         private readonly ICache<Resources> _allCache;
         
         private readonly IResourceStore _inner;
-        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CachingResourceStore{T}"/> class.
@@ -44,14 +41,12 @@ namespace Duende.IdentityServer.Stores
         /// <param name="apisCache">The API cache.</param>
         /// <param name="scopeCache"></param>
         /// <param name="allCache">All cache.</param>
-        /// <param name="logger">The logger.</param>
         public CachingResourceStore(IdentityServerOptions options, T inner, 
             ICache<IEnumerable<IdentityResource>> identityCache, 
             ICache<IEnumerable<ApiResource>> apiByScopeCache,
             ICache<IEnumerable<ApiResource>> apisCache,
             ICache<IEnumerable<ApiScope>> scopeCache,
-            ICache<Resources> allCache,
-            ILogger<CachingResourceStore<T>> logger)
+            ICache<Resources> allCache)
         {
             _options = options;
             _inner = inner;
@@ -60,7 +55,6 @@ namespace Duende.IdentityServer.Stores
             _apiResourceCache = apisCache;
             _apiScopeCache = scopeCache;
             _allCache = allCache;
-            _logger = logger;
         }
 
         private string GetKey(IEnumerable<string> names)
@@ -74,10 +68,9 @@ namespace Duende.IdentityServer.Stores
         {
             var key = AllKey;
 
-            var all = await _allCache.GetAsync(key,
+            var all = await _allCache.GetOrAddAsync(key,
                 _options.Caching.ResourceStoreExpiration,
-                async () => await _inner.GetAllResourcesAsync(),
-                _logger);
+                async () => await _inner.GetAllResourcesAsync());
 
             return all;
         }
@@ -87,10 +80,9 @@ namespace Duende.IdentityServer.Stores
         {
             var key = GetKey(apiResourceNames);
 
-            var apis = await _apiResourceCache.GetAsync(key,
+            var apis = await _apiResourceCache.GetOrAddAsync(key,
                 _options.Caching.ResourceStoreExpiration,
-                async () => await _inner.FindApiResourcesByNameAsync(apiResourceNames),
-                _logger);
+                async () => await _inner.FindApiResourcesByNameAsync(apiResourceNames));
 
             return apis;
         }
@@ -100,10 +92,9 @@ namespace Duende.IdentityServer.Stores
         {
             var key = GetKey(names);
 
-            var identities = await _identityCache.GetAsync(key,
+            var identities = await _identityCache.GetOrAddAsync(key,
                 _options.Caching.ResourceStoreExpiration,
-                async () => await _inner.FindIdentityResourcesByScopeNameAsync(names),
-                _logger);
+                async () => await _inner.FindIdentityResourcesByScopeNameAsync(names));
 
             return identities;
         }
@@ -114,10 +105,9 @@ namespace Duende.IdentityServer.Stores
             var key = GetKey(names);
 
             // this cache key needs a prefix to disambiguate from the other ICache<IEnumerable<ApiResource>> _apiResourceCache cache
-            var apis = await _apiByScopeCache.GetAsync("ApiResourcesByScopeNames:" + key,
+            var apis = await _apiByScopeCache.GetOrAddAsync("ApiResourcesByScopeNames:" + key,
                 _options.Caching.ResourceStoreExpiration,
-                async () => await _inner.FindApiResourcesByScopeNameAsync(names),
-                _logger);
+                async () => await _inner.FindApiResourcesByScopeNameAsync(names));
 
             return apis;
         }
@@ -127,10 +117,9 @@ namespace Duende.IdentityServer.Stores
         {
             var key = GetKey(scopeNames);
 
-            var apis = await _apiScopeCache.GetAsync(key,
+            var apis = await _apiScopeCache.GetOrAddAsync(key,
                 _options.Caching.ResourceStoreExpiration,
-                async () => await _inner.FindApiScopesByNameAsync(scopeNames),
-                _logger);
+                async () => await _inner.FindApiScopesByNameAsync(scopeNames));
 
             return apis;
         }

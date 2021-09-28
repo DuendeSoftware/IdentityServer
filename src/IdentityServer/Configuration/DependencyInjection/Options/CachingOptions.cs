@@ -38,5 +38,11 @@ namespace Duende.IdentityServer.Configuration
         /// Duration identity provider store cache duration
         /// </summary>
         public TimeSpan IdentityProviderCacheDuration { get; set; } = TimeSpan.FromMinutes(60);
+
+
+        /// <summary>
+        /// The timeout for concurrency locking in the default cache.
+        /// </summary>
+        public TimeSpan CacheLockTimeout { get; set; } = TimeSpan.FromSeconds(60);
     }
 }
