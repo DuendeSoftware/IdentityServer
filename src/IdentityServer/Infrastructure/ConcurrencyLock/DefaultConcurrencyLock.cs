@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,9 +16,14 @@ namespace Duende.IdentityServer.Internal
         static readonly SemaphoreSlim Lock = new SemaphoreSlim(1);
 
         /// <inheritdoc/>
-        public Task LockAsync()
+        public Task<bool> LockAsync(int millisecondsTimeout)
         {
-            return Lock.WaitAsync();
+            if (millisecondsTimeout <= 0)
+            {
+                throw new ArgumentException("millisecondsTimeout must be greater than zero.");
+            }
+            
+            return Lock.WaitAsync(millisecondsTimeout);
         }
 
         /// <inheritdoc/>

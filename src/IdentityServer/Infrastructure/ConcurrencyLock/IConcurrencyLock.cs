@@ -12,11 +12,11 @@ namespace Duende.IdentityServer.Internal
     public interface IConcurrencyLock<T>
     {
         /// <summary>
-        /// Locks
+        /// Locks. Returns false if lock was not obtained within in the timeout.
         /// </summary>
         /// <returns></returns>
-        Task LockAsync();
-        
+        Task<bool> LockAsync(int millisecondsTimeout);
+
         /// <summary>
         /// Unlocks
         /// </summary>

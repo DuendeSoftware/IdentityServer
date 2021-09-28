@@ -84,10 +84,15 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
                     var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
                     if (optionsCache != null)
                     {
-                        var mi = optionsMonitorType.GetMethod("TryRemove");
-                        if (mi != null)
+                        var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
+                        var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
+                        if (optionsCache != null)
                         {
-                            mi.Invoke(optionsCache, new[] { idp.Scheme });
+                            var mi = optionsMonitorType.GetMethod("TryRemove");
+                            if (mi != null)
+                            {
+                                mi.Invoke(optionsCache, new[] { idp.Scheme });
+                            }
                         }
                     }
                 }
