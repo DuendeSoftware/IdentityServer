@@ -36,10 +36,10 @@ namespace Duende.IdentityServer.Stores
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="inner">The inner.</param>
-        /// <param name="identityCache">The identity cache.</param>
-        /// <param name="apisCache">The API cache.</param>
-        /// <param name="scopeCache"></param>
-        /// <param name="allCache">All cache.</param>
+        /// <param name="identityCache">The IdentityResource cache.</param>
+        /// <param name="apisCache">The ApiResource cache.</param>
+        /// <param name="scopeCache">The ApiScope cache.</param>
+        /// <param name="allCache">All Resources cache.</param>
         public CachingResourceStore(IdentityServerOptions options, T inner, 
             ICache<IdentityResource> identityCache, 
             ICache<ApiResource> apisCache,
@@ -133,9 +133,9 @@ namespace Duende.IdentityServer.Stores
 
                 // create a key based on the names we're about to lookup
                 var itemsKey = keyPrefix + GetKey(uncachedNames);
-                // expire this use 10% as this should expire much faster than the normal items
+                // expire this entry much faster than the normal items
                 var itemsDuration = _options.Caching.ResourceStoreExpiration / 20;
-                // do the cache lookup
+                // do the cache/DB lookup
                 var resources = await _allCache.GetOrAddAsync(itemsKey, itemsDuration, async () => await getResourcesFunc(uncachedNames));
                 
                 // get the specific items from the Resources object
