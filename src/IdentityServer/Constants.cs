@@ -199,6 +199,7 @@ namespace Duende.IdentityServer
         public static class EndpointNames
         {
             public const string Authorize = "Authorize";
+            public const string BackchannelAuthentication = "BackchannelAuthentication";
             public const string Token = "Token";
             public const string DeviceAuthorization = "DeviceAuthorization";
             public const string Discovery = "Discovery";
@@ -213,24 +214,25 @@ namespace Duende.IdentityServer
         {
             public const string ConnectPathPrefix       = "connect";
 
-            public const string Authorize               = ConnectPathPrefix + "/authorize";
-            public const string AuthorizeCallback       = Authorize + "/callback";
-            public const string DiscoveryConfiguration  = ".well-known/openid-configuration";
-            public const string DiscoveryWebKeys        = DiscoveryConfiguration + "/jwks";
-            public const string Token                   = ConnectPathPrefix + "/token";
-            public const string Revocation              = ConnectPathPrefix + "/revocation";
-            public const string UserInfo                = ConnectPathPrefix + "/userinfo";
-            public const string Introspection           = ConnectPathPrefix + "/introspect";
-            public const string EndSession              = ConnectPathPrefix + "/endsession";
-            public const string EndSessionCallback      = EndSession + "/callback";
-            public const string CheckSession            = ConnectPathPrefix + "/checksession";
-            public const string DeviceAuthorization     = ConnectPathPrefix + "/deviceauthorization";
+            public const string Authorize                   = ConnectPathPrefix + "/authorize";
+            public const string AuthorizeCallback           = Authorize + "/callback";
+            public const string DiscoveryConfiguration      = ".well-known/openid-configuration";
+            public const string DiscoveryWebKeys            = DiscoveryConfiguration + "/jwks";
+            public const string BackchannelAuthentication   = ConnectPathPrefix + "/backchannel-authentication";
+            public const string Token                       = ConnectPathPrefix + "/token";
+            public const string Revocation                  = ConnectPathPrefix + "/revocation";
+            public const string UserInfo                    = ConnectPathPrefix + "/userinfo";
+            public const string Introspection               = ConnectPathPrefix + "/introspect";
+            public const string EndSession                  = ConnectPathPrefix + "/endsession";
+            public const string EndSessionCallback          = EndSession + "/callback";
+            public const string CheckSession                = ConnectPathPrefix + "/checksession";
+            public const string DeviceAuthorization         = ConnectPathPrefix + "/deviceauthorization";
 
-            public const string MtlsPathPrefix          = ConnectPathPrefix + "/mtls";
-            public const string MtlsToken               = MtlsPathPrefix + "/token";
-            public const string MtlsRevocation          = MtlsPathPrefix + "/revocation";
-            public const string MtlsIntrospection       = MtlsPathPrefix + "/introspect";
-            public const string MtlsDeviceAuthorization = MtlsPathPrefix + "/deviceauthorization";
+            public const string MtlsPathPrefix              = ConnectPathPrefix + "/mtls";
+            public const string MtlsToken                   = MtlsPathPrefix + "/token";
+            public const string MtlsRevocation              = MtlsPathPrefix + "/revocation";
+            public const string MtlsIntrospection           = MtlsPathPrefix + "/introspect";
+            public const string MtlsDeviceAuthorization     = MtlsPathPrefix + "/deviceauthorization";
 
             public static readonly string[] CorsPaths =
             {
@@ -337,6 +339,25 @@ namespace Duende.IdentityServer
             public const string P256 = "1.2.840.10045.3.1.7";
             public const string P384 = "1.3.132.0.34";
             public const string P521 = "1.3.132.0.35";
+        }
+
+        // TODO: Add to IdentityModel
+        public const string CibaGrantType = "urn:openid:params:grant-type:ciba";
+
+        public static class BackchannelAuthenticationErrors
+        {
+            public const string InvalidRequest = "invalid_request";
+            public const string InvalidScope = "invalid_scope";
+            public const string ExpiredLoginHintToken = "expired_login_hint_token";
+            public const string UnknownUserId = "unknown_user_id";
+            public const string UnauthorizedClient = "unauthorized_client";
+            public const string MissingUserCode = "missing_user_code";
+            public const string InvalidUserCode = "invalid_user_code";
+            public const string InvalidBindingMessage = "invalid_binding_message";
+            public const string InvalidClient = "invalid_client";
+            public const string AccessDenied = "access_denied";
+            // todo: support this?
+            public const string InvalidTarget = "invalid_target";
         }
     }
 }

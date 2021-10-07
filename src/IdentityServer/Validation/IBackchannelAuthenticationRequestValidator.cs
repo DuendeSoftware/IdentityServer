@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Validation
 {
     /// <summary>
-    /// Interface for the token request validator
+    /// Interface for the backchannel authentication request validator
     /// </summary>
-    public interface ITokenRequestValidator
+    public interface IBackchannelAuthenticationRequestValidator
     {
         /// <summary>
         /// Validates the request.
@@ -18,6 +18,6 @@ namespace Duende.IdentityServer.Validation
         /// <param name="parameters">The parameters.</param>
         /// <param name="clientValidationResult">The client validation result.</param>
         /// <returns></returns>
-        Task<TokenRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult);
+        Task<BackchannelAuthenticationRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult);
     }
 }
