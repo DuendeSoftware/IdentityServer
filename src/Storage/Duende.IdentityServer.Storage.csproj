@@ -10,7 +10,6 @@
 
     <ItemGroup>
         <PackageReference Include="IdentityModel" />
-        <PackageReference Include="System.Text.Json" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
     </ItemGroup>
 
