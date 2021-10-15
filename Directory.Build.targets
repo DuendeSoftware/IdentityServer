@@ -24,7 +24,6 @@
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="All" />
 
     <!--microsoft extensions -->
-    <PackageReference Update="System.Text.Json" Version="5.0.1" />
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="$(ExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)" />
     <PackageReference Update="Microsoft.Extensions.Http.Polly" Version="$(ExtensionsVersion)" />
