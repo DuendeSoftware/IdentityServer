@@ -21,7 +21,7 @@ jobs:
     name: ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
     steps:
-    - uses: actions/checkout@af513c7a016048ae468971c52ed77d9562c7c819
+    - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97
     
     - name: Setup dotnet (main)
       uses: actions/setup-dotnet@v1
