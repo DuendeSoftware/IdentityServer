@@ -71,6 +71,7 @@ namespace Duende.IdentityServer.Validation
 
             _validatedRequest.RequestedScopes = scope.FromSpaceSeparatedString().Distinct().ToList();
 
+            // TODO: do we really need a flag like this?
             //if (_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
             //{
             //    _validatedRequest.IsOpenIdRequest = true;

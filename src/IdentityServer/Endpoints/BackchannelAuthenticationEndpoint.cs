@@ -1,8 +1,6 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using System.Collections.Specialized;
-using System.Net;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
@@ -14,9 +12,7 @@ using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using static Duende.IdentityServer.Constants;
-using System.Collections.Generic;
 using Duende.IdentityServer.Events;
-using System;
 
 namespace Duende.IdentityServer.Endpoints
 {

@@ -99,8 +99,8 @@ namespace Duende.IdentityServer.ResponseHandling
             {
                 RequestId = requestId,
                 Subject = validationResult.ValidatedRequest.Subject,
-                AuthenticationContextReferenceClasses = validationResult.ValidatedRequest.AuthenticationContextReferenceClasses,
                 BindingMessage = validationResult.ValidatedRequest.BindingMessage,
+                AuthenticationContextReferenceClasses = validationResult.ValidatedRequest.AuthenticationContextReferenceClasses,
             });
 
             return response;
