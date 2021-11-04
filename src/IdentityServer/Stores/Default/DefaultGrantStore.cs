@@ -187,15 +187,32 @@ namespace Duende.IdentityServer.Stores
         /// <param name="expiration">The expiration.</param>
         /// <param name="consumedTime">The consumed time.</param>
         /// <returns></returns>
-        protected virtual async Task StoreItemAsync(string key, T item, string clientId, string subjectId, string sessionId, string description, DateTime created, DateTime? expiration, DateTime? consumedTime = null)
+        protected virtual Task StoreItemAsync(string key, T item, string clientId, string subjectId, string sessionId, string description, DateTime created, DateTime? expiration, DateTime? consumedTime = null)
         {
             key = GetHashedKey(key);
+            return StoreItemByHashedKeyAsync(key, item, clientId, subjectId, sessionId, description, created, expiration, consumedTime);
+        }
 
+        /// <summary>
+        /// Stores the item.
+        /// </summary>
+        /// <param name="hashedKey">The key.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="clientId">The client identifier.</param>
+        /// <param name="subjectId">The subject identifier.</param>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="created">The created time.</param>
+        /// <param name="expiration">The expiration.</param>
+        /// <param name="consumedTime">The consumed time.</param>
+        /// <returns></returns>
+        protected virtual async Task StoreItemByHashedKeyAsync(string hashedKey, T item, string clientId, string subjectId, string sessionId, string description, DateTime created, DateTime? expiration, DateTime? consumedTime = null)
+        {
             var json = Serializer.Serialize(item);
 
             var grant = new PersistedGrant
             {
-                Key = key,
+                Key = hashedKey,
                 Type = GrantType,
                 ClientId = clientId,
                 SubjectId = subjectId,

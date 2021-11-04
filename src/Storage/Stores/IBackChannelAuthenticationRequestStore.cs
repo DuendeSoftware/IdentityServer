@@ -21,7 +21,7 @@ namespace Duende.IdentityServer.Stores
         /// <summary>
         /// Gets the requests.
         /// </summary>
-        Task<IEnumerable<BackChannelAuthenticationRequest>> GetAllForUserAsync(string subjectId, string clientId = null);
+        Task<IEnumerable<BackChannelAuthenticationRequest>> GetLoginsForUserAsync(string subjectId, string clientId = null);
 
         /// <summary>
         /// Gets the request.
@@ -36,11 +36,11 @@ namespace Duende.IdentityServer.Stores
         /// <summary>
         /// Removes the request.
         /// </summary>
-        Task RemoveByAuthenticationRequestIdAsync(string requestId);
-        
-        /// <summary>
-        /// Removes the request.
-        /// </summary>
         Task RemoveByIdAsync(string id);
+
+        /// <summary>
+        /// Updates the request.
+        /// </summary>
+        Task UpdateByIdAsync(string id, BackChannelAuthenticationRequest request);
     }
 }

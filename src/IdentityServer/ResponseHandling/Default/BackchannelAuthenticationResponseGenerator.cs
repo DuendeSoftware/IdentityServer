@@ -101,6 +101,9 @@ namespace Duende.IdentityServer.ResponseHandling
             {
                 Id = request.Id,
                 Subject = validationResult.ValidatedRequest.Subject,
+                Client = validationResult.ValidatedRequest.Client,
+                ValidatedResources = validationResult.ValidatedRequest.ValidatedResources,
+                RequestedResourceIndicators = validationResult.ValidatedRequest.RequestedResourceIndiators,
                 BindingMessage = validationResult.ValidatedRequest.BindingMessage,
                 AuthenticationContextReferenceClasses = validationResult.ValidatedRequest.AuthenticationContextReferenceClasses,
             });

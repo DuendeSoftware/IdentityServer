@@ -43,7 +43,7 @@ namespace ConsoleCibaClient
             {
                 {"client_id", "ciba"},
                 {"client_secret", "secret"},
-                {"scope", "openid profile email resource1.scope1"},
+                {"scope", "openid profile email resource1.scope1 offline_access"},
                 {"login_hint", username},
                 {"binding_message", bindingMessage },
             };
@@ -59,11 +59,8 @@ namespace ConsoleCibaClient
             Console.WriteLine($"Authentication Request Id   : {loginResponse.auth_req_id}");
             Console.WriteLine($"Expires In                  : {loginResponse.expires_in}");
             Console.WriteLine($"Interval                    : {loginResponse.interval}");
+            Console.WriteLine();
 
-            Console.WriteLine($"\nPress enter to launch browser to login");
-            Console.ReadLine();
-
-            Process.Start(new ProcessStartInfo(Constants.Authority + "/ciba") { UseShellExecute = true });
             return loginResponse;
         }
 

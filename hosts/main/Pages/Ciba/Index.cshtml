@@ -27,14 +27,21 @@
                                 {
                                     <tr>
                                         <td>@login.Id</td>
-                                        <td>@login.ClientId</td>
+                                        <td>@login.Client.ClientId</td>
                                         <td>@login.BindingMessage</td>
                                         <td>
                                             <form method="post">
+                                                @if (login.Client.RequireConsent)
+                                                { 
+                                                    <a asp-page="Consent" asp-route-id="@login.Id" class="btn btn-primary">Process</a>
+                                                }
+                                                else
+                                                {
+                                                    <button type="submit" name="button" value="allow" class="btn btn-success">Allow</button>
+                                                    <button type="submit" name="button" value="deny" class="btn btn-danger">Deny</button>
+                                                }
                                                 <input type="hidden" name="id" value="@login.Id" />
-                                                <button type="submit" name="button" value="allow" class="btn btn-success">Allow</button>
                                                 <button type="submit" name="button" value="delete" class="btn btn-warning">Delete</button>
-                                                <button type="submit" name="button" value="deny" class="btn btn-danger">Deny</button>
                                             </form>
                                         </td>
                                     </tr>

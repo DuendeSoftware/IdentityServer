@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using Duende.IdentityServer.Validation;
 using System.Collections.Generic;
 using System.Security.Claims;
 
@@ -30,6 +31,21 @@ namespace Duende.IdentityServer.Models
         /// <summary>
         /// Gets or sets the authentication context reference classes.
         /// </summary>
-        public ICollection<string> AuthenticationContextReferenceClasses { get; set; }
+        public IEnumerable<string> AuthenticationContextReferenceClasses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the resource indicator.
+        /// </summary>
+        public IEnumerable<string> RequestedResourceIndicators { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client.
+        /// </summary>
+        public Client Client { get; set; }
+
+        /// <summary>
+        /// Gets or sets the validated resources.
+        /// </summary>
+        public ResourceValidationResult ValidatedResources { get; set; }
     }
 }

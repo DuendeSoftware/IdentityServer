@@ -343,7 +343,7 @@ namespace Duende.IdentityServer.ResponseHandling
             {
                 // load the client that belongs to the device code
                 Client client = null;
-                if (request.ValidatedRequest.DeviceCode.ClientId != null)
+                if (request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId != null)
                 {
                     // todo: do we need this check?
                     client = await Clients.FindEnabledClientByIdAsync(request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId);
@@ -443,6 +443,26 @@ namespace Duende.IdentityServer.ResponseHandling
                 
                 authorizedScopes = request.AuthorizationCode.RequestedScopes;
                 authorizedResourceIndicators = request.AuthorizationCode.RequestedResourceIndicators;
+            }
+            else if (request.BackChannelAuthenticationRequest != null)
+            {
+                // load the client that belongs to the authorization code
+                Client client = null;
+                if (request.BackChannelAuthenticationRequest.ClientId != null)
+                {
+                    // todo: do we need this check?
+                    client = await Clients.FindEnabledClientByIdAsync(request.BackChannelAuthenticationRequest.ClientId);
+                }
+                if (client == null)
+                {
+                    throw new InvalidOperationException("Client does not exist anymore.");
+                }
+
+                tokenRequest.Subject = request.BackChannelAuthenticationRequest.Subject;
+                tokenRequest.Description = request.BackChannelAuthenticationRequest.Description;
+
+                authorizedScopes = request.BackChannelAuthenticationRequest.AuthorizedScopes;
+                authorizedResourceIndicators = request.BackChannelAuthenticationRequest.RequestedResourceIndicators;
             }
             else if (request.DeviceCode != null)
             {

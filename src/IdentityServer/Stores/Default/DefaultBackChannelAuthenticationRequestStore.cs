@@ -9,6 +9,7 @@ using Duende.IdentityServer.Stores.Serialization;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Extensions;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -38,7 +39,7 @@ namespace Duende.IdentityServer.Stores
         {
             var handle = await CreateHandleAsync();
             request.Id = GetHashedKey(handle);
-            await StoreItemAsync(handle, request, request.ClientId, request.Subject.GetSubjectId(), null, null, request.CreationTime, request.CreationTime.AddSeconds(request.Lifetime));
+            await StoreItemByHashedKeyAsync(request.Id, request, request.ClientId, request.Subject.GetSubjectId(), null, null, request.CreationTime, request.CreationTime.AddSeconds(request.Lifetime));
             return handle;
         }
 
@@ -55,24 +56,24 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task RemoveByAuthenticationRequestIdAsync(string requestId)
-        {
-            return RemoveItemAsync(requestId);
-        }
-
-        /// <inheritdoc/>
         public Task RemoveByIdAsync(string requestId)
         {
             return RemoveItemByHashedKeyAsync(requestId);
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<BackChannelAuthenticationRequest>> GetAllForUserAsync(string subjectId, string clientId = null)
+        public Task<IEnumerable<BackChannelAuthenticationRequest>> GetLoginsForUserAsync(string subjectId, string clientId = null)
         {
-            return base.GetAllAsync(new PersistedGrantFilter {
+            return GetAllAsync(new PersistedGrantFilter {
                 SubjectId = subjectId,
                 ClientId = clientId,
             });
+        }
+
+        /// <inheritdoc/>
+        public Task UpdateByIdAsync(string id, BackChannelAuthenticationRequest request)
+        {
+            return StoreItemByHashedKeyAsync(id, request, request.ClientId, request.Subject.GetSubjectId(), request.SessionId, request.Description, request.CreationTime, request.CreationTime.AddSeconds(request.Lifetime));
         }
     }
 }

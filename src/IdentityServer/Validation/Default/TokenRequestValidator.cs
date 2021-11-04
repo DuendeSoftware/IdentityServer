@@ -796,7 +796,7 @@ namespace Duende.IdentityServer.Validation
             LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
             _validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
 
-            
+
             _logger.LogDebug("Validation of CIBA token request success");
 
             return Valid();

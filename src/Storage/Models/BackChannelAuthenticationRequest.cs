@@ -79,6 +79,11 @@ namespace Duende.IdentityServer.Models
         /// </summary>
         public string SessionId { get; set; }
 
+        /// <summary>
+        /// Gets the description the user assigned to the client being authorized.
+        /// </summary>
+        public string Description { get; set; }
+        
         // todo: CIBA maybe we want to add session claims? or do we just update the Subject above?
     }
 }

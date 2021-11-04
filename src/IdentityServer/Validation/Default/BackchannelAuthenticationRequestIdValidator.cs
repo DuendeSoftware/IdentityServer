@@ -102,10 +102,11 @@ namespace Duende.IdentityServer.Validation
             }
 
             context.Request.BackChannelAuthenticationRequest = request;
+            context.Request.Subject = request.Subject;
             context.Request.SessionId = request.SessionId;
 
             context.Result = new TokenRequestValidationResult(context.Request);
-            await _backchannelAuthenticationStore.RemoveByAuthenticationRequestIdAsync(context.AuthenticationRequestId); 
+            await _backchannelAuthenticationStore.RemoveByIdAsync(request.Id); 
         }
     }
 }

@@ -17,7 +17,7 @@ namespace IdentityServerHost.Pages.Ciba
     [Authorize]
     public class IndexModel : PageModel
     {
-        public IEnumerable<BackChannelAuthenticationRequest> Logins { get; set; }
+        public IEnumerable<BackchannelUserLoginRequest> Logins { get; set; }
 
         [BindProperty, Required]
         public string Id { get; set; }
@@ -33,7 +33,7 @@ namespace IdentityServerHost.Pages.Ciba
 
         public async Task OnGet()
         {
-            Logins = await _backchannelAuthenticationInteraction.GetLoginsForSubjectAsync(User.GetSubjectId());
+            Logins = await _backchannelAuthenticationInteraction.GetLoginRequestsForSubjectAsync(User.GetSubjectId());
         }
 
         public async Task<IActionResult> OnPost()
@@ -42,13 +42,20 @@ namespace IdentityServerHost.Pages.Ciba
             {
                 if (Button == "allow")
                 {
+                    var request = await _backchannelAuthenticationInteraction.GetPendingLoginRequestById(Id);
+                    await _backchannelAuthenticationInteraction.HandleRequestByIdAsync(Id, new ConsentResponse { 
+                        ScopesValuesConsented = request.ValidatedResources.RawScopeValues
+                    });
                 }
                 if (Button == "deny")
                 {
+                    await _backchannelAuthenticationInteraction.HandleRequestByIdAsync(Id, new ConsentResponse { 
+                        Error = AuthorizationError.AccessDenied 
+                    });
                 }
                 if (Button == "delete")
                 {
-                    await _backchannelAuthenticationInteraction.RemoveLoginAsync(Id);
+                    await _backchannelAuthenticationInteraction.RemoveLoginRequestAsync(Id);
                 }
             }
 

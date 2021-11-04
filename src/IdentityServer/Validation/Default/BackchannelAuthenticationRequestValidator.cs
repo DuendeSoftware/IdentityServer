@@ -82,9 +82,6 @@ namespace Duende.IdentityServer.Validation
 
 
             // TODO: ciba isn't this always an OIDC request?
-            //////////////////////////////////////////////////////////
-            // check for openid scope
-            //////////////////////////////////////////////////////////
             if (_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
             {
                 _validatedRequest.IsOpenIdRequest = true;
@@ -132,6 +129,7 @@ namespace Duende.IdentityServer.Validation
             }
 
             LicenseValidator.ValidateResourceIndicators(resourceIndicators);
+            _validatedRequest.ValidatedResources = validatedResources;
 
 
             //////////////////////////////////////////////////////////
