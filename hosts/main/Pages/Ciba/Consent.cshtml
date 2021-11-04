@@ -22,8 +22,8 @@
         </div>
     </div>
 
-    <form asp-page="/Consent/Index">
-        <input type="hidden" asp-for="Input.ReturnUrl" />
+    <form asp-page="/Ciba/Consent">
+        <input type="hidden" asp-for="Input.Id" />
         <div class="row">
             <div class="col-sm-8">
                 @if (Model.View.IdentityScopes.Any())
@@ -73,18 +73,6 @@
                         </div>
                     </div>
                 </div>
-
-                @if (Model.View.AllowRememberConsent)
-                {
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" asp-for="Input.RememberConsent">
-                            <label class="form-check-label" asp-for="Input.RememberConsent">
-                                <strong>Remember My Decision</strong>
-                            </label>
-                        </div>
-                    </div>
-                }
             </div>
         </div>
 

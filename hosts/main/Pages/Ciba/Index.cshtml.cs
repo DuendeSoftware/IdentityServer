@@ -33,7 +33,7 @@ namespace IdentityServerHost.Pages.Ciba
 
         public async Task OnGet()
         {
-            Logins = await _backchannelAuthenticationInteraction.GetLoginRequestsForSubjectAsync(User.GetSubjectId());
+            Logins = await _backchannelAuthenticationInteraction.GetPendingLoginRequestsForSubjectAsync(User.GetSubjectId());
         }
 
         public async Task<IActionResult> OnPost()
@@ -42,7 +42,7 @@ namespace IdentityServerHost.Pages.Ciba
             {
                 if (Button == "allow")
                 {
-                    var request = await _backchannelAuthenticationInteraction.GetPendingLoginRequestById(Id);
+                    var request = await _backchannelAuthenticationInteraction.GetLoginRequestById(Id);
                     await _backchannelAuthenticationInteraction.HandleRequestByIdAsync(Id, new ConsentResponse { 
                         ScopesValuesConsented = request.ValidatedResources.RawScopeValues
                     });

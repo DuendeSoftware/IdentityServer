@@ -75,14 +75,14 @@ namespace Duende.IdentityServer.Services
         }
 
         /// <inheritdoc/>
-        public async Task<BackchannelUserLoginRequest> GetPendingLoginRequestById(string id)
+        public async Task<BackchannelUserLoginRequest> GetLoginRequestById(string id)
         {
             var request = await _requestStore.GetByIdAsync(id);
             return await CreateAsync(request);
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<BackchannelUserLoginRequest>> GetLoginRequestsForSubjectAsync(string sub)
+        public async Task<IEnumerable<BackchannelUserLoginRequest>> GetPendingLoginRequestsForSubjectAsync(string sub)
         {
             var items = await _requestStore.GetLoginsForUserAsync(sub);
             var list = new List<BackchannelUserLoginRequest>();
