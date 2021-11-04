@@ -293,7 +293,27 @@ namespace IdentityServerHost.Configuration
                         "resource1.scope1",
                         "resource2.scope1"
                     }
-                }
+                },
+
+                ///////////////////////////////////////////
+                // CIBA Sample
+                //////////////////////////////////////////
+                new Client
+                {
+                    ClientId = "ciba",
+                    ClientName = "CIBA Client",
+                    ClientSecrets = { new Secret("secret".Sha256()) },
+                    AllowedGrantTypes = GrantTypes.Ciba,
+                    AllowOfflineAccess = true,
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.Email,
+                        "resource1.scope1",
+                        "resource2.scope1"
+                    }
+                },
             };
         }
     }

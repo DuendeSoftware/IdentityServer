@@ -93,6 +93,7 @@ namespace Duende.IdentityServer
             public const string AuthorizationCodeValidation = "AuthorizationCodeValidation";
             public const string UserInfoRequestValidation = "UserInfoRequestValidation";
             public const string DeviceCodeValidation = "DeviceCodeValidation";
+            public const string BackchannelAuthenticationRequestIdValidation = "BackchannelAuthenticationRequestIdValidation";
         }
 
         public readonly static IEnumerable<string> SupportedSigningAlgorithms = new List<string>

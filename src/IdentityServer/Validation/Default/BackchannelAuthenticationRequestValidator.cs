@@ -6,7 +6,6 @@ using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,6 +49,16 @@ namespace Duende.IdentityServer.Validation
 
             if (clientValidationResult == null) throw new ArgumentNullException(nameof(clientValidationResult));
 
+            //////////////////////////////////////////////////////////
+            // Client must be configured for CIBA
+            //////////////////////////////////////////////////////////
+            // TODO: CIBA constant
+            if (!clientValidationResult.Client.AllowedGrantTypes.Contains("urn:openid:params:grant-type:ciba"))
+            {
+                LogError("Client {clientId} not configured with the CIBA grant type.", clientValidationResult.Client.ClientId);
+                return Invalid(BackchannelAuthenticationErrors.UnauthorizedClient, "Unauthorized client");
+            }
+
             _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
 
 
@@ -71,11 +80,15 @@ namespace Duende.IdentityServer.Validation
 
             _validatedRequest.RequestedScopes = scope.FromSpaceSeparatedString().Distinct().ToList();
 
-            // TODO: do we really need a flag like this?
-            //if (_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
-            //{
-            //    _validatedRequest.IsOpenIdRequest = true;
-            //}
+
+            // TODO: ciba isn't this always an OIDC request?
+            //////////////////////////////////////////////////////////
+            // check for openid scope
+            //////////////////////////////////////////////////////////
+            if (_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
+            {
+                _validatedRequest.IsOpenIdRequest = true;
+            }
 
             //////////////////////////////////////////////////////////
             // check for resource indicators and valid format
@@ -218,6 +231,7 @@ namespace Duende.IdentityServer.Validation
                     return Invalid(BackchannelAuthenticationErrors.InvalidBindingMessage, "Invalid binding_message");
                 }
 
+                // TODO: CIBA should this be required? or configurable by client?
                 _validatedRequest.BindingMessage = bindingMessage;
             }
             

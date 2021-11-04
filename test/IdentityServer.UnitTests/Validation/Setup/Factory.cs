@@ -36,6 +36,7 @@ namespace UnitTests.Validation.Setup
             IResourceOwnerPasswordValidator resourceOwnerValidator = null,
             IProfileService profile = null,
             IDeviceCodeValidator deviceCodeValidator = null,
+            IBackchannelAuthenticationRequestIdValidator backchannelAuthenticationRequestIdValidator = null,
             IEnumerable<IExtensionGrantValidator> extensionGrantValidators = null,
             ICustomTokenRequestValidator customRequestValidator = null,
             IRefreshTokenService refreshTokenService = null,
@@ -69,6 +70,11 @@ namespace UnitTests.Validation.Setup
             if (deviceCodeValidator == null)
             {
                 deviceCodeValidator = new TestDeviceCodeValidator();
+            }
+
+            if (backchannelAuthenticationRequestIdValidator == null)
+            {
+                backchannelAuthenticationRequestIdValidator = new TestBackchannelAuthenticationRequestIdValidator();
             }
 
             if (customRequestValidator == null)
@@ -107,7 +113,7 @@ namespace UnitTests.Validation.Setup
                     refreshTokenStore,
                     profile);
             }
-
+            
             return new TokenRequestValidator(
                 options,
                 issuerNameService,
@@ -115,6 +121,7 @@ namespace UnitTests.Validation.Setup
                 resourceOwnerValidator,
                 profile,
                 deviceCodeValidator,
+                backchannelAuthenticationRequestIdValidator,
                 aggregateExtensionGrantValidator,
                 customRequestValidator,
                 resourceValidator,

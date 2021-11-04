@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Test;
 using System.Collections.Generic;
 
@@ -23,6 +24,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddSingleton(new TestUserStore(users));
             builder.AddProfileService<TestUserProfileService>();
             builder.AddResourceOwnerValidator<TestUserResourceOwnerPasswordValidator>();
+            
+            builder.AddBackchannelAuthenticationUserValidator<TestBackchannelLoginUserValidator>();
 
             return builder;
         }

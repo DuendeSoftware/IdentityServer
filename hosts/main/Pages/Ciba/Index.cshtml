@@ -1,0 +1,53 @@
+@page
+@model IdentityServerHost.Pages.Ciba.IndexModel
+@{
+}
+
+<div class="ciba-page">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Pending Backchannel Login Requests</h2>
+                </div>
+                <div class="card-body">
+                    @if (Model.Logins?.Any() == true)
+                    {
+                        <table class="table table-bordered table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Client Id</th>
+                                    <th>Binding Message</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var login in Model.Logins)
+                                {
+                                    <tr>
+                                        <td>@login.Id</td>
+                                        <td>@login.ClientId</td>
+                                        <td>@login.BindingMessage</td>
+                                        <td>
+                                            <form method="post">
+                                                <input type="hidden" name="id" value="@login.Id" />
+                                                <button type="submit" name="button" value="allow" class="btn btn-success">Allow</button>
+                                                <button type="submit" name="button" value="delete" class="btn btn-warning">Delete</button>
+                                                <button type="submit" name="button" value="deny" class="btn btn-danger">Deny</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div>No Pending Login Requests</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

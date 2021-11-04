@@ -11,10 +11,10 @@ namespace Duende.IdentityServer.Configuration
     /// </summary>
     public class CibaOptions
     {
-        // TODO: do we need this here or on the client? 
-        /// <summary>
-        /// Gets or sets the default lifetime of the request.
-        /// </summary>
+        // TODO: CIBA do we need this here or on the client? 
+        ///// <summary>
+        ///// Gets or sets the default lifetime of the request.
+        ///// </summary>
         //public TimeSpan DefaultLifetime { get; set; } = TimeSpan.FromMinutes(15);
         
         /// <summary>

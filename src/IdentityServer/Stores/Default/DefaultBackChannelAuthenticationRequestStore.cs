@@ -8,6 +8,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores.Serialization;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Extensions;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Stores
 {
@@ -33,21 +34,45 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task<string> CreateRequestAsync(BackChannelAuthenticationRequest request)
+        public async Task<string> CreateRequestAsync(BackChannelAuthenticationRequest request)
         {
-            return CreateItemAsync(request, request.ClientId, request.Subject.GetSubjectId(), null, null, request.CreationTime, request.Lifetime);
+            var handle = await CreateHandleAsync();
+            request.Id = GetHashedKey(handle);
+            await StoreItemAsync(handle, request, request.ClientId, request.Subject.GetSubjectId(), null, null, request.CreationTime, request.CreationTime.AddSeconds(request.Lifetime));
+            return handle;
         }
 
         /// <inheritdoc/>
-        public Task<BackChannelAuthenticationRequest> GetRequestAsync(string requestId)
+        public Task<BackChannelAuthenticationRequest> GetByIdAsync(string id)
+        {
+            return GetItemByHashedKeyAsync(id);
+        }
+
+        /// <inheritdoc/>
+        public Task<BackChannelAuthenticationRequest> GetByAuthenticationRequestIdAsync(string requestId)
         {
             return GetItemAsync(requestId);
         }
 
         /// <inheritdoc/>
-        public Task RemoveRequestAsync(string requestId)
+        public Task RemoveByAuthenticationRequestIdAsync(string requestId)
         {
             return RemoveItemAsync(requestId);
+        }
+
+        /// <inheritdoc/>
+        public Task RemoveByIdAsync(string requestId)
+        {
+            return RemoveItemByHashedKeyAsync(requestId);
+        }
+
+        /// <inheritdoc/>
+        public Task<IEnumerable<BackChannelAuthenticationRequest>> GetAllForUserAsync(string subjectId, string clientId = null)
+        {
+            return base.GetAllAsync(new PersistedGrantFilter {
+                SubjectId = subjectId,
+                ClientId = clientId,
+            });
         }
     }
 }

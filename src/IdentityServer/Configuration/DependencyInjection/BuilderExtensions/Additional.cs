@@ -519,5 +519,34 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return builder;
         }
+
+
+        /// <summary>
+        /// Adds the backchannel login user validator.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddBackchannelAuthenticationUserValidator<T>(this IIdentityServerBuilder builder)
+           where T : class, IBackchannelAuthenticationUserValidator
+        {
+            builder.Services.AddTransient<IBackchannelAuthenticationUserValidator, T>();
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds the user login service.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        public static IIdentityServerBuilder AddUserLoginService<T>(this IIdentityServerBuilder builder)
+           where T : class, IBackchannelAuthenticationUserNotificationService
+        {
+            builder.Services.AddTransient<IBackchannelAuthenticationUserNotificationService, T>();
+
+            return builder;
+        }
     }
 }

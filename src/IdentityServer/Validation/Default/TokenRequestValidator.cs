@@ -35,6 +35,7 @@ namespace Duende.IdentityServer.Validation
         private readonly IResourceOwnerPasswordValidator _resourceOwnerValidator;
         private readonly IProfileService _profile;
         private readonly IDeviceCodeValidator _deviceCodeValidator;
+        private readonly IBackchannelAuthenticationRequestIdValidator _backchannelAuthenticationRequestIdValidator;
         private readonly ISystemClock _clock;
         private readonly ILogger _logger;
 
@@ -46,7 +47,8 @@ namespace Duende.IdentityServer.Validation
             IAuthorizationCodeStore authorizationCodeStore, 
             IResourceOwnerPasswordValidator resourceOwnerValidator, 
             IProfileService profile, 
-            IDeviceCodeValidator deviceCodeValidator, 
+            IDeviceCodeValidator deviceCodeValidator,
+            IBackchannelAuthenticationRequestIdValidator backchannelAuthenticationRequestIdValidator,
             ExtensionGrantValidator extensionGrantValidator, 
             ICustomTokenRequestValidator customRequestValidator,
             IResourceValidator resourceValidator,
@@ -64,6 +66,7 @@ namespace Duende.IdentityServer.Validation
             _resourceOwnerValidator = resourceOwnerValidator;
             _profile = profile;
             _deviceCodeValidator = deviceCodeValidator;
+            _backchannelAuthenticationRequestIdValidator = backchannelAuthenticationRequestIdValidator;
             _extensionGrantValidator = extensionGrantValidator;
             _customRequestValidator = customRequestValidator;
             _resourceValidator = resourceValidator;
@@ -171,6 +174,8 @@ namespace Duende.IdentityServer.Validation
                     return await RunValidationAsync(ValidateRefreshTokenRequestAsync, parameters);
                 case OidcConstants.GrantTypes.DeviceCode:
                     return await RunValidationAsync(ValidateDeviceCodeRequestAsync, parameters);
+                case "urn:openid:params:grant-type:ciba": // TODO: CIBA 
+                    return await RunValidationAsync(ValidateCibaRequestRequestAsync, parameters);
                 default:
                     return await RunValidationAsync(ValidateExtensionGrantRequestAsync, parameters);
             }
@@ -704,6 +709,95 @@ namespace Duende.IdentityServer.Validation
             _validatedRequest.ValidatedResources = validatedResources;
 
             _logger.LogDebug("Validation of device code token request success");
+
+            return Valid();
+        }
+
+        private async Task<TokenRequestValidationResult> ValidateCibaRequestRequestAsync(NameValueCollection parameters)
+        {
+            _logger.LogDebug("Start validation of CIBA request");
+
+            // TODO: CIBA constants this method
+
+            /////////////////////////////////////////////
+            // check if client is authorized for grant type
+            /////////////////////////////////////////////
+            if (!_validatedRequest.Client.AllowedGrantTypes.ToList().Contains("urn:openid:params:grant-type:ciba"))
+            {
+                LogError("Client not authorized for CIBA flow");
+                return Invalid(OidcConstants.TokenErrors.UnauthorizedClient);
+            }
+
+            /////////////////////////////////////////////
+            // validate authentication request id parameter
+            /////////////////////////////////////////////
+            var authRequestId = parameters.Get("auth_req_id");
+            if (authRequestId.IsMissing())
+            {
+                LogError("Authentication request id is missing");
+                return Invalid(OidcConstants.TokenErrors.InvalidRequest);
+            }
+
+            if (authRequestId.Length > _options.InputLengthRestrictions.AuthenticationRequestId)
+            {
+                LogError("Authentication request id too long");
+                return Invalid(OidcConstants.TokenErrors.InvalidGrant);
+            }
+
+            /////////////////////////////////////////////
+            // validate authentication request id
+            /////////////////////////////////////////////
+            var validationContext = new BackchannelAuthenticationRequestIdValidationContext
+            {
+                AuthenticationRequestId = authRequestId, 
+                Request = _validatedRequest
+            };
+            await _backchannelAuthenticationRequestIdValidator.ValidateAsync(validationContext);
+
+            if (validationContext.Result.IsError)
+            {
+                return validationContext.Result;
+            }
+
+            //////////////////////////////////////////////////////////
+            // resource indicator
+            //////////////////////////////////////////////////////////
+            if (_validatedRequest.RequestedResourceIndicator != null &&
+                _validatedRequest.BackChannelAuthenticationRequest.RequestedResourceIndicators?.Any() == true &&
+                !_validatedRequest.BackChannelAuthenticationRequest.RequestedResourceIndicators.Contains(_validatedRequest.RequestedResourceIndicator))
+            {
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original backchannel authentication request.");
+            }
+            
+            //////////////////////////////////////////////////////////
+            // resource and scope validation 
+            //////////////////////////////////////////////////////////
+            var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+            {
+                Client = _validatedRequest.Client,
+                Scopes = _validatedRequest.BackChannelAuthenticationRequest.AuthorizedScopes,
+                ResourceIndicators = _validatedRequest.BackChannelAuthenticationRequest.RequestedResourceIndicators,
+                // if we are issuing a refresh token, then we need to allow the non-isolated resource
+                IncludeNonIsolatedApiResources = _validatedRequest.BackChannelAuthenticationRequest.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess)
+            });
+
+            if (!validatedResources.Succeeded)
+            {
+                if (validatedResources.InvalidResourceIndicators.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator.");
+                }
+                if (validatedResources.InvalidScopes.Any())
+                {
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope.");
+                }
+            }
+
+            LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
+            _validatedRequest.ValidatedResources = validatedResources.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
+
+            
+            _logger.LogDebug("Validation of CIBA token request success");
 
             return Valid();
         }

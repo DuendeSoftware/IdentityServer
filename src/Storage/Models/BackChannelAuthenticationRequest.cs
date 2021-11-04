@@ -14,6 +14,11 @@ namespace Duende.IdentityServer.Models
     public class BackChannelAuthenticationRequest
     {
         /// <summary>
+        /// The database identifier for this request.
+        /// </summary>
+        public string Id { get; set; }
+
+        /// <summary>
         /// Gets or sets the creation time.
         /// </summary>
         public DateTime CreationTime { get; set; }
@@ -34,6 +39,11 @@ namespace Duende.IdentityServer.Models
         public ClaimsPrincipal Subject { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is open identifier.
+        /// </summary>
+        public bool IsOpenId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the requested scopes.
         /// </summary>
         public IEnumerable<string> RequestedScopes { get; set; }
@@ -52,5 +62,23 @@ namespace Duende.IdentityServer.Models
         /// Gets or sets the binding message.
         /// </summary>
         public string BindingMessage { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is authorized.
+        /// </summary>
+        public bool IsAuthorized { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authorized scopes.
+        /// </summary>
+        public IEnumerable<string> AuthorizedScopes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the session identifier from which the user approved the request.
+        /// </summary>
+        public string SessionId { get; set; }
+
+        // todo: CIBA maybe we want to add session claims? or do we just update the Subject above?
     }
 }

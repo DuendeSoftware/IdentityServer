@@ -10,6 +10,7 @@ using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer.ResponseHandling
 {
@@ -32,7 +33,7 @@ namespace Duende.IdentityServer.ResponseHandling
         /// <summary>
         /// The user login service.
         /// </summary>
-        protected readonly IUserLoginService UserLoginService;
+        protected readonly IBackchannelAuthenticationUserNotificationService UserLoginService;
 
         /// <summary>
         /// The clock
@@ -54,7 +55,7 @@ namespace Duende.IdentityServer.ResponseHandling
         /// <param name="logger">The logger.</param>
         public BackchannelAuthenticationResponseGenerator(IdentityServerOptions options,
             IBackChannelAuthenticationRequestStore backChannelAuthenticationRequestStore,
-            IUserLoginService userLoginService,
+            IBackchannelAuthenticationUserNotificationService userLoginService,
             ISystemClock clock, 
             ILogger<BackchannelAuthenticationResponseGenerator> logger)
         {
@@ -78,6 +79,7 @@ namespace Duende.IdentityServer.ResponseHandling
             { 
                 CreationTime = Clock.UtcNow.DateTime,
                 ClientId = validationResult.ValidatedRequest.ClientId,
+                IsOpenId = validationResult.ValidatedRequest.IsOpenIdRequest,
                 RequestedScopes = validationResult.ValidatedRequest.ValidatedResources.RawScopeValues,
                 RequestedResourceIndicators = validationResult.ValidatedRequest.RequestedResourceIndiators,
                 Subject = validationResult.ValidatedRequest.Subject,
@@ -95,9 +97,9 @@ namespace Duende.IdentityServer.ResponseHandling
                 Interval = Options.Ciba.PollingInterval,
             };
 
-            await UserLoginService.SendRequestAsync(new UserLoginRequest
+            await UserLoginService.SendLoginRequestAsync(new BackchannelUserLoginRequest
             {
-                RequestId = requestId,
+                Id = request.Id,
                 Subject = validationResult.ValidatedRequest.Subject,
                 BindingMessage = validationResult.ValidatedRequest.BindingMessage,
                 AuthenticationContextReferenceClasses = validationResult.ValidatedRequest.AuthenticationContextReferenceClasses,

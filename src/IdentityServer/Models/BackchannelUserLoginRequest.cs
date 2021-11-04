@@ -4,30 +4,18 @@
 
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Models
 {
     /// <summary>
-    /// Interface for sending a user a login request from a backchannel authentication request.
+    /// Models the information to initiate a user login request due to a CIBA request.
     /// </summary>
-    public interface IUserLoginService
+    public class BackchannelUserLoginRequest
     {
         /// <summary>
-        /// Sends a notification for the user to login.
+        /// Gets or sets the id of the request.
         /// </summary>
-        Task SendRequestAsync(UserLoginRequest request);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class UserLoginRequest
-    {
-        /// <summary>
-        /// Gets or sets the request id.
-        /// </summary>
-        public string RequestId { get; set; }
+        public string Id { get; set; }
         
         /// <summary>
         /// Gets or sets the subject.

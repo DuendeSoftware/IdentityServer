@@ -39,5 +39,9 @@ namespace Duende.IdentityServer.Models
 
         public static ICollection<string> DeviceFlow =>
             new[] { GrantType.DeviceFlow };
+
+        // TODO: CIBA constant
+        public static ICollection<string> Ciba =>
+            new[] { "urn:openid:params:grant-type:ciba" };
     }
 }

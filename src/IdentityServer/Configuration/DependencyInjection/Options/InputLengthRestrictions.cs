@@ -153,6 +153,12 @@ namespace Duende.IdentityServer.Configuration
         /// </summary>
         public int LoginHintToken { get; set; } = 4000;
 
+        /// <summary>
+        /// Max length for auth_req_id
+        /// </summary>
+        public int AuthenticationRequestId { get; set; } = Default;
+
+
         //// todo: review this default
         ///// <summary>
         ///// Max value allowed for requested_expiry
