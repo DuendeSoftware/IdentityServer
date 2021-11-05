@@ -82,32 +82,34 @@ namespace Duende.IdentityServer.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<BackchannelUserLoginRequest>> GetPendingLoginRequestsForSubjectAsync(string sub)
+        public async Task<IEnumerable<BackchannelUserLoginRequest>> GetPendingLoginRequestsForCurrentUserAsync()
         {
-            var items = await _requestStore.GetLoginsForUserAsync(sub);
             var list = new List<BackchannelUserLoginRequest>();
-            foreach(var item in items)
+
+            var user = await _session.GetUserAsync();
+            if (user != null)
             {
-                if (!item.IsAuthorized)
+                _logger.LogDebug("No user present");
+                
+                var items = await _requestStore.GetLoginsForUserAsync(user.GetSubjectId());
+                foreach (var item in items)
                 {
-                    var req = await CreateAsync(item);
-                    if (req != null)
+                    if (!item.IsAuthorized)
                     {
-                        list.Add(req);
+                        var req = await CreateAsync(item);
+                        if (req != null)
+                        {
+                            list.Add(req);
+                        }
                     }
                 }
             }
+
             return list;
         }
 
         /// <inheritdoc/>
-        public Task RemoveLoginRequestAsync(string id)
-        {
-            return _requestStore.RemoveByIdAsync(id);
-        }
-
-        /// <inheritdoc/>
-        public async Task HandleRequestByIdAsync(string id, ConsentResponse response)
+        public async Task CompleteRequestByIdAsync(string id, ConsentResponse response)
         {
             if (String.IsNullOrWhiteSpace(id))
             {

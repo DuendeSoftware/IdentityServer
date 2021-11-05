@@ -11,6 +11,8 @@ namespace Duende.IdentityServer.Configuration
     /// </summary>
     public class CibaOptions
     {
+        // TODO: have these as default and add nullable on client
+
         // TODO: CIBA do we need this here or on the client? 
         ///// <summary>
         ///// Gets or sets the default lifetime of the request.

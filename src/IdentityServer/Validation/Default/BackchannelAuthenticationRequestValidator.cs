@@ -81,9 +81,11 @@ namespace Duende.IdentityServer.Validation
             _validatedRequest.RequestedScopes = scope.FromSpaceSeparatedString().Distinct().ToList();
 
 
+            // TODO: check for mandatory openid
             // TODO: ciba isn't this always an OIDC request?
             if (_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
             {
+                // TODO: remove, since it's always OIDC
                 _validatedRequest.IsOpenIdRequest = true;
             }
 
@@ -277,8 +279,12 @@ namespace Duende.IdentityServer.Validation
                     LogError("Invalid binding_message");
                     return Invalid(BackchannelAuthenticationErrors.InvalidBindingMessage, userResult.ErrorDescription);
                 }
+                
+                // fall thru to lines below for any other error value
             }
-            else if (userResult.Subject == null || !userResult.Subject.HasClaim(x => x.Type == JwtClaimTypes.Subject))
+            
+            // todo: what about other error types?
+            if (userResult.Subject == null || !userResult.Subject.HasClaim(x => x.Type == JwtClaimTypes.Subject))
             {
                 LogError("No subject or subject id returned from IBackchannelAuthenticationUserValidator");
                 return Invalid(BackchannelAuthenticationErrors.UnknownUserId);

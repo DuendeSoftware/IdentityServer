@@ -462,6 +462,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 tokenRequest.Description = request.BackChannelAuthenticationRequest.Description;
 
                 authorizedScopes = request.BackChannelAuthenticationRequest.AuthorizedScopes;
+                // TODO: should this come from the current request instead of the ciba request
                 authorizedResourceIndicators = request.BackChannelAuthenticationRequest.RequestedResourceIndicators;
             }
             else if (request.DeviceCode != null)

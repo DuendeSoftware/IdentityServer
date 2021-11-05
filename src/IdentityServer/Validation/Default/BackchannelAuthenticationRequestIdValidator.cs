@@ -42,6 +42,8 @@ namespace Duende.IdentityServer.Validation
         /// <inheritdoc/>
         public async Task ValidateAsync(BackchannelAuthenticationRequestIdValidationContext context)
         {
+            // TODO: more logging?
+
             var request = await _backchannelAuthenticationStore.GetByAuthenticationRequestIdAsync(context.AuthenticationRequestId);
 
             if (request == null)
@@ -80,6 +82,7 @@ namespace Duende.IdentityServer.Validation
             {
                 _logger.LogError("No scopes authorized for backchannel authentication request. Access denied");
                 context.Result = new TokenRequestValidationResult(context.Request, OidcConstants.TokenErrors.AccessDenied);
+                await _backchannelAuthenticationStore.RemoveByIdAsync(request.Id);
                 return;
             }
 

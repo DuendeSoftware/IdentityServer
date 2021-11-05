@@ -43,7 +43,7 @@ namespace IdentityServerHost.Pages.Ciba
             View = await BuildViewModelAsync(id);
             if (View == null)
             {
-                return RedirectToPage("/Error/Index");
+                return RedirectToPage("/Home/Error/Index");
             }
 
             Input = new InputModel
@@ -58,7 +58,11 @@ namespace IdentityServerHost.Pages.Ciba
         {
             // validate return url is still valid
             var request = await _interaction.GetLoginRequestById(Input.Id);
-            if (request == null) return RedirectToPage("/Error/Index");
+            if (request == null || request.Subject.GetSubjectId() != User.GetSubjectId())
+            {
+                _logger.LogError("Invalid id {id}", Input.Id);
+                return RedirectToPage("/Home/Error/Index");
+            }
 
             ConsentResponse grantedConsent = null;
 
@@ -104,9 +108,9 @@ namespace IdentityServerHost.Pages.Ciba
             if (grantedConsent != null)
             {
                 // communicate outcome of consent back to identityserver
-                await _interaction.HandleRequestByIdAsync(Input.Id, grantedConsent);
+                await _interaction.CompleteRequestByIdAsync(Input.Id, grantedConsent);
 
-                return RedirectToPage("/Ciba/Index");
+                return RedirectToPage("/Ciba/All");
             }
 
             // we need to redisplay the consent UI
@@ -117,7 +121,7 @@ namespace IdentityServerHost.Pages.Ciba
         private async Task<ViewModel> BuildViewModelAsync(string id, InputModel model = null)
         {
             var request = await _interaction.GetLoginRequestById(id);
-            if (request != null)
+            if (request != null && request.Subject.GetSubjectId() == User.GetSubjectId())
             {
                 return CreateConsentViewModel(model, id, request);
             }
@@ -137,6 +141,7 @@ namespace IdentityServerHost.Pages.Ciba
                 ClientName = request.Client.ClientName ?? request.Client.ClientId,
                 ClientUrl = request.Client.ClientUri,
                 ClientLogoUrl = request.Client.LogoUri,
+                BindingMessage = request.BindingMessage
             };
 
             vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources

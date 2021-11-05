@@ -1,65 +1,40 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 
 namespace IdentityServerHost.Pages.Ciba
 {
     [SecurityHeaders]
-    [Authorize]
     public class IndexModel : PageModel
     {
-        public IEnumerable<BackchannelUserLoginRequest> Logins { get; set; }
-
-        [BindProperty, Required]
-        public string Id { get; set; }
-        [BindProperty, Required]
-        public string Button { get; set; }
+        public BackchannelUserLoginRequest LoginRequest { get; set; }
 
         private readonly IBackchannelAuthenticationInteractionService _backchannelAuthenticationInteraction;
+        private readonly ILogger<IndexModel> _logger;
 
-        public IndexModel(IBackchannelAuthenticationInteractionService backchannelAuthenticationInteractionService)
+        public IndexModel(IBackchannelAuthenticationInteractionService backchannelAuthenticationInteractionService, ILogger<IndexModel> logger)
         {
             _backchannelAuthenticationInteraction = backchannelAuthenticationInteractionService;
+            _logger = logger;
         }
 
-        public async Task OnGet()
+        public async Task<IActionResult> OnGet(string id)
         {
-            Logins = await _backchannelAuthenticationInteraction.GetPendingLoginRequestsForSubjectAsync(User.GetSubjectId());
-        }
-
-        public async Task<IActionResult> OnPost()
-        {
-            if (Id != null && Button != null)
+            LoginRequest = await _backchannelAuthenticationInteraction.GetLoginRequestById(id);
+            if (LoginRequest == null)
             {
-                if (Button == "allow")
-                {
-                    var request = await _backchannelAuthenticationInteraction.GetLoginRequestById(Id);
-                    await _backchannelAuthenticationInteraction.HandleRequestByIdAsync(Id, new ConsentResponse { 
-                        ScopesValuesConsented = request.ValidatedResources.RawScopeValues
-                    });
-                }
-                if (Button == "deny")
-                {
-                    await _backchannelAuthenticationInteraction.HandleRequestByIdAsync(Id, new ConsentResponse { 
-                        Error = AuthorizationError.AccessDenied 
-                    });
-                }
-                if (Button == "delete")
-                {
-                    await _backchannelAuthenticationInteraction.RemoveLoginRequestAsync(Id);
-                }
+                _logger.LogWarning("Invalid backchannel login id {id}", id);
+                return RedirectToPage("/home/error/index");
             }
 
-            return RedirectToPage();
+            return Page();
         }
     }
 }

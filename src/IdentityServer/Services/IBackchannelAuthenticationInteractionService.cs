@@ -14,9 +14,9 @@ namespace Duende.IdentityServer.Services
     public interface IBackchannelAuthenticationInteractionService
     {
         /// <summary>
-        /// Returns the pending login requests for the subject id.
+        /// Returns the pending login requests for the current user.
         /// </summary>
-        Task<IEnumerable<BackchannelUserLoginRequest>> GetPendingLoginRequestsForSubjectAsync(string sub);
+        Task<IEnumerable<BackchannelUserLoginRequest>> GetPendingLoginRequestsForCurrentUserAsync();
         
         /// <summary>
         /// Returns the login request for the id.
@@ -24,13 +24,8 @@ namespace Duende.IdentityServer.Services
         Task<BackchannelUserLoginRequest> GetLoginRequestById(string id);
 
         /// <summary>
-        /// Removes the requests for the id.
+        /// Completes the login request with the provided response for the current user.
         /// </summary>
-        Task RemoveLoginRequestAsync(string id);
-
-        /// <summary>
-        /// Competes the login request with the provided response.
-        /// </summary>
-        Task HandleRequestByIdAsync(string id, ConsentResponse consent);
+        Task CompleteRequestByIdAsync(string id, ConsentResponse consent);
     }
 }

@@ -304,7 +304,8 @@ namespace IdentityServerHost.Configuration
                     ClientName = "CIBA Client",
                     ClientSecrets = { new Secret("secret".Sha256()) },
                     AllowedGrantTypes = GrantTypes.Ciba,
-                    //RequireConsent = true,
+                    //RequireRequestObject
+                    RequireConsent = true,
                     AllowOfflineAccess = true,
                     AllowedScopes =
                     {

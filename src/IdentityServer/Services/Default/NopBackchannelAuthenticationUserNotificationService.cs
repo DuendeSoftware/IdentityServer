@@ -13,21 +13,24 @@ namespace Duende.IdentityServer.Services
     /// </summary>
     public class NopBackchannelAuthenticationUserNotificationService : IBackchannelAuthenticationUserNotificationService
     {
+        private readonly IIssuerNameService _issuerNameService;
         private readonly ILogger<NopBackchannelAuthenticationUserNotificationService> _logger;
 
         /// <summary>
         /// Ctor
         /// </summary>
-        public NopBackchannelAuthenticationUserNotificationService(ILogger<NopBackchannelAuthenticationUserNotificationService> logger)
+        public NopBackchannelAuthenticationUserNotificationService(IIssuerNameService issuerNameService, ILogger<NopBackchannelAuthenticationUserNotificationService> logger)
         {
+            _issuerNameService = issuerNameService;
             _logger = logger;
         }
 
         /// <inheritdoc/>
-        public Task SendLoginRequestAsync(BackchannelUserLoginRequest request)
+        public async Task SendLoginRequestAsync(BackchannelUserLoginRequest request)
         {
-            _logger.LogWarning("IUserLoginService not implemented.");
-            return Task.CompletedTask;
+            var url = await _issuerNameService.GetCurrentAsync();
+            url += "/ciba?id=" + request.Id;
+            _logger.LogWarning("IBackchannelAuthenticationUserNotificationService not implemented. But for testing, visit {url} to simulate what a user might need to do to complete the request.", url);
         }
     }
 }

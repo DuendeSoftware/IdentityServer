@@ -61,6 +61,9 @@ namespace ConsoleCibaClient
             Console.WriteLine($"Interval                    : {loginResponse.interval}");
             Console.WriteLine();
 
+            Console.WriteLine($"\nPress enter to start polling the token endpoint.");
+            Console.ReadLine();
+
             return loginResponse;
         }
 

@@ -4,57 +4,27 @@
 }
 
 <div class="ciba-page">
-    <div class="row">
-        <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    <h2>Pending Backchannel Login Requests</h2>
-                </div>
-                <div class="card-body">
-                    @if (Model.Logins?.Any() == true)
-                    {
-                        <table class="table table-bordered table-striped table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Client Id</th>
-                                    <th>Binding Message</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var login in Model.Logins)
-                                {
-                                    <tr>
-                                        <td>@login.Id</td>
-                                        <td>@login.Client.ClientId</td>
-                                        <td>@login.BindingMessage</td>
-                                        <td>
-                                            <form method="post">
-                                                @if (login.Client.RequireConsent)
-                                                { 
-                                                    <a asp-page="Consent" asp-route-id="@login.Id" class="btn btn-primary">Process</a>
-                                                }
-                                                else
-                                                {
-                                                    <button type="submit" name="button" value="allow" class="btn btn-success">Allow</button>
-                                                    <button type="submit" name="button" value="deny" class="btn btn-danger">Deny</button>
-                                                }
-                                                <input type="hidden" name="id" value="@login.Id" />
-                                                <button type="submit" name="button" value="delete" class="btn btn-warning">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    }
-                    else
-                    {
-                        <div>No Pending Login Requests</div>
-                    }
-                </div>
-            </div>
+    <div class="lead">
+        @if (Model.LoginRequest.Client.LogoUri != null)
+        {
+            <div class="client-logo"><img src="@Model.LoginRequest.Client.LogoUri"></div>
+        }
+        <h1>
+            @Model.LoginRequest.Client.ClientName
+            <small class="text-muted">is requesting your permission</small>
+        </h1>
+        
+        <h3>
+            Verify that this identifier matches what the client is displaying:
+            <em class="text-primary">@Model.LoginRequest.BindingMessage</em>
+        </h3>
+
+        <p>
+            Do you wish to continue?
+        </p>
+        <div>
+            <a class="btn btn-primary" asp-page="/Ciba/Consent" asp-route-id="@Model.LoginRequest.Id">Yes, Continue</a>
         </div>
+        
     </div>
 </div>
