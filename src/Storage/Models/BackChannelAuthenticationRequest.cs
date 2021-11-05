@@ -39,11 +39,6 @@ namespace Duende.IdentityServer.Models
         public ClaimsPrincipal Subject { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is open identifier.
-        /// </summary>
-        public bool IsOpenId { get; set; }
-        
-        /// <summary>
         /// Gets or sets the requested scopes.
         /// </summary>
         public IEnumerable<string> RequestedScopes { get; set; }

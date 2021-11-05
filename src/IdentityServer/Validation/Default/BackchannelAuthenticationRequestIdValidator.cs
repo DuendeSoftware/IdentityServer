@@ -42,8 +42,6 @@ namespace Duende.IdentityServer.Validation
         /// <inheritdoc/>
         public async Task ValidateAsync(BackchannelAuthenticationRequestIdValidationContext context)
         {
-            // TODO: more logging?
-
             var request = await _backchannelAuthenticationStore.GetByAuthenticationRequestIdAsync(context.AuthenticationRequestId);
 
             if (request == null)
@@ -109,7 +107,10 @@ namespace Duende.IdentityServer.Validation
             context.Request.SessionId = request.SessionId;
 
             context.Result = new TokenRequestValidationResult(context.Request);
-            await _backchannelAuthenticationStore.RemoveByIdAsync(request.Id); 
+
+            await _backchannelAuthenticationStore.RemoveByIdAsync(request.Id);
+
+            _logger.LogDebug("Success validating backchannel authentication request id.");
         }
     }
 }

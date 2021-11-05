@@ -218,7 +218,7 @@ namespace Duende.IdentityServer
             public const string AuthorizeCallback           = Authorize + "/callback";
             public const string DiscoveryConfiguration      = ".well-known/openid-configuration";
             public const string DiscoveryWebKeys            = DiscoveryConfiguration + "/jwks";
-            public const string BackchannelAuthentication   = ConnectPathPrefix + "/backchannel-authentication";
+            public const string BackchannelAuthentication   = ConnectPathPrefix + "/ciba";
             public const string Token                       = ConnectPathPrefix + "/token";
             public const string Revocation                  = ConnectPathPrefix + "/revocation";
             public const string UserInfo                    = ConnectPathPrefix + "/userinfo";

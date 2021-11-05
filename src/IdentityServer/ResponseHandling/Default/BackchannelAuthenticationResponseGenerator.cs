@@ -79,7 +79,6 @@ namespace Duende.IdentityServer.ResponseHandling
             { 
                 CreationTime = Clock.UtcNow.DateTime,
                 ClientId = validationResult.ValidatedRequest.ClientId,
-                IsOpenId = validationResult.ValidatedRequest.IsOpenIdRequest,
                 RequestedScopes = validationResult.ValidatedRequest.ValidatedResources.RawScopeValues,
                 RequestedResourceIndicators = validationResult.ValidatedRequest.RequestedResourceIndiators,
                 Subject = validationResult.ValidatedRequest.Subject,

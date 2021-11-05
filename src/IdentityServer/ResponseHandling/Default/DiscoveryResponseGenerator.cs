@@ -366,9 +366,7 @@ namespace Duende.IdentityServer.ResponseHandling
             {
                 // TODO: CIBA constant
                 entries.Add("backchannel_token_delivery_modes_supported", new[] { "poll" });
-                // TODO: configurable?
-                //entries.Add("backchannel_user_code_parameter_supported", true);
-                //entries.Add("backchannel_user_code_parameter_supported", false);
+                entries.Add("backchannel_user_code_parameter_supported", true);
             }
 
             // custom entries

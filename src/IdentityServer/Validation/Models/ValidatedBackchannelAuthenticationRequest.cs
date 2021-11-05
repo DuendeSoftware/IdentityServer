@@ -12,11 +12,6 @@ namespace Duende.IdentityServer.Validation
     public class ValidatedBackchannelAuthenticationRequest : ValidatedRequest
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the request was an OpenID Connect request.
-        /// </summary>
-        public bool IsOpenIdRequest { get; set; }
-        
-        /// <summary>
         /// Gets or sets the scopes.
         /// </summary>
         public ICollection<string> RequestedScopes { get; set; }

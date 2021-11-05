@@ -80,13 +80,13 @@ namespace Duende.IdentityServer.Validation
 
             _validatedRequest.RequestedScopes = scope.FromSpaceSeparatedString().Distinct().ToList();
 
-
-            // TODO: check for mandatory openid
-            // TODO: ciba isn't this always an OIDC request?
-            if (_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
+            //////////////////////////////////////////////////////////
+            // openid scope required
+            //////////////////////////////////////////////////////////
+            if (!_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
             {
-                // TODO: remove, since it's always OIDC
-                _validatedRequest.IsOpenIdRequest = true;
+                LogError("openid scope missing.");
+                return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Missing the openid scope");
             }
 
             //////////////////////////////////////////////////////////
@@ -215,8 +215,6 @@ namespace Duende.IdentityServer.Validation
 
                 _validatedRequest.UserCode = userCode;
             }
-            // todo: do we want a per-client user_code required flag?
-            // todo: add backchannel_user_code_parameter_supported metadata flag
 
 
             //////////////////////////////////////////////////////////
@@ -231,7 +229,6 @@ namespace Duende.IdentityServer.Validation
                     return Invalid(BackchannelAuthenticationErrors.InvalidBindingMessage, "Invalid binding_message");
                 }
 
-                // TODO: CIBA should this be required? or configurable by client?
                 _validatedRequest.BindingMessage = bindingMessage;
             }
             
@@ -279,11 +276,17 @@ namespace Duende.IdentityServer.Validation
                     LogError("Invalid binding_message");
                     return Invalid(BackchannelAuthenticationErrors.InvalidBindingMessage, userResult.ErrorDescription);
                 }
-                
-                // fall thru to lines below for any other error value
+
+                LogError("Unexpected error from IBackchannelAuthenticationUserValidator: {error}", userResult.Error);
+                return Invalid(BackchannelAuthenticationErrors.UnknownUserId);
             }
-            
-            // todo: what about other error types?
+
+            if (userResult.IsError || userResult.Subject == null || !userResult.Subject.HasClaim(x => x.Type == JwtClaimTypes.Subject))
+            {
+                LogError("No subject or subject id returned from IBackchannelAuthenticationUserValidator");
+                return Invalid(BackchannelAuthenticationErrors.UnknownUserId);
+            }
+
             if (userResult.Subject == null || !userResult.Subject.HasClaim(x => x.Type == JwtClaimTypes.Subject))
             {
                 LogError("No subject or subject id returned from IBackchannelAuthenticationUserValidator");

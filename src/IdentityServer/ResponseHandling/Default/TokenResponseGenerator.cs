@@ -339,32 +339,30 @@ namespace Duende.IdentityServer.ResponseHandling
             //////////////////////////
             // id token
             /////////////////////////
-            if (request.ValidatedRequest.BackChannelAuthenticationRequest.IsOpenId)
+            
+            // load the client that belongs to the device code
+            Client client = null;
+            if (request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId != null)
             {
-                // load the client that belongs to the device code
-                Client client = null;
-                if (request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId != null)
-                {
-                    // todo: do we need this check?
-                    client = await Clients.FindEnabledClientByIdAsync(request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId);
-                }
-                if (client == null)
-                {
-                    throw new InvalidOperationException("Client does not exist anymore.");
-                }
-
-                var tokenRequest = new TokenCreationRequest
-                {
-                    Subject = request.ValidatedRequest.BackChannelAuthenticationRequest.Subject,
-                    AccessTokenToHash = response.AccessToken,
-                    ValidatedResources = request.ValidatedRequest.ValidatedResources,
-                    ValidatedRequest = request.ValidatedRequest
-                };
-
-                var idToken = await TokenService.CreateIdentityTokenAsync(tokenRequest);
-                var jwt = await TokenService.CreateSecurityTokenAsync(idToken);
-                response.IdentityToken = jwt;
+                // todo: do we need this check?
+                client = await Clients.FindEnabledClientByIdAsync(request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId);
             }
+            if (client == null)
+            {
+                throw new InvalidOperationException("Client does not exist anymore.");
+            }
+
+            var tokenRequest = new TokenCreationRequest
+            {
+                Subject = request.ValidatedRequest.BackChannelAuthenticationRequest.Subject,
+                AccessTokenToHash = response.AccessToken,
+                ValidatedResources = request.ValidatedRequest.ValidatedResources,
+                ValidatedRequest = request.ValidatedRequest
+            };
+
+            var idToken = await TokenService.CreateIdentityTokenAsync(tokenRequest);
+            var jwt = await TokenService.CreateSecurityTokenAsync(idToken);
+            response.IdentityToken = jwt;
 
             return response;
         }
