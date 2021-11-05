@@ -11,17 +11,14 @@ namespace Duende.IdentityServer.Configuration
     /// </summary>
     public class CibaOptions
     {
-        // TODO: have these as default and add nullable on client
+        /// <summary>
+        /// Gets or sets the default lifetime of the request in seconds.
+        /// </summary>
+        public int DefaultLifetime { get; set; } = 300;
 
-        // TODO: CIBA do we need this here or on the client? 
-        ///// <summary>
-        ///// Gets or sets the default lifetime of the request.
-        ///// </summary>
-        //public TimeSpan DefaultLifetime { get; set; } = TimeSpan.FromMinutes(15);
-        
         /// <summary>
         /// Gets or sets the polling interval in seconds.
         /// </summary>
-        public int PollingInterval { get; set; } = 5;
+        public int DefaultPollingInterval { get; set; } = 5;
     }
 }

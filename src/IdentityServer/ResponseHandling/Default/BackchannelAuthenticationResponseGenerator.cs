@@ -90,11 +90,12 @@ namespace Duende.IdentityServer.ResponseHandling
 
             var requestId = await BackChannelAuthenticationRequestStore.CreateRequestAsync(request);
 
+            var interval = validationResult.ValidatedRequest.Client.PollingInterval ?? Options.Ciba.DefaultPollingInterval;
             var response = new BackchannelAuthenticationResponse()
             {
                 AuthenticationRequestId = requestId,
                 ExpiresIn = request.Lifetime,
-                Interval = Options.Ciba.PollingInterval,
+                Interval = interval,
             };
 
             await UserLoginService.SendLoginRequestAsync(new BackchannelUserLoginRequest

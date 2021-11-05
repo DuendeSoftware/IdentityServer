@@ -40,7 +40,7 @@ namespace IdentityServerHost
                     options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
 
                     // this enables automatic token cleanup. this is optional.
-                    options.EnableTokenCleanup = true;
+                    options.EnableTokenCleanup = false;
                     options.RemoveConsumedTokens = true;
                     options.TokenCleanupInterval = 10; // interval in seconds
                 })

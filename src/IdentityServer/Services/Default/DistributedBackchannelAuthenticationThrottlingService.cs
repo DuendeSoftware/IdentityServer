@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -17,6 +18,7 @@ namespace Duende.IdentityServer.Services
     public class DistributedBackchannelAuthenticationThrottlingService : IBackchannelAuthenticationThrottlingService
     {
         private readonly IDistributedCache _cache;
+        private readonly IClientStore _clientStore;
         private readonly ISystemClock _clock;
         private readonly IdentityServerOptions _options;
 
@@ -27,10 +29,12 @@ namespace Duende.IdentityServer.Services
         /// </summary>
         public DistributedBackchannelAuthenticationThrottlingService(
             IDistributedCache cache,
+            IClientStore clientStore,
             ISystemClock clock,
             IdentityServerOptions options)
         {
             _cache = cache;
+            _clientStore = clientStore;
             _clock = clock;
             _options = options;
         }
@@ -38,7 +42,10 @@ namespace Duende.IdentityServer.Services
         /// <inheritdoc/>
         public async Task<bool> ShouldSlowDown(string requestId, BackChannelAuthenticationRequest details)
         {
-            if (requestId == null) throw new ArgumentNullException(nameof(requestId));
+            if (requestId == null)
+            {
+                throw new ArgumentNullException(nameof(requestId));
+            }
 
             var key = KeyPrefix + requestId;
             var options = new DistributedCacheEntryOptions { AbsoluteExpiration = _clock.UtcNow.AddSeconds(details.Lifetime) };
@@ -55,7 +62,9 @@ namespace Duende.IdentityServer.Services
             // check interval
             if (DateTime.TryParse(lastSeenAsString, out var lastSeen))
             {
-                if (_clock.UtcNow < lastSeen.AddSeconds(_options.DeviceFlow.Interval))
+                var client = await _clientStore.FindEnabledClientByIdAsync(details.ClientId);
+                var interval = client?.PollingInterval ?? _options.Ciba.DefaultPollingInterval;
+                if (_clock.UtcNow < lastSeen.AddSeconds(interval))
                 {
                     await _cache.SetStringAsync(key, _clock.UtcNow.ToString("O"), options);
                     return true;

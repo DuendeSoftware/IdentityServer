@@ -296,9 +296,14 @@ namespace Duende.IdentityServer.Models
         public int DeviceCodeLifetime { get; set; } = 300;
 
         /// <summary>
-        /// Gets or sets the backchannel authentication request lifetime.
+        /// Gets or sets the backchannel authentication request lifetime in seconds.
         /// </summary>
-        public int CibaLifetime { get; set; } = 300;
+        public int? CibaLifetime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the backchannel polling interval in seconds.
+        /// </summary>
+        public int? PollingInterval { get; set; }
 
         /// <summary>
         /// Gets or sets the allowed CORS origins for JavaScript clients.

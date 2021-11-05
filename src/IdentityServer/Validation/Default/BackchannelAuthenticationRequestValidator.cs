@@ -296,6 +296,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // check user_code
             //////////////////////////////////////////////////////////
+            var requestLifetime = _validatedRequest.Client.CibaLifetime ?? _options.Ciba.DefaultLifetime;
             var requestedExpiry = _validatedRequest.Raw.Get("requested_expiry");
             if (requestedExpiry.IsPresent())
             {
@@ -309,8 +310,7 @@ namespace Duende.IdentityServer.Validation
 
                 if (Int32.TryParse(requestedExpiry, out var expiryValue) && 
                     expiryValue > 0 &&
-                    expiryValue <= _validatedRequest.Client.CibaLifetime)
-                    //expiryValue <= _options.InputLengthRestrictions.RequestedExpiry.TotalSeconds)
+                    expiryValue <= requestLifetime)
                 {
                     _validatedRequest.Expiry = expiryValue;
                 }
@@ -322,7 +322,7 @@ namespace Duende.IdentityServer.Validation
             }
             else
             {
-                _validatedRequest.Expiry = _validatedRequest.Client.CibaLifetime;
+                _validatedRequest.Expiry = requestLifetime;
             }
 
             //////////////////////////////////////////////////////////
