@@ -82,7 +82,7 @@ namespace Duende.IdentityServer.Endpoints
             _logger.LogTrace("Calling into backchannel authentication request response generator: {type}", _responseGenerator.GetType().FullName);
             var response = await _responseGenerator.ProcessAsync(requestResult);
 
-            await _events.RaiseAsync(new BackchannelAuthenticationSuccessEvent(response, requestResult));
+            await _events.RaiseAsync(new BackchannelAuthenticationSuccessEvent(requestResult));
             LogResponse(response, requestResult);
 
             // return result
@@ -92,7 +92,7 @@ namespace Duende.IdentityServer.Endpoints
 
         private void LogResponse(BackchannelAuthenticationResponse response, BackchannelAuthenticationRequestValidationResult requestResult)
         {
-            _logger.LogDebug("TODO: LogResponse");
+            _logger.LogTrace("BackchannelAuthenticationResponse: {@response} for subject {subjectId}", response, requestResult.ValidatedRequest.Subject.GetSubjectId());
         }
 
         BackchannelAuthenticationResult Error(string error, string errorDescription = null)

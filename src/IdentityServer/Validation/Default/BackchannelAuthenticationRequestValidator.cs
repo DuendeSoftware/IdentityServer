@@ -21,7 +21,7 @@ namespace Duende.IdentityServer.Validation
         private readonly IdentityServerOptions _options;
         private readonly IResourceValidator _resourceValidator;
         private readonly IBackchannelAuthenticationUserValidator _backchannelAuthenticationUserValidator;
-        private readonly ILogger _logger;
+        private readonly ILogger<BackchannelAuthenticationRequestValidator> _logger;
 
         private ValidatedBackchannelAuthenticationRequest _validatedRequest;
 
@@ -29,7 +29,7 @@ namespace Duende.IdentityServer.Validation
             IdentityServerOptions options,
             IResourceValidator resourceValidator,
             IBackchannelAuthenticationUserValidator backchannelAuthenticationUserValidator,
-            ILogger<TokenRequestValidator> logger)
+            ILogger<BackchannelAuthenticationRequestValidator> logger)
         {
             _logger = logger;
             _options = options;

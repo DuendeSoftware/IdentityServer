@@ -2,9 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
-using IdentityModel;
 using Duende.IdentityServer.Extensions;
-using System.Collections.Generic;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Validation;
 
@@ -20,59 +18,15 @@ namespace Duende.IdentityServer.Events
         /// Initializes a new instance of the <see cref="BackchannelAuthenticationSuccessEvent"/> class.
         /// </summary>
         /// <param name="response">The response.</param>
-        public BackchannelAuthenticationSuccessEvent(BackchannelAuthenticationResponse response)
-            : this()
-        {
-            //ClientId = response.Request.ClientId;
-            //ClientName = response.Request.Client.ClientName;
-            //RedirectUri = response.RedirectUri;
-            //Endpoint = Constants.EndpointNames.BackchannelAuthentication;
-            //SubjectId = response.Request.Subject.GetSubjectId();
-            //Scopes = response.Scope;
-            //GrantType = response.Request.GrantType;
-
-            //var tokens = new List<Token>();
-            //if (response.IdentityToken != null)
-            //{
-            //    tokens.Add(new Token(OidcConstants.TokenTypes.IdentityToken, response.IdentityToken));
-            //}
-            //if (response.Code != null)
-            //{
-            //    tokens.Add(new Token(OidcConstants.ResponseTypes.Code, response.Code));
-            //}
-            //if (response.AccessToken != null)
-            //{
-            //    tokens.Add(new Token(OidcConstants.TokenTypes.AccessToken, response.AccessToken));
-            //}
-            //Tokens = tokens;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BackchannelAuthenticationSuccessEvent"/> class.
-        /// </summary>
-        /// <param name="response">The response.</param>
         /// <param name="request">The request.</param>
-        public BackchannelAuthenticationSuccessEvent(BackchannelAuthenticationResponse response, BackchannelAuthenticationRequestValidationResult request)
+        public BackchannelAuthenticationSuccessEvent(BackchannelAuthenticationRequestValidationResult request)
             : this()
         {
             ClientId = request.ValidatedRequest.Client.ClientId;
             ClientName = request.ValidatedRequest.Client.ClientName;
-            Endpoint = Constants.EndpointNames.Token;
+            Endpoint = Constants.EndpointNames.BackchannelAuthentication;
             SubjectId = request.ValidatedRequest.Subject?.GetSubjectId();
-            //GrantType = request.ValidatedRequest.GrantType;
-
-            //if (GrantType == OidcConstants.GrantTypes.RefreshToken)
-            //{
-            //    Scopes = request.ValidatedRequest.RefreshToken.AuthorizedScopes.ToSpaceSeparatedString();
-            //}
-            //else if (GrantType == OidcConstants.GrantTypes.AuthorizationCode)
-            //{
-            //    Scopes = request.ValidatedRequest.AuthorizationCode.RequestedScopes.ToSpaceSeparatedString();
-            //}
-            //else
-            //{
-            //    Scopes = request.ValidatedRequest.ValidatedResources?.RawScopeValues.ToSpaceSeparatedString();
-            //}
+            Scopes = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString();
         }
 
         /// <summary>
