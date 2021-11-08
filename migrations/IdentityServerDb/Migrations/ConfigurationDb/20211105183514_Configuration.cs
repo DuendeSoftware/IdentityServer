@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
+#nullable disable
+
 namespace IdentityServerDb.Migrations.ConfigurationDb
 {
     public partial class Configuration : Migration
@@ -42,7 +44,11 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     Required = table.Column<bool>(type: "bit", nullable: false),
                     Emphasize = table.Column<bool>(type: "bit", nullable: false),
-                    ShowInDiscoveryDocument = table.Column<bool>(type: "bit", nullable: false)
+                    ShowInDiscoveryDocument = table.Column<bool>(type: "bit", nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Updated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastAccessed = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    NonEditable = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,12 +97,14 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                     AlwaysSendClientClaims = table.Column<bool>(type: "bit", nullable: false),
                     ClientClaimsPrefix = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     PairWiseSubjectSalt = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Updated = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastAccessed = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserSsoLifetime = table.Column<int>(type: "int", nullable: true),
                     UserCodeType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     DeviceCodeLifetime = table.Column<int>(type: "int", nullable: false),
+                    CibaLifetime = table.Column<int>(type: "int", nullable: true),
+                    PollingInterval = table.Column<int>(type: "int", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Updated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastAccessed = table.Column<DateTime>(type: "datetime2", nullable: true),
                     NonEditable = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -114,7 +122,11 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                     DisplayName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Enabled = table.Column<bool>(type: "bit", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Properties = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Properties = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Updated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastAccessed = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    NonEditable = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

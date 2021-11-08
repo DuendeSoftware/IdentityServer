@@ -98,6 +98,8 @@ namespace Duende.IdentityServer.ResponseHandling
                     return await ProcessRefreshTokenRequestAsync(request);
                 case OidcConstants.GrantTypes.DeviceCode:
                     return await ProcessDeviceCodeRequestAsync(request);
+                case "urn:openid:params:grant-type:ciba": // TODO: CIBA 
+                    return await ProcessCibaRequestAsync(request);
                 default:
                     return await ProcessExtensionGrantRequestAsync(request);
             }
@@ -306,6 +308,66 @@ namespace Duende.IdentityServer.ResponseHandling
         }
 
         /// <summary>
+        /// Processes the response for CIBA request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        protected virtual async Task<TokenResponse> ProcessCibaRequestAsync(TokenRequestValidationResult request)
+        {
+            Logger.LogTrace("Creating response for CIBA request");
+
+            //////////////////////////
+            // access token
+            /////////////////////////
+            var (accessToken, refreshToken) = await CreateAccessTokenAsync(request.ValidatedRequest);
+            var response = new TokenResponse
+            {
+                AccessToken = accessToken,
+                AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
+                Custom = request.CustomResponse,
+                Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
+            };
+
+            //////////////////////////
+            // refresh token
+            /////////////////////////
+            if (refreshToken.IsPresent())
+            {
+                response.RefreshToken = refreshToken;
+            }
+
+            //////////////////////////
+            // id token
+            /////////////////////////
+            
+            // load the client that belongs to the device code
+            Client client = null;
+            if (request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId != null)
+            {
+                // todo: do we need this check?
+                client = await Clients.FindEnabledClientByIdAsync(request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId);
+            }
+            if (client == null)
+            {
+                throw new InvalidOperationException("Client does not exist anymore.");
+            }
+
+            var tokenRequest = new TokenCreationRequest
+            {
+                Subject = request.ValidatedRequest.BackChannelAuthenticationRequest.Subject,
+                AccessTokenToHash = response.AccessToken,
+                ValidatedResources = request.ValidatedRequest.ValidatedResources,
+                ValidatedRequest = request.ValidatedRequest
+            };
+
+            var idToken = await TokenService.CreateIdentityTokenAsync(tokenRequest);
+            var jwt = await TokenService.CreateSecurityTokenAsync(idToken);
+            response.IdentityToken = jwt;
+
+            return response;
+        }
+
+        /// <summary>
         /// Creates the response for an extension grant request.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -379,6 +441,27 @@ namespace Duende.IdentityServer.ResponseHandling
                 
                 authorizedScopes = request.AuthorizationCode.RequestedScopes;
                 authorizedResourceIndicators = request.AuthorizationCode.RequestedResourceIndicators;
+            }
+            else if (request.BackChannelAuthenticationRequest != null)
+            {
+                // load the client that belongs to the authorization code
+                Client client = null;
+                if (request.BackChannelAuthenticationRequest.ClientId != null)
+                {
+                    // todo: do we need this check?
+                    client = await Clients.FindEnabledClientByIdAsync(request.BackChannelAuthenticationRequest.ClientId);
+                }
+                if (client == null)
+                {
+                    throw new InvalidOperationException("Client does not exist anymore.");
+                }
+
+                tokenRequest.Subject = request.BackChannelAuthenticationRequest.Subject;
+                tokenRequest.Description = request.BackChannelAuthenticationRequest.Description;
+
+                authorizedScopes = request.BackChannelAuthenticationRequest.AuthorizedScopes;
+                // TODO: should this come from the current request instead of the ciba request
+                authorizedResourceIndicators = request.BackChannelAuthenticationRequest.RequestedResourceIndicators;
             }
             else if (request.DeviceCode != null)
             {

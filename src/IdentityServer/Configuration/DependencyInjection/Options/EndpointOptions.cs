@@ -85,5 +85,13 @@ namespace Duende.IdentityServer.Configuration
         /// <c>true</c> if the device authorization endpoint is enabled; otherwise, <c>false</c>.
         /// </value>
         public bool EnableDeviceAuthorizationEndpoint { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the backchannel authentication endpoint is enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the backchannel authentication endpoint is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableBackchannelAuthenticationEndpoint { get; set; } = true;
     }
 }

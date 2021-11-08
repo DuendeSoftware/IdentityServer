@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -18,6 +19,7 @@ namespace Duende.IdentityServer.Services
     public class DistributedDeviceFlowThrottlingService : IDeviceFlowThrottlingService
     {
         private readonly IDistributedCache _cache;
+        private readonly IClientStore _clientStore;
         private readonly ISystemClock _clock;
         private readonly IdentityServerOptions _options;
 
@@ -27,14 +29,17 @@ namespace Duende.IdentityServer.Services
         /// Initializes a new instance of the <see cref="DistributedDeviceFlowThrottlingService"/> class.
         /// </summary>
         /// <param name="cache">The cache.</param>
+        /// <param name="clientStore"></param>
         /// <param name="clock">The clock.</param>
         /// <param name="options">The options.</param>
         public DistributedDeviceFlowThrottlingService(
             IDistributedCache cache,
+            IClientStore clientStore,
             ISystemClock clock,
             IdentityServerOptions options)
         {
             _cache = cache;
+            _clientStore = clientStore;
             _clock = clock;
             _options = options;
         }
@@ -65,7 +70,9 @@ namespace Duende.IdentityServer.Services
             // check interval
             if (DateTime.TryParse(lastSeenAsString, out var lastSeen))
             {
-                if (_clock.UtcNow < lastSeen.AddSeconds(_options.DeviceFlow.Interval))
+                var client = await _clientStore.FindEnabledClientByIdAsync(details.ClientId);
+                var interval = client?.PollingInterval ?? _options.DeviceFlow.Interval;
+                if (_clock.UtcNow < lastSeen.AddSeconds(interval))
                 {
                     await _cache.SetStringAsync(key, _clock.UtcNow.ToString("O"), options);
                     return true;

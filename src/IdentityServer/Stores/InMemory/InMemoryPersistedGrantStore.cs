@@ -30,7 +30,7 @@ namespace Duende.IdentityServer.Stores
         /// <inheritdoc/>
         public Task<PersistedGrant> GetAsync(string key)
         {
-            if (_repository.TryGetValue(key, out PersistedGrant token))
+            if (key != null && _repository.TryGetValue(key, out PersistedGrant token))
             {
                 return Task.FromResult(token);
             }

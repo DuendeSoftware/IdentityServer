@@ -88,5 +88,13 @@ namespace Duende.IdentityServer.Validation
         /// The device code.
         /// </value>
         public DeviceCode DeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the backchannel authentication request.
+        /// </summary>
+        /// <value>
+        /// The backchannel authentication request.
+        /// </value>
+        public BackChannelAuthenticationRequest BackChannelAuthenticationRequest { get; set; }
     }
 }

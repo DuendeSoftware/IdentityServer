@@ -93,6 +93,7 @@ namespace Duende.IdentityServer
             public const string AuthorizationCodeValidation = "AuthorizationCodeValidation";
             public const string UserInfoRequestValidation = "UserInfoRequestValidation";
             public const string DeviceCodeValidation = "DeviceCodeValidation";
+            public const string BackchannelAuthenticationRequestIdValidation = "BackchannelAuthenticationRequestIdValidation";
         }
 
         public readonly static IEnumerable<string> SupportedSigningAlgorithms = new List<string>
@@ -147,6 +148,7 @@ namespace Duende.IdentityServer
         public static class PersistedGrantTypes
         {
             public const string AuthorizationCode = "authorization_code";
+            public const string BackChannelAuthenticationRequest = "ciba";
             public const string ReferenceToken = "reference_token";
             public const string RefreshToken = "refresh_token";
             public const string UserConsent = "user_consent";

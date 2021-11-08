@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
+#nullable disable
+
 namespace IdentityServerDb.Migrations.PersistedGrantDb
 {
     public partial class Grants : Migration
