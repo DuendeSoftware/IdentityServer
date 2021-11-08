@@ -3,7 +3,6 @@
 
 
 using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Validation;
 
 namespace Duende.IdentityServer.Events
@@ -17,7 +16,6 @@ namespace Duende.IdentityServer.Events
         /// <summary>
         /// Initializes a new instance of the <see cref="BackchannelAuthenticationSuccessEvent"/> class.
         /// </summary>
-        /// <param name="response">The response.</param>
         /// <param name="request">The request.</param>
         public BackchannelAuthenticationSuccessEvent(BackchannelAuthenticationRequestValidationResult request)
             : this()
