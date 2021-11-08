@@ -66,6 +66,22 @@ namespace Duende.IdentityServer.Models
             get => this["Scope"] ?? "openid";
             set => this["Scope"] = value;
         }
+        /// <summary>
+        /// Indicates if userinfo endpoint is to be contacted. Defaults to true.
+        /// </summary>
+        public bool GetClaimsFromUserInfoEndpoint
+        {
+            get => this["GetClaimsFromUserInfoEndpoint"] == null || "true".Equals(this["GetClaimsFromUserInfoEndpoint"]);
+            set => this["GetClaimsFromUserInfoEndpoint"] = value ? "true" : "false";
+        }
+        /// <summary>
+        /// Indicates if PKCE should be used. Defaults to true.
+        /// </summary>
+        public bool UsePkce
+        {
+            get => this["UsePkce"] == null || "true".Equals(this["UsePkce"]);
+            set => this["UsePkce"] = value ? "true" : "false";
+        }
 
         /// <summary>
         /// Parses the scope into a collection.
@@ -75,10 +91,6 @@ namespace Duende.IdentityServer.Models
             get
             {
                 var scopes = Scope?.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
-                if (!scopes.Contains("openid"))
-                {
-                    scopes.Add("openid");
-                }
                 return scopes;
             }
         }
