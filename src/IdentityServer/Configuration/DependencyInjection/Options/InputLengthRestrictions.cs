@@ -2,6 +2,8 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
+
 namespace Duende.IdentityServer.Configuration
 {
     /// <summary>
@@ -130,5 +132,37 @@ namespace Duende.IdentityServer.Configuration
         /// Max length for resource indicator parameter
         /// </summary>
         public int ResourceIndicatorMaxLength { get; } = 512;
+
+        /// <summary>
+        /// Max length for binding_message
+        /// </summary>
+        public int BindingMessage { get; set; } = Default;
+        
+        /// <summary>
+        /// Max length for user_code
+        /// </summary>
+        public int UserCode { get; set; } = Default;
+
+        /// <summary>
+        /// Max length for id_token_hint
+        /// </summary>
+        public int IdTokenHint { get; set; } = 4000;
+
+        /// <summary>
+        /// Max length for login_hint_token
+        /// </summary>
+        public int LoginHintToken { get; set; } = 4000;
+
+        /// <summary>
+        /// Max length for auth_req_id
+        /// </summary>
+        public int AuthenticationRequestId { get; set; } = Default;
+
+
+        //// todo: review this default
+        ///// <summary>
+        ///// Max value allowed for requested_expiry
+        ///// </summary>
+        //public TimeSpan RequestedExpiry { get; set; } = TimeSpan.FromMinutes(15);
     }
 }

@@ -152,6 +152,12 @@ namespace Duende.IdentityServer.ResponseHandling
                 {
                     entries.Add(OidcConstants.Discovery.DeviceAuthorizationEndpoint, baseUrl + Constants.ProtocolRoutePaths.DeviceAuthorization);
                 }
+                
+                if (Options.Endpoints.EnableBackchannelAuthenticationEndpoint)
+                {
+                    // TODO: CIBA constant
+                    entries.Add("backchannel_authentication_endpoint", baseUrl + Constants.ProtocolRoutePaths.BackchannelAuthentication);
+                }
 
                 if (Options.MutualTls.Enabled)
                 {
@@ -354,6 +360,13 @@ namespace Duende.IdentityServer.ResponseHandling
             if (Options.MutualTls.Enabled)
             {
                 entries.Add(OidcConstants.Discovery.TlsClientCertificateBoundAccessTokens, true);
+            }
+
+            if (Options.Endpoints.EnableBackchannelAuthenticationEndpoint)
+            {
+                // TODO: CIBA constant
+                entries.Add("backchannel_token_delivery_modes_supported", new[] { "poll" });
+                entries.Add("backchannel_user_code_parameter_supported", true);
             }
 
             // custom entries

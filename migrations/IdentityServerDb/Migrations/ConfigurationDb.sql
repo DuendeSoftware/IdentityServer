@@ -37,6 +37,10 @@ CREATE TABLE [ApiScopes] (
     [Required] bit NOT NULL,
     [Emphasize] bit NOT NULL,
     [ShowInDiscoveryDocument] bit NOT NULL,
+    [Created] datetime2 NOT NULL,
+    [Updated] datetime2 NULL,
+    [LastAccessed] datetime2 NULL,
+    [NonEditable] bit NOT NULL,
     CONSTRAINT [PK_ApiScopes] PRIMARY KEY ([Id])
 );
 GO
@@ -79,12 +83,14 @@ CREATE TABLE [Clients] (
     [AlwaysSendClientClaims] bit NOT NULL,
     [ClientClaimsPrefix] nvarchar(200) NULL,
     [PairWiseSubjectSalt] nvarchar(200) NULL,
-    [Created] datetime2 NOT NULL,
-    [Updated] datetime2 NULL,
-    [LastAccessed] datetime2 NULL,
     [UserSsoLifetime] int NULL,
     [UserCodeType] nvarchar(100) NULL,
     [DeviceCodeLifetime] int NOT NULL,
+    [CibaLifetime] int NULL,
+    [PollingInterval] int NULL,
+    [Created] datetime2 NOT NULL,
+    [Updated] datetime2 NULL,
+    [LastAccessed] datetime2 NULL,
     [NonEditable] bit NOT NULL,
     CONSTRAINT [PK_Clients] PRIMARY KEY ([Id])
 );
@@ -97,6 +103,10 @@ CREATE TABLE [IdentityProviders] (
     [Enabled] bit NOT NULL,
     [Type] nvarchar(20) NOT NULL,
     [Properties] nvarchar(max) NULL,
+    [Created] datetime2 NOT NULL,
+    [Updated] datetime2 NULL,
+    [LastAccessed] datetime2 NULL,
+    [NonEditable] bit NOT NULL,
     CONSTRAINT [PK_IdentityProviders] PRIMARY KEY ([Id])
 );
 GO
@@ -350,7 +360,7 @@ CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20210825140225_Configuration', N'6.0.0-preview.6.21352.1');
+VALUES (N'20211105183514_Configuration', N'6.0.0-rc.1.21452.10');
 GO
 
 COMMIT;

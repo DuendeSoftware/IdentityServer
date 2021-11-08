@@ -579,11 +579,7 @@ namespace Duende.IdentityServer.Validation
             }
 
             request.RequestedScopes = scope.FromSpaceSeparatedString().Distinct().ToList();
-
-            if (request.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
-            {
-                request.IsOpenIdRequest = true;
-            }
+            request.IsOpenIdRequest = request.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId);
 
             //////////////////////////////////////////////////////////
             // check scope vs response_type plausability

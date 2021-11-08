@@ -14,12 +14,14 @@ using FluentAssertions;
 using UnitTests.Common;
 using Microsoft.Extensions.Caching.Distributed;
 using Xunit;
+using Duende.IdentityServer.Stores;
 
 namespace UnitTests.Services.Default
 {
     public class DistributedDeviceFlowThrottlingServiceTests
     {
         private TestCache cache = new TestCache();
+        InMemoryClientStore _store;
 
         private readonly IdentityServerOptions options = new IdentityServerOptions {DeviceFlow = new DeviceFlowOptions {Interval = 5}};
         private readonly DeviceCode deviceCode = new DeviceCode
@@ -31,11 +33,16 @@ namespace UnitTests.Services.Default
         private const string CacheKey = "devicecode_";
         private readonly DateTime testDate = new DateTime(2018, 06, 28, 13, 37, 42);
 
+        public DistributedDeviceFlowThrottlingServiceTests()
+        {
+            _store = new InMemoryClientStore(new List<Client>());
+        }
+
         [Fact]
         public async Task First_Poll()
         {
             var handle = Guid.NewGuid().ToString();
-            var service = new DistributedDeviceFlowThrottlingService(cache, new StubClock {UtcNowFunc = () => testDate}, options);
+            var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock {UtcNowFunc = () => testDate}, options);
 
             var result = await service.ShouldSlowDown(handle, deviceCode);
 
@@ -48,7 +55,7 @@ namespace UnitTests.Services.Default
         public async Task Second_Poll_Too_Fast()
         {
             var handle = Guid.NewGuid().ToString();
-            var service = new DistributedDeviceFlowThrottlingService(cache, new StubClock { UtcNowFunc = () => testDate }, options);
+            var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock { UtcNowFunc = () => testDate }, options);
 
             cache.Set(CacheKey + handle, Encoding.UTF8.GetBytes(testDate.AddSeconds(-1).ToString("O")));
 
@@ -64,7 +71,7 @@ namespace UnitTests.Services.Default
         {
             var handle = Guid.NewGuid().ToString();
             
-            var service = new DistributedDeviceFlowThrottlingService(cache, new StubClock { UtcNowFunc = () => testDate }, options);
+            var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock { UtcNowFunc = () => testDate }, options);
 
             cache.Set($"devicecode_{handle}", Encoding.UTF8.GetBytes(testDate.AddSeconds(-deviceCode.Lifetime - 1).ToString("O")));
 
@@ -84,7 +91,7 @@ namespace UnitTests.Services.Default
             var handle = Guid.NewGuid().ToString();
             deviceCode.CreationTime = testDate.AddSeconds(-deviceCode.Lifetime * 2);
 
-            var service = new DistributedDeviceFlowThrottlingService(cache, new StubClock { UtcNowFunc = () => testDate }, options);
+            var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock { UtcNowFunc = () => testDate }, options);
 
             var result = await service.ShouldSlowDown(handle, deviceCode);
             

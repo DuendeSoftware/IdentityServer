@@ -28,3 +28,6 @@
       height: 100px; }
   .grants-page .card label {
     font-weight: bold; }
+
+.ciba-page form {
+  display: inline; }

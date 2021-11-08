@@ -15,6 +15,18 @@ namespace Duende.IdentityServer.Configuration
         /// <summary>
         /// 
         /// </summary>
+        public ICollection<string> BackchannelAuthenticationRequestSensitiveValuesFilter { get; set; } =
+            new HashSet<string>
+            {
+                // TODO: IdentityModel
+                OidcConstants.TokenRequest.ClientSecret,
+                OidcConstants.TokenRequest.ClientAssertion,
+                OidcConstants.AuthorizeRequest.IdTokenHint
+            };
+
+        /// <summary>
+        /// 
+        /// </summary>
         public ICollection<string> TokenRequestSensitiveValuesFilter { get; set; } = 
             new HashSet<string>
             {

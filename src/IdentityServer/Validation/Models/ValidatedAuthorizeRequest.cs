@@ -55,6 +55,7 @@ namespace Duende.IdentityServer.Validation
         // todo: consider replacing with extension method to access Raw collection; would neeed to be done wholesale for all props.
         public List<string> RequestedScopes { get; set; }
 
+        // TODO: typo
         /// <summary>
         /// Gets or sets the requested resource indicators.
         /// </summary>

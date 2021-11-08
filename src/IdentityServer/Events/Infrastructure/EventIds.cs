@@ -53,9 +53,20 @@ namespace Duende.IdentityServer.Events
         public const int ConsentDenied = GrantsEventsStart + 1;
         public const int GrantsRevoked = GrantsEventsStart + 2;
 
+        //////////////////////////////////////////////////////
+        /// Device flow related events
+        //////////////////////////////////////////////////////
         private const int DeviceFlowEventsStart = 5000;
 
         public const int DeviceAuthorizationSuccess = DeviceFlowEventsStart + 0;
         public const int DeviceAuthorizationFailure = DeviceFlowEventsStart + 1;
+
+        //////////////////////////////////////////////////////
+        /// Backchannel authentication related events
+        //////////////////////////////////////////////////////
+        private const int BackchannelAuthenticationEventsStart = 6000;
+
+        public const int BackchannelAuthenticationSuccess = BackchannelAuthenticationEventsStart + 0;
+        public const int BackchannelAuthenticationFailure = BackchannelAuthenticationEventsStart + 1;
     }
 }
