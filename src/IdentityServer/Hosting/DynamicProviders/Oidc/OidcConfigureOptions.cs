@@ -28,6 +28,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
             context.AuthenticationOptions.ResponseType = context.IdentityProvider.ResponseType;
             context.AuthenticationOptions.ResponseMode =
                 context.IdentityProvider.ResponseType.Contains("id_token") ? "form_post" : "query";
+            context.AuthenticationOptions.UsePkce = context.IdentityProvider.UsePkce;
 
             context.AuthenticationOptions.Scope.Clear();
             foreach (var scope in context.IdentityProvider.Scopes)
@@ -36,7 +37,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
             }
 
             context.AuthenticationOptions.SaveTokens = true;
-            context.AuthenticationOptions.GetClaimsFromUserInfoEndpoint = true;
+            context.AuthenticationOptions.GetClaimsFromUserInfoEndpoint = context.IdentityProvider.GetClaimsFromUserInfoEndpoint;
             context.AuthenticationOptions.DisableTelemetry = true;
 #if NET5_0_OR_GREATER
             context.AuthenticationOptions.MapInboundClaims = false;
