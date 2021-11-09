@@ -21,6 +21,7 @@ namespace ResourceBasedApi
                     options.Audience = "urn:resource1";
 
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
+                    options.MapInboundClaims = false;
 
                     // if token does not contain a dot, it is a reference token
                     options.ForwardDefaultSelector = Selector.ForwardReferenceToken("introspection");
