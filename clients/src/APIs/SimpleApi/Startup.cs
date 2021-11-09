@@ -20,6 +20,7 @@ namespace SampleApi
                 {
                     options.Authority = Constants.Authority;
                     options.TokenValidationParameters.ValidateAudience = false;
+                    options.MapInboundClaims = false;
                     
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
                 });

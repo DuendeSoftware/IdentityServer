@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using IdentityModel.AspNetCore.AccessTokenValidation;
 
 namespace ResourceBasedApi
 {
@@ -22,6 +21,7 @@ namespace ResourceBasedApi
                     options.Audience = "urn:resource1";
 
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
+                    options.MapInboundClaims = false;
 
                     // if token does not contain a dot, it is a reference token
                     options.ForwardDefaultSelector = Selector.ForwardReferenceToken("introspection");
@@ -35,8 +35,6 @@ namespace ResourceBasedApi
                     options.ClientId = "urn:resource1";
                     options.ClientSecret = "secret";
                 });
-
-            services.AddScopeTransformation();
         }
 
         public void Configure(IApplicationBuilder app)

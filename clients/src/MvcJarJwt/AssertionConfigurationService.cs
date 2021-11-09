@@ -4,7 +4,9 @@ using IdentityModel.AspNetCore.AccessTokenManagement;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace MvcCode
 {
@@ -13,12 +15,14 @@ namespace MvcCode
         private readonly AssertionService _assertionService;
 
         public AssertionConfigurationService(
-            IOptions<AccessTokenManagementOptions> accessTokenManagementOptions,
+            UserAccessTokenManagementOptions userAccessTokenManagementOptions,
+            ClientAccessTokenManagementOptions clientAccessTokenManagementOptions,
             IOptionsMonitor<OpenIdConnectOptions> oidcOptions,
             IAuthenticationSchemeProvider schemeProvider,
-            AssertionService assertionService) : base(accessTokenManagementOptions,
-            oidcOptions,
-            schemeProvider)
+            AssertionService assertionService,
+            ILogger<AssertionConfigurationService> logger) 
+            
+            : base(userAccessTokenManagementOptions, clientAccessTokenManagementOptions, oidcOptions, schemeProvider, logger)
         {
             _assertionService = assertionService;
         }
