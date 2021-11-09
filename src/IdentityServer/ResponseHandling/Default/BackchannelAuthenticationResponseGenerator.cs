@@ -77,7 +77,7 @@ namespace Duende.IdentityServer.ResponseHandling
 
             var request = new BackChannelAuthenticationRequest
             { 
-                CreationTime = Clock.UtcNow.DateTime,
+                CreationTime = Clock.UtcNow.UtcDateTime,
                 ClientId = validationResult.ValidatedRequest.ClientId,
                 RequestedScopes = validationResult.ValidatedRequest.ValidatedResources.RawScopeValues,
                 RequestedResourceIndicators = validationResult.ValidatedRequest.RequestedResourceIndiators,
