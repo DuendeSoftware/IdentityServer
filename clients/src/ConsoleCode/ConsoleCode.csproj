@@ -1,19 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>ConsoleHybridWithPkce</RootNamespace>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
-    <PackageReference Include="IdentityModel.OidcClient" Version="4.0.0-preview.5" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        
+        <PackageReference Include="IdentityModel.OidcClient" Version="5.0.0-preview.2" />
+        <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Constants\Constants.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Constants\Constants.csproj"/>
+    </ItemGroup>
 </Project>

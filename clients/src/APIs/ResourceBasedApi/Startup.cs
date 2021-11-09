@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using IdentityModel.AspNetCore.AccessTokenValidation;
 
 namespace ResourceBasedApi
 {
@@ -35,8 +34,6 @@ namespace ResourceBasedApi
                     options.ClientId = "urn:resource1";
                     options.ClientSecret = "secret";
                 });
-
-            services.AddScopeTransformation();
         }
 
         public void Configure(IApplicationBuilder app)

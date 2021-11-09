@@ -13,8 +13,6 @@ namespace MvcCode
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
-            
             services.AddSingleton<AssertionService>();
             services.AddTransient<OidcEvents>();
 
@@ -60,6 +58,7 @@ namespace MvcCode
                     // keeps id_token smaller
                     options.GetClaimsFromUserInfoEndpoint = true;
                     options.SaveTokens = true;
+                    options.MapInboundClaims = false;
                     
                     // needed to add JWR / private_key_jwt support
                     options.EventsType = typeof(OidcEvents);
@@ -76,7 +75,7 @@ namespace MvcCode
             services.AddTransient<ITokenClientConfigurationService, AssertionConfigurationService>();
 
             // add HTTP client to call protected API
-            services.AddUserAccessTokenClient("client", client =>
+            services.AddUserAccessTokenHttpClient("client", configureClient: client =>
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
             });

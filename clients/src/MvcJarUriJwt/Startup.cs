@@ -77,7 +77,7 @@ namespace MvcCode
             services.AddTransient<ITokenClientConfigurationService, AssertionConfigurationService>();
 
             // add HTTP client to call protected API
-            services.AddUserAccessTokenClient("client", client =>
+            services.AddUserAccessTokenHttpClient("client", configureClient: client =>
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
             });
