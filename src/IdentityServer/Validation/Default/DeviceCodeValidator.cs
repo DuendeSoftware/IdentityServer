@@ -78,7 +78,7 @@ namespace Duende.IdentityServer.Validation
             }
 
             // validate lifetime
-            if (deviceCode.CreationTime.AddSeconds(deviceCode.Lifetime) < _systemClock.UtcNow)
+            if (deviceCode.CreationTime.AddSeconds(deviceCode.Lifetime) < _systemClock.UtcNow.UtcDateTime)
             {
                 _logger.LogError("Expired device code");
                 context.Result = new TokenRequestValidationResult(context.Request, OidcConstants.TokenErrors.ExpiredToken);
