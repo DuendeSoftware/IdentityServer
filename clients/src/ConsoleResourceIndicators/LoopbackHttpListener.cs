@@ -42,15 +42,15 @@ namespace ConsoleResourceIndicators
 
         void Configure(IApplicationBuilder app)
         {
-            app.Run(  ctx =>
+            app.Run(async ctx =>
             {
                 if (ctx.Request.Method == "GET")
                 {
-                    SetResultAsync(ctx.Request.QueryString.Value, ctx);
+                    await SetResultAsync(ctx.Request.QueryString.Value, ctx);
+                    return;
                 }
                 
                 ctx.Response.StatusCode = 405;
-                return Task.CompletedTask;
             });
         }
 
@@ -64,11 +64,10 @@ namespace ConsoleResourceIndicators
                 ctx.Response.ContentType = "text/html";
                 await ctx.Response.WriteAsync("<h1>You can now return to the application.</h1>");
                 await ctx.Response.Body.FlushAsync();
-
-                
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 ctx.Response.StatusCode = 400;
                 ctx.Response.ContentType = "text/html";
                 await ctx.Response.WriteAsync("<h1>Invalid request.</h1>");

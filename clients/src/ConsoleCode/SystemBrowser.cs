@@ -174,8 +174,9 @@ namespace ConsoleResourceIndicators
 
                 _source.TrySetResult(value);
             }
-            catch
+            catch(Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 ctx.Response.StatusCode = 400;
                 ctx.Response.ContentType = "text/html";
                 await ctx.Response.WriteAsync("<h1>Invalid request.</h1>");
