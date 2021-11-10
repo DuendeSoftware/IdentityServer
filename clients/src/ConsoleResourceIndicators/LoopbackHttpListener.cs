@@ -46,7 +46,7 @@ namespace ConsoleResourceIndicators
             {
                 if (ctx.Request.Method == "GET")
                 {
-                    SetResult(ctx.Request.QueryString.Value, ctx);
+                    SetResultAsync(ctx.Request.QueryString.Value, ctx);
                 }
                 
                 ctx.Response.StatusCode = 405;
@@ -54,7 +54,7 @@ namespace ConsoleResourceIndicators
             });
         }
 
-        private void SetResult(string value, HttpContext ctx)
+        private async Task SetResultAsync(string value, HttpContext ctx)
         {
             _source.TrySetResult(value);
             
@@ -62,8 +62,8 @@ namespace ConsoleResourceIndicators
             {
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = "text/html";
-                ctx.Response.WriteAsync("<h1>You can now return to the application.</h1>");
-                ctx.Response.Body.Flush();
+                await ctx.Response.WriteAsync("<h1>You can now return to the application.</h1>");
+                await ctx.Response.Body.FlushAsync();
 
                 
             }
@@ -71,8 +71,8 @@ namespace ConsoleResourceIndicators
             {
                 ctx.Response.StatusCode = 400;
                 ctx.Response.ContentType = "text/html";
-                ctx.Response.WriteAsync("<h1>Invalid request.</h1>");
-                ctx.Response.Body.Flush();
+                await ctx.Response.WriteAsync("<h1>Invalid request.</h1>");
+                await ctx.Response.Body.FlushAsync();
             }
         }
 

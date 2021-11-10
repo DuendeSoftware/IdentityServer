@@ -1,4 +1,4 @@
-﻿using IdentityModel.OidcClient.Browser;
+using IdentityModel.OidcClient.Browser;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -139,7 +139,7 @@ namespace ConsoleResourceIndicators
             {
                 if (ctx.Request.Method == "GET")
                 {
-                    SetResult(ctx.Request.QueryString.Value, ctx);
+                    await SetResultAsync(ctx.Request.QueryString.Value, ctx);
                 }
                 else if (ctx.Request.Method == "POST")
                 {
@@ -152,7 +152,7 @@ namespace ConsoleResourceIndicators
                         using (var sr = new StreamReader(ctx.Request.Body, Encoding.UTF8))
                         {
                             var body = await sr.ReadToEndAsync();
-                            SetResult(body, ctx);
+                            await SetResultAsync(body, ctx);
                         }
                     }
                 }
@@ -163,14 +163,14 @@ namespace ConsoleResourceIndicators
             });
         }
 
-        private void SetResult(string value, HttpContext ctx)
+        private async Task SetResultAsync(string value, HttpContext ctx)
         {
             try
             {
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = "text/html";
-                ctx.Response.WriteAsync("<h1>You can now return to the application.</h1>");
-                ctx.Response.Body.Flush();
+                await ctx.Response.WriteAsync("<h1>You can now return to the application.</h1>");
+                await ctx.Response.Body.FlushAsync();
 
                 _source.TrySetResult(value);
             }
@@ -178,8 +178,8 @@ namespace ConsoleResourceIndicators
             {
                 ctx.Response.StatusCode = 400;
                 ctx.Response.ContentType = "text/html";
-                ctx.Response.WriteAsync("<h1>Invalid request.</h1>");
-                ctx.Response.Body.Flush();
+                await ctx.Response.WriteAsync("<h1>Invalid request.</h1>");
+                await ctx.Response.Body.FlushAsync();
             }
         }
 
