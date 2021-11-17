@@ -3,6 +3,7 @@
 
 
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -55,5 +56,15 @@ namespace Duende.IdentityServer.Validation
         /// Gets or sets the requested expiry if present, otherwise the client configured expiry.
         /// </summary>
         public int Expiry { get; set; }
-   }
+
+        /// <summary>
+        /// Gets or sets the validated contents of the request object (if present)
+        /// </summary>
+        public IEnumerable<Claim> RequestObjectValues { get; set; } = new List<Claim>();
+
+        /// <summary>
+        /// Gets or sets the request object (either passed by value or retrieved by reference)
+        /// </summary>
+        public string RequestObject { get; set; }
+    }
 }

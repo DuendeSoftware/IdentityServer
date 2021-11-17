@@ -13,6 +13,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Models;
 using static Duende.IdentityServer.Constants;
+using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -21,6 +22,8 @@ namespace Duende.IdentityServer.Validation
         private readonly IdentityServerOptions _options;
         private readonly IResourceValidator _resourceValidator;
         private readonly IBackchannelAuthenticationUserValidator _backchannelAuthenticationUserValidator;
+        private readonly IJwtRequestValidator _jwtRequestValidator;
+        private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
         private readonly ILogger<BackchannelAuthenticationRequestValidator> _logger;
 
         private ValidatedBackchannelAuthenticationRequest _validatedRequest;
@@ -29,12 +32,16 @@ namespace Duende.IdentityServer.Validation
             IdentityServerOptions options,
             IResourceValidator resourceValidator,
             IBackchannelAuthenticationUserValidator backchannelAuthenticationUserValidator,
+            IJwtRequestValidator jwtRequestValidator,
+            IJwtRequestUriHttpClient jwtRequestUriHttpClient,
             ILogger<BackchannelAuthenticationRequestValidator> logger)
         {
-            _logger = logger;
             _options = options;
             _resourceValidator = resourceValidator;
             _backchannelAuthenticationUserValidator = backchannelAuthenticationUserValidator;
+            _jwtRequestValidator = jwtRequestValidator;
+            _jwtRequestUriHttpClient = jwtRequestUriHttpClient;
+            _logger = logger;
         }
 
         public async Task<BackchannelAuthenticationRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
@@ -60,6 +67,27 @@ namespace Duende.IdentityServer.Validation
             }
 
             _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
+
+            // load request object
+            var roLoadResult = await TryLoadRequestObjectAsync();
+            if (!roLoadResult.Success)
+            {
+                return roLoadResult.ErrorResult;
+            }
+
+            // validate request object
+            var roValidationResult = await TryValidateRequestObjectAsync();
+            if (!roValidationResult.Success)
+            {
+                return roValidationResult.ErrorResult;
+            }
+
+            if (_validatedRequest.Client.RequireRequestObject &&
+                !_validatedRequest.RequestObjectValues.Any())
+            {
+                LogError("Client is configured for RequireRequestObject but none present");
+                return Invalid(BackchannelAuthenticationErrors.InvalidRequest);
+            }
 
 
             //////////////////////////////////////////////////////////
@@ -364,6 +392,149 @@ namespace Duende.IdentityServer.Validation
             LogSuccess();
             return new BackchannelAuthenticationRequestValidationResult(_validatedRequest);
         }
+
+        private async Task<(bool Success, BackchannelAuthenticationRequestValidationResult ErrorResult)> TryLoadRequestObjectAsync()
+        {
+            var jwtRequest = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.Request);
+            var jwtRequestUri = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
+
+            if (jwtRequest.IsPresent() && jwtRequestUri.IsPresent())
+            {
+                LogError("Both request and request_uri are present");
+                return (false, Invalid("Only one request parameter is allowed"));
+            }
+
+            if (_options.Endpoints.EnableJwtRequestUri)
+            {
+                if (jwtRequestUri.IsPresent())
+                {
+                    // 512 is from the spec
+                    if (jwtRequestUri.Length > 512)
+                    {
+                        LogError("request_uri is too long");
+                        return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestUri, "request_uri is too long"));
+                    }
+
+                    var jwt = await _jwtRequestUriHttpClient.GetJwtAsync(jwtRequestUri, _validatedRequest.Client);
+                    if (jwt.IsMissing())
+                    {
+                        LogError("no value returned from request_uri");
+                        return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestUri, "no value returned from request_uri"));
+                    }
+
+                    jwtRequest = jwt;
+                }
+            }
+            else if (jwtRequestUri.IsPresent())
+            {
+                LogError("request_uri present but config prohibits");
+                return (false, Invalid(OidcConstants.AuthorizeErrors.RequestUriNotSupported));
+            }
+
+            // check length restrictions
+            if (jwtRequest.IsPresent())
+            {
+                if (jwtRequest.Length >= _options.InputLengthRestrictions.Jwt)
+                {
+                    LogError("request value is too long");
+                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid request value"));
+                }
+            }
+
+            _validatedRequest.RequestObject = jwtRequest;
+            return (true, null);
+        }
+
+        private async Task<(bool Success, BackchannelAuthenticationRequestValidationResult ErrorResult)> TryValidateRequestObjectAsync()
+        {
+            //////////////////////////////////////////////////////////
+            // validate request object
+            /////////////////////////////////////////////////////////
+            if (_validatedRequest.RequestObject.IsPresent())
+            {
+                // validate the request JWT for this client
+                var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(_validatedRequest.Client, _validatedRequest.RequestObject);
+                if (jwtRequestValidationResult.IsError)
+                {
+                    LogError("request JWT validation failure");
+                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid JWT request"));
+                }
+
+                // validate response_type match
+                //var responseType = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.ResponseType);
+                //if (responseType != null)
+                //{
+                //    var payloadResponseType =
+                //        jwtRequestValidationResult.Payload.SingleOrDefault(c =>
+                //            c.Type == OidcConstants.AuthorizeRequest.ResponseType)?.Value;
+
+                //    if (!string.IsNullOrEmpty(payloadResponseType))
+                //    {
+                //        if (payloadResponseType != responseType)
+                //        {
+                //            LogError("response_type in JWT payload does not match response_type in request");
+                //            return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequest, "Invalid JWT request"));
+                //        }
+                //    }
+                //}
+
+                // validate client_id mismatch
+                var payloadClientId =
+                    jwtRequestValidationResult.Payload.SingleOrDefault(c =>
+                        c.Type == OidcConstants.AuthorizeRequest.ClientId)?.Value;
+
+                if (!string.IsNullOrEmpty(payloadClientId))
+                {
+                    if (!string.Equals(_validatedRequest.Client.ClientId, payloadClientId, StringComparison.Ordinal))
+                    {
+                        LogError("client_id in JWT payload does not match client_id in request");
+                        return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequest, "Invalid JWT request"));
+                    }
+                }
+                else
+                {
+                    LogError("client_id is missing in JWT payload");
+                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid JWT request"));
+                }
+
+                var ignoreKeys = new[]
+                {
+                    JwtClaimTypes.Issuer,
+                    JwtClaimTypes.Audience
+                };
+
+                // merge jwt payload values into original request parameters
+                // 1. clear the keys in the raw collection for every key found in the request object
+                foreach (var claimType in jwtRequestValidationResult.Payload.Select(c => c.Type).Distinct())
+                {
+                    var qsValue = _validatedRequest.Raw.Get(claimType);
+                    if (qsValue != null)
+                    {
+                        _validatedRequest.Raw.Remove(claimType);
+                    }
+                }
+
+                // 2. copy over the value
+                foreach (var claim in jwtRequestValidationResult.Payload)
+                {
+                    _validatedRequest.Raw.Add(claim.Type, claim.Value);
+                }
+
+                var ruri = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
+                if (ruri != null)
+                {
+                    _validatedRequest.Raw.Remove(OidcConstants.AuthorizeRequest.RequestUri);
+                    _validatedRequest.Raw.Add(OidcConstants.AuthorizeRequest.Request, _validatedRequest.RequestObject);
+                }
+
+
+                _validatedRequest.RequestObjectValues = jwtRequestValidationResult.Payload;
+            }
+
+            return (true, null);
+        }
+
+
 
         private BackchannelAuthenticationRequestValidationResult Invalid(string error, string errorDescription = null)
         {
