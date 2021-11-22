@@ -452,6 +452,9 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////////////////
             if (_validatedRequest.RequestObject.IsPresent())
             {
+                // TODO: client_id not required in JWT it seems
+                // TODO: check if the typ claim is diff than authz EP: JwtClaimTypes.JwtTypes.AuthorizationRequest
+                
                 // validate the request JWT for this client
                 var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(_validatedRequest.Client, _validatedRequest.RequestObject);
                 if (jwtRequestValidationResult.IsError)
@@ -459,6 +462,8 @@ namespace Duende.IdentityServer.Validation
                     LogError("request JWT validation failure");
                     return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid JWT request"));
                 }
+
+                // TODO: ciba validate jti in request token
 
                 // validate response_type match
                 //var responseType = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.ResponseType);
@@ -497,11 +502,8 @@ namespace Duende.IdentityServer.Validation
                     return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid JWT request"));
                 }
 
-                var ignoreKeys = new[]
-                {
-                    JwtClaimTypes.Issuer,
-                    JwtClaimTypes.Audience
-                };
+                // TODO: ciba validate that no request params are in body
+
 
                 // merge jwt payload values into original request parameters
                 // 1. clear the keys in the raw collection for every key found in the request object
