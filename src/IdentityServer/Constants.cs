@@ -354,7 +354,6 @@ namespace Duende.IdentityServer
             public const string InvalidBindingMessage = "invalid_binding_message";
             public const string InvalidClient = "invalid_client";
             public const string AccessDenied = "access_denied";
-            // todo: support this?
             public const string InvalidTarget = "invalid_target";
         }
     }
