@@ -70,14 +70,18 @@ namespace Duende.IdentityServer.Validation
 
             _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
 
+            //////////////////////////////////////////////////////////
             // load request object
+            //////////////////////////////////////////////////////////
             var roLoadResult = await TryLoadRequestObjectAsync();
             if (!roLoadResult.Success)
             {
                 return roLoadResult.ErrorResult;
             }
 
+            //////////////////////////////////////////////////////////
             // validate request object
+            //////////////////////////////////////////////////////////
             var roValidationResult = await TryValidateRequestObjectAsync();
             if (!roValidationResult.Success)
             {
@@ -90,7 +94,6 @@ namespace Duende.IdentityServer.Validation
                 LogError("Client is configured for RequireRequestObject but none present");
                 return Invalid(BackchannelAuthenticationErrors.InvalidRequest);
             }
-
 
             //////////////////////////////////////////////////////////
             // scope must be present
@@ -162,6 +165,86 @@ namespace Duende.IdentityServer.Validation
 
             LicenseValidator.ValidateResourceIndicators(resourceIndicators);
             _validatedRequest.ValidatedResources = validatedResources;
+
+
+            //////////////////////////////////////////////////////////
+            // check requested_expiry
+            //////////////////////////////////////////////////////////
+            var requestLifetime = _validatedRequest.Client.CibaLifetime ?? _options.Ciba.DefaultLifetime;
+            var requestedExpiry = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.RequestedExpiry);
+            if (requestedExpiry.IsPresent())
+            {
+                // Int32.MaxValue == 2147483647, which is 10 characters in length
+                // so using 9 so we don't overflow below on the Int32.Parse
+                if (requestedExpiry.Length > 9)
+                {
+                    LogError("requested_expiry too long");
+                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid requested_expiry");
+                }
+
+                if (Int32.TryParse(requestedExpiry, out var expiryValue) &&
+                    expiryValue > 0 &&
+                    expiryValue <= requestLifetime)
+                {
+                    _validatedRequest.Expiry = expiryValue;
+                }
+                else
+                {
+                    LogError("requested_expiry value out of valid range");
+                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid requested_expiry");
+                }
+            }
+            else
+            {
+                _validatedRequest.Expiry = requestLifetime;
+            }
+            
+
+            //////////////////////////////////////////////////////////
+            // check acr_values
+            //////////////////////////////////////////////////////////
+            var acrValues = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.AcrValues);
+            if (acrValues.IsPresent())
+            {
+                if (acrValues.Length > _options.InputLengthRestrictions.AcrValues)
+                {
+                    LogError("Acr values too long");
+                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid acr_values");
+                }
+
+                _validatedRequest.AuthenticationContextReferenceClasses = acrValues.FromSpaceSeparatedString().Distinct().ToList();
+
+                //////////////////////////////////////////////////////////
+                // check custom acr_values: idp and tenant
+                //////////////////////////////////////////////////////////
+                var tenant = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.Tenant));
+                if (tenant != null)
+                {
+                    _validatedRequest.AuthenticationContextReferenceClasses.Remove(tenant);
+                    tenant = tenant.Substring(KnownAcrValues.Tenant.Length);
+                    _validatedRequest.Tenant = tenant;
+                }
+
+                var idp = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.HomeRealm));
+                if (idp != null)
+                {
+                    _validatedRequest.AuthenticationContextReferenceClasses.Remove(idp);
+                    idp = idp.Substring(KnownAcrValues.HomeRealm.Length);
+
+                    // check if idp is present but client does not allow it, and then ignore it
+                    if (_validatedRequest.Client.IdentityProviderRestrictions != null && 
+                        _validatedRequest.Client.IdentityProviderRestrictions.Any())
+                    {
+                        if (!_validatedRequest.Client.IdentityProviderRestrictions.Contains(idp))
+                        {
+                            _logger.LogWarning("idp requested ({idp}) is not in client restriction list.", idp);
+                            idp = null;
+                        }
+                    }
+
+                    _validatedRequest.IdP = idp;
+                }
+            }
 
 
             //////////////////////////////////////////////////////////
@@ -333,84 +416,6 @@ namespace Duende.IdentityServer.Validation
             _validatedRequest.Subject = userResult.Subject;
 
             // todo: ciba do we call into the profile service at this point for IsActive?
-
-            //////////////////////////////////////////////////////////
-            // check user_code
-            //////////////////////////////////////////////////////////
-            var requestLifetime = _validatedRequest.Client.CibaLifetime ?? _options.Ciba.DefaultLifetime;
-            var requestedExpiry = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.RequestedExpiry);
-            if (requestedExpiry.IsPresent())
-            {
-                // Int32.MaxValue == 2147483647, which is 10 characters in length
-                // so using 9 so we don't overflow below on the Int32.Parse
-                if (requestedExpiry.Length > 9)
-                {
-                    LogError("requested_expiry too long");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid requested_expiry");
-                }
-
-                if (Int32.TryParse(requestedExpiry, out var expiryValue) && 
-                    expiryValue > 0 &&
-                    expiryValue <= requestLifetime)
-                {
-                    _validatedRequest.Expiry = expiryValue;
-                }
-                else
-                {
-                    LogError("requested_expiry value out of valid range");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid requested_expiry");
-                }
-            }
-            else
-            {
-                _validatedRequest.Expiry = requestLifetime;
-            }
-
-            //////////////////////////////////////////////////////////
-            // check acr_values
-            //////////////////////////////////////////////////////////
-            var acrValues = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.AcrValues);
-            if (acrValues.IsPresent())
-            {
-                if (acrValues.Length > _options.InputLengthRestrictions.AcrValues)
-                {
-                    LogError("Acr values too long");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid acr_values");
-                }
-
-                _validatedRequest.AuthenticationContextReferenceClasses = acrValues.FromSpaceSeparatedString().Distinct().ToList();
-
-                //////////////////////////////////////////////////////////
-                // check custom acr_values: idp and tenant
-                //////////////////////////////////////////////////////////
-                var tenant = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.Tenant));
-                if (tenant != null)
-                {
-                    _validatedRequest.AuthenticationContextReferenceClasses.Remove(tenant);
-                    tenant = tenant.Substring(KnownAcrValues.Tenant.Length);
-                    _validatedRequest.Tenant = tenant;
-                }
-
-                var idp = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.HomeRealm));
-                if (idp != null)
-                {
-                    _validatedRequest.AuthenticationContextReferenceClasses.Remove(idp);
-                    idp = idp.Substring(KnownAcrValues.HomeRealm.Length);
-
-                    // check if idp is present but client does not allow it, and then ignore it
-                    if (_validatedRequest.Client.IdentityProviderRestrictions != null && 
-                        _validatedRequest.Client.IdentityProviderRestrictions.Any())
-                    {
-                        if (!_validatedRequest.Client.IdentityProviderRestrictions.Contains(idp))
-                        {
-                            _logger.LogWarning("idp requested ({idp}) is not in client restriction list.", idp);
-                            idp = null;
-                        }
-                    }
-
-                    _validatedRequest.IdP = idp;
-                }
-            }
 
             LogSuccess();
             return new BackchannelAuthenticationRequestValidationResult(_validatedRequest);
