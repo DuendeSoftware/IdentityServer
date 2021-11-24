@@ -19,7 +19,7 @@ namespace Duende.IdentityServer.Extensions
 {
     public static class HttpContextExtensions
     {
-        [Obsolete("For a replacement, see here: xxx")]
+        [Obsolete("For a replacement, use IAuthenticationHandlerProvider.GetHandlerAsync and check if the handler implements IAuthenticationSignOutHandler.")]
         public static async Task<bool> GetSchemeSupportsSignOutAsync(this HttpContext context, string scheme)
         {
             var provider = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
