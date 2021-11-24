@@ -65,6 +65,7 @@ namespace IntegrationTests.Clients
             var response = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
                 Address = TokenEndpoint,
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
 
                 ClientId = ClientId,
                 ClientAssertion =
@@ -88,6 +89,7 @@ namespace IntegrationTests.Clients
             {
                 Address = TokenEndpoint,
                 ClientId = "client",
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
 
                 ClientAssertion =
                 {
@@ -109,6 +111,7 @@ namespace IntegrationTests.Clients
             var response = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
                 Address = TokenEndpoint,
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
 
                 ClientId = ClientId,
                 ClientAssertion =
@@ -126,6 +129,7 @@ namespace IntegrationTests.Clients
             response = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
                 Address = TokenEndpoint,
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
 
                 ClientId = ClientId,
                 ClientAssertion =
@@ -147,6 +151,7 @@ namespace IntegrationTests.Clients
             var response = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
                 Address = TokenEndpoint,
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
 
                 ClientId = ClientId,
                 ClientAssertion =
@@ -172,6 +177,7 @@ namespace IntegrationTests.Clients
             var response = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
                 Address = TokenEndpoint,
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
 
                 ClientId = clientId,
                 ClientAssertion =
