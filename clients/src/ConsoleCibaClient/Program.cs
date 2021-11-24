@@ -48,6 +48,7 @@ namespace ConsoleCibaClient
             {
                 {"scope", "openid profile email resource1.scope1 offline_access"},
                 {"login_hint", username},
+                //{"id_token_hint", "eyJhbGciOiJSUzI1NiIsImtpZCI6IkU0QjMyOTQxNTUwMUJGOTFCODUwNDA2QTg3QURBNTdGIiwidHlwIjoiSldUIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDAxIiwibmJmIjoxNjM3Nzc2Mzk2LCJpYXQiOjE2Mzc3NzYzOTYsImV4cCI6MTYzNzc3NjY5NiwiYXVkIjoiY2liYSIsImFtciI6WyJwd2QiXSwiYXRfaGFzaCI6IkptcnZwdUZXOXRHUy1NeXBPOXFjalEiLCJzaWQiOiI3NEE3MUM5QjU2NUE1OEQ2QzNEQTczQTJBRTc1NDlBMiIsInN1YiI6IjgxODcyNyIsImF1dGhfdGltZSI6MTYzNzc3NjM4MywiaWRwIjoibG9jYWwifQ.v9ngldJjAhvxwSAEgpXPa35yvXliGzxvyV78RFbibyHsmo7_rQUHI5SLoaXWcr7kpPLL6iwGzfuhifNo9Hz6pqK9XvsG1NTsYacTMlyEuiJlCCWAaiF0IVWxSakHzatY_MbuLLL6Udg_-YeFuQ50BEisVmcfKRkUASJffL0kGroS-uKpuhV1BaK6oMsSNPujhk7_LsUX6YqbagylMyKnsbWF05KV76B2KyIjtwa8QAbJyxLyOY_GZy3t2c58eqkBPhRsQukxhTGcdffwt_D7_MNS4-H0y9bNmTGbs72kIHurS1K1SBr29AfUMCh_XuPr2psQSFqCVXiWBK42mBf3TQ" },
                 {"binding_message", bindingMessage },
             };
             

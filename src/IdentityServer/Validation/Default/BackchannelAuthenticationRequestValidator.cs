@@ -21,6 +21,7 @@ namespace Duende.IdentityServer.Validation
     {
         private readonly IdentityServerOptions _options;
         private readonly IResourceValidator _resourceValidator;
+        private readonly ITokenValidator _tokenValidator;
         private readonly IBackchannelAuthenticationUserValidator _backchannelAuthenticationUserValidator;
         private readonly IJwtRequestValidator _jwtRequestValidator;
         private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
@@ -31,6 +32,7 @@ namespace Duende.IdentityServer.Validation
         public BackchannelAuthenticationRequestValidator(
             IdentityServerOptions options,
             IResourceValidator resourceValidator,
+            ITokenValidator tokenValidator,
             IBackchannelAuthenticationUserValidator backchannelAuthenticationUserValidator,
             IJwtRequestValidator jwtRequestValidator,
             IJwtRequestUriHttpClient jwtRequestUriHttpClient,
@@ -38,6 +40,7 @@ namespace Duende.IdentityServer.Validation
         {
             _options = options;
             _resourceValidator = resourceValidator;
+            _tokenValidator = tokenValidator;
             _backchannelAuthenticationUserValidator = backchannelAuthenticationUserValidator;
             _jwtRequestValidator = jwtRequestValidator;
             _jwtRequestUriHttpClient = jwtRequestUriHttpClient;
@@ -223,9 +226,15 @@ namespace Duende.IdentityServer.Validation
                     return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid id_token_hint");
                 }
 
-                _validatedRequest.IdTokenHint = idTokenHint;
+                var idTokenHintValidationResult = await _tokenValidator.ValidateIdentityTokenAsync(idTokenHint, _validatedRequest.ClientId, false);
+                if (idTokenHintValidationResult.IsError)
+                {
+                    LogError("id token hint failed to validate: " + idTokenHintValidationResult.Error, idTokenHintValidationResult.ErrorDescription);
+                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid id_token_hint");
+                }
 
-                // TODO: validate id_token_hint?
+                _validatedRequest.IdTokenHint = idTokenHint;
+                _validatedRequest.IdTokenHintClaims = idTokenHintValidationResult.Claims;
             }
 
             //////////////////////////////////////////////////////////
@@ -258,7 +267,7 @@ namespace Duende.IdentityServer.Validation
 
                 _validatedRequest.BindingMessage = bindingMessage;
             }
-            
+
             //////////////////////////////////////////////////////////
             // validate the login hint w/ custom validator
             //////////////////////////////////////////////////////////
@@ -267,6 +276,7 @@ namespace Duende.IdentityServer.Validation
                 IdTokenHint = _validatedRequest.IdTokenHint,
                 LoginHint = _validatedRequest.LoginHint,
                 LoginHintToken = _validatedRequest.LoginHintToken,
+                IdTokenHintClaims = _validatedRequest.IdTokenHintClaims,
                 UserCode = _validatedRequest.UserCode,
                 BindingMessage = _validatedRequest.BindingMessage
             });
@@ -322,6 +332,7 @@ namespace Duende.IdentityServer.Validation
 
             _validatedRequest.Subject = userResult.Subject;
 
+            // todo: ciba do we call into the profile service at this point for IsActive?
 
             //////////////////////////////////////////////////////////
             // check user_code

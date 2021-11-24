@@ -38,6 +38,11 @@ namespace Duende.IdentityServer.Validation
         public string IdTokenHint { get; set; }
 
         /// <summary>
+        /// Gets or sets the validated claims from the id token hint.
+        /// </summary>
+        public IEnumerable<Claim> IdTokenHintClaims { get; set; }
+
+        /// <summary>
         /// Gets or sets the login hint.
         /// </summary>
         public string LoginHint { get; set; }
