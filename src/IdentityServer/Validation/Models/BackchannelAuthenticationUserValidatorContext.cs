@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Models;
 using System.Collections.Generic;
 using System.Security.Claims;
 
@@ -11,7 +12,10 @@ namespace Duende.IdentityServer.Validation
     /// </summary>
     public class BackchannelAuthenticationUserValidatorContext
     {
-        // TODO: ciba add client
+        /// <summary>
+        /// Gets or sets the client.
+        /// </summary>
+        public Client Client { get; set; }
 
         /// <summary>
         /// Gets or sets the login hint token.

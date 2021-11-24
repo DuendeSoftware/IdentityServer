@@ -356,6 +356,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             var userResult = await _backchannelAuthenticationUserValidator.ValidateRequestAsync(new BackchannelAuthenticationUserValidatorContext
             {
+                Client = _validatedRequest.Client,
                 IdTokenHint = _validatedRequest.IdTokenHint,
                 LoginHint = _validatedRequest.LoginHint,
                 LoginHintToken = _validatedRequest.LoginHintToken,
@@ -414,8 +415,6 @@ namespace Duende.IdentityServer.Validation
             }
 
             _validatedRequest.Subject = userResult.Subject;
-
-            // todo: ciba do we call into the profile service at this point for IsActive?
 
             LogSuccess();
             return new BackchannelAuthenticationRequestValidationResult(_validatedRequest);
