@@ -54,6 +54,16 @@ namespace Duende.IdentityServer.Models
         public ICollection<string> AuthenticationContextReferenceClasses { get; set; }
 
         /// <summary>
+        /// Gets or sets the tenant.
+        /// </summary>
+        public string Tenant { get; set; }
+
+        /// <summary>
+        /// Gets or sets the idp.
+        /// </summary>
+        public string IdP { get; set; }
+
+        /// <summary>
         /// Gets or sets the binding message.
         /// </summary>
         public string BindingMessage { get; set; }

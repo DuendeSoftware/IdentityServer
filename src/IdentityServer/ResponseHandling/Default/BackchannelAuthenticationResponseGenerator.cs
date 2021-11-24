@@ -84,6 +84,8 @@ namespace Duende.IdentityServer.ResponseHandling
                 Subject = validationResult.ValidatedRequest.Subject,
                 Lifetime = validationResult.ValidatedRequest.Expiry,
                 AuthenticationContextReferenceClasses = validationResult.ValidatedRequest.AuthenticationContextReferenceClasses,
+                Tenant = validationResult.ValidatedRequest.Tenant,
+                IdP = validationResult.ValidatedRequest.IdP,
                 BindingMessage = validationResult.ValidatedRequest.BindingMessage,
             };
 

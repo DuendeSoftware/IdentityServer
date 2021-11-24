@@ -379,25 +379,38 @@ namespace Duende.IdentityServer.Validation
                 }
 
                 _validatedRequest.AuthenticationContextReferenceClasses = acrValues.FromSpaceSeparatedString().Distinct().ToList();
-            }
 
-            // todo: ciba support idp and tenant?
-            //////////////////////////////////////////////////////////
-            // check custom acr_values: idp
-            //////////////////////////////////////////////////////////
-            //var idp = _validatedRequest.GetIdP();
-            //if (idp.IsPresent())
-            //{
-            //    // if idp is present but client does not allow it, strip it from the request message
-            //    if (request.Client.IdentityProviderRestrictions != null && request.Client.IdentityProviderRestrictions.Any())
-            //    {
-            //        if (!request.Client.IdentityProviderRestrictions.Contains(idp))
-            //        {
-            //            _logger.LogWarning("idp requested ({idp}) is not in client restriction list.", idp);
-            //            request.RemoveIdP();
-            //        }
-            //    }
-            //}
+                //////////////////////////////////////////////////////////
+                // check custom acr_values: idp and tenant
+                //////////////////////////////////////////////////////////
+                var tenant = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.Tenant));
+                if (tenant != null)
+                {
+                    _validatedRequest.AuthenticationContextReferenceClasses.Remove(tenant);
+                    tenant = tenant.Substring(KnownAcrValues.Tenant.Length);
+                    _validatedRequest.Tenant = tenant;
+                }
+
+                var idp = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.HomeRealm));
+                if (idp != null)
+                {
+                    _validatedRequest.AuthenticationContextReferenceClasses.Remove(idp);
+                    idp = idp.Substring(KnownAcrValues.HomeRealm.Length);
+
+                    // check if idp is present but client does not allow it, and then ignore it
+                    if (_validatedRequest.Client.IdentityProviderRestrictions != null && 
+                        _validatedRequest.Client.IdentityProviderRestrictions.Any())
+                    {
+                        if (!_validatedRequest.Client.IdentityProviderRestrictions.Contains(idp))
+                        {
+                            _logger.LogWarning("idp requested ({idp}) is not in client restriction list.", idp);
+                            idp = null;
+                        }
+                    }
+
+                    _validatedRequest.IdP = idp;
+                }
+            }
 
             LogSuccess();
             return new BackchannelAuthenticationRequestValidationResult(_validatedRequest);

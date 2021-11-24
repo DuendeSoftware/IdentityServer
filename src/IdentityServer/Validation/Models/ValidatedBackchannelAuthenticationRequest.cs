@@ -28,6 +28,16 @@ namespace Duende.IdentityServer.Validation
         public ICollection<string> AuthenticationContextReferenceClasses { get; set; }
 
         /// <summary>
+        /// Gets or sets the tenant.
+        /// </summary>
+        public string Tenant { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the idp.
+        /// </summary>
+        public string IdP { get; set; }
+
+        /// <summary>
         /// Gets or sets the login hint token.
         /// </summary>
         public string LoginHintToken { get; set; }
