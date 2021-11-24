@@ -148,8 +148,7 @@ namespace IdentityServerHost.Pages.Ciba
                 .Select(x => CreateScopeViewModel(x, model?.ScopesConsented == null || model.ScopesConsented?.Contains(x.Name) == true))
                 .ToArray();
 
-            // TODO: ciba
-            var resourceIndicators = /*request.Parameters.GetValues(OidcConstants.AuthorizeRequest.Resource) ??*/ Enumerable.Empty<string>();
+            var resourceIndicators = request.RequestedResourceIndicators ?? Enumerable.Empty<string>();
             var apiResources = request.ValidatedResources.Resources.ApiResources.Where(x => resourceIndicators.Contains(x.Name));
 
             var apiScopes = new List<ScopeViewModel>();
