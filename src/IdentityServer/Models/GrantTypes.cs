@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using IdentityModel;
 using System.Collections.Generic;
 
 #pragma warning disable 1591
@@ -40,8 +41,7 @@ namespace Duende.IdentityServer.Models
         public static ICollection<string> DeviceFlow =>
             new[] { GrantType.DeviceFlow };
 
-        // TODO: CIBA constant
         public static ICollection<string> Ciba =>
-            new[] { "urn:openid:params:grant-type:ciba" };
+            new[] { OidcConstants.GrantTypes.Ciba };
     }
 }

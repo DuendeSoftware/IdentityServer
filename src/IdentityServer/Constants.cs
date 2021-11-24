@@ -341,9 +341,7 @@ namespace Duende.IdentityServer
             public const string P521 = "1.3.132.0.35";
         }
 
-        // TODO: Add to IdentityModel
-        public const string CibaGrantType = "urn:openid:params:grant-type:ciba";
-
+        // todo: ciba constants
         public static class BackchannelAuthenticationErrors
         {
             public const string InvalidRequest = "invalid_request";

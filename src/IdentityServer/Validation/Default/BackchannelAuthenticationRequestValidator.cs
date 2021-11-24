@@ -59,8 +59,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // Client must be configured for CIBA
             //////////////////////////////////////////////////////////
-            // TODO: CIBA constant
-            if (!clientValidationResult.Client.AllowedGrantTypes.Contains("urn:openid:params:grant-type:ciba"))
+            if (!clientValidationResult.Client.AllowedGrantTypes.Contains(OidcConstants.GrantTypes.Ciba))
             {
                 LogError("Client {clientId} not configured with the CIBA grant type.", clientValidationResult.Client.ClientId);
                 return Invalid(BackchannelAuthenticationErrors.UnauthorizedClient, "Unauthorized client");
@@ -93,7 +92,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // scope must be present
             //////////////////////////////////////////////////////////
-            var scope = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.Scope);
+            var scope = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.Scope);
             if (scope.IsMissing())
             {
                 LogError("Missing scope");
@@ -120,7 +119,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // check for resource indicators and valid format
             //////////////////////////////////////////////////////////
-            var resourceIndicators = _validatedRequest.Raw.GetValues(OidcConstants.TokenRequest.Resource) ?? Enumerable.Empty<string>();
+            var resourceIndicators = _validatedRequest.Raw.GetValues("resource") ?? Enumerable.Empty<string>();
 
             if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
             {
@@ -165,9 +164,9 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // login hints
             //////////////////////////////////////////////////////////
-            var loginHint = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.LoginHint);
-            var loginHintToken = _validatedRequest.Raw.Get("login_hint_token");
-            var idTokenHint = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.IdTokenHint);
+            var loginHint = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.LoginHint);
+            var loginHintToken = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.LoginHintToken);
+            var idTokenHint = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.IdTokenHint);
 
             var loginHintCount = 0;
             if (loginHint.IsPresent()) loginHintCount++;
@@ -232,7 +231,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // check user_code
             //////////////////////////////////////////////////////////
-            var userCode = _validatedRequest.Raw.Get("user_code");
+            var userCode = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.UserCode);
             if (userCode.IsPresent())
             {
                 if (userCode.Length > _options.InputLengthRestrictions.UserCode)
@@ -248,7 +247,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // check binding_message
             //////////////////////////////////////////////////////////
-            var bindingMessage = _validatedRequest.Raw.Get("binding_message");
+            var bindingMessage = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.BindingMessage);
             if (bindingMessage.IsPresent())
             {
                 if (bindingMessage.Length > _options.InputLengthRestrictions.BindingMessage)
@@ -328,7 +327,7 @@ namespace Duende.IdentityServer.Validation
             // check user_code
             //////////////////////////////////////////////////////////
             var requestLifetime = _validatedRequest.Client.CibaLifetime ?? _options.Ciba.DefaultLifetime;
-            var requestedExpiry = _validatedRequest.Raw.Get("requested_expiry");
+            var requestedExpiry = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.RequestedExpiry);
             if (requestedExpiry.IsPresent())
             {
                 // Int32.MaxValue == 2147483647, which is 10 characters in length
@@ -359,7 +358,7 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // check acr_values
             //////////////////////////////////////////////////////////
-            var acrValues = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.AcrValues);
+            var acrValues = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.AcrValues);
             if (acrValues.IsPresent())
             {
                 if (acrValues.Length > _options.InputLengthRestrictions.AcrValues)
@@ -371,7 +370,7 @@ namespace Duende.IdentityServer.Validation
                 _validatedRequest.AuthenticationContextReferenceClasses = acrValues.FromSpaceSeparatedString().Distinct().ToList();
             }
 
-            // todo: support idp and tenant?
+            // todo: ciba support idp and tenant?
             //////////////////////////////////////////////////////////
             // check custom acr_values: idp
             //////////////////////////////////////////////////////////
@@ -395,8 +394,8 @@ namespace Duende.IdentityServer.Validation
 
         private async Task<(bool Success, BackchannelAuthenticationRequestValidationResult ErrorResult)> TryLoadRequestObjectAsync()
         {
-            var jwtRequest = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.Request);
-            var jwtRequestUri = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
+            var jwtRequest = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.Request);
+            var jwtRequestUri = _validatedRequest.Raw.Get("request_uri"); // todo: ciba constant
 
             if (jwtRequest.IsPresent() && jwtRequestUri.IsPresent())
             {
@@ -452,8 +451,8 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////////////////
             if (_validatedRequest.RequestObject.IsPresent())
             {
-                // TODO: client_id not required in JWT it seems
-                // TODO: check if the typ claim is diff than authz EP: JwtClaimTypes.JwtTypes.AuthorizationRequest
+                // TODO: ciba client_id not required in JWT it seems
+                // TODO: ciba check if the typ claim is diff than authz EP: JwtClaimTypes.JwtTypes.AuthorizationRequest
                 
                 // validate the request JWT for this client
                 var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(_validatedRequest.Client, _validatedRequest.RequestObject);
