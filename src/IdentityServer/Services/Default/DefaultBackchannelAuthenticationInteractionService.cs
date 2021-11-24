@@ -64,7 +64,7 @@ namespace Duende.IdentityServer.Services
 
             return new BackchannelUserLoginRequest
             {
-                Id = request.Id,
+                InternalId = request.InternalId,
                 Subject = request.Subject,
                 Client = client,
                 ValidatedResources = validatedResources,

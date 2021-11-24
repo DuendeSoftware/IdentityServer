@@ -101,7 +101,7 @@ namespace Duende.IdentityServer.ResponseHandling
 
             await UserLoginService.SendLoginRequestAsync(new BackchannelUserLoginRequest
             {
-                Id = request.Id,
+                InternalId = request.InternalId,
                 Subject = validationResult.ValidatedRequest.Subject,
                 Client = validationResult.ValidatedRequest.Client,
                 ValidatedResources = validationResult.ValidatedRequest.ValidatedResources,

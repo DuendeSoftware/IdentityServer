@@ -29,7 +29,7 @@ namespace Duende.IdentityServer.Services
         public async Task SendLoginRequestAsync(BackchannelUserLoginRequest request)
         {
             var url = await _issuerNameService.GetCurrentAsync();
-            url += "/ciba?id=" + request.Id;
+            url += "/ciba?id=" + request.InternalId;
             _logger.LogWarning("IBackchannelAuthenticationUserNotificationService not implemented. But for testing, visit {url} to simulate what a user might need to do to complete the request.", url);
         }
     }

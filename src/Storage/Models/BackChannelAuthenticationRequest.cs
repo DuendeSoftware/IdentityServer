@@ -14,9 +14,9 @@ namespace Duende.IdentityServer.Models
     public class BackChannelAuthenticationRequest
     {
         /// <summary>
-        /// The database identifier for this request.
+        /// The identifier for this request in the store.
         /// </summary>
-        public string Id { get; set; }
+        public string InternalId { get; set; }
 
         /// <summary>
         /// Gets or sets the creation time.

@@ -26,11 +26,11 @@
                                 @foreach (var login in Model.Logins)
                                 {
                                     <tr>
-                                        <td>@login.Id</td>
+                                        <td>@login.InternalId</td>
                                         <td>@login.Client.ClientId</td>
                                         <td>@login.BindingMessage</td>
                                         <td>
-                                            <a asp-page="Consent" asp-route-id="@login.Id" class="btn btn-primary">Process</a>
+                                            <a asp-page="Consent" asp-route-id="@login.InternalId" class="btn btn-primary">Process</a>
                                         </td>
                                     </tr>
                                 }

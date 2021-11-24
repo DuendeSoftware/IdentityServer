@@ -38,8 +38,8 @@ namespace Duende.IdentityServer.Stores
         public async Task<string> CreateRequestAsync(BackChannelAuthenticationRequest request)
         {
             var handle = await CreateHandleAsync();
-            request.Id = GetHashedKey(handle);
-            await StoreItemByHashedKeyAsync(request.Id, request, request.ClientId, request.Subject.GetSubjectId(), null, null, request.CreationTime, request.CreationTime.AddSeconds(request.Lifetime));
+            request.InternalId = GetHashedKey(handle);
+            await StoreItemByHashedKeyAsync(request.InternalId, request, request.ClientId, request.Subject.GetSubjectId(), null, null, request.CreationTime, request.CreationTime.AddSeconds(request.Lifetime));
             return handle;
         }
 
