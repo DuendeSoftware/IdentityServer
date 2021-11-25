@@ -85,23 +85,19 @@ namespace Duende.IdentityServer.Validation
             Handler = new JsonWebTokenHandler();
         }
 
-        /// <summary>
-        /// Validates a JWT request object
-        /// </summary>
-        /// <param name="client">The client</param>
-        /// <param name="jwtTokenString">The JWT</param>
-        /// <returns></returns>
-        public virtual async Task<JwtRequestValidationResult> ValidateAsync(Client client, string jwtTokenString)
+        /// <inheritdoc/>
+        public virtual async Task<JwtRequestValidationResult> ValidateAsync(JwtRequestValidationContext context)
         {
-            if (client == null) throw new ArgumentNullException(nameof(client));
-            if (String.IsNullOrWhiteSpace(jwtTokenString)) throw new ArgumentNullException(nameof(jwtTokenString));
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (context.Client == null) throw new ArgumentNullException(nameof(context.Client));
+            if (String.IsNullOrWhiteSpace(context.JwtTokenString)) throw new ArgumentNullException(nameof(context.JwtTokenString));
 
             var fail = new JwtRequestValidationResult { IsError = true };
 
             List<SecurityKey> trustedKeys;
             try
             {
-                trustedKeys = await GetKeysAsync(client);
+                trustedKeys = await GetKeysAsync(context.Client);
             }
             catch (Exception e)
             {
@@ -118,7 +114,7 @@ namespace Duende.IdentityServer.Validation
             JsonWebToken jwtSecurityToken;
             try
             {
-                jwtSecurityToken = await ValidateJwtAsync(jwtTokenString, trustedKeys, client);
+                jwtSecurityToken = await ValidateJwtAsync(context, trustedKeys);
             }
             catch (Exception e)
             {
@@ -133,7 +129,7 @@ namespace Duende.IdentityServer.Validation
                 return fail;
             }
 
-            var payload = await ProcessPayloadAsync(jwtSecurityToken);
+            var payload = await ProcessPayloadAsync(context, jwtSecurityToken);
 
             var result = new JwtRequestValidationResult
             {
@@ -158,19 +154,14 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// Validates the JWT token
         /// </summary>
-        /// <param name="jwtTokenString">JWT as a string</param>
-        /// <param name="keys">The keys</param>
-        /// <param name="client">The client</param>
-        /// <returns></returns>
-        protected virtual async Task<JsonWebToken> ValidateJwtAsync(string jwtTokenString, IEnumerable<SecurityKey> keys,
-            Client client)
+        protected virtual async Task<JsonWebToken> ValidateJwtAsync(JwtRequestValidationContext context, IEnumerable<SecurityKey> keys)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
                 IssuerSigningKeys = keys,
                 ValidateIssuerSigningKey = true,
 
-                ValidIssuer = client.ClientId,
+                ValidIssuer = context.Client.ClientId,
                 ValidateIssuer = true,
 
                 ValidAudience = await GetAudienceUri(),
@@ -180,12 +171,13 @@ namespace Duende.IdentityServer.Validation
                 RequireExpirationTime = true
             };
 
-            if (Options.StrictJarValidation)
+            var strictJarValidation = context.StrictJarValidation.HasValue ? context.StrictJarValidation.Value : Options.StrictJarValidation;
+            if (strictJarValidation)
             {
                 tokenValidationParameters.ValidTypes = new[] { JwtClaimTypes.JwtTypes.AuthorizationRequest };
             }
 
-            var result = Handler.ValidateToken(jwtTokenString, tokenValidationParameters);
+            var result = Handler.ValidateToken(context.JwtTokenString, tokenValidationParameters);
             if (!result.IsValid)
             {
                 throw result.Exception;
@@ -197,12 +189,20 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// Processes the JWT contents
         /// </summary>
+        /// <param name="context"></param>
         /// <param name="token">The JWT token</param>
         /// <returns></returns>
-        protected virtual Task<List<Claim>> ProcessPayloadAsync(JsonWebToken token)
+        protected virtual Task<List<Claim>> ProcessPayloadAsync(JwtRequestValidationContext context, JsonWebToken token)
         {
             // filter JWT validation values
-            var filtered = token.Claims.Where(claim => !Constants.Filters.JwtRequestClaimTypesFilter.Contains(claim.Type));
+            var filter = Constants.Filters.JwtRequestClaimTypesFilter.ToList();
+            if (context.IncludeJti)
+            {
+                // don't filter out the jti claim
+                filter.Remove(JwtClaimTypes.JwtId);
+            }
+            
+            var filtered = token.Claims.Where(claim => !filter.Contains(claim.Type));
             return Task.FromResult(filtered.ToList());
         }
     }

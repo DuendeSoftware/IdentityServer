@@ -1,5 +1,8 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
 using System.Threading.Tasks;
-using Duende.IdentityServer.Models;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -11,9 +14,6 @@ namespace Duende.IdentityServer.Validation
         /// <summary>
         /// Validates a JWT request object
         /// </summary>
-        /// <param name="client">The client</param>
-        /// <param name="jwtTokenString">The JWT</param>
-        /// <returns></returns>
-        Task<JwtRequestValidationResult> ValidateAsync(Client client, string jwtTokenString);
+        Task<JwtRequestValidationResult> ValidateAsync(JwtRequestValidationContext context);
     }
 }

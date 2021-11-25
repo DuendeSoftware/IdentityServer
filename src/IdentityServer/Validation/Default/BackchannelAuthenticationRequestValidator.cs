@@ -479,83 +479,52 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////////////////
             if (_validatedRequest.RequestObject.IsPresent())
             {
-                // TODO: ciba client_id not required in JWT it seems
-                // TODO: ciba check if the typ claim is diff than authz EP: JwtClaimTypes.JwtTypes.AuthorizationRequest
-                
                 // validate the request JWT for this client
-                var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(_validatedRequest.Client, _validatedRequest.RequestObject);
+                var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(new JwtRequestValidationContext {
+                    Client = _validatedRequest.Client, 
+                    JwtTokenString = _validatedRequest.RequestObject,
+                    StrictJarValidation = false,
+                    IncludeJti = true
+                });
                 if (jwtRequestValidationResult.IsError)
                 {
-                    LogError("request JWT validation failure");
+                    LogError("request JWT validation failure, error: {error}", jwtRequestValidationResult.Error);
                     return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid JWT request"));
                 }
 
-                // TODO: ciba validate jti in request token
-
-                // validate response_type match
-                //var responseType = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.ResponseType);
-                //if (responseType != null)
-                //{
-                //    var payloadResponseType =
-                //        jwtRequestValidationResult.Payload.SingleOrDefault(c =>
-                //            c.Type == OidcConstants.AuthorizeRequest.ResponseType)?.Value;
-
-                //    if (!string.IsNullOrEmpty(payloadResponseType))
-                //    {
-                //        if (payloadResponseType != responseType)
-                //        {
-                //            LogError("response_type in JWT payload does not match response_type in request");
-                //            return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequest, "Invalid JWT request"));
-                //        }
-                //    }
-                //}
-
-                // validate client_id mismatch
-                var payloadClientId =
-                    jwtRequestValidationResult.Payload.SingleOrDefault(c =>
-                        c.Type == OidcConstants.AuthorizeRequest.ClientId)?.Value;
-
-                if (!string.IsNullOrEmpty(payloadClientId))
+                // client_id not required in JWT, but just in case we will validate it
+                var payloadClientId = jwtRequestValidationResult.Payload.SingleOrDefault(x => x.Type == JwtClaimTypes.ClientId)?.Value;
+                if (payloadClientId.IsPresent() && _validatedRequest.Client.ClientId != payloadClientId)
                 {
-                    if (!string.Equals(_validatedRequest.Client.ClientId, payloadClientId, StringComparison.Ordinal))
+                    LogError("client_id found in the JWT request object does not match client_id used to authenticate {@details}", new { invalidClientId = payloadClientId, clientId = _validatedRequest.Client.ClientId });
+                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid client_id in JWT request"));
+                }
+
+                // validate jti in request token
+                var jti = jwtRequestValidationResult.Payload.SingleOrDefault(x => x.Type == JwtClaimTypes.JwtId)?.Value;
+                if (jti.IsMissing())
+                {
+                    LogError("Missing jti in JWT request object");
+                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Missing jti in JWT request object"));
+                }
+
+                // validate that no request params are in body, and merge them into the request collection
+                foreach(var claim in jwtRequestValidationResult.Payload)
+                {
+                    // we already checked client_id above
+                    if (claim.Type != JwtClaimTypes.ClientId)
                     {
-                        LogError("client_id in JWT payload does not match client_id in request");
-                        return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequest, "Invalid JWT request"));
+                        if (_validatedRequest.Raw.AllKeys.Contains(claim.Type))
+                        {
+                            LogError("Parameter from JWT request object also found in request body: {name}", claim.Type);
+                            return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Parameter from JWT request object also found in request body"));
+                        }
+                        else if (claim.Type != JwtClaimTypes.JwtId)
+                        {
+                            _validatedRequest.Raw.Add(claim.Type, claim.Value);
+                        }
                     }
                 }
-                else
-                {
-                    LogError("client_id is missing in JWT payload");
-                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid JWT request"));
-                }
-
-                // TODO: ciba validate that no request params are in body
-
-
-                // merge jwt payload values into original request parameters
-                // 1. clear the keys in the raw collection for every key found in the request object
-                foreach (var claimType in jwtRequestValidationResult.Payload.Select(c => c.Type).Distinct())
-                {
-                    var qsValue = _validatedRequest.Raw.Get(claimType);
-                    if (qsValue != null)
-                    {
-                        _validatedRequest.Raw.Remove(claimType);
-                    }
-                }
-
-                // 2. copy over the value
-                foreach (var claim in jwtRequestValidationResult.Payload)
-                {
-                    _validatedRequest.Raw.Add(claim.Type, claim.Value);
-                }
-
-                var ruri = _validatedRequest.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
-                if (ruri != null)
-                {
-                    _validatedRequest.Raw.Remove(OidcConstants.AuthorizeRequest.RequestUri);
-                    _validatedRequest.Raw.Add(OidcConstants.AuthorizeRequest.Request, _validatedRequest.RequestObject);
-                }
-
 
                 _validatedRequest.RequestObjectValues = jwtRequestValidationResult.Payload;
             }

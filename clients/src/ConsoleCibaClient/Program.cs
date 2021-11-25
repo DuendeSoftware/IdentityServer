@@ -61,7 +61,6 @@ namespace ConsoleCibaClient
             bool useRequestObject = true;
             if (useRequestObject)
             {
-                values.Add("client_id", "ciba");
                 var requestObj = CreateRequestObject(values);
                 body.Add("request", requestObj);
             }
@@ -151,7 +150,10 @@ namespace ConsoleCibaClient
 
         static string CreateRequestObject(IDictionary<string, string> values)
         {
-            var claims = new List<Claim>();
+            var claims = new List<Claim>() 
+            { 
+                new Claim(JwtClaimTypes.JwtId, Guid.NewGuid().ToString("n"))
+            };
             foreach (var item in values)
             {
                 claims.Add(new Claim(item.Key, item.Value));

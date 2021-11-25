@@ -233,7 +233,10 @@ namespace Duende.IdentityServer.Validation
             if (request.RequestObject.IsPresent())
             {
                 // validate the request JWT for this client
-                var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(request.Client, request.RequestObject);
+                var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(new JwtRequestValidationContext {
+                    Client = request.Client, 
+                    JwtTokenString = request.RequestObject
+                });
                 if (jwtRequestValidationResult.IsError)
                 {
                     LogError("request JWT validation failure", request);
