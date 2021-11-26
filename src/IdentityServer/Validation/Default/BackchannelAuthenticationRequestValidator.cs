@@ -73,11 +73,19 @@ namespace Duende.IdentityServer.Validation
             //////////////////////////////////////////////////////////
             // load request object
             //////////////////////////////////////////////////////////
-            var roLoadResult = await TryLoadRequestObjectAsync();
-            if (!roLoadResult.Success)
+            var jwtRequest = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.Request);
+
+            // check length restrictions
+            if (jwtRequest.IsPresent())
             {
-                return roLoadResult.ErrorResult;
+                if (jwtRequest.Length >= _options.InputLengthRestrictions.Jwt)
+                {
+                    LogError("request value is too long");
+                    return Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid request value");
+                }
             }
+
+            _validatedRequest.RequestObject = jwtRequest;
 
             //////////////////////////////////////////////////////////
             // validate request object
@@ -420,58 +428,6 @@ namespace Duende.IdentityServer.Validation
             return new BackchannelAuthenticationRequestValidationResult(_validatedRequest);
         }
 
-        private async Task<(bool Success, BackchannelAuthenticationRequestValidationResult ErrorResult)> TryLoadRequestObjectAsync()
-        {
-            var jwtRequest = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.Request);
-            var jwtRequestUri = _validatedRequest.Raw.Get("request_uri"); // todo: ciba constant
-
-            if (jwtRequest.IsPresent() && jwtRequestUri.IsPresent())
-            {
-                LogError("Both request and request_uri are present");
-                return (false, Invalid("Only one request parameter is allowed"));
-            }
-
-            if (_options.Endpoints.EnableJwtRequestUri)
-            {
-                if (jwtRequestUri.IsPresent())
-                {
-                    // 512 is from the spec
-                    if (jwtRequestUri.Length > 512)
-                    {
-                        LogError("request_uri is too long");
-                        return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestUri, "request_uri is too long"));
-                    }
-
-                    var jwt = await _jwtRequestUriHttpClient.GetJwtAsync(jwtRequestUri, _validatedRequest.Client);
-                    if (jwt.IsMissing())
-                    {
-                        LogError("no value returned from request_uri");
-                        return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestUri, "no value returned from request_uri"));
-                    }
-
-                    jwtRequest = jwt;
-                }
-            }
-            else if (jwtRequestUri.IsPresent())
-            {
-                LogError("request_uri present but config prohibits");
-                return (false, Invalid(OidcConstants.AuthorizeErrors.RequestUriNotSupported));
-            }
-
-            // check length restrictions
-            if (jwtRequest.IsPresent())
-            {
-                if (jwtRequest.Length >= _options.InputLengthRestrictions.Jwt)
-                {
-                    LogError("request value is too long");
-                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid request value"));
-                }
-            }
-
-            _validatedRequest.RequestObject = jwtRequest;
-            return (true, null);
-        }
-
         private async Task<(bool Success, BackchannelAuthenticationRequestValidationResult ErrorResult)> TryValidateRequestObjectAsync()
         {
             //////////////////////////////////////////////////////////
@@ -488,7 +444,7 @@ namespace Duende.IdentityServer.Validation
                 });
                 if (jwtRequestValidationResult.IsError)
                 {
-                    LogError("request JWT validation failure, error: {error}", jwtRequestValidationResult.Error);
+                    LogError("request JWT validation failure", jwtRequestValidationResult.Error);
                     return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid JWT request"));
                 }
 
@@ -496,7 +452,7 @@ namespace Duende.IdentityServer.Validation
                 var payloadClientId = jwtRequestValidationResult.Payload.SingleOrDefault(x => x.Type == JwtClaimTypes.ClientId)?.Value;
                 if (payloadClientId.IsPresent() && _validatedRequest.Client.ClientId != payloadClientId)
                 {
-                    LogError("client_id found in the JWT request object does not match client_id used to authenticate {@details}", new { invalidClientId = payloadClientId, clientId = _validatedRequest.Client.ClientId });
+                    LogError("client_id found in the JWT request object does not match client_id used to authenticate", new { invalidClientId = payloadClientId, clientId = _validatedRequest.Client.ClientId });
                     return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid client_id in JWT request"));
                 }
 
