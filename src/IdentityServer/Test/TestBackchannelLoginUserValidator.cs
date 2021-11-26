@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 user = _testUserStore.FindBySubjectId(userValidatorContext.IdTokenHintClaims.SingleOrDefault(x => x.Type == JwtClaimTypes.Subject)?.Value);
             }
 
-            if (user != null)
+            if (user != null && user.IsActive)
             {
                 var claims = new List<Claim>
                 {
