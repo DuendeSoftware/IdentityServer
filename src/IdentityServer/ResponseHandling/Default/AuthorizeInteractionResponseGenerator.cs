@@ -203,7 +203,7 @@ namespace Duende.IdentityServer.ResponseHandling
             if (request.MaxAge.HasValue)
             {
                 var authTime = request.Subject.GetAuthenticationTime();
-                if (Clock.UtcNow > authTime.AddSeconds(request.MaxAge.Value))
+                if (Clock.UtcNow.UtcDateTime > authTime.AddSeconds(request.MaxAge.Value))
                 {
                     Logger.LogInformation("Showing login: Requested MaxAge exceeded.");
 

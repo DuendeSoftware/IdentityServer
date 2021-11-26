@@ -67,7 +67,7 @@ namespace Duende.IdentityServer.Validation
             }
 
             // validate lifetime
-            if (request.CreationTime.AddSeconds(request.Lifetime) < _systemClock.UtcNow)
+            if (request.CreationTime.AddSeconds(request.Lifetime) < _systemClock.UtcNow.UtcDateTime)
             {
                 _logger.LogError("Expired authentication request id");
                 context.Result = new TokenRequestValidationResult(context.Request, OidcConstants.TokenErrors.ExpiredToken);

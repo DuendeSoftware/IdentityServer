@@ -637,7 +637,7 @@ namespace Duende.IdentityServer.Services.KeyManagement
                 return false;
             }
 
-            var now = _clock.UtcNow;
+            var now = _clock.UtcNow.UtcDateTime;
 
             // newly created key check
             var start = key.Created;
