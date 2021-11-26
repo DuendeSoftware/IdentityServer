@@ -155,8 +155,7 @@ namespace Duende.IdentityServer.ResponseHandling
                 
                 if (Options.Endpoints.EnableBackchannelAuthenticationEndpoint)
                 {
-                    // TODO: CIBA constant
-                    entries.Add("backchannel_authentication_endpoint", baseUrl + Constants.ProtocolRoutePaths.BackchannelAuthentication);
+                    entries.Add(OidcConstants.Discovery.BackchannelAuthenticationEndpoint, baseUrl + Constants.ProtocolRoutePaths.BackchannelAuthentication);
                 }
 
                 if (Options.MutualTls.Enabled)
@@ -364,9 +363,9 @@ namespace Duende.IdentityServer.ResponseHandling
 
             if (Options.Endpoints.EnableBackchannelAuthenticationEndpoint)
             {
-                // TODO: CIBA constant
-                entries.Add("backchannel_token_delivery_modes_supported", new[] { "poll" });
-                entries.Add("backchannel_user_code_parameter_supported", true);
+                entries.Add(OidcConstants.Discovery.BackchannelTokenDeliveryModesSupported, 
+                    new[] { OidcConstants.BackchannelTokenDeliveryModes.Poll });
+                entries.Add(OidcConstants.Discovery.BackchannelUserCodeParameterSupported, true);
             }
 
             // custom entries

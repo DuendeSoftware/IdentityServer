@@ -14,9 +14,9 @@ namespace Duende.IdentityServer.Models
     public class BackChannelAuthenticationRequest
     {
         /// <summary>
-        /// The database identifier for this request.
+        /// The identifier for this request in the store.
         /// </summary>
-        public string Id { get; set; }
+        public string InternalId { get; set; }
 
         /// <summary>
         /// Gets or sets the creation time.
@@ -54,6 +54,16 @@ namespace Duende.IdentityServer.Models
         public ICollection<string> AuthenticationContextReferenceClasses { get; set; }
 
         /// <summary>
+        /// Gets or sets the tenant.
+        /// </summary>
+        public string Tenant { get; set; }
+
+        /// <summary>
+        /// Gets or sets the idp.
+        /// </summary>
+        public string IdP { get; set; }
+
+        /// <summary>
         /// Gets or sets the binding message.
         /// </summary>
         public string BindingMessage { get; set; }
@@ -78,7 +88,5 @@ namespace Duende.IdentityServer.Models
         /// Gets the description the user assigned to the client being authorized.
         /// </summary>
         public string Description { get; set; }
-        
-        // todo: CIBA maybe we want to add session claims? or do we just update the Subject above?
     }
 }

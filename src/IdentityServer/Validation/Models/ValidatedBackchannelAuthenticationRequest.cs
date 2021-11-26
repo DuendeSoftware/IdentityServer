@@ -3,6 +3,7 @@
 
 
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Duende.IdentityServer.Validation
 {
@@ -27,6 +28,16 @@ namespace Duende.IdentityServer.Validation
         public ICollection<string> AuthenticationContextReferenceClasses { get; set; }
 
         /// <summary>
+        /// Gets or sets the tenant.
+        /// </summary>
+        public string Tenant { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the idp.
+        /// </summary>
+        public string IdP { get; set; }
+
+        /// <summary>
         /// Gets or sets the login hint token.
         /// </summary>
         public string LoginHintToken { get; set; }
@@ -35,6 +46,11 @@ namespace Duende.IdentityServer.Validation
         /// Gets or sets the id token hint.
         /// </summary>
         public string IdTokenHint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the validated claims from the id token hint.
+        /// </summary>
+        public IEnumerable<Claim> IdTokenHintClaims { get; set; }
 
         /// <summary>
         /// Gets or sets the login hint.
@@ -55,5 +71,15 @@ namespace Duende.IdentityServer.Validation
         /// Gets or sets the requested expiry if present, otherwise the client configured expiry.
         /// </summary>
         public int Expiry { get; set; }
-   }
+
+        /// <summary>
+        /// Gets or sets the validated contents of the request object (if present)
+        /// </summary>
+        public IEnumerable<Claim> RequestObjectValues { get; set; } = new List<Claim>();
+
+        /// <summary>
+        /// Gets or sets the request object (either passed by value or retrieved by reference)
+        /// </summary>
+        public string RequestObject { get; set; }
+    }
 }

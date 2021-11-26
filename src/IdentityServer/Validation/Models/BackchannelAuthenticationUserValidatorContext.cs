@@ -1,6 +1,10 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Models;
+using System.Collections.Generic;
+using System.Security.Claims;
+
 namespace Duende.IdentityServer.Validation
 {
     /// <summary>
@@ -8,7 +12,10 @@ namespace Duende.IdentityServer.Validation
     /// </summary>
     public class BackchannelAuthenticationUserValidatorContext
     {
-        // TODO: ciba add client
+        /// <summary>
+        /// Gets or sets the client.
+        /// </summary>
+        public Client Client { get; set; }
 
         /// <summary>
         /// Gets or sets the login hint token.
@@ -20,7 +27,10 @@ namespace Duende.IdentityServer.Validation
         /// </summary>
         public string IdTokenHint { get; set; }
 
-        // TODO: add IdTokenHintPrincipal pre-validated or just result/response from token validator?
+        /// <summary>
+        /// Gets or sets the validated claims from the id token hint.
+        /// </summary>
+        public IEnumerable<Claim> IdTokenHintClaims { get; set; }
 
         /// <summary>
         /// Gets or sets the login hint.

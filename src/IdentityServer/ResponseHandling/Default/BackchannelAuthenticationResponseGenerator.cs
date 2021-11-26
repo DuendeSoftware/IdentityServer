@@ -84,6 +84,8 @@ namespace Duende.IdentityServer.ResponseHandling
                 Subject = validationResult.ValidatedRequest.Subject,
                 Lifetime = validationResult.ValidatedRequest.Expiry,
                 AuthenticationContextReferenceClasses = validationResult.ValidatedRequest.AuthenticationContextReferenceClasses,
+                Tenant = validationResult.ValidatedRequest.Tenant,
+                IdP = validationResult.ValidatedRequest.IdP,
                 BindingMessage = validationResult.ValidatedRequest.BindingMessage,
             };
 
@@ -99,7 +101,7 @@ namespace Duende.IdentityServer.ResponseHandling
 
             await UserLoginService.SendLoginRequestAsync(new BackchannelUserLoginRequest
             {
-                Id = request.Id,
+                InternalId = request.InternalId,
                 Subject = validationResult.ValidatedRequest.Subject,
                 Client = validationResult.ValidatedRequest.Client,
                 ValidatedResources = validationResult.ValidatedRequest.ValidatedResources,

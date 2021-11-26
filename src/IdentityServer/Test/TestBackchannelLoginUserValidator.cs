@@ -5,6 +5,7 @@ using Duende.IdentityServer.Test;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -30,8 +31,18 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             var result = new BackchannelAuthenticationUserValidatonResult();
 
-            var user = _testUserStore.FindByUsername(userValidatorContext.LoginHint);
-            if (user != null)
+            TestUser user = default;
+
+            if (userValidatorContext.LoginHint != null)
+            {
+                user = _testUserStore.FindByUsername(userValidatorContext.LoginHint);
+            }
+            else if (userValidatorContext.IdTokenHintClaims != null)
+            {
+                user = _testUserStore.FindBySubjectId(userValidatorContext.IdTokenHintClaims.SingleOrDefault(x => x.Type == JwtClaimTypes.Subject)?.Value);
+            }
+
+            if (user != null && user.IsActive)
             {
                 var claims = new List<Claim>
                 {

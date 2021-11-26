@@ -174,7 +174,7 @@ namespace Duende.IdentityServer.Validation
                     return await RunValidationAsync(ValidateRefreshTokenRequestAsync, parameters);
                 case OidcConstants.GrantTypes.DeviceCode:
                     return await RunValidationAsync(ValidateDeviceCodeRequestAsync, parameters);
-                case "urn:openid:params:grant-type:ciba": // TODO: CIBA 
+                case OidcConstants.GrantTypes.Ciba:
                     return await RunValidationAsync(ValidateCibaRequestRequestAsync, parameters);
                 default:
                     return await RunValidationAsync(ValidateExtensionGrantRequestAsync, parameters);
@@ -717,12 +717,10 @@ namespace Duende.IdentityServer.Validation
         {
             _logger.LogDebug("Start validation of CIBA request");
 
-            // TODO: CIBA constants this method
-
             /////////////////////////////////////////////
             // check if client is authorized for grant type
             /////////////////////////////////////////////
-            if (!_validatedRequest.Client.AllowedGrantTypes.ToList().Contains("urn:openid:params:grant-type:ciba"))
+            if (!_validatedRequest.Client.AllowedGrantTypes.ToList().Contains(OidcConstants.GrantTypes.Ciba))
             {
                 LogError("Client not authorized for CIBA flow");
                 return Invalid(OidcConstants.TokenErrors.UnauthorizedClient);
@@ -731,7 +729,7 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////
             // validate authentication request id parameter
             /////////////////////////////////////////////
-            var authRequestId = parameters.Get("auth_req_id");
+            var authRequestId = parameters.Get("auth_req_id"); // TODO: ciba constant
             if (authRequestId.IsMissing())
             {
                 LogError("Authentication request id is missing");

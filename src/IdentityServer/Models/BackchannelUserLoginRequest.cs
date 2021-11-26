@@ -14,9 +14,9 @@ namespace Duende.IdentityServer.Models
     public class BackchannelUserLoginRequest
     {
         /// <summary>
-        /// Gets or sets the id of the request.
+        /// Gets or sets the id of the request in the store.
         /// </summary>
-        public string Id { get; set; }
+        public string InternalId { get; set; }
         
         /// <summary>
         /// Gets or sets the subject.

@@ -98,7 +98,7 @@ namespace Duende.IdentityServer.ResponseHandling
                     return await ProcessRefreshTokenRequestAsync(request);
                 case OidcConstants.GrantTypes.DeviceCode:
                     return await ProcessDeviceCodeRequestAsync(request);
-                case "urn:openid:params:grant-type:ciba": // TODO: CIBA 
+                case OidcConstants.GrantTypes.Ciba:
                     return await ProcessCibaRequestAsync(request);
                 default:
                     return await ProcessExtensionGrantRequestAsync(request);
