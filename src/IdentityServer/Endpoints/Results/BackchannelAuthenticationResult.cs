@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
 using static Duende.IdentityServer.Constants;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results
 {
@@ -29,10 +30,10 @@ namespace Duende.IdentityServer.Endpoints.Results
             {
                 switch (Response.Error)
                 {
-                    case BackchannelAuthenticationErrors.InvalidClient:
+                    case OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient:
                         context.Response.StatusCode = 401;
                         break;
-                    case BackchannelAuthenticationErrors.AccessDenied:
+                    case OidcConstants.BackchannelAuthenticationRequestErrors.AccessDenied:
                         context.Response.StatusCode = 403;
                         break;
                     default:

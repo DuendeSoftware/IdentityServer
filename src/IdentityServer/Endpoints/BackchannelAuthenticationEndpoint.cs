@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using static Duende.IdentityServer.Constants;
 using Duende.IdentityServer.Events;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints
 {
@@ -49,7 +50,7 @@ namespace Duende.IdentityServer.Endpoints
             if (!HttpMethods.IsPost(context.Request.Method) || !context.Request.HasApplicationFormContentType())
             {
                 _logger.LogWarning("Invalid HTTP request for backchannel authentication endpoint");
-                return Error(BackchannelAuthenticationErrors.InvalidRequest);
+                return Error(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest);
             }
 
             return await ProcessTokenRequestAsync(context);
@@ -64,7 +65,7 @@ namespace Duende.IdentityServer.Endpoints
 
             if (clientResult.Client == null)
             {
-                return Error(BackchannelAuthenticationErrors.InvalidClient);
+                return Error(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient);
             }
 
             // validate request

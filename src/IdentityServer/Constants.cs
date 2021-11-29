@@ -340,21 +340,5 @@ namespace Duende.IdentityServer
             public const string P384 = "1.3.132.0.34";
             public const string P521 = "1.3.132.0.35";
         }
-
-        // todo: ciba constants
-        public static class BackchannelAuthenticationErrors
-        {
-            public const string InvalidRequest = "invalid_request";
-            public const string InvalidScope = "invalid_scope";
-            public const string ExpiredLoginHintToken = "expired_login_hint_token";
-            public const string UnknownUserId = "unknown_user_id";
-            public const string UnauthorizedClient = "unauthorized_client";
-            public const string MissingUserCode = "missing_user_code";
-            public const string InvalidUserCode = "invalid_user_code";
-            public const string InvalidBindingMessage = "invalid_binding_message";
-            public const string InvalidClient = "invalid_client";
-            public const string AccessDenied = "access_denied";
-            public const string InvalidTarget = "invalid_target";
-        }
     }
 }
