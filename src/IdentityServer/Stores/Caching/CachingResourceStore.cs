@@ -75,25 +75,25 @@ namespace Duende.IdentityServer.Stores
         /// <inheritdoc/>
         public async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
         {
-            return await FindItemsAsync(apiResourceNames, _apiResourceCache, async names => new Resources(null, await _inner.FindApiResourcesByNameAsync(names), null), x => x.ApiResources, x => x.Name);
+            return await FindItemsAsync(apiResourceNames, _apiResourceCache, async names => new Resources(null, await _inner.FindApiResourcesByNameAsync(names), null), x => x.ApiResources, x => x.Name, "ApiResources-");
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
         {
-            return await FindItemsAsync(scopeNames, _identityCache, async names => new Resources(await _inner.FindIdentityResourcesByScopeNameAsync(names), null, null), x => x.IdentityResources, x => x.Name);
+            return await FindItemsAsync(scopeNames, _identityCache, async names => new Resources(await _inner.FindIdentityResourcesByScopeNameAsync(names), null, null), x => x.IdentityResources, x => x.Name, "IdentityResources-");
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
         {
-            return await FindItemsAsync(scopeNames, _apiResourceCache, async names => new Resources(null, await _inner.FindApiResourcesByScopeNameAsync(names), null), x => x.ApiResources, x => x.Name, "ApiResourcesByScopeNames-");
+            return await FindItemsAsync(scopeNames, _apiResourceCache, async names => new Resources(null, await _inner.FindApiResourcesByScopeNameAsync(names), null), x => x.ApiResources, x => x.Name, "ApiResourcesByScopeNames-", "ApiResourcesByScopeNames-");
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
         {
-            return await FindItemsAsync(scopeNames, _apiScopeCache, async names => new Resources(null, null, await _inner.FindApiScopesByNameAsync(names)), x => x.ApiScopes, x => x.Name);
+            return await FindItemsAsync(scopeNames, _apiScopeCache, async names => new Resources(null, null, await _inner.FindApiScopesByNameAsync(names)), x => x.ApiScopes, x => x.Name, "ApiScopes-");
         }
 
 
@@ -103,6 +103,7 @@ namespace Duende.IdentityServer.Stores
             Func<IEnumerable<string>, Task<Resources>> getResourcesFunc,
             Func<Resources, IEnumerable<TItem>> getFromResourcesFunc,
             Func<TItem, string> getNameFunc,
+            string allCachePrefix,
             string keyPrefix = null
         )
             where TItem : class
@@ -132,11 +133,11 @@ namespace Duende.IdentityServer.Stores
                 // as the cache key we'll derive a key from the remaining names, and then hash it to not confuse admins with a meaningful name.
 
                 // create a key based on the names we're about to lookup
-                var itemsKey = keyPrefix + GetKey(uncachedNames);
+                var allCacheItemsKey = allCachePrefix + keyPrefix + GetKey(uncachedNames);
                 // expire this entry much faster than the normal items
                 var itemsDuration = _options.Caching.ResourceStoreExpiration / 20;
                 // do the cache/DB lookup
-                var resources = await _allCache.GetOrAddAsync(itemsKey, itemsDuration, async () => await getResourcesFunc(uncachedNames));
+                var resources = await _allCache.GetOrAddAsync(allCacheItemsKey, itemsDuration, async () => await getResourcesFunc(uncachedNames));
                 
                 // get the specific items from the Resources object
                 var uncachedItems = getFromResourcesFunc(resources);
