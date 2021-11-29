@@ -65,7 +65,7 @@ namespace Duende.IdentityServer.Validation
             if (!clientValidationResult.Client.AllowedGrantTypes.Contains(OidcConstants.GrantTypes.Ciba))
             {
                 LogError("Client {clientId} not configured with the CIBA grant type.", clientValidationResult.Client.ClientId);
-                return Invalid(BackchannelAuthenticationErrors.UnauthorizedClient, "Unauthorized client");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnauthorizedClient, "Unauthorized client");
             }
 
             _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
@@ -100,7 +100,7 @@ namespace Duende.IdentityServer.Validation
                 !_validatedRequest.RequestObjectValues.Any())
             {
                 LogError("Client is configured for RequireRequestObject but none present");
-                return Invalid(BackchannelAuthenticationErrors.InvalidRequest);
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest);
             }
 
             //////////////////////////////////////////////////////////
@@ -110,13 +110,13 @@ namespace Duende.IdentityServer.Validation
             if (scope.IsMissing())
             {
                 LogError("Missing scope");
-                return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Missing scope");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Missing scope");
             }
 
             if (scope.Length > _options.InputLengthRestrictions.Scope)
             {
                 LogError("scopes too long.");
-                return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid scope");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid scope");
             }
 
             _validatedRequest.RequestedScopes = scope.FromSpaceSeparatedString().Distinct().ToList();
@@ -127,7 +127,7 @@ namespace Duende.IdentityServer.Validation
             if (!_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
             {
                 LogError("openid scope missing.");
-                return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Missing the openid scope");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Missing the openid scope");
             }
 
             //////////////////////////////////////////////////////////
@@ -137,12 +137,12 @@ namespace Duende.IdentityServer.Validation
 
             if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
             {
-                return Invalid(BackchannelAuthenticationErrors.InvalidTarget, "Resource indicator maximum length exceeded");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Resource indicator maximum length exceeded");
             }
 
             if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
             {
-                return Invalid(BackchannelAuthenticationErrors.InvalidTarget, "Invalid resource indicator format");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Invalid resource indicator format");
             }
 
             _validatedRequest.RequestedResourceIndiators = resourceIndicators?.ToList();
@@ -162,12 +162,12 @@ namespace Duende.IdentityServer.Validation
             {
                 if (validatedResources.InvalidResourceIndicators.Any())
                 {
-                    return Invalid(BackchannelAuthenticationErrors.InvalidTarget, "Invalid resource indicator");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Invalid resource indicator");
                 }
 
                 if (validatedResources.InvalidScopes.Any())
                 {
-                    return Invalid(BackchannelAuthenticationErrors.InvalidScope, "Invalid scope");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidScope, "Invalid scope");
                 }
             }
 
@@ -187,7 +187,7 @@ namespace Duende.IdentityServer.Validation
                 if (requestedExpiry.Length > 9)
                 {
                     LogError("requested_expiry too long");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid requested_expiry");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid requested_expiry");
                 }
 
                 if (Int32.TryParse(requestedExpiry, out var expiryValue) &&
@@ -199,7 +199,7 @@ namespace Duende.IdentityServer.Validation
                 else
                 {
                     LogError("requested_expiry value out of valid range");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid requested_expiry");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid requested_expiry");
                 }
             }
             else
@@ -217,7 +217,7 @@ namespace Duende.IdentityServer.Validation
                 if (acrValues.Length > _options.InputLengthRestrictions.AcrValues)
                 {
                     LogError("Acr values too long");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid acr_values");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid acr_values");
                 }
 
                 _validatedRequest.AuthenticationContextReferenceClasses = acrValues.FromSpaceSeparatedString().Distinct().ToList();
@@ -270,12 +270,12 @@ namespace Duende.IdentityServer.Validation
             if (loginHintCount == 0)
             {
                 LogError("Missing login_hint_token, id_token_hint, or login_hint");
-                return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Missing login_hint_token, id_token_hint, or login_hint");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Missing login_hint_token, id_token_hint, or login_hint");
             }
             else if (loginHintCount > 1)
             {
                 LogError("Too many of login_hint_token, id_token_hint, or login_hint");
-                return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Too many of login_hint_token, id_token_hint, or login_hint");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Too many of login_hint_token, id_token_hint, or login_hint");
             }
 
             //////////////////////////////////////////////////////////
@@ -286,7 +286,7 @@ namespace Duende.IdentityServer.Validation
                 if (loginHint.Length > _options.InputLengthRestrictions.LoginHint)
                 {
                     LogError("Login hint too long");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid login_hint");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid login_hint");
                 }
 
                 _validatedRequest.LoginHint = loginHint;
@@ -300,7 +300,7 @@ namespace Duende.IdentityServer.Validation
                 if (loginHintToken.Length > _options.InputLengthRestrictions.LoginHintToken)
                 {
                     LogError("Login hint token too long");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid login_hint_token");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid login_hint_token");
                 }
 
                 _validatedRequest.LoginHintToken = loginHintToken;
@@ -314,14 +314,14 @@ namespace Duende.IdentityServer.Validation
                 if (idTokenHint.Length > _options.InputLengthRestrictions.IdTokenHint)
                 {
                     LogError("id token hint too long");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid id_token_hint");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid id_token_hint");
                 }
 
                 var idTokenHintValidationResult = await _tokenValidator.ValidateIdentityTokenAsync(idTokenHint, _validatedRequest.ClientId, false);
                 if (idTokenHintValidationResult.IsError)
                 {
                     LogError("id token hint failed to validate: " + idTokenHintValidationResult.Error, idTokenHintValidationResult.ErrorDescription);
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid id_token_hint");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid id_token_hint");
                 }
 
                 _validatedRequest.IdTokenHint = idTokenHint;
@@ -337,7 +337,7 @@ namespace Duende.IdentityServer.Validation
                 if (userCode.Length > _options.InputLengthRestrictions.UserCode)
                 {
                     LogError("user_code too long");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidRequest, "Invalid user_code");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid user_code");
                 }
 
                 _validatedRequest.UserCode = userCode;
@@ -353,7 +353,7 @@ namespace Duende.IdentityServer.Validation
                 if (bindingMessage.Length > _options.InputLengthRestrictions.BindingMessage)
                 {
                     LogError("binding_message too long");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidBindingMessage, "Invalid binding_message");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidBindingMessage, "Invalid binding_message");
                 }
 
                 _validatedRequest.BindingMessage = bindingMessage;
@@ -375,51 +375,51 @@ namespace Duende.IdentityServer.Validation
 
             if (userResult.IsError)
             {
-                if (userResult.Error == BackchannelAuthenticationErrors.AccessDenied)
+                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.AccessDenied)
                 {
                     LogError("Request was denied access for that user");
-                    return Invalid(BackchannelAuthenticationErrors.AccessDenied, userResult.ErrorDescription);
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.AccessDenied, userResult.ErrorDescription);
                 }
-                if (userResult.Error == BackchannelAuthenticationErrors.ExpiredLoginHintToken)
+                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.ExpiredLoginHintToken)
                 {
                     LogError("Expired login_hint_token");
-                    return Invalid(BackchannelAuthenticationErrors.ExpiredLoginHintToken, userResult.ErrorDescription ?? "Expired login_hint_token");
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.ExpiredLoginHintToken, userResult.ErrorDescription ?? "Expired login_hint_token");
                 }
-                if (userResult.Error == BackchannelAuthenticationErrors.UnknownUserId)
+                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId)
                 {
                     LogError("Unknown user id");
-                    return Invalid(BackchannelAuthenticationErrors.UnknownUserId, userResult.ErrorDescription);
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId, userResult.ErrorDescription);
                 }
-                if (userResult.Error == BackchannelAuthenticationErrors.MissingUserCode)
+                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.MissingUserCode)
                 {
                     LogError("Missing user_code");
-                    return Invalid(BackchannelAuthenticationErrors.MissingUserCode, userResult.ErrorDescription);
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.MissingUserCode, userResult.ErrorDescription);
                 }
-                if (userResult.Error == BackchannelAuthenticationErrors.InvalidUserCode)
+                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.InvalidUserCode)
                 {
                     LogError("Invalid user_code");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidUserCode, userResult.ErrorDescription);
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidUserCode, userResult.ErrorDescription);
                 }
-                if (userResult.Error == BackchannelAuthenticationErrors.InvalidBindingMessage)
+                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.InvalidBindingMessage)
                 {
                     LogError("Invalid binding_message");
-                    return Invalid(BackchannelAuthenticationErrors.InvalidBindingMessage, userResult.ErrorDescription);
+                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidBindingMessage, userResult.ErrorDescription);
                 }
 
                 LogError("Unexpected error from IBackchannelAuthenticationUserValidator: {error}", userResult.Error);
-                return Invalid(BackchannelAuthenticationErrors.UnknownUserId);
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId);
             }
 
             if (userResult.IsError || userResult.Subject == null || !userResult.Subject.HasClaim(x => x.Type == JwtClaimTypes.Subject))
             {
                 LogError("No subject or subject id returned from IBackchannelAuthenticationUserValidator");
-                return Invalid(BackchannelAuthenticationErrors.UnknownUserId);
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId);
             }
 
             if (userResult.Subject == null || !userResult.Subject.HasClaim(x => x.Type == JwtClaimTypes.Subject))
             {
                 LogError("No subject or subject id returned from IBackchannelAuthenticationUserValidator");
-                return Invalid(BackchannelAuthenticationErrors.UnknownUserId);
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId);
             }
 
             _validatedRequest.Subject = userResult.Subject;

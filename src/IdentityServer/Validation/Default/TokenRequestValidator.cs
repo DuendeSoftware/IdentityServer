@@ -729,7 +729,7 @@ namespace Duende.IdentityServer.Validation
             /////////////////////////////////////////////
             // validate authentication request id parameter
             /////////////////////////////////////////////
-            var authRequestId = parameters.Get("auth_req_id"); // TODO: ciba constant
+            var authRequestId = parameters.Get(OidcConstants.TokenRequest.AuthenticationRequestId);
             if (authRequestId.IsMissing())
             {
                 LogError("Authentication request id is missing");
