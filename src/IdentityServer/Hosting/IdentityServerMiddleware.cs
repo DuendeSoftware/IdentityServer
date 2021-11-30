@@ -92,6 +92,10 @@ namespace Duende.IdentityServer.Hosting
                     return;
                 }
             }
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogDebug(ex, "Handled TaskCanceledException. Call stack for informational purposes.");
+            }
             catch (Exception ex)
             {
                 await events.RaiseAsync(new UnhandledExceptionEvent(ex));
