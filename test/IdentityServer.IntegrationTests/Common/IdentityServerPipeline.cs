@@ -39,6 +39,7 @@ namespace IntegrationTests.Common
         public const string DiscoveryEndpoint = BaseUrl + "/.well-known/openid-configuration";
         public const string DiscoveryKeysEndpoint = BaseUrl + "/.well-known/openid-configuration/jwks";
         public const string AuthorizeEndpoint = BaseUrl + "/connect/authorize";
+        public const string BackchannelAuthenticationEndpoint = BaseUrl + "/connect/ciba";
         public const string TokenEndpoint = BaseUrl + "/connect/token";
         public const string RevocationEndpoint = BaseUrl + "/connect/revocation";
         public const string UserInfoEndpoint = BaseUrl + "/connect/userinfo";

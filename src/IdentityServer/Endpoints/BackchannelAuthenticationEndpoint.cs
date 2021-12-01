@@ -53,10 +53,10 @@ namespace Duende.IdentityServer.Endpoints
                 return Error(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest);
             }
 
-            return await ProcessTokenRequestAsync(context);
+            return await ProcessAuthenticationRequestAsync(context);
         }
 
-        private async Task<IEndpointResult> ProcessTokenRequestAsync(HttpContext context)
+        private async Task<IEndpointResult> ProcessAuthenticationRequestAsync(HttpContext context)
         {
             _logger.LogDebug("Start backchannel authentication request.");
 
