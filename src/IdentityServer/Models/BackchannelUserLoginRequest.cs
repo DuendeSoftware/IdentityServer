@@ -34,6 +34,16 @@ namespace Duende.IdentityServer.Models
         public IEnumerable<string> AuthenticationContextReferenceClasses { get; set; }
 
         /// <summary>
+        /// Gets or sets the tenant passed in the acr_values.
+        /// </summary>
+        public string Tenant { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the idp passed in the acr_values.
+        /// </summary>
+        public string IdP { get; set; }
+
+        /// <summary>
         /// Gets or sets the resource indicator.
         /// </summary>
         public IEnumerable<string> RequestedResourceIndicators { get; set; }
