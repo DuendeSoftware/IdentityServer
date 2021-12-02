@@ -152,21 +152,20 @@ namespace IntegrationTests.Endpoints.Token
 
 
             // user auth/consent
-            var requestStore = _mockPipeline.Resolve<IBackChannelAuthenticationRequestStore>();
-            var request = await requestStore.GetByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
-
-            request.Subject = 
-                new IdentityServerUser(_user.SubjectId) 
-                { 
+            var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
+            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId) 
+            {
+                ScopesValuesConsented = request.ValidatedResources.RawScopeValues,
+                Subject = new IdentityServerUser(_user.SubjectId)
+                {
                     AuthenticationTime = DateTime.UtcNow,
                     IdentityProvider = IdentityServerConstants.LocalIdentityProvider,
                 }
-                .CreatePrincipal();
-            request.AuthorizedScopes = request.RequestedScopes;
-            request.IsAuthorized = true;
-            await requestStore.UpdateByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId, request);
+                .CreatePrincipal()
+            });
 
-
+            
             // token request
             var values = JsonSerializer.Deserialize<Dictionary<string, object>>(await cibaResponse.Content.ReadAsStringAsync());
             var requestId = values["auth_req_id"].ToString();
@@ -260,19 +259,18 @@ namespace IntegrationTests.Endpoints.Token
 
 
             // user auth/consent
-            var requestStore = _mockPipeline.Resolve<IBackChannelAuthenticationRequestStore>();
-            var request = await requestStore.GetByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
-
-            request.Subject =
-                new IdentityServerUser(_user.SubjectId)
+            var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
+            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
+            {
+                ScopesValuesConsented = request.ValidatedResources.RawScopeValues,
+                Subject = new IdentityServerUser(_user.SubjectId)
                 {
                     AuthenticationTime = DateTime.UtcNow,
                     IdentityProvider = IdentityServerConstants.LocalIdentityProvider,
                 }
-                .CreatePrincipal();
-            request.AuthorizedScopes = request.RequestedScopes;
-            request.IsAuthorized = true;
-            await requestStore.UpdateByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId, request);
+                .CreatePrincipal()
+            });
 
 
             // token request
@@ -324,19 +322,18 @@ namespace IntegrationTests.Endpoints.Token
 
 
             // user auth/consent
-            var requestStore = _mockPipeline.Resolve<IBackChannelAuthenticationRequestStore>();
-            var request = await requestStore.GetByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
-
-            request.Subject =
-                new IdentityServerUser(_user.SubjectId)
+            var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
+            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
+            {
+                ScopesValuesConsented = request.ValidatedResources.RawScopeValues,
+                Subject = new IdentityServerUser(_user.SubjectId)
                 {
                     AuthenticationTime = DateTime.UtcNow,
                     IdentityProvider = IdentityServerConstants.LocalIdentityProvider,
                 }
-                .CreatePrincipal();
-            request.AuthorizedScopes = request.RequestedScopes;
-            request.IsAuthorized = true;
-            await requestStore.UpdateByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId, request);
+                .CreatePrincipal()
+            });
 
 
             // token request
@@ -388,18 +385,18 @@ namespace IntegrationTests.Endpoints.Token
 
 
             // user auth/consent
-            var requestStore = _mockPipeline.Resolve<IBackChannelAuthenticationRequestStore>();
-            var request = await requestStore.GetByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
-
-            request.Subject =
-                new IdentityServerUser(_user.SubjectId)
+            var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
+            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
+            {
+                //ScopesValuesConsented = request.ValidatedResources.RawScopeValues, // none to deny
+                Subject = new IdentityServerUser(_user.SubjectId)
                 {
                     AuthenticationTime = DateTime.UtcNow,
                     IdentityProvider = IdentityServerConstants.LocalIdentityProvider,
                 }
-                .CreatePrincipal();
-            request.IsAuthorized = true;
-            await requestStore.UpdateByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId, request);
+                .CreatePrincipal()
+            });
 
 
             // token request
@@ -451,19 +448,18 @@ namespace IntegrationTests.Endpoints.Token
 
 
             // user auth/consent
-            var requestStore = _mockPipeline.Resolve<IBackChannelAuthenticationRequestStore>();
-            var request = await requestStore.GetByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
-
-            request.Subject =
-                new IdentityServerUser(_user.SubjectId)
+            var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
+            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
+            {
+                ScopesValuesConsented = request.ValidatedResources.RawScopeValues,
+                Subject = new IdentityServerUser(_user.SubjectId)
                 {
                     AuthenticationTime = DateTime.UtcNow,
                     IdentityProvider = IdentityServerConstants.LocalIdentityProvider,
                 }
-                .CreatePrincipal();
-            request.AuthorizedScopes = request.RequestedScopes;
-            request.IsAuthorized = true;
-            await requestStore.UpdateByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId, request);
+                .CreatePrincipal()
+            });
 
 
             // token request
@@ -521,19 +517,18 @@ namespace IntegrationTests.Endpoints.Token
 
 
             // user auth/consent
-            var requestStore = _mockPipeline.Resolve<IBackChannelAuthenticationRequestStore>();
-            var request = await requestStore.GetByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
-
-            request.Subject =
-                new IdentityServerUser(_user.SubjectId)
+            var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
+            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
+            {
+                ScopesValuesConsented = request.ValidatedResources.RawScopeValues,
+                Subject = new IdentityServerUser(_user.SubjectId)
                 {
                     AuthenticationTime = DateTime.UtcNow,
                     IdentityProvider = IdentityServerConstants.LocalIdentityProvider,
                 }
-                .CreatePrincipal();
-            request.AuthorizedScopes = request.RequestedScopes;
-            request.IsAuthorized = true;
-            await requestStore.UpdateByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId, request);
+                .CreatePrincipal()
+            });
 
 
             // token request

@@ -7,7 +7,6 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
-using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -64,12 +63,12 @@ namespace IdentityServerHost.Pages.Ciba
                 return RedirectToPage("/Home/Error/Index");
             }
 
-            ConsentResponse grantedConsent = null;
+            CompleteBackchannelLoginRequest result = null;
 
             // user clicked 'no' - send back the standard 'access_denied' response
             if (Input?.Button == "no")
             {
-                grantedConsent = new ConsentResponse { Error = AuthorizationError.AccessDenied };
+                result = new CompleteBackchannelLoginRequest(Input.Id);
 
                 // emit event
                 await _events.RaiseAsync(new ConsentDeniedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues));
@@ -86,14 +85,14 @@ namespace IdentityServerHost.Pages.Ciba
                         scopes = scopes.Where(x => x != Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess);
                     }
 
-                    grantedConsent = new ConsentResponse
+                    result = new CompleteBackchannelLoginRequest(Input.Id)
                     {
                         ScopesValuesConsented = scopes.ToArray(),
                         Description = Input.Description
                     };
 
                     // emit event
-                    await _events.RaiseAsync(new ConsentGrantedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues, grantedConsent.ScopesValuesConsented, grantedConsent.RememberConsent));
+                    await _events.RaiseAsync(new ConsentGrantedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues, result.ScopesValuesConsented, false));
                 }
                 else
                 {
@@ -105,10 +104,10 @@ namespace IdentityServerHost.Pages.Ciba
                 ModelState.AddModelError("", ConsentOptions.InvalidSelectionErrorMessage);
             }
 
-            if (grantedConsent != null)
+            if (result != null)
             {
                 // communicate outcome of consent back to identityserver
-                await _interaction.CompleteRequestByIdAsync(Input.Id, grantedConsent);
+                await _interaction.CompleteLoginRequestAsync(result);
 
                 return RedirectToPage("/Ciba/All");
             }
