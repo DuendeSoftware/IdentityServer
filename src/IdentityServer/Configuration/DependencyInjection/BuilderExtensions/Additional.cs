@@ -515,7 +515,8 @@ namespace Microsoft.Extensions.DependencyInjection
            where T : class, IIdentityProviderStore
         {
             builder.Services.TryAddTransient(typeof(T));
-            builder.Services.AddTransient<IIdentityProviderStore, ValidatingIdentityProviderStore<T>>();
+            builder.Services.TryAddTransient(typeof(ValidatingIdentityProviderStore<T>));
+            builder.Services.AddTransientDecorator<IIdentityProviderStore, NonCachingIdentityProviderStore<ValidatingIdentityProviderStore<T>>>();
 
             return builder;
         }
