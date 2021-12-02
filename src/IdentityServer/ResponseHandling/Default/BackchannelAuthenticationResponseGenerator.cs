@@ -108,6 +108,8 @@ namespace Duende.IdentityServer.ResponseHandling
                 RequestedResourceIndicators = validationResult.ValidatedRequest.RequestedResourceIndiators,
                 BindingMessage = validationResult.ValidatedRequest.BindingMessage,
                 AuthenticationContextReferenceClasses = validationResult.ValidatedRequest.AuthenticationContextReferenceClasses,
+                Tenant = validationResult.ValidatedRequest.Tenant,
+                IdP = validationResult.ValidatedRequest.IdP,
             });
 
             return response;

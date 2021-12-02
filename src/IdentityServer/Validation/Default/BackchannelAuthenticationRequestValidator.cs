@@ -49,6 +49,8 @@ namespace Duende.IdentityServer.Validation
 
         public async Task<BackchannelAuthenticationRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
         {
+            if (clientValidationResult == null) throw new ArgumentNullException(nameof(clientValidationResult));
+
             _logger.LogDebug("Start backchannel authentication request validation");
 
             _validatedRequest = new ValidatedBackchannelAuthenticationRequest
@@ -56,8 +58,7 @@ namespace Duende.IdentityServer.Validation
                 Raw = parameters ?? throw new ArgumentNullException(nameof(parameters)),
                 Options = _options
             };
-
-            if (clientValidationResult == null) throw new ArgumentNullException(nameof(clientValidationResult));
+            _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
 
             //////////////////////////////////////////////////////////
             // Client must be configured for CIBA
@@ -67,8 +68,6 @@ namespace Duende.IdentityServer.Validation
                 LogError("Client {clientId} not configured with the CIBA grant type.", clientValidationResult.Client.ClientId);
                 return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnauthorizedClient, "Unauthorized client");
             }
-
-            _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
 
             //////////////////////////////////////////////////////////
             // load request object
@@ -343,7 +342,6 @@ namespace Duende.IdentityServer.Validation
                 _validatedRequest.UserCode = userCode;
             }
 
-
             //////////////////////////////////////////////////////////
             // check binding_message
             //////////////////////////////////////////////////////////
@@ -407,12 +405,6 @@ namespace Duende.IdentityServer.Validation
                 }
 
                 LogError("Unexpected error from IBackchannelAuthenticationUserValidator: {error}", userResult.Error);
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId);
-            }
-
-            if (userResult.IsError || userResult.Subject == null || !userResult.Subject.HasClaim(x => x.Type == JwtClaimTypes.Subject))
-            {
-                LogError("No subject or subject id returned from IBackchannelAuthenticationUserValidator");
                 return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId);
             }
 

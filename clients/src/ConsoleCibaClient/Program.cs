@@ -31,67 +31,65 @@ namespace ConsoleCibaClient
             await CallServiceAsync(tokenResponse.AccessToken);
         }
 
-        static async Task<BackchannelLoginResponse> RequestBackchannelLoginAsync()
+        static async Task<BackchannelAuthenticationResponse> RequestBackchannelLoginAsync()
         {
             var disco = await _cache.GetAsync();
             if (disco.IsError) throw new Exception(disco.Error);
 
-            var cibaEp = disco.TryGetString("backchannel_authentication_endpoint");
-
+            var cibaEp = disco.TryGetString(OidcConstants.Discovery.BackchannelAuthenticationEndpoint);
+            
             var username = "alice";
             var bindingMessage = Guid.NewGuid().ToString("N").Substring(0, 10);
 
-            var client = new HttpClient();
-
-
-            var values = new Dictionary<string, string>
+            var req = new BackchannelAuthenticationRequest()
             {
-                {"scope", "openid profile email resource1.scope1 offline_access"},
-                {"login_hint", username},
-                //{"id_token_hint", "eyJhbGciOiJSUzI1NiIsImtpZCI6IkU0QjMyOTQxNTUwMUJGOTFCODUwNDA2QTg3QURBNTdGIiwidHlwIjoiSldUIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDAxIiwibmJmIjoxNjM3Nzc2Mzk2LCJpYXQiOjE2Mzc3NzYzOTYsImV4cCI6MTYzNzc3NjY5NiwiYXVkIjoiY2liYSIsImFtciI6WyJwd2QiXSwiYXRfaGFzaCI6IkptcnZwdUZXOXRHUy1NeXBPOXFjalEiLCJzaWQiOiI3NEE3MUM5QjU2NUE1OEQ2QzNEQTczQTJBRTc1NDlBMiIsInN1YiI6IjgxODcyNyIsImF1dGhfdGltZSI6MTYzNzc3NjM4MywiaWRwIjoibG9jYWwifQ.v9ngldJjAhvxwSAEgpXPa35yvXliGzxvyV78RFbibyHsmo7_rQUHI5SLoaXWcr7kpPLL6iwGzfuhifNo9Hz6pqK9XvsG1NTsYacTMlyEuiJlCCWAaiF0IVWxSakHzatY_MbuLLL6Udg_-YeFuQ50BEisVmcfKRkUASJffL0kGroS-uKpuhV1BaK6oMsSNPujhk7_LsUX6YqbagylMyKnsbWF05KV76B2KyIjtwa8QAbJyxLyOY_GZy3t2c58eqkBPhRsQukxhTGcdffwt_D7_MNS4-H0y9bNmTGbs72kIHurS1K1SBr29AfUMCh_XuPr2psQSFqCVXiWBK42mBf3TQ" },
-                {"binding_message", bindingMessage },
-            };
-            
-            var body = new Dictionary<string, string>
-            {
-                {"client_id", "ciba"},
-                {"client_secret", "secret"},
+                Address = cibaEp,
+                ClientId = "ciba",
+                ClientSecret = "secret",
+                Scope = "openid profile email resource1.scope1 offline_access",
+                //LoginHint = username,
+                IdTokenHint = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjkxODA1RkM0RjhBRDFBQkJEMjE0OTJFOUFBQ0Q3Njk2IiwidHlwIjoiSldUIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDAxIiwibmJmIjoxNjM4MzY4MjQ5LCJpYXQiOjE2MzgzNjgyNDksImV4cCI6MTYzODM2ODU0OSwiYXVkIjoiY2liYSIsImFtciI6WyJwd2QiXSwiYXRfaGFzaCI6IkpoU2N3eTJQNFhWOFA2WFphNGNIcmciLCJzaWQiOiI1NzAyRjUyMzNGRDU3NjBERkY5ODVFQjg3Q0E5MEUyNiIsInN1YiI6IjgxODcyNyIsImF1dGhfdGltZSI6MTYzODM2ODI0MiwiaWRwIjoibG9jYWwifQ.dfcdEQxy3GAYcVgciOp_3YD7Qlb3EA0WIWYiNZFGmGC6kQYyvlPSBow8R4UyL29gH3HDq-gOzBSfCp0zZKXXHQqNlpRIuiOEfhz0KfOaq7HpYCOXh58FrzacNxxlcJTrRXUykUROMBkO2mLSKrtILHyOivlBtW5gO2kUty5Z602WnD1n-WpLntqITYTCQboVr0GaANbtPtffw2381ayPeiV9U6S4ZPjVxCtqCt58kMNS4cXclZeVd7NL5AAbs6YrlUuJEwDTckbX9Bi6apKtc6-PuLh4YlntoI2yO3mACmlQW_E2fACsFW0cN7UyXTCkH2IpP2W35KGL7YQf76VU1A",
+                BindingMessage = bindingMessage,
+                RequestedExpiry = 200
             };
 
-            bool useRequestObject = true;
+            bool useRequestObject = false;
             if (useRequestObject)
             {
-                var requestObj = CreateRequestObject(values);
-                body.Add("request", requestObj);
-            }
-            else
-            {
-                foreach(var item in values)
+                req = new BackchannelAuthenticationRequest
                 {
-                    body.Add(item.Key, item.Value);
-                }
+                    Address = req.Address,
+                    ClientId = req.ClientId,
+                    ClientSecret = req.ClientSecret,
+                    RequestObject = CreateRequestObject(new Dictionary<string, string>
+                    {
+                        { OidcConstants.BackchannelAuthenticationRequest.Scope, req.Scope },
+                        { OidcConstants.BackchannelAuthenticationRequest.LoginHint, req.LoginHint },
+                        { OidcConstants.BackchannelAuthenticationRequest.IdTokenHint, req.IdTokenHint },
+                        { OidcConstants.BackchannelAuthenticationRequest.BindingMessage, req.BindingMessage },
+                    }),
+                };
             }
 
-            var response = await client.PostAsync(cibaEp, new FormUrlEncodedContent(body));
-            var json = await response.Content.ReadAsStringAsync();
-            var loginResponse = JsonSerializer.Deserialize<BackchannelLoginResponse>(json);
+            var client = new HttpClient();
+            var response = await client.RequestBackchannelAuthenticationAsync(req);
 
-            if (loginResponse.IsError) throw new Exception(loginResponse.error);
+            if (response.IsError) throw new Exception(response.Error);
 
             Console.WriteLine($"Login Hint                  : {username}");
             Console.WriteLine($"Binding Message             : {bindingMessage}");
-            Console.WriteLine($"Authentication Request Id   : {loginResponse.auth_req_id}");
-            Console.WriteLine($"Expires In                  : {loginResponse.expires_in}");
-            Console.WriteLine($"Interval                    : {loginResponse.interval}");
+            Console.WriteLine($"Authentication Request Id   : {response.AuthenticationRequestId}");
+            Console.WriteLine($"Expires In                  : {response.ExpiresIn}");
+            Console.WriteLine($"Interval                    : {response.Interval}");
             Console.WriteLine();
 
             Console.WriteLine($"\nPress enter to start polling the token endpoint.");
             Console.ReadLine();
 
-            return loginResponse;
+            return response;
         }
 
-        private static async Task<TokenResponse> RequestTokenAsync(BackchannelLoginResponse authorizeResponse)
+        private static async Task<TokenResponse> RequestTokenAsync(BackchannelAuthenticationResponse authorizeResponse)
         {
             var disco = await _cache.GetAsync();
             if (disco.IsError) throw new Exception(disco.Error);
@@ -100,16 +98,12 @@ namespace ConsoleCibaClient
 
             while (true)
             {
-                var response = await client.RequestTokenAsync(new TokenRequest
+                var response = await client.RequestBackchannelAuthenticationTokenAsync(new BackchannelAuthenticationTokenRequest
                 {
                     Address = disco.TokenEndpoint,
                     ClientId = "ciba",
                     ClientSecret = "secret",
-                    GrantType = "urn:openid:params:grant-type:ciba",
-                    Parameters = 
-                    {
-                        { "auth_req_id", authorizeResponse.auth_req_id }
-                    }
+                    AuthenticationRequestId = authorizeResponse.AuthenticationRequestId
                 });
 
                 if (response.IsError)
@@ -117,7 +111,7 @@ namespace ConsoleCibaClient
                     if (response.Error == OidcConstants.TokenErrors.AuthorizationPending || response.Error == OidcConstants.TokenErrors.SlowDown)
                     {
                         Console.WriteLine($"{response.Error}...waiting.");
-                        Thread.Sleep(authorizeResponse.interval * 1000);
+                        Thread.Sleep(authorizeResponse.Interval.Value * 1000);
                     }
                     else
                     {
@@ -156,7 +150,10 @@ namespace ConsoleCibaClient
             };
             foreach (var item in values)
             {
-                claims.Add(new Claim(item.Key, item.Value));
+                if (!String.IsNullOrWhiteSpace(item.Value))
+                {
+                    claims.Add(new Claim(item.Key, item.Value));
+                }
             }
 
             const string rsaKey =
@@ -178,38 +175,5 @@ namespace ConsoleCibaClient
 
             return tokenHandler.WriteToken(token);
         }
-    }
-
-    public class BackchannelLoginResponse
-    {
-        /// <summary>
-        /// Indicates if this response represents an error.
-        /// </summary>
-        public bool IsError => !String.IsNullOrWhiteSpace(error);
-
-        /// <summary>
-        /// Gets or sets the error.
-        /// </summary>
-        public string error { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error description.
-        /// </summary>
-        public string error_description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the authentication request id.
-        /// </summary>
-        public string auth_req_id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the expires in.
-        /// </summary>
-        public int expires_in { get; set; }
-
-        /// <summary>
-        /// Gets or sets the interval.
-        /// </summary>
-        public int interval { get; set; }
     }
 }
