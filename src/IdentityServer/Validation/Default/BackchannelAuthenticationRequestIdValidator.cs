@@ -75,7 +75,7 @@ namespace Duende.IdentityServer.Validation
             }
 
             // denied
-            if (request.IsAuthorized
+            if (request.IsComplete
                 && (request.AuthorizedScopes == null || request.AuthorizedScopes.Any() == false))
             {
                 _logger.LogError("No scopes authorized for backchannel authentication request. Access denied");
@@ -84,8 +84,8 @@ namespace Duende.IdentityServer.Validation
                 return;
             }
 
-            // make sure authentication request id is authorized
-            if (!request.IsAuthorized)
+            // make sure authentication request id is complete
+            if (!request.IsComplete)
             {
                 context.Result = new TokenRequestValidationResult(context.Request, OidcConstants.TokenErrors.AuthorizationPending);
                 return;

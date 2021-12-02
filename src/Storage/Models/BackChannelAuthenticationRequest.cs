@@ -70,9 +70,9 @@ namespace Duende.IdentityServer.Models
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is authorized.
+        /// Gets or sets a value indicating whether this instance has been completed.
         /// </summary>
-        public bool IsAuthorized { get; set; }
+        public bool IsComplete { get; set; }
 
         /// <summary>
         /// Gets or sets the authorized scopes.

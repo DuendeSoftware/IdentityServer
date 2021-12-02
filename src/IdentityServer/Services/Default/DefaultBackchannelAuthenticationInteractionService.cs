@@ -96,7 +96,7 @@ namespace Duende.IdentityServer.Services
                 var items = await _requestStore.GetLoginsForUserAsync(user.GetSubjectId());
                 foreach (var item in items)
                 {
-                    if (!item.IsAuthorized)
+                    if (!item.IsComplete)
                     {
                         var req = await CreateAsync(item);
                         if (req != null)
@@ -155,7 +155,7 @@ namespace Duende.IdentityServer.Services
                 }
             }
 
-            request.IsAuthorized = true;
+            request.IsComplete = true;
             request.Subject = subject;
             request.SessionId = sid;
             request.AuthorizedScopes = competionRequest.ScopesValuesConsented;
