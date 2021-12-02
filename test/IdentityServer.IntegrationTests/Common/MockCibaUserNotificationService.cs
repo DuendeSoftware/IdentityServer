@@ -6,7 +6,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using System.Threading.Tasks;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Ciba
+namespace IntegrationTests.Common
 {
     internal class MockCibaUserNotificationService : IBackchannelAuthenticationUserNotificationService
     {

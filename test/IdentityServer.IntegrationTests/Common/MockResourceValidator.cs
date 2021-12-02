@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Validation;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Ciba
+namespace IntegrationTests.Common
 {
     class MockResourceValidator : IResourceValidator
     {

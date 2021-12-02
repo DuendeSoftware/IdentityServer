@@ -5,7 +5,7 @@
 using Duende.IdentityServer.Validation;
 using System.Threading.Tasks;
 
-namespace IdentityServer.IntegrationTests.Endpoints.Ciba
+namespace IntegrationTests.Common
 {
     internal class MockCibaUserValidator : IBackchannelAuthenticationUserValidator
     {

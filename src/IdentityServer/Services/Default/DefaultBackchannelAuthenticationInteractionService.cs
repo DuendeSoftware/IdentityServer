@@ -75,7 +75,7 @@ namespace Duende.IdentityServer.Services
         }
 
         /// <inheritdoc/>
-        public async Task<BackchannelUserLoginRequest> GetLoginRequestById(string id)
+        public async Task<BackchannelUserLoginRequest> GetLoginRequestByIdAsync(string id)
         {
             var request = await _requestStore.GetByIdAsync(id);
             return await CreateAsync(request);
