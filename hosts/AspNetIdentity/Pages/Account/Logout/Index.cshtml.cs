@@ -67,7 +67,7 @@ namespace IdentityServerHost.Pages.Logout
                 // this captures necessary info from the current logged in user
                 // this can still return null if there is no context needed
                 LogoutId ??= await _interaction.CreateLogoutContextAsync();
-
+                
                 // delete local authentication cookie
                 await _signInManager.SignOutAsync();
 

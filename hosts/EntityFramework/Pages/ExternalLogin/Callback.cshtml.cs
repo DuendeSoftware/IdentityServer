@@ -86,7 +86,7 @@ namespace IdentityServerHost.Pages.ExternalLogin
             var additionalLocalClaims = new List<Claim>();
             var localSignInProps = new AuthenticationProperties();
             CaptureExternalLoginContext(result, additionalLocalClaims, localSignInProps);
-
+            
             // issue authentication cookie for user
             var isuser = new IdentityServerUser(user.SubjectId)
             {
