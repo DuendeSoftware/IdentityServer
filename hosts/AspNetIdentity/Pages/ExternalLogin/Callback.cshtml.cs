@@ -75,7 +75,6 @@ namespace IdentityServerHost.Pages.ExternalLogin
                 // this might be where you might initiate a custom workflow for user registration
                 // in this sample we don't show how that would be done, as our sample implementation
                 // simply auto-provisions new external user
-                // remove the user id claim so we don't include it as an extra claim if/when we provision the user
                 user = await AutoProvisionUserAsync(provider, providerUserId, externalUser.Claims);
             }
 
