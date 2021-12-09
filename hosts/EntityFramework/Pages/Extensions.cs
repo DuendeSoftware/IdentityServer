@@ -16,7 +16,7 @@ namespace IdentityServerHost.Pages
     public static class Extensions
     {
         /// <summary>
-        /// Determines if the scheme support signout.
+        /// Determines if the authentication scheme support signout.
         /// </summary>
         public static async Task<bool> GetSchemeSupportsSignOutAsync(this HttpContext context, string scheme)
         {
@@ -24,7 +24,7 @@ namespace IdentityServerHost.Pages
             var handler = await provider.GetHandlerAsync(context, scheme);
             return (handler is IAuthenticationSignOutHandler);
         }
-        
+
         /// <summary>
         /// Checks if the redirect URI is for a native client.
         /// </summary>
@@ -41,7 +41,7 @@ namespace IdentityServerHost.Pages
         {
             page.HttpContext.Response.StatusCode = 200;
             page.HttpContext.Response.Headers["Location"] = "";
-            
+
             return page.RedirectToPage("/Redirect/Index", new { RedirectUri = redirectUri });
         }
     }
