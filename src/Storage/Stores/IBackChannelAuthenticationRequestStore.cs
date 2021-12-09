@@ -31,16 +31,16 @@ namespace Duende.IdentityServer.Stores
         /// <summary>
         /// Gets the request.
         /// </summary>
-        Task<BackChannelAuthenticationRequest> GetByIdAsync(string id);
+        Task<BackChannelAuthenticationRequest> GetByInternalIdAsync(string id);
 
         /// <summary>
         /// Removes the request.
         /// </summary>
-        Task RemoveByIdAsync(string id);
+        Task RemoveByInternalIdAsync(string id);
 
         /// <summary>
         /// Updates the request.
         /// </summary>
-        Task UpdateByIdAsync(string id, BackChannelAuthenticationRequest request);
+        Task UpdateByInternalIdAsync(string id, BackChannelAuthenticationRequest request);
     }
 }

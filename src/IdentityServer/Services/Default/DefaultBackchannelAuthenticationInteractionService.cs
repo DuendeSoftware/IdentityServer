@@ -6,9 +6,13 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
+using IdentityModel;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Services
@@ -22,6 +26,7 @@ namespace Duende.IdentityServer.Services
         private readonly IClientStore _clientStore;
         private readonly IUserSession _session;
         private readonly IResourceValidator _resourceValidator;
+        private readonly ISystemClock _systemClock;
         private readonly ILogger<DefaultBackchannelAuthenticationInteractionService> _logger;
 
         /// <summary>
@@ -32,6 +37,7 @@ namespace Duende.IdentityServer.Services
             IClientStore clients,
             IUserSession session,
             IResourceValidator resourceValidator,
+            ISystemClock systemClock,
             ILogger<DefaultBackchannelAuthenticationInteractionService> logger
 )
         {
@@ -39,6 +45,7 @@ namespace Duende.IdentityServer.Services
             _clientStore = clients;
             _session = session;
             _resourceValidator = resourceValidator;
+            _systemClock = systemClock;
             _logger = logger;
         }
 
@@ -75,9 +82,9 @@ namespace Duende.IdentityServer.Services
         }
 
         /// <inheritdoc/>
-        public async Task<BackchannelUserLoginRequest> GetLoginRequestByIdAsync(string id)
+        public async Task<BackchannelUserLoginRequest> GetLoginRequestByInternalIdAsync(string id)
         {
-            var request = await _requestStore.GetByIdAsync(id);
+            var request = await _requestStore.GetByInternalIdAsync(id);
             return await CreateAsync(request);
         }
 
@@ -90,11 +97,11 @@ namespace Duende.IdentityServer.Services
             if (user != null)
             {
                 _logger.LogDebug("No user present");
-                
+
                 var items = await _requestStore.GetLoginsForUserAsync(user.GetSubjectId());
                 foreach (var item in items)
                 {
-                    if (!item.IsAuthorized)
+                    if (!item.IsComplete)
                     {
                         var req = await CreateAsync(item);
                         if (req != null)
@@ -109,55 +116,60 @@ namespace Duende.IdentityServer.Services
         }
 
         /// <inheritdoc/>
-        public async Task CompleteRequestByIdAsync(string id, ConsentResponse response)
+        public async Task CompleteLoginRequestAsync(CompleteBackchannelLoginRequest competionRequest)
         {
-            if (String.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-            if (response == null)
-            {
-                throw new ArgumentNullException(nameof(response));
-            }
+            if (competionRequest == null) throw new ArgumentNullException(nameof(competionRequest));
 
-            var request = await _requestStore.GetByIdAsync(id);
+            var request = await _requestStore.GetByInternalIdAsync(competionRequest.InternalId);
             if (request == null)
             {
-                _logger.LogError("Invalid backchannel authentication request id {id}", id);
-                return;
+                throw new InvalidOperationException("Invalid backchannel authentication request id.");
             }
 
-            var client = await _clientStore.FindEnabledClientByIdAsync(request.ClientId);
-            if (client == null)
-            {
-                _logger.LogError("Invalid client {clientId}", request.ClientId);
-                return;
-            }
-
-            var subject = await _session.GetUserAsync();
+            var subject = competionRequest.Subject ?? await _session.GetUserAsync();
             if (subject == null)
             {
-                _logger.LogError("No user present");
-                return;
+                throw new InvalidOperationException("Invalid subject.");
             }
-
+            
             if (subject.GetSubjectId() != request.Subject.GetSubjectId())
             {
-                _logger.LogError("Current user's subject id: {currentSubjectId} does not match subject id for backchannel authentication request: {storedSubjectId}", subject.GetSubjectId(), request.Subject.GetSubjectId());
-                return;
+                throw new InvalidOperationException($"User's subject id: '{subject.GetSubjectId()}' does not match subject id for backchannel authentication request: '{request.Subject.GetSubjectId()}'.");
             }
 
-            var sid = await _session.GetSessionIdAsync();
+            var sid = (competionRequest.Subject == null) ?
+                await _session.GetSessionIdAsync() :
+                competionRequest.SessionId;
 
-            request.IsAuthorized = true;
-            request.Subject = subject;
-            request.AuthorizedScopes = response.ScopesValuesConsented;
+            if (competionRequest.ScopesValuesConsented != null)
+            {
+                var extra = competionRequest.ScopesValuesConsented.Except(request.RequestedScopes);
+                if (extra.Any())
+                {
+                    throw new InvalidOperationException("More scopes consented than originally requested.");
+                }
+            }
+
+            var subjectClone = subject.Clone();
+            if (!subject.HasClaim(x => x.Type == JwtClaimTypes.AuthenticationTime))
+            {
+                subjectClone.Identities.First().AddClaim(new Claim(JwtClaimTypes.AuthenticationTime, _systemClock.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer));
+            }
+
+            if (!subject.HasClaim(x => x.Type == JwtClaimTypes.IdentityProvider))
+            {
+                subjectClone.Identities.First().AddClaim(new Claim(JwtClaimTypes.IdentityProvider, IdentityServerConstants.LocalIdentityProvider));
+            }
+
+            request.IsComplete = true;
+            request.Subject = subjectClone;
             request.SessionId = sid;
-            request.Description = response.Description;
+            request.AuthorizedScopes = competionRequest.ScopesValuesConsented;
+            request.Description = competionRequest.Description;
 
-            await _requestStore.UpdateByIdAsync(id, request);
+            await _requestStore.UpdateByInternalIdAsync(competionRequest.InternalId, request);
 
-            _logger.LogDebug("Successful update for backchannel authentication request id {id}", id);
+            _logger.LogDebug("Successful update for backchannel authentication request id {id}", competionRequest.InternalId);
         }
     }
 }

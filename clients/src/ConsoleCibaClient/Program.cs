@@ -47,8 +47,8 @@ namespace ConsoleCibaClient
                 ClientId = "ciba",
                 ClientSecret = "secret",
                 Scope = "openid profile email resource1.scope1 offline_access",
-                //LoginHint = username,
-                IdTokenHint = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjkxODA1RkM0RjhBRDFBQkJEMjE0OTJFOUFBQ0Q3Njk2IiwidHlwIjoiSldUIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDAxIiwibmJmIjoxNjM4MzY4MjQ5LCJpYXQiOjE2MzgzNjgyNDksImV4cCI6MTYzODM2ODU0OSwiYXVkIjoiY2liYSIsImFtciI6WyJwd2QiXSwiYXRfaGFzaCI6IkpoU2N3eTJQNFhWOFA2WFphNGNIcmciLCJzaWQiOiI1NzAyRjUyMzNGRDU3NjBERkY5ODVFQjg3Q0E5MEUyNiIsInN1YiI6IjgxODcyNyIsImF1dGhfdGltZSI6MTYzODM2ODI0MiwiaWRwIjoibG9jYWwifQ.dfcdEQxy3GAYcVgciOp_3YD7Qlb3EA0WIWYiNZFGmGC6kQYyvlPSBow8R4UyL29gH3HDq-gOzBSfCp0zZKXXHQqNlpRIuiOEfhz0KfOaq7HpYCOXh58FrzacNxxlcJTrRXUykUROMBkO2mLSKrtILHyOivlBtW5gO2kUty5Z602WnD1n-WpLntqITYTCQboVr0GaANbtPtffw2381ayPeiV9U6S4ZPjVxCtqCt58kMNS4cXclZeVd7NL5AAbs6YrlUuJEwDTckbX9Bi6apKtc6-PuLh4YlntoI2yO3mACmlQW_E2fACsFW0cN7UyXTCkH2IpP2W35KGL7YQf76VU1A",
+                LoginHint = username,
+                //IdTokenHint = "eyJhbGciOiJSUzI1NiIsImtpZCI6IkYyNjZCQzA3NTFBNjIyNDkzMzFDMzI4QUQ1RkIwMkJGIiwidHlwIjoiSldUIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDAxIiwibmJmIjoxNjM4NDc3MDE2LCJpYXQiOjE2Mzg0NzcwMTYsImV4cCI6MTYzODQ3NzMxNiwiYXVkIjoiY2liYSIsImFtciI6WyJwd2QiXSwiYXRfaGFzaCI6ImE1angwelVQZ2twczBVS1J5VjBUWmciLCJzaWQiOiIzQTJDQTJDNjdBNTAwQ0I2REY1QzEyRUZDMzlCQTI2MiIsInN1YiI6IjgxODcyNyIsImF1dGhfdGltZSI6MTYzODQ3NzAwOCwiaWRwIjoibG9jYWwifQ.GAIHXYgEtXw5NasR0zPMW3jSKBuWujzwwnXJnfHdulKX-I3r47N0iqHm5v5V0xfLYdrmntjLgmdm0DSvdXswtZ1dh96DqS1zVm6yQ2V0zsA2u8uOt1RG8qtjd5z4Gb_wTvks4rbUiwi008FOZfRuqbMJJDSscy_YdEJqyQahdzkcUnWZwdbY8L2RUTxlAAWQxktpIbaFnxfr8PFQpyTcyQyw0b7xmYd9ogR7JyOff7IJIHPDur0wbRdpI1FDE_VVCgoze8GVAbVxXPtj4CtWHAv07MJxa9SdA_N-lBcrZ3PHTKQ5t1gFXwdQvp3togUJl33mJSru3lqfK36pn8y8ow",
                 BindingMessage = bindingMessage,
                 RequestedExpiry = 200
             };
