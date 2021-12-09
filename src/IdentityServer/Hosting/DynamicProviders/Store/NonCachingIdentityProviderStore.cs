@@ -5,6 +5,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,17 +22,20 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
         private readonly IIdentityProviderStore _inner;
         private readonly IdentityServerOptions _options;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<NonCachingIdentityProviderStore<T>> _logger;
 
         /// <summary>
         /// Ctor
         /// </summary>
         public NonCachingIdentityProviderStore(T inner, 
             IdentityServerOptions options,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<NonCachingIdentityProviderStore<T>> logger)
         {
             _inner = inner;
             _options = options;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         /// <inheritdoc/>
@@ -66,6 +70,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
                         var mi = optionsMonitorType.GetMethod("TryRemove");
                         if (mi != null)
                         {
+                            _logger.LogDebug($"Notice: The {provider.OptionsType.Name} object for scheme: {{scheme}} is not being cached. Consider enabling caching for the IIdentityProviderStore with AddIdentityProviderStoreCache<T>() on IdentityServer if you do not want the options to be reinitialized on each request.", idp.Scheme);
                             mi.Invoke(optionsCache, new[] { idp.Scheme });
                         }
                     }
