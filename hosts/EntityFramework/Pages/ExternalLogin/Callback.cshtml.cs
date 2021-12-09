@@ -9,6 +9,7 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Test;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IdentityServerHost.Pages.ExternalLogin
 {
+    [AllowAnonymous]
     [SecurityHeaders]
     public class Callback : PageModel
     {

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace IdentityServerHost.Pages.Ciba
 {
+    [AllowAnonymous]
     [SecurityHeaders]
     public class IndexModel : PageModel
     {
