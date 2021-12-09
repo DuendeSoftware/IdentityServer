@@ -23,7 +23,7 @@ namespace Duende.IdentityServer.Services
         /// <summary>
         /// Returns the login request for the id.
         /// </summary>
-        Task<BackchannelUserLoginRequest> GetLoginRequestByIdAsync(string id);
+        Task<BackchannelUserLoginRequest> GetLoginRequestByInternalIdAsync(string id);
 
         /// <summary>
         /// Completes the login request with the provided response for the current user or the subject passed.

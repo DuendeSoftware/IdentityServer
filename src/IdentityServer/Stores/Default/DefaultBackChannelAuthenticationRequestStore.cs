@@ -44,7 +44,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task<BackChannelAuthenticationRequest> GetByIdAsync(string id)
+        public Task<BackChannelAuthenticationRequest> GetByInternalIdAsync(string id)
         {
             return GetItemByHashedKeyAsync(id);
         }
@@ -56,7 +56,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task RemoveByIdAsync(string requestId)
+        public Task RemoveByInternalIdAsync(string requestId)
         {
             return RemoveItemByHashedKeyAsync(requestId);
         }
@@ -71,7 +71,7 @@ namespace Duende.IdentityServer.Stores
         }
 
         /// <inheritdoc/>
-        public Task UpdateByIdAsync(string id, BackChannelAuthenticationRequest request)
+        public Task UpdateByInternalIdAsync(string id, BackChannelAuthenticationRequest request)
         {
             return StoreItemByHashedKeyAsync(id, request, request.ClientId, request.Subject.GetSubjectId(), request.SessionId, request.Description, request.CreationTime, request.CreationTime.AddSeconds(request.Lifetime));
         }

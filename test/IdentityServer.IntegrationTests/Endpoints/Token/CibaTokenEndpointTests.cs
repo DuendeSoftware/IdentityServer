@@ -153,7 +153,7 @@ namespace IntegrationTests.Endpoints.Token
 
             // user auth/consent
             var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
-            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            var request = await cibaService.GetLoginRequestByInternalIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
             await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId) 
             {
                 ScopesValuesConsented = request.ValidatedResources.RawScopeValues,
@@ -260,7 +260,7 @@ namespace IntegrationTests.Endpoints.Token
 
             // user auth/consent
             var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
-            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            var request = await cibaService.GetLoginRequestByInternalIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
             await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
             {
                 ScopesValuesConsented = request.ValidatedResources.RawScopeValues,
@@ -323,7 +323,7 @@ namespace IntegrationTests.Endpoints.Token
 
             // user auth/consent
             var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
-            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            var request = await cibaService.GetLoginRequestByInternalIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
             await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
             {
                 ScopesValuesConsented = request.ValidatedResources.RawScopeValues,
@@ -386,7 +386,7 @@ namespace IntegrationTests.Endpoints.Token
 
             // user auth/consent
             var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
-            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            var request = await cibaService.GetLoginRequestByInternalIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
             await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
             {
                 //ScopesValuesConsented = request.ValidatedResources.RawScopeValues, // none to deny
@@ -449,7 +449,7 @@ namespace IntegrationTests.Endpoints.Token
 
             // user auth/consent
             var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
-            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            var request = await cibaService.GetLoginRequestByInternalIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
             await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
             {
                 ScopesValuesConsented = request.ValidatedResources.RawScopeValues,
@@ -518,7 +518,7 @@ namespace IntegrationTests.Endpoints.Token
 
             // user auth/consent
             var cibaService = _mockPipeline.Resolve<IBackchannelAuthenticationInteractionService>();
-            var request = await cibaService.GetLoginRequestByIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
+            var request = await cibaService.GetLoginRequestByInternalIdAsync(_mockCibaUserNotificationService.LoginRequest.InternalId);
             await cibaService.CompleteLoginRequestAsync(new CompleteBackchannelLoginRequest(_mockCibaUserNotificationService.LoginRequest.InternalId)
             {
                 ScopesValuesConsented = request.ValidatedResources.RawScopeValues,

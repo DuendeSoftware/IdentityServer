@@ -56,7 +56,7 @@ namespace IdentityServerHost.Pages.Ciba
         public async Task<IActionResult> OnPost()
         {
             // validate return url is still valid
-            var request = await _interaction.GetLoginRequestByIdAsync(Input.Id);
+            var request = await _interaction.GetLoginRequestByInternalIdAsync(Input.Id);
             if (request == null || request.Subject.GetSubjectId() != User.GetSubjectId())
             {
                 _logger.LogError("Invalid id {id}", Input.Id);
@@ -119,7 +119,7 @@ namespace IdentityServerHost.Pages.Ciba
 
         private async Task<ViewModel> BuildViewModelAsync(string id, InputModel model = null)
         {
-            var request = await _interaction.GetLoginRequestByIdAsync(id);
+            var request = await _interaction.GetLoginRequestByInternalIdAsync(id);
             if (request != null && request.Subject.GetSubjectId() == User.GetSubjectId())
             {
                 return CreateConsentViewModel(model, id, request);
