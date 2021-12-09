@@ -33,7 +33,7 @@ namespace IdentityServerHost.Pages.Ciba
         }
 
         public ViewModel View { get; set; }
-
+        
         [BindProperty]
         public InputModel Input { get; set; }
 
