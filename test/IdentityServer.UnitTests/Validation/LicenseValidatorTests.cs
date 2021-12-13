@@ -86,11 +86,11 @@ namespace UnitTests.Validation
                 var subject = new License(new Claim("edition", "community"));
                 subject.Edition.Should().Be(License.LicenseEdition.Community);
                 subject.IsCommunity.Should().BeTrue();
-                subject.ClientLimit.Should().Be(5);
-                subject.IssuerLimit.Should().Be(1);
+                subject.ClientLimit.Should().BeNull();
+                subject.IssuerLimit.Should().BeNull();
                 subject.KeyManagement.Should().BeTrue();
-                subject.ResourceIsolation.Should().BeFalse();
-                subject.DynamicProviders.Should().BeFalse();
+                subject.ResourceIsolation.Should().BeTrue();
+                subject.DynamicProviders.Should().BeTrue();
                 subject.ISV.Should().BeFalse();
             }
 
@@ -197,15 +197,10 @@ namespace UnitTests.Validation
             {
                 var subject = new License(
                     new Claim("edition", "community"),
-                    new Claim("client_limit", "20"));
-                subject.ClientLimit.Should().Be(20);
-            }
-            {
-                var subject = new License(
-                    new Claim("edition", "community"),
                     new Claim("client_limit", "20"),
-                    new Claim("feature", "unlimited_clients"));
+                    new Claim("issuer_limit", "5"));
                 subject.ClientLimit.Should().BeNull();
+                subject.IssuerLimit.Should().BeNull();
             }
 
             // ISV

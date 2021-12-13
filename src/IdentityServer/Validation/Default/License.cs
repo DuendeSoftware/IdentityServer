@@ -54,6 +54,7 @@ namespace Duende.IdentityServer.Validation
             switch (Edition)
             {
                 case LicenseEdition.Enterprise:
+                case LicenseEdition.Community:
                     ResourceIsolation = true;
                     break;
             }
@@ -62,37 +63,48 @@ namespace Duende.IdentityServer.Validation
             switch (Edition)
             {
                 case LicenseEdition.Enterprise:
+                case LicenseEdition.Community:
                     DynamicProviders = true;
                     break;
             }
 
             if (!claims.HasClaim("feature", "unlimited_clients"))
             {
-                if (IsEnterprise && !ISV)
-                {
-                    // non-ISV enterprise always has no client limit
-                    ClientLimit = null; // unlimited
-                }
-                else if (Int32.TryParse(claims.FindFirst("client_limit")?.Value, out var clientLimit))
-                {
-                    ClientLimit = clientLimit;
-                }
-                else if (ISV)
+                // default values
+                if (ISV)
                 {
                     // default for all ISV editions
                     ClientLimit = 5;
                 }
                 else
                 {
-                    // defaults for non-ISV editions
+                    // defaults limits for non-ISV editions
                     switch (Edition)
                     {
                         case LicenseEdition.Business:
                             ClientLimit = 15;
                             break;
                         case LicenseEdition.Starter:
-                        case LicenseEdition.Community:
                             ClientLimit = 5;
+                            break;
+                    }
+                }
+                    
+                if (Int32.TryParse(claims.FindFirst("client_limit")?.Value, out var clientLimit))
+                {
+                    // explicit, so use that value
+                    ClientLimit = clientLimit;
+                }
+
+                if (!ISV)
+                {
+                    // these for the non-ISV editions that always have unlimited, regardless of explicit value
+                    switch (Edition)
+                    {
+                        case LicenseEdition.Enterprise:
+                        case LicenseEdition.Community:
+                            // unlimited
+                            ClientLimit = null;
                             break;
                     }
                 }
@@ -100,17 +112,22 @@ namespace Duende.IdentityServer.Validation
 
             if (!claims.HasClaim("feature", "unlimited_issuers"))
             {
-                if (IsEnterprise)
-                {
-                    IssuerLimit = null; // unlimited
-                }
-                else if (Int32.TryParse(claims.FindFirst("issuer_limit")?.Value, out var issuerLimit))
+                // default 
+                IssuerLimit = 1;
+
+                if (Int32.TryParse(claims.FindFirst("issuer_limit")?.Value, out var issuerLimit))
                 {
                     IssuerLimit = issuerLimit;
                 }
-                else
+
+                // these for the editions that always have unlimited, regardless of explicit value
+                switch (Edition)
                 {
-                    IssuerLimit = 1;
+                    case LicenseEdition.Enterprise:
+                    case LicenseEdition.Community:
+                        // unlimited
+                        IssuerLimit = null;
+                        break;
                 }
             }
         }
