@@ -93,6 +93,12 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders
 
         private async Task<AuthenticationScheme> GetDynamicSchemeAsync(string name)
         {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                _logger.LogDebug("IAuthenticationSchemeProvider being used outside HTTP request, therefore dynamic provider feature can't be used for loading scheme: {scheme}.", name);
+                return null;
+            }
+
             // these have to be here because the regular authenticaiton middleware accepts IAuthenticationSchemeProvider
             // as a ctor param, not an Invoke param, which makes it a singleton. Our DynamicAuthenticationSchemeCache
             // and possibly the store is scoped in DI.
