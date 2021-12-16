@@ -36,7 +36,7 @@ namespace ConsoleCibaClient
             var disco = await _cache.GetAsync();
             if (disco.IsError) throw new Exception(disco.Error);
 
-            var cibaEp = disco.TryGetString(OidcConstants.Discovery.BackchannelAuthenticationEndpoint);
+            var cibaEp = disco.BackchannelAuthenticationEndpoint;
             
             var username = "alice";
             var bindingMessage = Guid.NewGuid().ToString("N").Substring(0, 10);
