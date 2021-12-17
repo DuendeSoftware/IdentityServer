@@ -58,6 +58,7 @@ namespace UnitTests.Validation
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeTrue();
                 subject.DynamicProviders.Should().BeTrue();
+                subject.BFF.Should().BeTrue();
                 subject.ISV.Should().BeFalse();
             }
             {
@@ -69,6 +70,7 @@ namespace UnitTests.Validation
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeFalse();
                 subject.DynamicProviders.Should().BeFalse();
+                subject.BFF.Should().BeTrue();
                 subject.ISV.Should().BeFalse();
             }
             {
@@ -80,6 +82,7 @@ namespace UnitTests.Validation
                 subject.KeyManagement.Should().BeFalse();
                 subject.ResourceIsolation.Should().BeFalse();
                 subject.DynamicProviders.Should().BeFalse();
+                subject.BFF.Should().BeFalse();
                 subject.ISV.Should().BeFalse();
             }
             {
@@ -91,6 +94,7 @@ namespace UnitTests.Validation
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeTrue();
                 subject.DynamicProviders.Should().BeTrue();
+                subject.BFF.Should().BeTrue();
                 subject.ISV.Should().BeFalse();
             }
 
@@ -103,6 +107,7 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().BeNull();
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeTrue();
+                subject.BFF.Should().BeTrue();
                 subject.ISV.Should().BeTrue();
             }
             {
@@ -113,6 +118,7 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().Be(1);
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeFalse();
+                subject.BFF.Should().BeTrue();
                 subject.ISV.Should().BeTrue();
             }
             {
@@ -123,6 +129,7 @@ namespace UnitTests.Validation
                 subject.IssuerLimit.Should().Be(1);
                 subject.KeyManagement.Should().BeFalse();
                 subject.ResourceIsolation.Should().BeFalse();
+                subject.BFF.Should().BeFalse();
                 subject.ISV.Should().BeTrue();
             }
             {
@@ -175,12 +182,14 @@ namespace UnitTests.Validation
                     new Claim("feature", "key_management"),
                     new Claim("feature", "isv"),
                     new Claim("feature", "resource_isolation"),
+                    new Claim("feature", "bff"),
                     new Claim("feature", "dynamic_providers"));
                 subject.ClientLimit.Should().Be(20);
                 subject.IssuerLimit.Should().Be(5);
                 subject.KeyManagement.Should().BeTrue();
                 subject.ResourceIsolation.Should().BeTrue();
                 subject.DynamicProviders.Should().BeTrue();
+                subject.BFF.Should().BeTrue();
                 subject.ISV.Should().BeTrue();
             }
             {
@@ -222,8 +231,10 @@ namespace UnitTests.Validation
                 var subject = new License(
                     new Claim("edition", "starter"),
                     new Claim("feature", "isv"),
+                    new Claim("feature", "bff"),
                     new Claim("client_limit", "20"));
                 subject.ClientLimit.Should().Be(20);
+                subject.BFF.Should().BeTrue();
             }
 
             {

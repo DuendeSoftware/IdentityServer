@@ -68,6 +68,17 @@ namespace Duende.IdentityServer.Validation
                     break;
             }
 
+            BFF = claims.HasClaim("feature", "bff");
+            switch (Edition)
+            {
+                case LicenseEdition.Enterprise:
+                case LicenseEdition.Business:
+                case LicenseEdition.Community:
+                    BFF = true;
+                    break;
+            }
+
+
             if (!claims.HasClaim("feature", "unlimited_clients"))
             {
                 // default values
@@ -151,13 +162,14 @@ namespace Duende.IdentityServer.Validation
         public bool ResourceIsolation { get; set; }
         public bool DynamicProviders { get; set; }
         public bool ISV { get; set; }
+        public bool BFF { get; set; }
 
         public enum LicenseEdition
         {
             Enterprise,
             Business,
             Starter,
-            Community
+            Community,
         }
 
         public override string ToString()
