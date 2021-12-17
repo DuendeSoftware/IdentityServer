@@ -62,19 +62,19 @@ namespace Duende.IdentityServer.Validation
             }
             else
             {
-                Action<string, object[]> func = _license.ISV ? _logger.LogTrace : _logger.LogDebug;
+                Action<string, object[]> func = _license.ISVFeature ? _logger.LogTrace : _logger.LogDebug;
                 func.Invoke("The validated licence key details: {@license}", new[] { _license });
 
                 if (_license.Expiration.HasValue)
                 {
                     var diff = DateTime.UtcNow.Date.Subtract(_license.Expiration.Value.Date).TotalDays;
-                    if (diff > 0 && !_license.ISV)
+                    if (diff > 0 && !_license.ISVFeature)
                     {
                         errors.Add($"Your license for Duende IdentityServer expired {diff} days ago.");
                     }
                 }
 
-                if (_options.KeyManagement.Enabled && !_license.KeyManagement)
+                if (_options.KeyManagement.Enabled && !_license.KeyManagementFeature)
                 {
                     errors.Add(
                         "You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer.");
@@ -99,13 +99,13 @@ namespace Duende.IdentityServer.Validation
             {
                 if (_license.Expiration.HasValue)
                 {
-                    Action<string, object[]> log = _license.ISV ? _logger.LogTrace : _logger.LogInformation;
+                    Action<string, object[]> log = _license.ISVFeature ? _logger.LogTrace : _logger.LogInformation;
                     log.Invoke("You have a valid license key for Duende IdentityServer {edition} edition for use at {licenseCompany}. The license expires on {licenseExpiration}.",
                         new object[] { _license.Edition, _license.CompanyName, _license.Expiration.Value.ToLongDateString() });
                 }
                 else
                 {
-                    Action<string, object[]> log = _license.ISV ? _logger.LogTrace : _logger.LogInformation;
+                    Action<string, object[]> log = _license.ISVFeature ? _logger.LogTrace : _logger.LogInformation;
                     log.Invoke(
                         "You have a valid license key for Duende IdentityServer {edition} edition for use at {licenseCompany}.",
                         new object[] { _license.Edition, _license.CompanyName });
@@ -149,7 +149,7 @@ namespace Duende.IdentityServer.Validation
 
         public static void ValidateResourceIndicators(string resourceIndicator)
         {
-            if (_license != null && !String.IsNullOrWhiteSpace(resourceIndicator) && !_license.ResourceIsolation)
+            if (_license != null && !String.IsNullOrWhiteSpace(resourceIndicator) && !_license.ResourceIsolationFeature)
             {
                 _logger.LogError(
                     "A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.");
@@ -158,7 +158,7 @@ namespace Duende.IdentityServer.Validation
 
         public static void ValidateResourceIndicators(IEnumerable<string> resourceIndicators)
         {
-            if (_license != null && resourceIndicators?.Any() == true && !_license.ResourceIsolation)
+            if (_license != null && resourceIndicators?.Any() == true && !_license.ResourceIsolationFeature)
             {
                 _logger.LogError(
                     "A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.");
@@ -167,7 +167,7 @@ namespace Duende.IdentityServer.Validation
 
         public static void ValidateDynamicProviders()
         {
-            if (_license != null && !_license.DynamicProviders)
+            if (_license != null && !_license.DynamicProvidersFeature)
             {
                 _logger.LogError("A request was made invoking a dynamic provider. Your license for Duende IdentityServer does not permit dynamic providers.");
             }
