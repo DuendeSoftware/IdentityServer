@@ -180,6 +180,9 @@ namespace IdentityServerHost.Pages.ExternalLogin
         // this will be different for WS-Fed, SAML2p or other protocols
         private void CaptureExternalLoginContext(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
         {
+            // capture the idp used to login, so the session knows where the user came from
+            localClaims.Add(new Claim(JwtClaimTypes.IdentityProvider, externalResult.Properties.Items["scheme"]));
+
             // if the external system sent a session id claim, copy it over
             // so we can use it for single sign-out
             var sid = externalResult.Principal.Claims.FirstOrDefault(x => x.Type == JwtClaimTypes.SessionId);
