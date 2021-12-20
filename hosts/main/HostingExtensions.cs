@@ -13,7 +13,7 @@ namespace IdentityServerHost;
 
 internal static class HostingExtensions
 {
-    public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
+    internal static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddRazorPages()
             .AddRazorRuntimeCompilation();
@@ -90,8 +90,8 @@ internal static class HostingExtensions
                 };
             });
     }
-    
-    public static WebApplication ConfigurePipeline(this WebApplication app)
+
+    internal static WebApplication ConfigurePipeline(this WebApplication app)
     {
         app.UseSerilogRequestLogging(
             options => options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Debug);
