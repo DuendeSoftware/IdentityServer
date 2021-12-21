@@ -537,12 +537,12 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds the user login service.
+        /// Adds the user notification service for backchannel login requests.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="builder">The builder.</param>
         /// <returns></returns>
-        public static IIdentityServerBuilder AddUserLoginService<T>(this IIdentityServerBuilder builder)
+        public static IIdentityServerBuilder AddBackchannelAuthenticationUserNotificationService<T>(this IIdentityServerBuilder builder)
            where T : class, IBackchannelAuthenticationUserNotificationService
         {
             builder.Services.AddTransient<IBackchannelAuthenticationUserNotificationService, T>();
