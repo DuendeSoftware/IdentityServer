@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
+using IdentityServerHost.Pages.Admin.Clients;
 
 namespace IdentityServerHost
 {
@@ -47,6 +48,9 @@ namespace IdentityServerHost
                 // this is something you will want in production to reduce load on and requests to the DB
                 .AddConfigurationStoreCache()
                 ;
+
+
+            services.AddTransient<ClientRepository>();
         }
 
         public void Configure(IApplicationBuilder app)

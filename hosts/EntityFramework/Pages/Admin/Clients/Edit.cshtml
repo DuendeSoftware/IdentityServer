@@ -1,0 +1,19 @@
+@page
+@model IdentityServerHost.Pages.Admin.Clients.EditModel
+@{
+}
+
+<div class="clients-page">
+    <h2>
+        Edit Client: @Model.InputModel.ClientId
+    </h2>
+
+    <form>
+        <div>
+            <label asp-for="@Model.InputModel.ClientName"></label>
+            <input asp-for="@Model.InputModel.ClientName" />
+        </div>
+    </form>
+
+
+</div>
