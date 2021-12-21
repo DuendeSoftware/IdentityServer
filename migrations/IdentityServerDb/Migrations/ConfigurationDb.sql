@@ -226,7 +226,7 @@ GO
 
 CREATE TABLE [ClientPostLogoutRedirectUris] (
     [Id] int NOT NULL IDENTITY,
-    [PostLogoutRedirectUri] nvarchar(200) NOT NULL,
+    [PostLogoutRedirectUri] nvarchar(400) NOT NULL,
     [ClientId] int NOT NULL,
     CONSTRAINT [PK_ClientPostLogoutRedirectUris] PRIMARY KEY ([Id]),
     CONSTRAINT [FK_ClientPostLogoutRedirectUris_Clients_ClientId] FOREIGN KEY ([ClientId]) REFERENCES [Clients] ([Id]) ON DELETE CASCADE
@@ -245,7 +245,7 @@ GO
 
 CREATE TABLE [ClientRedirectUris] (
     [Id] int NOT NULL IDENTITY,
-    [RedirectUri] nvarchar(200) NOT NULL,
+    [RedirectUri] nvarchar(400) NOT NULL,
     [ClientId] int NOT NULL,
     CONSTRAINT [PK_ClientRedirectUris] PRIMARY KEY ([Id]),
     CONSTRAINT [FK_ClientRedirectUris_Clients_ClientId] FOREIGN KEY ([ClientId]) REFERENCES [Clients] ([Id]) ON DELETE CASCADE
@@ -360,7 +360,7 @@ CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20211217173714_Configuration', N'6.0.0');
+VALUES (N'20211221171528_Configuration', N'6.0.0');
 GO
 
 COMMIT;
