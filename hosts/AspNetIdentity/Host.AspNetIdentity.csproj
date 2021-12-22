@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <RootNamespace>IdentityServerHost</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,11 +15,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\AspNetIdentity\Duende.IdentityServer.AspNetIdentity.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Configuration" />
-    </ItemGroup>
-
 
     <ItemGroup>
         <Compile Include="..\Configuration\Clients.cs">
