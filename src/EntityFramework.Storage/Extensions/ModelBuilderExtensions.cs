@@ -71,7 +71,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
             modelBuilder.Entity<ClientRedirectUri>(redirectUri =>
             {
                 redirectUri.ToTable(storeOptions.ClientRedirectUri);
-                redirectUri.Property(x => x.RedirectUri).HasMaxLength(2000).IsRequired();
+                redirectUri.Property(x => x.RedirectUri).HasMaxLength(400).IsRequired();
 
                 redirectUri.HasIndex(x => new { x.ClientId, x.RedirectUri }).IsUnique();
             });
@@ -79,7 +79,7 @@ namespace Duende.IdentityServer.EntityFramework.Extensions
             modelBuilder.Entity<ClientPostLogoutRedirectUri>(postLogoutRedirectUri =>
             {
                 postLogoutRedirectUri.ToTable(storeOptions.ClientPostLogoutRedirectUri);
-                postLogoutRedirectUri.Property(x => x.PostLogoutRedirectUri).HasMaxLength(2000).IsRequired();
+                postLogoutRedirectUri.Property(x => x.PostLogoutRedirectUri).HasMaxLength(400).IsRequired();
 
                 postLogoutRedirectUri.HasIndex(x => new { x.ClientId, x.PostLogoutRedirectUri }).IsUnique();
             });
