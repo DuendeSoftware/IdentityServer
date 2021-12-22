@@ -52,6 +52,7 @@ internal static class HostingExtensions
 
                 options.CallbackPath = "/signin-google";
                 options.Scope.Add("email");
+                options.MapInboundClaims = false;
             })
             .AddOpenIdConnect("demoidsrv", "IdentityServer", options =>
             {
@@ -65,6 +66,7 @@ internal static class HostingExtensions
                 options.CallbackPath = "/signin-idsrv";
                 options.SignedOutCallbackPath = "/signout-callback-idsrv";
                 options.RemoteSignOutPath = "/signout-idsrv";
+                options.MapInboundClaims = false;
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -83,6 +85,8 @@ internal static class HostingExtensions
                 options.CallbackPath = "/signin-aad";
                 options.SignedOutCallbackPath = "/signout-callback-aad";
                 options.RemoteSignOutPath = "/signout-aad";
+                options.MapInboundClaims = false;
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = "name",
