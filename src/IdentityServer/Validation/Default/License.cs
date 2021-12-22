@@ -33,45 +33,70 @@ namespace Duende.IdentityServer.Validation
             }
 
             Edition = editionValue;
-            ISV = claims.HasClaim("feature", "isv");
+            ISVFeature = claims.HasClaim("feature", "isv");
 
-            if (ISV && IsCommunity)
+            if (IsCommunityEdition && ISVFeature)
             {
                 throw new Exception("Invalid License: ISV is not valid for community edition.");
             }
 
-            KeyManagement = claims.HasClaim("feature", "key_management");
+            if (IsBffEdition && ISVFeature)
+            {
+                throw new Exception("Invalid License: ISV is not valid for BFF edition.");
+            }
+
+            if (IsBffEdition)
+            {
+                // for BFF-only edition we set BFF flag and ignore all other features
+                BffFeature = true;
+                ClientLimit = 0;
+                IssuerLimit = 0;
+                return;
+            }
+
+            KeyManagementFeature = claims.HasClaim("feature", "key_management");
             switch (Edition)
             {
                 case LicenseEdition.Enterprise:
                 case LicenseEdition.Business:
                 case LicenseEdition.Community:
-                    KeyManagement = true;
+                    KeyManagementFeature = true;
                     break;
             }
 
-            ResourceIsolation = claims.HasClaim("feature", "resource_isolation");
+            ResourceIsolationFeature = claims.HasClaim("feature", "resource_isolation");
             switch (Edition)
             {
                 case LicenseEdition.Enterprise:
                 case LicenseEdition.Community:
-                    ResourceIsolation = true;
+                    ResourceIsolationFeature = true;
                     break;
             }
             
-            DynamicProviders = claims.HasClaim("feature", "dynamic_providers");
+            DynamicProvidersFeature = claims.HasClaim("feature", "dynamic_providers");
             switch (Edition)
             {
                 case LicenseEdition.Enterprise:
                 case LicenseEdition.Community:
-                    DynamicProviders = true;
+                    DynamicProvidersFeature = true;
                     break;
             }
+
+            BffFeature = claims.HasClaim("feature", "bff");
+            switch (Edition)
+            {
+                case LicenseEdition.Enterprise:
+                case LicenseEdition.Business:
+                case LicenseEdition.Community:
+                    BffFeature = true;
+                    break;
+            }
+
 
             if (!claims.HasClaim("feature", "unlimited_clients"))
             {
                 // default values
-                if (ISV)
+                if (ISVFeature)
                 {
                     // default for all ISV editions
                     ClientLimit = 5;
@@ -96,7 +121,7 @@ namespace Duende.IdentityServer.Validation
                     ClientLimit = clientLimit;
                 }
 
-                if (!ISV)
+                if (!ISVFeature)
                 {
                     // these for the non-ISV editions that always have unlimited, regardless of explicit value
                     switch (Edition)
@@ -139,25 +164,28 @@ namespace Duende.IdentityServer.Validation
 
         public LicenseEdition Edition { get; set; }
 
-        internal bool IsEnterprise => Edition == LicenseEdition.Enterprise;
-        internal bool IsBusiness => Edition == LicenseEdition.Business;
-        internal bool IsStarter => Edition == LicenseEdition.Starter;
-        internal bool IsCommunity => Edition == LicenseEdition.Community;
+        internal bool IsEnterpriseEdition => Edition == LicenseEdition.Enterprise;
+        internal bool IsBusinessEdition => Edition == LicenseEdition.Business;
+        internal bool IsStarterEdition => Edition == LicenseEdition.Starter;
+        internal bool IsCommunityEdition => Edition == LicenseEdition.Community;
+        internal bool IsBffEdition => Edition == LicenseEdition.Bff;
 
         public int? ClientLimit { get; set; }
         public int? IssuerLimit { get; set; }
 
-        public bool KeyManagement { get; set; }
-        public bool ResourceIsolation { get; set; }
-        public bool DynamicProviders { get; set; }
-        public bool ISV { get; set; }
+        public bool KeyManagementFeature { get; set; }
+        public bool ResourceIsolationFeature { get; set; }
+        public bool DynamicProvidersFeature { get; set; }
+        public bool ISVFeature { get; set; }
+        public bool BffFeature { get; set; }
 
         public enum LicenseEdition
         {
             Enterprise,
             Business,
             Starter,
-            Community
+            Community,
+            Bff
         }
 
         public override string ToString()

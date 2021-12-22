@@ -10,7 +10,6 @@ using Duende.IdentityServer;
 namespace IdentityServerHost
 {
     [Route("localApi")]
-    [Authorize(IdentityServerConstants.LocalApi.PolicyName)]
     public class LocalApiController : ControllerBase
     {
         public IActionResult Get()

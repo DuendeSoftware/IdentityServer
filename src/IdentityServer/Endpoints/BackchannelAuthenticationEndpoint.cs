@@ -11,7 +11,6 @@ using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using static Duende.IdentityServer.Constants;
 using Duende.IdentityServer.Events;
 using IdentityModel;
 

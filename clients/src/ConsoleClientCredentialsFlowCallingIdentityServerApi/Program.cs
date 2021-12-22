@@ -24,6 +24,9 @@ namespace ConsoleClientCredentialsFlowCallingIdentityServerApi
 
             Console.ReadLine();
             await CallServiceAsync(response.AccessToken);
+            
+            Console.ReadLine();
+            await CallServiceAsync(null);
         }
 
         static async Task<TokenResponse> RequestTokenAsync(string clientId)
@@ -55,7 +58,7 @@ namespace ConsoleClientCredentialsFlowCallingIdentityServerApi
                 BaseAddress = new Uri(baseAddress)
             };
 
-            client.SetBearerToken(token);
+            if (token is not null) client.SetBearerToken(token);
             var response = await client.GetStringAsync("localApi");
 
             "\n\nService claims:".ConsoleGreen();
