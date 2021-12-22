@@ -105,12 +105,13 @@ internal static class HostingExtensions
         app.UseIdentityServer();
         app.UseAuthorization();
 
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
-            endpoints.MapRazorPages()
-                .RequireAuthorization();
-        });
+        // local API endpoints
+        app.MapControllers()
+            .RequireAuthorization(IdentityServerConstants.LocalApi.PolicyName);
+        
+        // UI
+        app.MapRazorPages()
+            .RequireAuthorization();
 
         return app;
     }
