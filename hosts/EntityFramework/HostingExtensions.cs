@@ -1,8 +1,4 @@
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Duende.IdentityServer;
-using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -18,21 +14,9 @@ internal static class HostingExtensions
         builder.Services.AddRazorPages()
             .AddRazorRuntimeCompilation();
 
-        builder.Services.AddControllers();
-
-        // cookie policy to deal with temporary browser incompatibilities
-        builder.Services.AddSameSiteCookiePolicy();
-
         builder.ConfigureIdentityServer();
         builder.AddExternalIdentityProviders();
 
-        builder.Services.AddLocalApiAuthentication(principal =>
-        {
-            principal.Identities.First().AddClaim(new Claim("additional_claim", "additional_value"));
-
-            return Task.FromResult(principal);
-        });
-        
         return builder.Build();
     }
 
@@ -100,8 +84,6 @@ internal static class HostingExtensions
         app.UseSerilogRequestLogging(
             options => options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Debug);
 
-        app.UseCookiePolicy();
-
         app.UseDeveloperExceptionPage();
         app.UseStaticFiles();
 
@@ -109,11 +91,6 @@ internal static class HostingExtensions
         app.UseIdentityServer();
         app.UseAuthorization();
 
-        // local API endpoints
-        app.MapControllers()
-            .RequireAuthorization(IdentityServerConstants.LocalApi.PolicyName);
-        
-        // UI
         app.MapRazorPages()
             .RequireAuthorization();
 
