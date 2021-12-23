@@ -1,5 +1,6 @@
 using Duende.IdentityServer;
 using IdentityServerHost.Pages.Admin.Clients;
+using IdentityServerHost.Pages.Admin.IdentityScopes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +33,7 @@ internal static class HostingExtensions
         );
         builder.Services.Configure<RazorPagesOptions>(options => options.Conventions.AuthorizeFolder("/Admin", "admin"));
         builder.Services.AddTransient<ClientRepository>();
+        builder.Services.AddTransient<IdentityScopeRepository>();
     }
 
     private static void AddExternalIdentityProviders(this WebApplicationBuilder builder)

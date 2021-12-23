@@ -79,12 +79,12 @@ namespace IdentityServerHost.Pages.Admin.Clients
                 query = query.Where(x => x.ClientId.Contains(filter) || x.ClientName.Contains(filter));
             }
 
-            var result = query.Select(x=>new ClientSummaryModel
-            { 
-                    ClientId = x.ClientId,
-                    Name = x.ClientName,
-                    Flow = x.AllowedGrantTypes.Select(x=>x.GrantType).Single() == GrantType.ClientCredentials ? Flow.ClientCredentials : Flow.CodeFlowWithPkce
-                });
+            var result = query.Select(x => new ClientSummaryModel
+            {
+                ClientId = x.ClientId,
+                Name = x.ClientName,
+                Flow = x.AllowedGrantTypes.Select(x => x.GrantType).Single() == GrantType.ClientCredentials ? Flow.ClientCredentials : Flow.CodeFlowWithPkce
+            });
 
             return await result.ToArrayAsync();
         }
@@ -107,7 +107,7 @@ namespace IdentityServerHost.Pages.Admin.Clients
                 Name = client.ClientName,
                 Flow = client.AllowedGrantTypes.Select(x => x.GrantType)
                     .Single() == GrantType.ClientCredentials ? Flow.ClientCredentials : Flow.CodeFlowWithPkce,
-                AllowedScopes = client.AllowedScopes.Any() ? client.AllowedScopes.Select(x=>x.Scope).Aggregate((a, b) =>$"{a} {b}") : null,
+                AllowedScopes = client.AllowedScopes.Any() ? client.AllowedScopes.Select(x => x.Scope).Aggregate((a, b) => $"{a} {b}") : null,
                 RedirectUri = client.RedirectUris.Select(x => x.RedirectUri).SingleOrDefault(),
                 PostLogoutRedirectUri = client.PostLogoutRedirectUris.Select(x => x.PostLogoutRedirectUri).SingleOrDefault(),
                 FrontChannelLogoutUri = client.FrontChannelLogoutUri,
@@ -120,7 +120,7 @@ namespace IdentityServerHost.Pages.Admin.Clients
             var client = new Duende.IdentityServer.Models.Client();
             client.ClientId = model.ClientId;
             client.ClientName = model.Name;
-            
+
             if (model.Flow == Flow.ClientCredentials)
             {
                 client.AllowedGrantTypes = GrantTypes.ClientCredentials;
@@ -133,7 +133,7 @@ namespace IdentityServerHost.Pages.Admin.Clients
             _context.Clients.Add(client.ToEntity());
             await _context.SaveChangesAsync();
         }
-        
+
         public async Task UpdateAsync(ClientModel model)
         {
             var client = await _context.Clients
@@ -142,7 +142,7 @@ namespace IdentityServerHost.Pages.Admin.Clients
                 .Include(x => x.RedirectUris)
                 .Include(x => x.PostLogoutRedirectUris)
                 .SingleOrDefaultAsync(x => x.ClientId == model.ClientId);
-            
+
             if (client == null) throw new Exception("Invalid Client Id");
 
             if (client.ClientName != model.Name)
@@ -162,14 +162,15 @@ namespace IdentityServerHost.Pages.Admin.Clients
             }
             if (scopesToAdd.Any())
             {
-                client.AllowedScopes.AddRange(scopesToAdd.Select(x=>new ClientScope { 
+                client.AllowedScopes.AddRange(scopesToAdd.Select(x => new ClientScope
+                {
                     Scope = x,
                 }));
             }
 
             var flow = client.AllowedGrantTypes.Select(x => x.GrantType)
                         .Single() == GrantType.ClientCredentials ? Flow.ClientCredentials : Flow.CodeFlowWithPkce;
-            
+
             if (flow == Flow.CodeFlowWithPkce)
             {
                 if (client.RedirectUris.SingleOrDefault()?.RedirectUri != model.RedirectUri)
@@ -198,9 +199,9 @@ namespace IdentityServerHost.Pages.Admin.Clients
         public async Task DeleteAsync(string clientId)
         {
             var client = await _context.Clients.SingleOrDefaultAsync(x => x.ClientId == clientId);
-            
+
             if (client == null) throw new Exception("Invalid Client Id");
-            
+
             _context.Clients.Remove(client);
             await _context.SaveChangesAsync();
         }
