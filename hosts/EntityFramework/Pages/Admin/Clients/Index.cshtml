@@ -11,30 +11,46 @@
     </div>
 
     <div class="row">
-        <a asp-page="/Admin/Clients/Edit" class="btn btn-success">New</a>
+        <div class="col-md-6">
+            <form class="row">
+                <div class="form-group">
+                    <input class="form-control" placeholder="Filter" id="filter" name="filter" type="text" value="@Model.Filter" autofocus />
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary">Search</button>
+                </div>
+
+                <div class="col">
+                    <a asp-page="/Admin/Index" class="btn btn-secondary">Cancel</a>
+                    <a asp-page="/Admin/Clients/New" class="btn btn-success">New</a>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="row">
-        <table class="table table-striped table-sm">
-            <thead>
-                <tr>
-                    <th>Client ID</th>
-                    <th>Name</th>
-                    <th>Flow</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach(var client in Model.Clients)
-                {
+        <div class="col">
+            <table class="table table-striped table-sm">
+                <thead>
                     <tr>
-                        <td><a asp-page="/Admin/Clients/Edit" asp-route-id="@client.ClientId">@client.ClientId</a></td>
-                        <td>@client.ClientName</td>
-                        <td>@client.Flow</td>
+                        <th>Client ID</th>
+                        <th>Name</th>
+                        <th>Flow</th>
                     </tr>
-                }
-            </tbody>
+                </thead>
 
-        </table>
+                <tbody>
+                    @foreach(var client in Model.Clients)
+                    {
+                        <tr>
+                            <td><a asp-page="/Admin/Clients/Edit" asp-route-id="@client.ClientId">@client.ClientId</a></td>
+                            <td>@client.Name</td>
+                            <td>@client.Flow</td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
     </div>
 </div>

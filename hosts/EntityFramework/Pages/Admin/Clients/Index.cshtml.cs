@@ -16,11 +16,13 @@ namespace IdentityServerHost.Pages.Admin.Clients
             _repository = repository;
         }
 
-        public IEnumerable<ClientModel> Clients { get; private set; }
+        public IEnumerable<ClientSummaryModel> Clients { get; private set; }
+        public string Filter { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(string filter)
         {
-            Clients = await _repository.GetAllAsync();
+            Filter = filter;
+            Clients = await _repository.GetAllAsync(filter);
         }
     }
 }

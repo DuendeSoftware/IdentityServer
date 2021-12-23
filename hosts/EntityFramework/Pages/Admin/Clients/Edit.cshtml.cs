@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace IdentityServerHost.Pages.Admin.Clients
@@ -19,17 +18,35 @@ namespace IdentityServerHost.Pages.Admin.Clients
 
         [BindProperty]
         public ClientModel InputModel { get; set; }
+        [BindProperty]
+        public string Button { get; set; }
 
-        public async Task OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            InputModel = await _repository.GetByIdAsync(id);
+            if (InputModel == null)
             {
-                InputModel = new ClientModel();
+                return RedirectToPage("/Admin/Clients/Index");
             }
-            else
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync(string id)
+        {
+            if (Button == "delete")
             {
-                InputModel = await _repository.GetByIdAsync(id);
+                await _repository.DeleteAsync(id);
+                return RedirectToPage("/Admin/Clients/Index");
             }
+
+            if (ModelState.IsValid)
+            {
+                await _repository.UpdateAsync(InputModel);
+                return RedirectToPage("/Admin/Clients/Edit", new { id });
+            }
+
+            return Page();
         }
     }
 }
