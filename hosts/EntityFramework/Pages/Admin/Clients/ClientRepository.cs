@@ -118,8 +118,8 @@ namespace IdentityServerHost.Pages.Admin.Clients
         public async Task CreateAsync(CreateClientModel model)
         {
             var client = new Duende.IdentityServer.Models.Client();
-            client.ClientId = model.ClientId;
-            client.ClientName = model.Name;
+            client.ClientId = model.ClientId.Trim();
+            client.ClientName = model.Name?.Trim();
 
             if (model.Flow == Flow.ClientCredentials)
             {
@@ -176,12 +176,18 @@ namespace IdentityServerHost.Pages.Admin.Clients
                 if (client.RedirectUris.SingleOrDefault()?.RedirectUri != model.RedirectUri)
                 {
                     client.RedirectUris.Clear();
-                    client.RedirectUris.Add(new ClientRedirectUri { RedirectUri = model.RedirectUri.Trim() });
+                    if (model.RedirectUri != null)
+                    {
+                        client.RedirectUris.Add(new ClientRedirectUri { RedirectUri = model.RedirectUri.Trim() });
+                    }
                 }
                 if (client.PostLogoutRedirectUris.SingleOrDefault()?.PostLogoutRedirectUri != model.PostLogoutRedirectUri)
                 {
                     client.PostLogoutRedirectUris.Clear();
-                    client.PostLogoutRedirectUris.Add(new ClientPostLogoutRedirectUri { PostLogoutRedirectUri = model.PostLogoutRedirectUri.Trim() });
+                    if (model.PostLogoutRedirectUri != null)
+                    {
+                        client.PostLogoutRedirectUris.Add(new ClientPostLogoutRedirectUri { PostLogoutRedirectUri = model.PostLogoutRedirectUri.Trim() });
+                    }
                 }
                 if (client.FrontChannelLogoutUri != model.FrontChannelLogoutUri)
                 {

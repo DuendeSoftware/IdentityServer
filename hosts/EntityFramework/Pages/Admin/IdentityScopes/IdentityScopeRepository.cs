@@ -73,7 +73,7 @@ namespace IdentityServerHost.Pages.Admin.IdentityScopes
             var scope = new Duende.IdentityServer.Models.IdentityResource()
             {
                 Name = model.Name,
-                DisplayName = model.DisplayName
+                DisplayName = model.DisplayName?.Trim()
             };
 
             var claims = model.UserClaims?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToArray() ?? Enumerable.Empty<string>();
@@ -96,7 +96,7 @@ namespace IdentityServerHost.Pages.Admin.IdentityScopes
 
             if (scope.DisplayName != model.DisplayName)
             {
-                scope.DisplayName = model.DisplayName;
+                scope.DisplayName = model.DisplayName?.Trim();
             }
 
             var claims = model.UserClaims?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToArray() ?? Enumerable.Empty<string>();

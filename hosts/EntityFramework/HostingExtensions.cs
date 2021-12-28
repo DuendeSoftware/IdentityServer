@@ -32,7 +32,10 @@ internal static class HostingExtensions
             options.AddPolicy("admin", 
                 policy => policy.RequireClaim("sub", "1"))
         );
-        builder.Services.Configure<RazorPagesOptions>(options => options.Conventions.AuthorizeFolder("/Admin", "admin"));
+
+        builder.Services.Configure<RazorPagesOptions>(options => 
+            options.Conventions.AuthorizeFolder("/Admin", "admin"));
+
         builder.Services.AddTransient<ClientRepository>();
         builder.Services.AddTransient<IdentityScopeRepository>();
         builder.Services.AddTransient<ApiScopeRepository>();
