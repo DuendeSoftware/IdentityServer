@@ -34,7 +34,7 @@ namespace IdentityServerHost.Pages.Admin.ApiScopes
 
         public async Task<IEnumerable<ApiScopeSummaryModel>> GetAllAsync(string filter = null)
         {
-            var query = _context.ApiResources
+            var query = _context.ApiScopes
                 .Include(x => x.UserClaims)
                 .AsQueryable();
 
@@ -54,7 +54,7 @@ namespace IdentityServerHost.Pages.Admin.ApiScopes
 
         public async Task<ApiScopeModel> GetByIdAsync(string id)
         {
-            var scope = await _context.ApiResources
+            var scope = await _context.ApiScopes
                 .Include(x => x.UserClaims)
                 .SingleOrDefaultAsync(x => x.Name == id);
 
@@ -70,7 +70,7 @@ namespace IdentityServerHost.Pages.Admin.ApiScopes
 
         public async Task CreateAsync(ApiScopeModel model)
         {
-            var scope = new Duende.IdentityServer.Models.ApiResource()
+            var scope = new Duende.IdentityServer.Models.ApiScope()
             {
                 Name = model.Name,
                 DisplayName = model.DisplayName?.Trim()
@@ -82,13 +82,13 @@ namespace IdentityServerHost.Pages.Admin.ApiScopes
                 scope.UserClaims = claims.ToList();
             }
 
-            _context.ApiResources.Add(scope.ToEntity());
+            _context.ApiScopes.Add(scope.ToEntity());
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(ApiScopeModel model)
         {
-            var scope = await _context.ApiResources
+            var scope = await _context.ApiScopes
                 .Include(x => x.UserClaims)
                 .SingleOrDefaultAsync(x => x.Name == model.Name);
 
@@ -111,7 +111,7 @@ namespace IdentityServerHost.Pages.Admin.ApiScopes
             }
             if (claimsToAdd.Any())
             {
-                scope.UserClaims.AddRange(claimsToAdd.Select(x => new ApiResourceClaim
+                scope.UserClaims.AddRange(claimsToAdd.Select(x => new ApiScopeClaim
                 {
                     Type = x,
                 }));
@@ -122,11 +122,11 @@ namespace IdentityServerHost.Pages.Admin.ApiScopes
 
         public async Task DeleteAsync(string id)
         {
-            var scope = await _context.ApiResources.SingleOrDefaultAsync(x => x.Name == id);
+            var scope = await _context.ApiScopes.SingleOrDefaultAsync(x => x.Name == id);
 
             if (scope == null) throw new Exception("Invalid Api Scope");
 
-            _context.ApiResources.Remove(scope);
+            _context.ApiScopes.Remove(scope);
             await _context.SaveChangesAsync();
         }
 
