@@ -59,7 +59,7 @@ namespace Duende.IdentityServer.Validation
             if (isAllowed) return isAllowed;
 
             // since this is appauth specific, we can require pkce
-            if (client.RequirePkce && client.RedirectUris.Contains("http://127.0.0.1")) return IsLoopback(requestedUri);
+            if (client.RequirePkce && client.PostLogoutRedirectUris.Contains("http://127.0.0.1")) return IsLoopback(requestedUri);
 
             return false;
         }
