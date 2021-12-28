@@ -32,6 +32,6 @@ internal static class IdentityServerExtensions
             //.AddConfigurationStoreCache()
             ;
 
-       return builder;
+        return builder;
     }
 }
