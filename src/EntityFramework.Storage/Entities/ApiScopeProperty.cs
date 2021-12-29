@@ -4,11 +4,10 @@
 
 #pragma warning disable 1591
 
-namespace Duende.IdentityServer.EntityFramework.Entities
+namespace Duende.IdentityServer.EntityFramework.Entities;
+
+public class ApiScopeProperty : Property
 {
-    public class ApiScopeProperty : Property
-    {
-        public int ScopeId { get; set; }
-        public ApiScope Scope { get; set; }
-    }
+    public int ScopeId { get; set; }
+    public ApiScope Scope { get; set; }
 }

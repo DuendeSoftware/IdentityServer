@@ -11,67 +11,66 @@ using IdentityModel;
 using UnitTests.Validation.Setup;
 using Xunit;
 
-namespace UnitTests.Validation.AuthorizeRequest_Validation
+namespace UnitTests.Validation.AuthorizeRequest_Validation;
+
+public class Authorize_ProtocolValidation_CustomValidator
 {
-    public class Authorize_ProtocolValidation_CustomValidator
+    private const string Category = "AuthorizeRequest Protocol Validation";
+
+    private StubAuthorizeRequestValidator _stubAuthorizeRequestValidator = new StubAuthorizeRequestValidator();
+    private AuthorizeRequestValidator _subject;
+
+    public Authorize_ProtocolValidation_CustomValidator()
     {
-        private const string Category = "AuthorizeRequest Protocol Validation";
-
-        private StubAuthorizeRequestValidator _stubAuthorizeRequestValidator = new StubAuthorizeRequestValidator();
-        private AuthorizeRequestValidator _subject;
-
-        public Authorize_ProtocolValidation_CustomValidator()
-        {
-            _subject = Factory.CreateAuthorizeRequestValidator(customValidator: _stubAuthorizeRequestValidator);
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task should_call_custom_validator()
-        {
-            var parameters = new NameValueCollection();
-            parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "codeclient");
-            parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid");
-            parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "https://server/cb");
-            parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Code);
-
-            var result = await _subject.ValidateAsync(parameters);
-
-            _stubAuthorizeRequestValidator.WasCalled.Should().BeTrue();
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task should_return_error_info_from_custom_validator()
-        {
-            var parameters = new NameValueCollection();
-            parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "codeclient");
-            parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid");
-            parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "https://server/cb");
-            parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Code);
-
-            _stubAuthorizeRequestValidator.Callback = ctx =>
-            {
-                ctx.Result = new AuthorizeRequestValidationResult(ctx.Result.ValidatedRequest, "foo", "bar");
-            };
-            var result = await _subject.ValidateAsync(parameters);
-
-            result.IsError.Should().BeTrue();
-            result.Error.Should().Be("foo");
-            result.ErrorDescription.Should().Be("bar");
-        }
+        _subject = Factory.CreateAuthorizeRequestValidator(customValidator: _stubAuthorizeRequestValidator);
     }
 
-    public class StubAuthorizeRequestValidator : ICustomAuthorizeRequestValidator
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task should_call_custom_validator()
     {
-        public Action<CustomAuthorizeRequestValidationContext> Callback;
-        public bool WasCalled { get; set; }
+        var parameters = new NameValueCollection();
+        parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "codeclient");
+        parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid");
+        parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "https://server/cb");
+        parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Code);
 
-        public Task ValidateAsync(CustomAuthorizeRequestValidationContext context)
+        var result = await _subject.ValidateAsync(parameters);
+
+        _stubAuthorizeRequestValidator.WasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task should_return_error_info_from_custom_validator()
+    {
+        var parameters = new NameValueCollection();
+        parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "codeclient");
+        parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid");
+        parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "https://server/cb");
+        parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Code);
+
+        _stubAuthorizeRequestValidator.Callback = ctx =>
         {
-            WasCalled = true;
-            Callback?.Invoke(context);
-            return Task.CompletedTask;
-        }
+            ctx.Result = new AuthorizeRequestValidationResult(ctx.Result.ValidatedRequest, "foo", "bar");
+        };
+        var result = await _subject.ValidateAsync(parameters);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("foo");
+        result.ErrorDescription.Should().Be("bar");
+    }
+}
+
+public class StubAuthorizeRequestValidator : ICustomAuthorizeRequestValidator
+{
+    public Action<CustomAuthorizeRequestValidationContext> Callback;
+    public bool WasCalled { get; set; }
+
+    public Task ValidateAsync(CustomAuthorizeRequestValidationContext context)
+    {
+        WasCalled = true;
+        Callback?.Invoke(context);
+        return Task.CompletedTask;
     }
 }

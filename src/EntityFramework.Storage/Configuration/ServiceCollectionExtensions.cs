@@ -9,175 +9,174 @@ using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Duende.IdentityServer.EntityFramework.Storage
+namespace Duende.IdentityServer.EntityFramework.Storage;
+
+/// <summary>
+/// Extension methods to add EF database support to IdentityServer.
+/// </summary>
+public static class IdentityServerEntityFrameworkBuilderExtensions
 {
     /// <summary>
-    /// Extension methods to add EF database support to IdentityServer.
+    /// Add Configuration DbContext to the DI system.
     /// </summary>
-    public static class IdentityServerEntityFrameworkBuilderExtensions
+    /// <param name="services"></param>
+    /// <param name="storeOptionsAction">The store options action.</param>
+    /// <returns></returns>
+    public static IServiceCollection AddConfigurationDbContext(this IServiceCollection services,
+        Action<ConfigurationStoreOptions> storeOptionsAction = null)
     {
-        /// <summary>
-        /// Add Configuration DbContext to the DI system.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="storeOptionsAction">The store options action.</param>
-        /// <returns></returns>
-        public static IServiceCollection AddConfigurationDbContext(this IServiceCollection services,
-            Action<ConfigurationStoreOptions> storeOptionsAction = null)
-        {
-            return services.AddConfigurationDbContext<ConfigurationDbContext>(storeOptionsAction);
-        }
+        return services.AddConfigurationDbContext<ConfigurationDbContext>(storeOptionsAction);
+    }
 
-        /// <summary>
-        /// Add Configuration DbContext to the DI system.
-        /// </summary>
-        /// <typeparam name="TContext">The IConfigurationDbContext to use.</typeparam>
-        /// <param name="services"></param>
-        /// <param name="storeOptionsAction">The store options action.</param>
-        /// <returns></returns>
-        public static IServiceCollection AddConfigurationDbContext<TContext>(this IServiceCollection services,
-            Action<ConfigurationStoreOptions> storeOptionsAction = null)
-            where TContext : DbContext, IConfigurationDbContext
-        {
-            var options = new ConfigurationStoreOptions();
-            services.AddSingleton(options);
-            storeOptionsAction?.Invoke(options);
+    /// <summary>
+    /// Add Configuration DbContext to the DI system.
+    /// </summary>
+    /// <typeparam name="TContext">The IConfigurationDbContext to use.</typeparam>
+    /// <param name="services"></param>
+    /// <param name="storeOptionsAction">The store options action.</param>
+    /// <returns></returns>
+    public static IServiceCollection AddConfigurationDbContext<TContext>(this IServiceCollection services,
+        Action<ConfigurationStoreOptions> storeOptionsAction = null)
+        where TContext : DbContext, IConfigurationDbContext
+    {
+        var options = new ConfigurationStoreOptions();
+        services.AddSingleton(options);
+        storeOptionsAction?.Invoke(options);
 
-            if (options.ResolveDbContextOptions != null)
+        if (options.ResolveDbContextOptions != null)
+        {
+            if (options.EnablePooling)
             {
-                if (options.EnablePooling)
+                if (options.PoolSize.HasValue)
                 {
-                    if (options.PoolSize.HasValue)
-                    {
-                        services.AddDbContextPool<TContext>(options.ResolveDbContextOptions, options.PoolSize.Value);
-                    }
-                    else
-                    {
-                        services.AddDbContextPool<TContext>(options.ResolveDbContextOptions);
-                    }
+                    services.AddDbContextPool<TContext>(options.ResolveDbContextOptions, options.PoolSize.Value);
                 }
                 else
                 {
-                    services.AddDbContext<TContext>(options.ResolveDbContextOptions);
+                    services.AddDbContextPool<TContext>(options.ResolveDbContextOptions);
                 }
             }
             else
             {
-                if (options.EnablePooling)
-                {
-                    if (options.PoolSize.HasValue)
-                    {
-                        services.AddDbContextPool<TContext>(
-                            dbCtxBuilder => { options.ConfigureDbContext?.Invoke(dbCtxBuilder); }, options.PoolSize.Value);
-                    }
-                    else
-                    {
-                        services.AddDbContextPool<TContext>(
-                            dbCtxBuilder => { options.ConfigureDbContext?.Invoke(dbCtxBuilder); });
-                    }
-                }
-                else
-                {
-                    services.AddDbContext<TContext>(dbCtxBuilder =>
-                    {
-                        options.ConfigureDbContext?.Invoke(dbCtxBuilder);
-                    });
-                }
+                services.AddDbContext<TContext>(options.ResolveDbContextOptions);
             }
-
-            services.AddScoped<IConfigurationDbContext, TContext>();
-
-            return services;
         }
-
-        /// <summary>
-        /// Adds operational DbContext to the DI system.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="storeOptionsAction">The store options action.</param>
-        /// <returns></returns>
-        public static IServiceCollection AddOperationalDbContext(this IServiceCollection services,
-            Action<OperationalStoreOptions> storeOptionsAction = null)
+        else
         {
-            return services.AddOperationalDbContext<PersistedGrantDbContext>(storeOptionsAction);
-        }
-
-        /// <summary>
-        /// Adds operational DbContext to the DI system.
-        /// </summary>
-        /// <typeparam name="TContext">The IPersistedGrantDbContext to use.</typeparam>
-        /// <param name="services"></param>
-        /// <param name="storeOptionsAction">The store options action.</param>
-        /// <returns></returns>
-        public static IServiceCollection AddOperationalDbContext<TContext>(this IServiceCollection services,
-            Action<OperationalStoreOptions> storeOptionsAction = null)
-            where TContext : DbContext, IPersistedGrantDbContext
-        {
-            var storeOptions = new OperationalStoreOptions();
-            services.AddSingleton(storeOptions);
-            storeOptionsAction?.Invoke(storeOptions);
-
-            if (storeOptions.ResolveDbContextOptions != null)
+            if (options.EnablePooling)
             {
-                if (storeOptions.EnablePooling)
+                if (options.PoolSize.HasValue)
                 {
-                    if (storeOptions.PoolSize.HasValue)
-                    {
-                        services.AddDbContextPool<TContext>(storeOptions.ResolveDbContextOptions,
-                            storeOptions.PoolSize.Value);
-                    }
-                    else
-                    {
-                        services.AddDbContextPool<TContext>(storeOptions.ResolveDbContextOptions);
-                    }
+                    services.AddDbContextPool<TContext>(
+                        dbCtxBuilder => { options.ConfigureDbContext?.Invoke(dbCtxBuilder); }, options.PoolSize.Value);
                 }
                 else
                 {
-                    services.AddDbContext<TContext>(storeOptions.ResolveDbContextOptions);
+                    services.AddDbContextPool<TContext>(
+                        dbCtxBuilder => { options.ConfigureDbContext?.Invoke(dbCtxBuilder); });
                 }
             }
             else
             {
-                if (storeOptions.EnablePooling)
+                services.AddDbContext<TContext>(dbCtxBuilder =>
                 {
-                    if (storeOptions.PoolSize.HasValue)
-                    {
-                        services.AddDbContextPool<TContext>(
-                            dbCtxBuilder => { storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder); },
-                            storeOptions.PoolSize.Value);
-                    }
-                    else
-                    {
-                        services.AddDbContextPool<TContext>(
-                            dbCtxBuilder => { storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder); });
-                    }
+                    options.ConfigureDbContext?.Invoke(dbCtxBuilder);
+                });
+            }
+        }
+
+        services.AddScoped<IConfigurationDbContext, TContext>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds operational DbContext to the DI system.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="storeOptionsAction">The store options action.</param>
+    /// <returns></returns>
+    public static IServiceCollection AddOperationalDbContext(this IServiceCollection services,
+        Action<OperationalStoreOptions> storeOptionsAction = null)
+    {
+        return services.AddOperationalDbContext<PersistedGrantDbContext>(storeOptionsAction);
+    }
+
+    /// <summary>
+    /// Adds operational DbContext to the DI system.
+    /// </summary>
+    /// <typeparam name="TContext">The IPersistedGrantDbContext to use.</typeparam>
+    /// <param name="services"></param>
+    /// <param name="storeOptionsAction">The store options action.</param>
+    /// <returns></returns>
+    public static IServiceCollection AddOperationalDbContext<TContext>(this IServiceCollection services,
+        Action<OperationalStoreOptions> storeOptionsAction = null)
+        where TContext : DbContext, IPersistedGrantDbContext
+    {
+        var storeOptions = new OperationalStoreOptions();
+        services.AddSingleton(storeOptions);
+        storeOptionsAction?.Invoke(storeOptions);
+
+        if (storeOptions.ResolveDbContextOptions != null)
+        {
+            if (storeOptions.EnablePooling)
+            {
+                if (storeOptions.PoolSize.HasValue)
+                {
+                    services.AddDbContextPool<TContext>(storeOptions.ResolveDbContextOptions,
+                        storeOptions.PoolSize.Value);
                 }
                 else
                 {
-                    services.AddDbContext<TContext>(dbCtxBuilder =>
-                    {
-                        storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder);
-                    });
+                    services.AddDbContextPool<TContext>(storeOptions.ResolveDbContextOptions);
                 }
             }
-
-            services.AddScoped<IPersistedGrantDbContext, TContext>();
-            services.AddTransient<TokenCleanupService>();
-
-            return services;
+            else
+            {
+                services.AddDbContext<TContext>(storeOptions.ResolveDbContextOptions);
+            }
         }
-
-        /// <summary>
-        /// Adds an implementation of the IOperationalStoreNotification to the DI system.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddOperationalStoreNotification<T>(this IServiceCollection services)
-            where T : class, IOperationalStoreNotification
+        else
         {
-            services.AddTransient<IOperationalStoreNotification, T>();
-            return services;
+            if (storeOptions.EnablePooling)
+            {
+                if (storeOptions.PoolSize.HasValue)
+                {
+                    services.AddDbContextPool<TContext>(
+                        dbCtxBuilder => { storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder); },
+                        storeOptions.PoolSize.Value);
+                }
+                else
+                {
+                    services.AddDbContextPool<TContext>(
+                        dbCtxBuilder => { storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder); });
+                }
+            }
+            else
+            {
+                services.AddDbContext<TContext>(dbCtxBuilder =>
+                {
+                    storeOptions.ConfigureDbContext?.Invoke(dbCtxBuilder);
+                });
+            }
         }
+
+        services.AddScoped<IPersistedGrantDbContext, TContext>();
+        services.AddTransient<TokenCleanupService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds an implementation of the IOperationalStoreNotification to the DI system.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddOperationalStoreNotification<T>(this IServiceCollection services)
+        where T : class, IOperationalStoreNotification
+    {
+        services.AddTransient<IOperationalStoreNotification, T>();
+        return services;
     }
 }

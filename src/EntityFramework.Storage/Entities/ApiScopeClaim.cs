@@ -3,11 +3,10 @@
 
 #pragma warning disable 1591
 
-namespace Duende.IdentityServer.EntityFramework.Entities
+namespace Duende.IdentityServer.EntityFramework.Entities;
+
+public class ApiScopeClaim : UserClaim
 {
-    public class ApiScopeClaim : UserClaim
-    {
-        public int ScopeId { get; set; }
-        public ApiScope Scope { get; set; }
-    }
+    public int ScopeId { get; set; }
+    public ApiScope Scope { get; set; }
 }

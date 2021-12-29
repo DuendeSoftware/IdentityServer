@@ -10,63 +10,62 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Validates secrets using the registered validators
+/// </summary>
+public class SecretValidator : ISecretsListValidator
 {
+    private readonly ILogger _logger;
+    private readonly IEnumerable<ISecretValidator> _validators;
+    private readonly ISystemClock _clock;
+
     /// <summary>
-    /// Validates secrets using the registered validators
+    /// Initializes a new instance of the <see cref="SecretValidator"/> class.
     /// </summary>
-    public class SecretValidator : ISecretsListValidator
+    /// <param name="clock">The clock.</param>
+    /// <param name="validators">The validators.</param>
+    /// <param name="logger">The logger.</param>
+    public SecretValidator(ISystemClock clock, IEnumerable<ISecretValidator> validators, ILogger<ISecretsListValidator> logger)
     {
-        private readonly ILogger _logger;
-        private readonly IEnumerable<ISecretValidator> _validators;
-        private readonly ISystemClock _clock;
+        _clock = clock;
+        _validators = validators;
+        _logger = logger;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SecretValidator"/> class.
-        /// </summary>
-        /// <param name="clock">The clock.</param>
-        /// <param name="validators">The validators.</param>
-        /// <param name="logger">The logger.</param>
-        public SecretValidator(ISystemClock clock, IEnumerable<ISecretValidator> validators, ILogger<ISecretsListValidator> logger)
+    /// <summary>
+    /// Validates the secret.
+    /// </summary>
+    /// <param name="parsedSecret">The parsed secret.</param>
+    /// <param name="secrets">The secrets.</param>
+    /// <returns></returns>
+    public async Task<SecretValidationResult> ValidateAsync(IEnumerable<Secret> secrets, ParsedSecret parsedSecret)
+    {
+        var secretsArray = secrets as Secret[] ?? secrets.ToArray();
+
+        var expiredSecrets = secretsArray.Where(s => s.Expiration.HasExpired(_clock.UtcNow.UtcDateTime)).ToList();
+        if (expiredSecrets.Any())
         {
-            _clock = clock;
-            _validators = validators;
-            _logger = logger;
+            expiredSecrets.ForEach(
+                ex => _logger.LogInformation("Secret [{description}] is expired", ex.Description ?? "no description"));
         }
 
-        /// <summary>
-        /// Validates the secret.
-        /// </summary>
-        /// <param name="parsedSecret">The parsed secret.</param>
-        /// <param name="secrets">The secrets.</param>
-        /// <returns></returns>
-        public async Task<SecretValidationResult> ValidateAsync(IEnumerable<Secret> secrets, ParsedSecret parsedSecret)
+        var currentSecrets = secretsArray.Where(s => !s.Expiration.HasExpired(_clock.UtcNow.UtcDateTime)).ToArray();
+
+        // see if a registered validator can validate the secret
+        foreach (var validator in _validators)
         {
-            var secretsArray = secrets as Secret[] ?? secrets.ToArray();
+            var secretValidationResult = await validator.ValidateAsync(currentSecrets, parsedSecret);
 
-            var expiredSecrets = secretsArray.Where(s => s.Expiration.HasExpired(_clock.UtcNow.UtcDateTime)).ToList();
-            if (expiredSecrets.Any())
+            if (secretValidationResult.Success)
             {
-                expiredSecrets.ForEach(
-                    ex => _logger.LogInformation("Secret [{description}] is expired", ex.Description ?? "no description"));
+                _logger.LogDebug("Secret validator success: {0}", validator.GetType().Name);
+                return secretValidationResult;
             }
-
-            var currentSecrets = secretsArray.Where(s => !s.Expiration.HasExpired(_clock.UtcNow.UtcDateTime)).ToArray();
-
-            // see if a registered validator can validate the secret
-            foreach (var validator in _validators)
-            {
-                var secretValidationResult = await validator.ValidateAsync(currentSecrets, parsedSecret);
-
-                if (secretValidationResult.Success)
-                {
-                    _logger.LogDebug("Secret validator success: {0}", validator.GetType().Name);
-                    return secretValidationResult;
-                }
-            }
-
-            _logger.LogDebug("Secret validators could not validate secret");
-            return new SecretValidationResult { Success = false };
         }
+
+        _logger.LogDebug("Secret validators could not validate secret");
+        return new SecretValidationResult { Success = false };
     }
 }

@@ -4,14 +4,13 @@
 
 using System.Linq;
 
-namespace UnitTests.Common
+namespace UnitTests.Common;
+
+internal static class TestExtensions
 {
-    internal static class TestExtensions
+    public static string Repeat(this string value, int count)
     {
-        public static string Repeat(this string value, int count)
-        {
-            var parts = new string[count];
-            return parts.Aggregate((x, y) => (x ?? value) + value);
-        }
+        var parts = new string[count];
+        return parts.Aggregate((x, y) => (x ?? value) + value);
     }
 }

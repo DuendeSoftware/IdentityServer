@@ -6,20 +6,19 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
 
-namespace UnitTests.Common
-{
-    internal static class TestCert
-    {
-        public static X509Certificate2 Load()
-        {
-            var cert = Path.Combine(System.AppContext.BaseDirectory, "identityserver_testing.pfx");
-            return new X509Certificate2(cert, "password");
-        }
+namespace UnitTests.Common;
 
-        public static SigningCredentials LoadSigningCredentials()
-        {
-            var cert = Load();
-            return new SigningCredentials(new X509SecurityKey(cert), "RS256");
-        }
+internal static class TestCert
+{
+    public static X509Certificate2 Load()
+    {
+        var cert = Path.Combine(System.AppContext.BaseDirectory, "identityserver_testing.pfx");
+        return new X509Certificate2(cert, "password");
+    }
+
+    public static SigningCredentials LoadSigningCredentials()
+    {
+        var cert = Load();
+        return new SigningCredentials(new X509SecurityKey(cert), "RS256");
     }
 }

@@ -3,26 +3,25 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace IdentityServerHost.Pages.Admin.Clients
+namespace IdentityServerHost.Pages.Admin.Clients;
+
+[SecurityHeaders]
+[Authorize]
+public class IndexModel : PageModel
 {
-    [SecurityHeaders]
-    [Authorize]
-    public class IndexModel : PageModel
+    private readonly ClientRepository _repository;
+
+    public IndexModel(ClientRepository repository)
     {
-        private readonly ClientRepository _repository;
+        _repository = repository;
+    }
 
-        public IndexModel(ClientRepository repository)
-        {
-            _repository = repository;
-        }
+    public IEnumerable<ClientSummaryModel> Clients { get; private set; }
+    public string Filter { get; set; }
 
-        public IEnumerable<ClientSummaryModel> Clients { get; private set; }
-        public string Filter { get; set; }
-
-        public async Task OnGetAsync(string filter)
-        {
-            Filter = filter;
-            Clients = await _repository.GetAllAsync(filter);
-        }
+    public async Task OnGetAsync(string filter)
+    {
+        Filter = filter;
+        Clients = await _repository.GetAllAsync(filter);
     }
 }

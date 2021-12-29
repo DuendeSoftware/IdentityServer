@@ -16,527 +16,526 @@ using IdentityModel.Client;
 using IntegrationTests.Common;
 using Xunit;
 
-namespace IntegrationTests.Conformance.Pkce
+namespace IntegrationTests.Conformance.Pkce;
+
+public class PkceTests
 {
-    public class PkceTests
+    private const string Category = "PKCE";
+
+    private IdentityServerPipeline _pipeline = new IdentityServerPipeline();
+
+    private Client client;
+
+    private const string client_id = "code_client";
+    private const string client_id_optional = "code_client_optional";
+    private const string client_id_plain = "code_plain_client";
+    private const string client_id_pkce = "codewithproofkey_client";
+    private const string client_id_pkce_plain = "codewithproofkey_plain_client";
+
+
+    private string redirect_uri = "https://code_client/callback";
+    private string code_verifier = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private string client_secret = "secret";
+    private string response_type = "code";
+
+    public PkceTests()
     {
-        private const string Category = "PKCE";
-
-        private IdentityServerPipeline _pipeline = new IdentityServerPipeline();
-
-        private Client client;
-
-        private const string client_id = "code_client";
-        private const string client_id_optional = "code_client_optional";
-        private const string client_id_plain = "code_plain_client";
-        private const string client_id_pkce = "codewithproofkey_client";
-        private const string client_id_pkce_plain = "codewithproofkey_plain_client";
-
-
-        private string redirect_uri = "https://code_client/callback";
-        private string code_verifier = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-        private string client_secret = "secret";
-        private string response_type = "code";
-
-        public PkceTests()
+        _pipeline.Users.Add(new TestUser
         {
-            _pipeline.Users.Add(new TestUser
+            SubjectId = "bob",
+            Username = "bob",
+            Claims = new Claim[]
             {
-                SubjectId = "bob",
-                Username = "bob",
-                Claims = new Claim[]
-                {
-                        new Claim("name", "Bob Loblaw"),
-                        new Claim("email", "bob@loblaw.com"),
-                        new Claim("role", "Attorney")
-                }
-            });
-            _pipeline.IdentityScopes.Add(new IdentityResources.OpenId());
+                new Claim("name", "Bob Loblaw"),
+                new Claim("email", "bob@loblaw.com"),
+                new Claim("role", "Attorney")
+            }
+        });
+        _pipeline.IdentityScopes.Add(new IdentityResources.OpenId());
 
-            _pipeline.Clients.Add(client = new Client
-            {
-                Enabled = true,
-                ClientId = client_id,
-                ClientSecrets = new List<Secret>
-                {
-                    new Secret(client_secret.Sha256())
-                },
-
-                AllowedGrantTypes = GrantTypes.Code,
-                RequirePkce = true,
-
-                AllowedScopes = { "openid" },
-
-                RequireConsent = false,
-                RedirectUris = new List<string>
-                {
-                    redirect_uri
-                }
-            });
-            _pipeline.Clients.Add(client = new Client
-            {
-                Enabled = true,
-                ClientId = client_id_optional,
-                ClientSecrets = new List<Secret>
-                {
-                    new Secret(client_secret.Sha256())
-                },
-
-                AllowedGrantTypes = GrantTypes.Code,
-                RequirePkce = false,
-
-                AllowedScopes = { "openid" },
-
-                RequireConsent = false,
-                RedirectUris = new List<string>
-                {
-                    redirect_uri
-                }
-            });
-            _pipeline.Clients.Add(client = new Client
-            {
-                Enabled = true,
-                ClientId = client_id_pkce,
-                ClientSecrets = new List<Secret>
-                {
-                    new Secret(client_secret.Sha256())
-                },
-
-                AllowedGrantTypes = GrantTypes.Code,
-                RequirePkce = true,
-
-                AllowedScopes = { "openid" },
-
-                RequireConsent = false,
-                RedirectUris = new List<string>
-                {
-                    redirect_uri
-                }
-            });
-
-            // allow plain text PKCE
-            _pipeline.Clients.Add(client = new Client
-            {
-                Enabled = true,
-                ClientId = client_id_plain,
-                ClientSecrets = new List<Secret>
-                {
-                    new Secret(client_secret.Sha256())
-                },
-
-                AllowedGrantTypes = GrantTypes.Code,
-                RequirePkce = true,
-                AllowPlainTextPkce = true,
-
-                AllowedScopes = { "openid" },
-
-                RequireConsent = false,
-                RedirectUris = new List<string>
-                {
-                    redirect_uri
-                }
-            });
-            _pipeline.Clients.Add(client = new Client
-            {
-                Enabled = true,
-                ClientId = client_id_pkce_plain,
-                ClientSecrets = new List<Secret>
-                {
-                    new Secret(client_secret.Sha256())
-                },
-
-                AllowedGrantTypes = GrantTypes.Code,
-                RequirePkce = true,
-                AllowPlainTextPkce = true,
-
-                AllowedScopes = { "openid" },
-
-                RequireConsent = false,
-                RedirectUris = new List<string>
-                {
-                    redirect_uri
-                }
-            });
-
-            _pipeline.Initialize();
-        }
-
-        [Theory]
-        [InlineData(client_id)]
-        [InlineData(client_id_pkce)]
-        [Trait("Category", Category)]
-        public async Task Client_cannot_use_plain_code_challenge_method(string clientId)
+        _pipeline.Clients.Add(client = new Client
         {
-            await _pipeline.LoginAsync("bob");
-
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = code_verifier;
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge: code_challenge,
-                codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
-
-            _pipeline.ErrorWasCalled.Should().BeTrue();
-            _pipeline.ErrorMessage.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
-        }
-
-        [Theory]
-        [InlineData(client_id_plain)]
-        [InlineData(client_id_pkce_plain)]
-        [Trait("Category", Category)]
-        public async Task Client_can_use_plain_code_challenge_method(string clientId)
-        {
-            await _pipeline.LoginAsync("bob");
-
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = code_verifier;
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge: code_challenge,
-                codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
-
-            authorizeResponse.IsError.Should().BeFalse();
-
-            var code = authorizeResponse.Code;
-
-            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+            Enabled = true,
+            ClientId = client_id,
+            ClientSecrets = new List<Secret>
             {
-                Address = IdentityServerPipeline.TokenEndpoint,
-                ClientId = clientId,
-                ClientSecret = client_secret,
+                new Secret(client_secret.Sha256())
+            },
 
-                Code = code,
-                RedirectUri = redirect_uri,
-                CodeVerifier = code_verifier
-            });
+            AllowedGrantTypes = GrantTypes.Code,
+            RequirePkce = true,
 
-            tokenResponse.IsError.Should().BeFalse();
-            tokenResponse.TokenType.Should().Be("Bearer");
-            tokenResponse.AccessToken.Should().NotBeNull();
-            tokenResponse.IdentityToken.Should().NotBeNull();
-            tokenResponse.ExpiresIn.Should().BeGreaterThan(0);
-        }
+            AllowedScopes = { "openid" },
 
-        [Theory]
-        [InlineData(client_id)]
-        [InlineData(client_id_pkce)]
-        [Trait("Category", Category)]
-        public async Task Client_can_use_sha256_code_challenge_method(string clientId)
-        {
-            await _pipeline.LoginAsync("bob");
-
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = Sha256OfCodeVerifier(code_verifier);
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge: code_challenge,
-                codeChallengeMethod: OidcConstants.CodeChallengeMethods.Sha256);
-
-            authorizeResponse.IsError.Should().BeFalse();
-
-            var code = authorizeResponse.Code;
-
-            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+            RequireConsent = false,
+            RedirectUris = new List<string>
             {
-                Address = IdentityServerPipeline.TokenEndpoint,
-                ClientId = clientId,
-                ClientSecret = client_secret,
-
-                Code = code,
-                RedirectUri = redirect_uri,
-                CodeVerifier = code_verifier
-            });
-
-            tokenResponse.IsError.Should().BeFalse();
-            tokenResponse.TokenType.Should().Be("Bearer");
-            tokenResponse.AccessToken.Should().NotBeNull();
-            tokenResponse.IdentityToken.Should().NotBeNull();
-            tokenResponse.ExpiresIn.Should().BeGreaterThan(0);
-        }
-
-        [Theory]
-        [InlineData(client_id_pkce)]
-        [InlineData(client_id_pkce_plain)]
-        [Trait("Category", Category)]
-        public async Task Authorize_request_needs_code_challenge(string clientId)
+                redirect_uri
+            }
+        });
+        _pipeline.Clients.Add(client = new Client
         {
-            await _pipeline.LoginAsync("bob");
+            Enabled = true,
+            ClientId = client_id_optional,
+            ClientSecrets = new List<Secret>
+            {
+                new Secret(client_secret.Sha256())
+            },
 
-            var nonce = Guid.NewGuid().ToString();
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce);
+            AllowedGrantTypes = GrantTypes.Code,
+            RequirePkce = false,
 
-            authorizeResponse.Should().BeNull();
-        }
+            AllowedScopes = { "openid" },
+
+            RequireConsent = false,
+            RedirectUris = new List<string>
+            {
+                redirect_uri
+            }
+        });
+        _pipeline.Clients.Add(client = new Client
+        {
+            Enabled = true,
+            ClientId = client_id_pkce,
+            ClientSecrets = new List<Secret>
+            {
+                new Secret(client_secret.Sha256())
+            },
+
+            AllowedGrantTypes = GrantTypes.Code,
+            RequirePkce = true,
+
+            AllowedScopes = { "openid" },
+
+            RequireConsent = false,
+            RedirectUris = new List<string>
+            {
+                redirect_uri
+            }
+        });
+
+        // allow plain text PKCE
+        _pipeline.Clients.Add(client = new Client
+        {
+            Enabled = true,
+            ClientId = client_id_plain,
+            ClientSecrets = new List<Secret>
+            {
+                new Secret(client_secret.Sha256())
+            },
+
+            AllowedGrantTypes = GrantTypes.Code,
+            RequirePkce = true,
+            AllowPlainTextPkce = true,
+
+            AllowedScopes = { "openid" },
+
+            RequireConsent = false,
+            RedirectUris = new List<string>
+            {
+                redirect_uri
+            }
+        });
+        _pipeline.Clients.Add(client = new Client
+        {
+            Enabled = true,
+            ClientId = client_id_pkce_plain,
+            ClientSecrets = new List<Secret>
+            {
+                new Secret(client_secret.Sha256())
+            },
+
+            AllowedGrantTypes = GrantTypes.Code,
+            RequirePkce = true,
+            AllowPlainTextPkce = true,
+
+            AllowedScopes = { "openid" },
+
+            RequireConsent = false,
+            RedirectUris = new List<string>
+            {
+                redirect_uri
+            }
+        });
+
+        _pipeline.Initialize();
+    }
+
+    [Theory]
+    [InlineData(client_id)]
+    [InlineData(client_id_pkce)]
+    [Trait("Category", Category)]
+    public async Task Client_cannot_use_plain_code_challenge_method(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = code_verifier;
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge: code_challenge,
+            codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
+
+        _pipeline.ErrorWasCalled.Should().BeTrue();
+        _pipeline.ErrorMessage.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
+    }
+
+    [Theory]
+    [InlineData(client_id_plain)]
+    [InlineData(client_id_pkce_plain)]
+    [Trait("Category", Category)]
+    public async Task Client_can_use_plain_code_challenge_method(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = code_verifier;
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge: code_challenge,
+            codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
+
+        authorizeResponse.IsError.Should().BeFalse();
+
+        var code = authorizeResponse.Code;
+
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = clientId,
+            ClientSecret = client_secret,
+
+            Code = code,
+            RedirectUri = redirect_uri,
+            CodeVerifier = code_verifier
+        });
+
+        tokenResponse.IsError.Should().BeFalse();
+        tokenResponse.TokenType.Should().Be("Bearer");
+        tokenResponse.AccessToken.Should().NotBeNull();
+        tokenResponse.IdentityToken.Should().NotBeNull();
+        tokenResponse.ExpiresIn.Should().BeGreaterThan(0);
+    }
+
+    [Theory]
+    [InlineData(client_id)]
+    [InlineData(client_id_pkce)]
+    [Trait("Category", Category)]
+    public async Task Client_can_use_sha256_code_challenge_method(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = Sha256OfCodeVerifier(code_verifier);
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge: code_challenge,
+            codeChallengeMethod: OidcConstants.CodeChallengeMethods.Sha256);
+
+        authorizeResponse.IsError.Should().BeFalse();
+
+        var code = authorizeResponse.Code;
+
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = clientId,
+            ClientSecret = client_secret,
+
+            Code = code,
+            RedirectUri = redirect_uri,
+            CodeVerifier = code_verifier
+        });
+
+        tokenResponse.IsError.Should().BeFalse();
+        tokenResponse.TokenType.Should().Be("Bearer");
+        tokenResponse.AccessToken.Should().NotBeNull();
+        tokenResponse.IdentityToken.Should().NotBeNull();
+        tokenResponse.ExpiresIn.Should().BeGreaterThan(0);
+    }
+
+    [Theory]
+    [InlineData(client_id_pkce)]
+    [InlineData(client_id_pkce_plain)]
+    [Trait("Category", Category)]
+    public async Task Authorize_request_needs_code_challenge(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce);
+
+        authorizeResponse.Should().BeNull();
+    }
         
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Code_verifier_should_not_be_accepted_if_no_code_challenge_was_used()
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Code_verifier_should_not_be_accepted_if_no_code_challenge_was_used()
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(client_id_optional,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce);
+
+        authorizeResponse.IsError.Should().BeFalse();
+
+        var code = authorizeResponse.Code;
+
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
         {
-            await _pipeline.LoginAsync("bob");
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = client_id_optional,
+            ClientSecret = client_secret,
 
-            var nonce = Guid.NewGuid().ToString();
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(client_id_optional,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce);
+            Code = code,
+            RedirectUri = redirect_uri,
+            CodeVerifier = code_verifier
+        });
 
-            authorizeResponse.IsError.Should().BeFalse();
+        tokenResponse.IsError.Should().BeTrue();
+    }
 
-            var code = authorizeResponse.Code;
+    [Theory]
+    [InlineData(client_id)]
+    [InlineData(client_id_plain)]
+    [InlineData(client_id_pkce)]
+    [InlineData(client_id_pkce_plain)]
+    [Trait("Category", Category)]
+    public async Task Authorize_request_code_challenge_cannot_be_too_short(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
 
-            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
-            {
-                Address = IdentityServerPipeline.TokenEndpoint,
-                ClientId = client_id_optional,
-                ClientSecret = client_secret,
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = code_verifier;
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge:"a");
 
-                Code = code,
-                RedirectUri = redirect_uri,
-                CodeVerifier = code_verifier
-            });
+        _pipeline.ErrorWasCalled.Should().BeTrue();
+        _pipeline.ErrorMessage.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
+    }
 
-            tokenResponse.IsError.Should().BeTrue();
-        }
+    [Theory]
+    [InlineData(client_id)]
+    [InlineData(client_id_plain)]
+    [InlineData(client_id_pkce)]
+    [InlineData(client_id_pkce_plain)]
+    [Trait("Category", Category)]
+    public async Task Authorize_request_code_challenge_cannot_be_too_long(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
 
-        [Theory]
-        [InlineData(client_id)]
-        [InlineData(client_id_plain)]
-        [InlineData(client_id_pkce)]
-        [InlineData(client_id_pkce_plain)]
-        [Trait("Category", Category)]
-        public async Task Authorize_request_code_challenge_cannot_be_too_short(string clientId)
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = code_verifier;
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge: new string('a', _pipeline.Options.InputLengthRestrictions.CodeChallengeMaxLength + 1)
+        );
+
+        _pipeline.ErrorWasCalled.Should().BeTrue();
+        _pipeline.ErrorMessage.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
+    }
+
+    [Theory]
+    [InlineData(client_id)]
+    [InlineData(client_id_plain)]
+    [InlineData(client_id_pkce)]
+    [InlineData(client_id_pkce_plain)]
+    [Trait("Category", Category)]
+    public async Task Authorize_request_needs_supported_code_challenge_method(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = code_verifier;
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge: code_challenge,
+            codeChallengeMethod: "unknown_code_challenge_method"
+        );
+
+        authorizeResponse.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(client_id_plain)]
+    [InlineData(client_id_pkce_plain)]
+    [Trait("Category", Category)]
+    public async Task Token_request_needs_code_verifier(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = code_verifier;
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge: code_challenge,
+            codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
+
+        authorizeResponse.IsError.Should().BeFalse();
+
+        var code = authorizeResponse.Code;
+
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
         {
-            await _pipeline.LoginAsync("bob");
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = clientId,
+            ClientSecret = client_secret,
 
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = code_verifier;
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge:"a");
+            Code = code,
+            RedirectUri = redirect_uri,
+        });
 
-            _pipeline.ErrorWasCalled.Should().BeTrue();
-            _pipeline.ErrorMessage.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
-        }
+        tokenResponse.IsError.Should().BeTrue();
+        tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+    }
 
-        [Theory]
-        [InlineData(client_id)]
-        [InlineData(client_id_plain)]
-        [InlineData(client_id_pkce)]
-        [InlineData(client_id_pkce_plain)]
-        [Trait("Category", Category)]
-        public async Task Authorize_request_code_challenge_cannot_be_too_long(string clientId)
+    [Theory]
+    [InlineData(client_id_plain)]
+    [InlineData(client_id_pkce_plain)]
+    [Trait("Category", Category)]
+    public async Task Token_request_code_verifier_cannot_be_too_short(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = code_verifier;
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge: code_challenge,
+            codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
+
+        authorizeResponse.IsError.Should().BeFalse();
+
+        var code = authorizeResponse.Code;
+
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
         {
-            await _pipeline.LoginAsync("bob");
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = clientId,
+            ClientSecret = client_secret,
 
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = code_verifier;
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge: new string('a', _pipeline.Options.InputLengthRestrictions.CodeChallengeMaxLength + 1)
-            );
+            Code = code,
+            RedirectUri = redirect_uri,
+            CodeVerifier = "a"
+        });
 
-            _pipeline.ErrorWasCalled.Should().BeTrue();
-            _pipeline.ErrorMessage.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
-        }
+        tokenResponse.IsError.Should().BeTrue();
+        tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+    }
 
-        [Theory]
-        [InlineData(client_id)]
-        [InlineData(client_id_plain)]
-        [InlineData(client_id_pkce)]
-        [InlineData(client_id_pkce_plain)]
-        [Trait("Category", Category)]
-        public async Task Authorize_request_needs_supported_code_challenge_method(string clientId)
+    [Theory]
+    [InlineData(client_id_plain)]
+    [InlineData(client_id_pkce_plain)]
+    [Trait("Category", Category)]
+    public async Task Token_request_code_verifier_cannot_be_too_long(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = code_verifier;
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge: code_challenge,
+            codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
+
+        authorizeResponse.IsError.Should().BeFalse();
+
+        var code = authorizeResponse.Code;
+
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
         {
-            await _pipeline.LoginAsync("bob");
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = clientId,
+            ClientSecret = client_secret,
 
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = code_verifier;
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge: code_challenge,
-                codeChallengeMethod: "unknown_code_challenge_method"
-            );
+            Code = code,
+            RedirectUri = redirect_uri,
+            CodeVerifier = new string('a', _pipeline.Options.InputLengthRestrictions.CodeVerifierMaxLength + 1)
+        });
 
-            authorizeResponse.Should().BeNull();
-        }
+        tokenResponse.IsError.Should().BeTrue();
+        tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+    }
 
-        [Theory]
-        [InlineData(client_id_plain)]
-        [InlineData(client_id_pkce_plain)]
-        [Trait("Category", Category)]
-        public async Task Token_request_needs_code_verifier(string clientId)
+    [Theory]
+    [InlineData(client_id_plain)]
+    [InlineData(client_id_pkce_plain)]
+    [Trait("Category", Category)]
+    public async Task Token_request_code_verifier_must_match_with_code_chalenge(string clientId)
+    {
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+        var code_challenge = code_verifier;
+        var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
+            response_type,
+            IdentityServerConstants.StandardScopes.OpenId,
+            redirect_uri,
+            nonce: nonce,
+            codeChallenge: code_challenge,
+            codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
+
+        authorizeResponse.IsError.Should().BeFalse();
+
+        var code = authorizeResponse.Code;
+
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
         {
-            await _pipeline.LoginAsync("bob");
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = clientId,
+            ClientSecret = client_secret,
 
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = code_verifier;
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge: code_challenge,
-                codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
+            Code = code,
+            RedirectUri = redirect_uri,
+            CodeVerifier = "mismatched_code_verifier"
+        });
 
-            authorizeResponse.IsError.Should().BeFalse();
+        tokenResponse.IsError.Should().BeTrue();
+        tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+    }
 
-            var code = authorizeResponse.Code;
+    private static string Sha256OfCodeVerifier(string codeVerifier)
+    {
+        var codeVerifierBytes = Encoding.ASCII.GetBytes(codeVerifier);
+        var hashedBytes = codeVerifierBytes.Sha256();
+        var transformedCodeVerifier = Base64Url.Encode(hashedBytes);
 
-            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
-            {
-                Address = IdentityServerPipeline.TokenEndpoint,
-                ClientId = clientId,
-                ClientSecret = client_secret,
-
-                Code = code,
-                RedirectUri = redirect_uri,
-            });
-
-            tokenResponse.IsError.Should().BeTrue();
-            tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
-        }
-
-        [Theory]
-        [InlineData(client_id_plain)]
-        [InlineData(client_id_pkce_plain)]
-        [Trait("Category", Category)]
-        public async Task Token_request_code_verifier_cannot_be_too_short(string clientId)
-        {
-            await _pipeline.LoginAsync("bob");
-
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = code_verifier;
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge: code_challenge,
-                codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
-
-            authorizeResponse.IsError.Should().BeFalse();
-
-            var code = authorizeResponse.Code;
-
-            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
-            {
-                Address = IdentityServerPipeline.TokenEndpoint,
-                ClientId = clientId,
-                ClientSecret = client_secret,
-
-                Code = code,
-                RedirectUri = redirect_uri,
-                CodeVerifier = "a"
-            });
-
-            tokenResponse.IsError.Should().BeTrue();
-            tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
-        }
-
-        [Theory]
-        [InlineData(client_id_plain)]
-        [InlineData(client_id_pkce_plain)]
-        [Trait("Category", Category)]
-        public async Task Token_request_code_verifier_cannot_be_too_long(string clientId)
-        {
-            await _pipeline.LoginAsync("bob");
-
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = code_verifier;
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge: code_challenge,
-                codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
-
-            authorizeResponse.IsError.Should().BeFalse();
-
-            var code = authorizeResponse.Code;
-
-            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
-            {
-                Address = IdentityServerPipeline.TokenEndpoint,
-                ClientId = clientId,
-                ClientSecret = client_secret,
-
-                Code = code,
-                RedirectUri = redirect_uri,
-                CodeVerifier = new string('a', _pipeline.Options.InputLengthRestrictions.CodeVerifierMaxLength + 1)
-            });
-
-            tokenResponse.IsError.Should().BeTrue();
-            tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
-        }
-
-        [Theory]
-        [InlineData(client_id_plain)]
-        [InlineData(client_id_pkce_plain)]
-        [Trait("Category", Category)]
-        public async Task Token_request_code_verifier_must_match_with_code_chalenge(string clientId)
-        {
-            await _pipeline.LoginAsync("bob");
-
-            var nonce = Guid.NewGuid().ToString();
-            var code_challenge = code_verifier;
-            var authorizeResponse = await _pipeline.RequestAuthorizationEndpointAsync(clientId,
-                response_type,
-                IdentityServerConstants.StandardScopes.OpenId,
-                redirect_uri,
-                nonce: nonce,
-                codeChallenge: code_challenge,
-                codeChallengeMethod: OidcConstants.CodeChallengeMethods.Plain);
-
-            authorizeResponse.IsError.Should().BeFalse();
-
-            var code = authorizeResponse.Code;
-
-            var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
-            {
-                Address = IdentityServerPipeline.TokenEndpoint,
-                ClientId = clientId,
-                ClientSecret = client_secret,
-
-                Code = code,
-                RedirectUri = redirect_uri,
-                CodeVerifier = "mismatched_code_verifier"
-            });
-
-            tokenResponse.IsError.Should().BeTrue();
-            tokenResponse.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
-        }
-
-        private static string Sha256OfCodeVerifier(string codeVerifier)
-        {
-            var codeVerifierBytes = Encoding.ASCII.GetBytes(codeVerifier);
-            var hashedBytes = codeVerifierBytes.Sha256();
-            var transformedCodeVerifier = Base64Url.Encode(hashedBytes);
-
-            return transformedCodeVerifier;
-        }
+        return transformedCodeVerifier;
     }
 }

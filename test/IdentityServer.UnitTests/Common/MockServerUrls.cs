@@ -5,11 +5,10 @@
 
 using Duende.IdentityServer.Services;
 
-namespace UnitTests.Common
+namespace UnitTests.Common;
+
+public class MockServerUrls : IServerUrls
 {
-    public class MockServerUrls : IServerUrls
-    {
-        public string Origin { get; set; }
-        public string BasePath { get; set; }
-    }
+    public string Origin { get; set; }
+    public string BasePath { get; set; }
 }

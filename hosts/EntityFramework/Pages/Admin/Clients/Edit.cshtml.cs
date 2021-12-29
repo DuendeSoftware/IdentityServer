@@ -3,50 +3,49 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 
-namespace IdentityServerHost.Pages.Admin.Clients
+namespace IdentityServerHost.Pages.Admin.Clients;
+
+[SecurityHeaders]
+[Authorize]
+public class EditModel : PageModel
 {
-    [SecurityHeaders]
-    [Authorize]
-    public class EditModel : PageModel
+    private readonly ClientRepository _repository;
+
+    public EditModel(ClientRepository repository)
     {
-        private readonly ClientRepository _repository;
+        _repository = repository;
+    }
 
-        public EditModel(ClientRepository repository)
+    [BindProperty]
+    public ClientModel InputModel { get; set; }
+    [BindProperty]
+    public string Button { get; set; }
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        InputModel = await _repository.GetByIdAsync(id);
+        if (InputModel == null)
         {
-            _repository = repository;
+            return RedirectToPage("/Admin/Clients/Index");
         }
 
-        [BindProperty]
-        public ClientModel InputModel { get; set; }
-        [BindProperty]
-        public string Button { get; set; }
+        return Page();
+    }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+    public async Task<IActionResult> OnPostAsync(string id)
+    {
+        if (Button == "delete")
         {
-            InputModel = await _repository.GetByIdAsync(id);
-            if (InputModel == null)
-            {
-                return RedirectToPage("/Admin/Clients/Index");
-            }
-
-            return Page();
+            await _repository.DeleteAsync(id);
+            return RedirectToPage("/Admin/Clients/Index");
         }
 
-        public async Task<IActionResult> OnPostAsync(string id)
+        if (ModelState.IsValid)
         {
-            if (Button == "delete")
-            {
-                await _repository.DeleteAsync(id);
-                return RedirectToPage("/Admin/Clients/Index");
-            }
-
-            if (ModelState.IsValid)
-            {
-                await _repository.UpdateAsync(InputModel);
-                return RedirectToPage("/Admin/Clients/Edit", new { id });
-            }
-
-            return Page();
+            await _repository.UpdateAsync(InputModel);
+            return RedirectToPage("/Admin/Clients/Edit", new { id });
         }
+
+        return Page();
     }
 }

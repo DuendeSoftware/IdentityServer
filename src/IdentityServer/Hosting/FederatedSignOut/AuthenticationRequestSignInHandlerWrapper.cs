@@ -7,21 +7,20 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace Duende.IdentityServer.Hosting.FederatedSignOut
+namespace Duende.IdentityServer.Hosting.FederatedSignOut;
+
+internal class AuthenticationRequestSignInHandlerWrapper : AuthenticationRequestSignOutHandlerWrapper, IAuthenticationSignInHandler
 {
-    internal class AuthenticationRequestSignInHandlerWrapper : AuthenticationRequestSignOutHandlerWrapper, IAuthenticationSignInHandler
+    private readonly IAuthenticationSignInHandler _inner;
+
+    public AuthenticationRequestSignInHandlerWrapper(IAuthenticationSignInHandler inner, IHttpContextAccessor httpContextAccessor)
+        : base(inner, httpContextAccessor)
     {
-        private readonly IAuthenticationSignInHandler _inner;
+        _inner = inner;
+    }
 
-        public AuthenticationRequestSignInHandlerWrapper(IAuthenticationSignInHandler inner, IHttpContextAccessor httpContextAccessor)
-            : base(inner, httpContextAccessor)
-        {
-            _inner = inner;
-        }
-
-        public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
-        {
-            return _inner.SignInAsync(user, properties);
-        }
+    public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+    {
+        return _inner.SignInAsync(user, properties);
     }
 }

@@ -9,22 +9,21 @@ using Duende.IdentityServer.Services;
 
 #pragma warning disable 1591
 
-namespace Duende.IdentityServer.Hosting
+namespace Duende.IdentityServer.Hosting;
+
+public class BaseUrlMiddleware
 {
-    public class BaseUrlMiddleware
+    private readonly RequestDelegate _next;
+
+    public BaseUrlMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+    }
 
-        public BaseUrlMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+    public async Task Invoke(HttpContext context)
+    {
+        context.RequestServices.GetRequiredService<IServerUrls>().BasePath = context.Request.PathBase.Value;
 
-        public async Task Invoke(HttpContext context)
-        {
-            context.RequestServices.GetRequiredService<IServerUrls>().BasePath = context.Request.PathBase.Value;
-
-            await _next(context);
-        }
+        await _next(context);
     }
 }

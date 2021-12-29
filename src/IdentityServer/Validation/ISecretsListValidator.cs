@@ -6,19 +6,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Validator for an Enumerable List of Secrets
+/// </summary>
+public interface ISecretsListValidator
 {
     /// <summary>
-    /// Validator for an Enumerable List of Secrets
+    /// Validates a list of secrets
     /// </summary>
-    public interface ISecretsListValidator
-    {
-        /// <summary>
-        /// Validates a list of secrets
-        /// </summary>
-        /// <param name="secrets">The stored secrets.</param>
-        /// <param name="parsedSecret">The received secret.</param>
-        /// <returns>A validation result</returns>
-        Task<SecretValidationResult> ValidateAsync(IEnumerable<Secret> secrets, ParsedSecret parsedSecret);
-    }
+    /// <param name="secrets">The stored secrets.</param>
+    /// <param name="parsedSecret">The received secret.</param>
+    /// <returns>A validation result</returns>
+    Task<SecretValidationResult> ValidateAsync(IEnumerable<Secret> secrets, ParsedSecret parsedSecret);
 }

@@ -12,113 +12,112 @@ using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 
-namespace Duende.IdentityServer.ResponseHandling
+namespace Duende.IdentityServer.ResponseHandling;
+
+/// <summary>
+/// The introspection response generator
+/// </summary>
+/// <seealso cref="IIntrospectionResponseGenerator" />
+public class IntrospectionResponseGenerator : IIntrospectionResponseGenerator
 {
     /// <summary>
-    /// The introspection response generator
+    /// Gets the events.
     /// </summary>
-    /// <seealso cref="IIntrospectionResponseGenerator" />
-    public class IntrospectionResponseGenerator : IIntrospectionResponseGenerator
+    /// <value>
+    /// The events.
+    /// </value>
+    protected readonly IEventService Events;
+
+    /// <summary>
+    /// The logger
+    /// </summary>
+    protected readonly ILogger Logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IntrospectionResponseGenerator" /> class.
+    /// </summary>
+    /// <param name="events">The events.</param>
+    /// <param name="logger">The logger.</param>
+    public IntrospectionResponseGenerator(IEventService events, ILogger<IntrospectionResponseGenerator> logger)
     {
-        /// <summary>
-        /// Gets the events.
-        /// </summary>
-        /// <value>
-        /// The events.
-        /// </value>
-        protected readonly IEventService Events;
+        Events = events;
+        Logger = logger;
+    }
 
-        /// <summary>
-        /// The logger
-        /// </summary>
-        protected readonly ILogger Logger;
+    /// <summary>
+    /// Processes the response.
+    /// </summary>
+    /// <param name="validationResult">The validation result.</param>
+    /// <returns></returns>
+    public virtual async Task<Dictionary<string, object>> ProcessAsync(IntrospectionRequestValidationResult validationResult)
+    {
+        Logger.LogTrace("Creating introspection response");
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IntrospectionResponseGenerator" /> class.
-        /// </summary>
-        /// <param name="events">The events.</param>
-        /// <param name="logger">The logger.</param>
-        public IntrospectionResponseGenerator(IEventService events, ILogger<IntrospectionResponseGenerator> logger)
+        // standard response
+        var response = new Dictionary<string, object>
         {
-            Events = events;
-            Logger = logger;
-        }
+            { "active", false }
+        };
 
-        /// <summary>
-        /// Processes the response.
-        /// </summary>
-        /// <param name="validationResult">The validation result.</param>
-        /// <returns></returns>
-        public virtual async Task<Dictionary<string, object>> ProcessAsync(IntrospectionRequestValidationResult validationResult)
+        // token is invalid
+        if (validationResult.IsActive == false)
         {
-            Logger.LogTrace("Creating introspection response");
-
-            // standard response
-            var response = new Dictionary<string, object>
-            {
-                { "active", false }
-            };
-
-            // token is invalid
-            if (validationResult.IsActive == false)
-            {
-                Logger.LogDebug("Creating introspection response for inactive token.");
-                await Events.RaiseAsync(new TokenIntrospectionSuccessEvent(validationResult));
-
-                return response;
-            }
-
-            // expected scope not present
-            if (await AreExpectedScopesPresentAsync(validationResult) == false)
-            {
-                return response;
-            }
-
-            Logger.LogDebug("Creating introspection response for active token.");
-
-            // get all claims (without scopes)
-            response = validationResult.Claims.Where(c => c.Type != JwtClaimTypes.Scope).ToClaimsDictionary();
-
-            // add active flag
-            response.Add("active", true);
-
-            // calculate scopes the caller is allowed to see
-            var allowedScopes = validationResult.Api.Scopes;
-            var scopes = validationResult.Claims.Where(c => c.Type == JwtClaimTypes.Scope).Select(x => x.Value);
-            scopes = scopes.Where(x => allowedScopes.Contains(x));
-            response.Add("scope", scopes.ToSpaceSeparatedString());
-
+            Logger.LogDebug("Creating introspection response for inactive token.");
             await Events.RaiseAsync(new TokenIntrospectionSuccessEvent(validationResult));
+
             return response;
         }
 
-        /// <summary>
-        /// Checks if the API resource is allowed to introspect the scopes.
-        /// </summary>
-        /// <param name="validationResult">The validation result.</param>
-        /// <returns></returns>
-        protected virtual async Task<bool> AreExpectedScopesPresentAsync(IntrospectionRequestValidationResult validationResult)
+        // expected scope not present
+        if (await AreExpectedScopesPresentAsync(validationResult) == false)
         {
-            var apiScopes = validationResult.Api.Scopes;
-            var tokenScopes = validationResult.Claims.Where(c => c.Type == JwtClaimTypes.Scope);
-
-            var tokenScopesThatMatchApi = tokenScopes.Where(c => apiScopes.Contains(c.Value));
-
-            var result = false;
-
-            if (tokenScopesThatMatchApi.Any())
-            {
-                // at least one of the scopes the API supports is in the token
-                result = true;
-            }
-            else
-            {
-                // no scopes for this API are found in the token
-                Logger.LogError("Expected scope {scopes} is missing in token", apiScopes);
-                await Events.RaiseAsync(new TokenIntrospectionFailureEvent(validationResult.Api.Name, "Expected scopes are missing", validationResult.Token, apiScopes, tokenScopes.Select(s => s.Value)));
-            }
-
-            return result;
+            return response;
         }
+
+        Logger.LogDebug("Creating introspection response for active token.");
+
+        // get all claims (without scopes)
+        response = validationResult.Claims.Where(c => c.Type != JwtClaimTypes.Scope).ToClaimsDictionary();
+
+        // add active flag
+        response.Add("active", true);
+
+        // calculate scopes the caller is allowed to see
+        var allowedScopes = validationResult.Api.Scopes;
+        var scopes = validationResult.Claims.Where(c => c.Type == JwtClaimTypes.Scope).Select(x => x.Value);
+        scopes = scopes.Where(x => allowedScopes.Contains(x));
+        response.Add("scope", scopes.ToSpaceSeparatedString());
+
+        await Events.RaiseAsync(new TokenIntrospectionSuccessEvent(validationResult));
+        return response;
+    }
+
+    /// <summary>
+    /// Checks if the API resource is allowed to introspect the scopes.
+    /// </summary>
+    /// <param name="validationResult">The validation result.</param>
+    /// <returns></returns>
+    protected virtual async Task<bool> AreExpectedScopesPresentAsync(IntrospectionRequestValidationResult validationResult)
+    {
+        var apiScopes = validationResult.Api.Scopes;
+        var tokenScopes = validationResult.Claims.Where(c => c.Type == JwtClaimTypes.Scope);
+
+        var tokenScopesThatMatchApi = tokenScopes.Where(c => apiScopes.Contains(c.Value));
+
+        var result = false;
+
+        if (tokenScopesThatMatchApi.Any())
+        {
+            // at least one of the scopes the API supports is in the token
+            result = true;
+        }
+        else
+        {
+            // no scopes for this API are found in the token
+            Logger.LogError("Expected scope {scopes} is missing in token", apiScopes);
+            await Events.RaiseAsync(new TokenIntrospectionFailureEvent(validationResult.Api.Name, "Expected scopes are missing", validationResult.Token, apiScopes, tokenScopes.Select(s => s.Value)));
+        }
+
+        return result;
     }
 }

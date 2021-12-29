@@ -5,16 +5,15 @@
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// The backchannel authentication throttling service.
+/// </summary>
+public interface IBackchannelAuthenticationThrottlingService
 {
     /// <summary>
-    /// The backchannel authentication throttling service.
+    /// Decides if the requesting client and request needs to slow down.
     /// </summary>
-    public interface IBackchannelAuthenticationThrottlingService
-    {
-        /// <summary>
-        /// Decides if the requesting client and request needs to slow down.
-        /// </summary>
-        Task<bool> ShouldSlowDown(string requestId, BackChannelAuthenticationRequest details);
-    }
+    Task<bool> ShouldSlowDown(string requestId, BackChannelAuthenticationRequest details);
 }

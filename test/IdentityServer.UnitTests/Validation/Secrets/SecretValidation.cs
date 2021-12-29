@@ -14,163 +14,162 @@ using UnitTests.Validation.Setup;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace UnitTests.Validation.Secrets
+namespace UnitTests.Validation.Secrets;
+
+public class SecretValidation
 {
-    public class SecretValidation
+    private const string Category = "Secrets - Secret Validator";
+
+    private ISecretValidator _hashedSecretValidator = new HashedSharedSecretValidator(new Logger<HashedSharedSecretValidator>(new LoggerFactory()));
+    private IClientStore _clients = new InMemoryClientStore(ClientValidationTestClients.Get());
+    private SecretValidator _validator;
+    private IdentityServerOptions _options = new IdentityServerOptions();
+
+    public SecretValidation()
     {
-        private const string Category = "Secrets - Secret Validator";
+        _validator = new SecretValidator(
+            new StubClock(),
+            new[] { _hashedSecretValidator }, 
+            new Logger<SecretValidator>(new LoggerFactory()));
+    }
 
-        private ISecretValidator _hashedSecretValidator = new HashedSharedSecretValidator(new Logger<HashedSharedSecretValidator>(new LoggerFactory()));
-        private IClientStore _clients = new InMemoryClientStore(ClientValidationTestClients.Get());
-        private SecretValidator _validator;
-        private IdentityServerOptions _options = new IdentityServerOptions();
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Valid_Single_Secret()
+    {
+        var clientId = "single_secret_hashed_no_expiration";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        public SecretValidation()
+        var secret = new ParsedSecret
         {
-            _validator = new SecretValidator(
-                new StubClock(),
-                new[] { _hashedSecretValidator }, 
-                new Logger<SecretValidator>(new LoggerFactory()));
-        }
+            Id = clientId,
+            Credential = "secret",
+            Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
+        };
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Valid_Single_Secret()
+        var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+
+        result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Invalid_Credential_Type()
+    {
+        var clientId = "single_secret_hashed_no_expiration";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
+
+        var secret = new ParsedSecret
         {
-            var clientId = "single_secret_hashed_no_expiration";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+            Id = clientId,
+            Credential = "secret",
+            Type = "invalid"
+        };
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "secret",
-                Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
-            };
+        var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
 
-            var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+        result.Success.Should().BeFalse();
+    }
 
-            result.Success.Should().BeTrue();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Valid_Multiple_Secrets()
+    {
+        var clientId = "multiple_secrets_hashed";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Invalid_Credential_Type()
+        var secret = new ParsedSecret
         {
-            var clientId = "single_secret_hashed_no_expiration";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+            Id = clientId,
+            Credential = "secret",
+            Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
+        };
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "secret",
-                Type = "invalid"
-            };
+        var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+        result.Success.Should().BeTrue();
 
-            var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+        secret.Credential = "foobar";
+        result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+        result.Success.Should().BeTrue();
 
-            result.Success.Should().BeFalse();
-        }
+        secret.Credential = "quux";
+        result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+        result.Success.Should().BeTrue();
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Valid_Multiple_Secrets()
+        secret.Credential = "notexpired";
+        result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+        result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Invalid_Single_Secret()
+    {
+        var clientId = "single_secret_hashed_no_expiration";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
+
+        var secret = new ParsedSecret
         {
-            var clientId = "multiple_secrets_hashed";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+            Id = clientId,
+            Credential = "invalid",
+            Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
+        };
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "secret",
-                Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
-            };
+        var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
 
-            var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
-            result.Success.Should().BeTrue();
+        result.Success.Should().BeFalse();
+    }
 
-            secret.Credential = "foobar";
-            result = await _validator.ValidateAsync(client.ClientSecrets, secret);
-            result.Success.Should().BeTrue();
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Expired_Secret()
+    {
+        var clientId = "multiple_secrets_hashed";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-            secret.Credential = "quux";
-            result = await _validator.ValidateAsync(client.ClientSecrets, secret);
-            result.Success.Should().BeTrue();
-
-            secret.Credential = "notexpired";
-            result = await _validator.ValidateAsync(client.ClientSecrets, secret);
-            result.Success.Should().BeTrue();
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Invalid_Single_Secret()
+        var secret = new ParsedSecret
         {
-            var clientId = "single_secret_hashed_no_expiration";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+            Id = clientId,
+            Credential = "expired",
+            Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
+        };
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "invalid",
-                Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
-            };
+        var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+        result.Success.Should().BeFalse();
+    }
 
-            var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Invalid_Multiple_Secrets()
+    {
+        var clientId = "multiple_secrets_hashed";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-            result.Success.Should().BeFalse();
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Expired_Secret()
+        var secret = new ParsedSecret
         {
-            var clientId = "multiple_secrets_hashed";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+            Id = clientId,
+            Credential = "invalid",
+            Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
+        };
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "expired",
-                Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
-            };
+        var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+        result.Success.Should().BeFalse();
+    }
 
-            var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
-            result.Success.Should().BeFalse();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Client_with_no_Secret_Should_Fail()
+    {
+        var clientId = "no_secret_client";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Invalid_Multiple_Secrets()
+        var secret = new ParsedSecret
         {
-            var clientId = "multiple_secrets_hashed";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
-
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "invalid",
-                Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
-            };
-
-            var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
-            result.Success.Should().BeFalse();
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Client_with_no_Secret_Should_Fail()
-        {
-            var clientId = "no_secret_client";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
-
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
-            };
+            Id = clientId,
+            Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
+        };
             
-            var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
-            result.Success.Should().BeFalse();
-        }
+        var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+        result.Success.Should().BeFalse();
     }
 }

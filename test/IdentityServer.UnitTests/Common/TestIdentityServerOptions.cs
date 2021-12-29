@@ -4,18 +4,17 @@
 
 using Duende.IdentityServer.Configuration;
 
-namespace UnitTests.Common
-{
-    internal class TestIdentityServerOptions
-    {
-        public static IdentityServerOptions Create()
-        {
-            var options = new IdentityServerOptions
-            {
-                IssuerUri = "https://idsvr.com"
-            };
+namespace UnitTests.Common;
 
-            return options;
-        }
+internal class TestIdentityServerOptions
+{
+    public static IdentityServerOptions Create()
+    {
+        var options = new IdentityServerOptions
+        {
+            IssuerUri = "https://idsvr.com"
+        };
+
+        return options;
     }
 }

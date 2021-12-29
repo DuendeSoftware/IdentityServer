@@ -5,28 +5,27 @@
 using System.Threading.Tasks;
 using Duende.IdentityServer.Validation;
 
-namespace IntegrationTests.Clients.Setup
+namespace IntegrationTests.Clients.Setup;
+
+public class ExtensionGrantValidator2 : IExtensionGrantValidator
 {
-    public class ExtensionGrantValidator2 : IExtensionGrantValidator
+    public Task ValidateAsync(ExtensionGrantValidationContext context)
     {
-        public Task ValidateAsync(ExtensionGrantValidationContext context)
+        var credential = context.Request.Raw.Get("custom_credential");
+
+        if (credential != null)
         {
-            var credential = context.Request.Raw.Get("custom_credential");
-
-            if (credential != null)
-            {
-                // valid credential
-                context.Result = new GrantValidationResult("818727", "custom");
-            }
-            else
-            {
-                // custom error message
-                context.Result = new GrantValidationResult(Duende.IdentityServer.Models.TokenRequestErrors.InvalidGrant, "invalid custom credential");
-            }
-
-            return Task.CompletedTask;
+            // valid credential
+            context.Result = new GrantValidationResult("818727", "custom");
+        }
+        else
+        {
+            // custom error message
+            context.Result = new GrantValidationResult(Duende.IdentityServer.Models.TokenRequestErrors.InvalidGrant, "invalid custom credential");
         }
 
-        public string GrantType => "custom2";
+        return Task.CompletedTask;
     }
+
+    public string GrantType => "custom2";
 }

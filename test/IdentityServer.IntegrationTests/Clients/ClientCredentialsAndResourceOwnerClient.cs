@@ -11,83 +11,82 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Xunit;
 
-namespace IntegrationTests.Clients
+namespace IntegrationTests.Clients;
+
+public class ClientCredentialsandResourceOwnerClient
 {
-    public class ClientCredentialsandResourceOwnerClient
+    private const string TokenEndpoint = "https://server/connect/token";
+
+    private readonly HttpClient _client;
+
+    public ClientCredentialsandResourceOwnerClient()
     {
-        private const string TokenEndpoint = "https://server/connect/token";
+        var builder = new WebHostBuilder()
+            .UseStartup<Startup>();
+        var server = new TestServer(builder);
 
-        private readonly HttpClient _client;
+        _client = server.CreateClient();
+    }
 
-        public ClientCredentialsandResourceOwnerClient()
+    [Fact]
+    public async Task Resource_scope_should_be_requestable_via_client_credentials()
+    {
+        var response = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
         {
-            var builder = new WebHostBuilder()
-                .UseStartup<Startup>();
-            var server = new TestServer(builder);
+            Address = TokenEndpoint,
+            ClientId = "client.and.ro",
+            ClientSecret = "secret",
+            Scope = "api1"
+        });
 
-            _client = server.CreateClient();
-        }
+        response.IsError.Should().Be(false);
+    }
 
-        [Fact]
-        public async Task Resource_scope_should_be_requestable_via_client_credentials()
+    [Fact]
+    public async Task Openid_scope_should_not_be_requestable_via_client_credentials()
+    {
+        var response = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
         {
-            var response = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
-            {
-                Address = TokenEndpoint,
-                ClientId = "client.and.ro",
-                ClientSecret = "secret",
-                Scope = "api1"
-            });
+            Address = TokenEndpoint,
+            ClientId = "client.and.ro",
+            ClientSecret = "secret",
+            Scope = "openid api1"
+        });
 
-            response.IsError.Should().Be(false);
-        }
+        response.IsError.Should().Be(true);
+    }
 
-        [Fact]
-        public async Task Openid_scope_should_not_be_requestable_via_client_credentials()
+    [Fact]
+    public async Task Openid_scope_should_be_requestable_via_password()
+    {
+        var response = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
         {
-            var response = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
-            {
-                Address = TokenEndpoint,
-                ClientId = "client.and.ro",
-                ClientSecret = "secret",
-                Scope = "openid api1"
-            });
+            Address = TokenEndpoint,
+            ClientId = "client.and.ro",
+            ClientSecret = "secret",
+            Scope = "openid",
 
-            response.IsError.Should().Be(true);
-        }
+            UserName = "bob",
+            Password = "bob"
+        });
 
-        [Fact]
-        public async Task Openid_scope_should_be_requestable_via_password()
+        response.IsError.Should().Be(false);
+    }
+
+    [Fact]
+    public async Task Openid_and_resource_scope_should_be_requestable_via_password()
+    {
+        var response = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
         {
-            var response = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
-            {
-                Address = TokenEndpoint,
-                ClientId = "client.and.ro",
-                ClientSecret = "secret",
-                Scope = "openid",
+            Address = TokenEndpoint,
+            ClientId = "client.and.ro",
+            ClientSecret = "secret",
+            Scope = "openid api1",
 
-                UserName = "bob",
-                Password = "bob"
-            });
+            UserName = "bob",
+            Password = "bob"
+        });
 
-            response.IsError.Should().Be(false);
-        }
-
-        [Fact]
-        public async Task Openid_and_resource_scope_should_be_requestable_via_password()
-        {
-            var response = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
-            {
-                Address = TokenEndpoint,
-                ClientId = "client.and.ro",
-                ClientSecret = "secret",
-                Scope = "openid api1",
-
-                UserName = "bob",
-                Password = "bob"
-            });
-
-            response.IsError.Should().Be(false);
-        }
+        response.IsError.Should().Be(false);
     }
 }

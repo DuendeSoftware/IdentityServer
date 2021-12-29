@@ -4,13 +4,12 @@
 
 using System.Collections.Generic;
 
-namespace IdentityServerHost.Pages.Ciba
+namespace IdentityServerHost.Pages.Ciba;
+
+public class InputModel
 {
-    public class InputModel
-    {
-        public string Button { get; set; }
-        public IEnumerable<string> ScopesConsented { get; set; }
-        public string Id { get; set; }
-        public string Description { get; set; }
-    }
+    public string Button { get; set; }
+    public IEnumerable<string> ScopesConsented { get; set; }
+    public string Id { get; set; }
+    public string Description { get; set; }
 }

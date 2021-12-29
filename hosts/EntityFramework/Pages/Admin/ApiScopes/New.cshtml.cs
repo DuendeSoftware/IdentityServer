@@ -3,35 +3,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 
-namespace IdentityServerHost.Pages.Admin.ApiScopes
+namespace IdentityServerHost.Pages.Admin.ApiScopes;
+
+[SecurityHeaders]
+[Authorize]
+public class NewModel : PageModel
 {
-    [SecurityHeaders]
-    [Authorize]
-    public class NewModel : PageModel
+    private readonly ApiScopeRepository _repository;
+
+    public NewModel(ApiScopeRepository repository)
     {
-        private readonly ApiScopeRepository _repository;
+        _repository = repository;
+    }
 
-        public NewModel(ApiScopeRepository repository)
-        {
-            _repository = repository;
-        }
-
-        [BindProperty]
-        public ApiScopeModel InputModel { get; set; }
+    [BindProperty]
+    public ApiScopeModel InputModel { get; set; }
         
-        public void OnGet()
+    public void OnGet()
+    {
+    }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (ModelState.IsValid)
         {
+            await _repository.CreateAsync(InputModel);
+            return RedirectToPage("/Admin/ApiScopes/Edit", new { id = InputModel.Name });
         }
 
-        public async Task<IActionResult> OnPostAsync()
-        {
-            if (ModelState.IsValid)
-            {
-                await _repository.CreateAsync(InputModel);
-                return RedirectToPage("/Admin/ApiScopes/Edit", new { id = InputModel.Name });
-            }
-
-            return Page();
-        }
+        return Page();
     }
 }

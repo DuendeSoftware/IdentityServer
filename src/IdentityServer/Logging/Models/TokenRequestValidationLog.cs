@@ -7,49 +7,48 @@ using System.Linq;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 
-namespace Duende.IdentityServer.Logging.Models
+namespace Duende.IdentityServer.Logging.Models;
+
+internal class TokenRequestValidationLog
 {
-    internal class TokenRequestValidationLog
+    public string ClientId { get; set; }
+    public string ClientName { get; set; }
+    public string GrantType { get; set; }
+    public string Scopes { get; set; }
+
+    public string AuthorizationCode { get; set; }
+    public string RefreshToken { get; set; }
+
+    public string UserName { get; set; }
+    public IEnumerable<string> AuthenticationContextReferenceClasses { get; set; }
+    public string Tenant { get; set; }
+    public string IdP { get; set; }
+
+    public Dictionary<string, string> Raw { get; set; }
+
+    public TokenRequestValidationLog(ValidatedTokenRequest request, IEnumerable<string> sensitiveValuesFilter)
     {
-        public string ClientId { get; set; }
-        public string ClientName { get; set; }
-        public string GrantType { get; set; }
-        public string Scopes { get; set; }
+        Raw = request.Raw.ToScrubbedDictionary(sensitiveValuesFilter.ToArray());
 
-        public string AuthorizationCode { get; set; }
-        public string RefreshToken { get; set; }
-
-        public string UserName { get; set; }
-        public IEnumerable<string> AuthenticationContextReferenceClasses { get; set; }
-        public string Tenant { get; set; }
-        public string IdP { get; set; }
-
-        public Dictionary<string, string> Raw { get; set; }
-
-        public TokenRequestValidationLog(ValidatedTokenRequest request, IEnumerable<string> sensitiveValuesFilter)
+        if (request.Client != null)
         {
-            Raw = request.Raw.ToScrubbedDictionary(sensitiveValuesFilter.ToArray());
-
-            if (request.Client != null)
-            {
-                ClientId = request.Client.ClientId;
-                ClientName = request.Client.ClientName;
-            }
-
-            if (request.RequestedScopes != null)
-            {
-                Scopes = request.RequestedScopes.ToSpaceSeparatedString();
-            }
-
-            GrantType = request.GrantType;
-            AuthorizationCode = request.AuthorizationCodeHandle.Obfuscate();
-            RefreshToken = request.RefreshTokenHandle.Obfuscate();
-            UserName = request.UserName;
+            ClientId = request.Client.ClientId;
+            ClientName = request.Client.ClientName;
         }
 
-        public override string ToString()
+        if (request.RequestedScopes != null)
         {
-            return LogSerializer.Serialize(this);
+            Scopes = request.RequestedScopes.ToSpaceSeparatedString();
         }
+
+        GrantType = request.GrantType;
+        AuthorizationCode = request.AuthorizationCodeHandle.Obfuscate();
+        RefreshToken = request.RefreshTokenHandle.Obfuscate();
+        UserName = request.UserName;
+    }
+
+    public override string ToString()
+    {
+        return LogSerializer.Serialize(this);
     }
 }

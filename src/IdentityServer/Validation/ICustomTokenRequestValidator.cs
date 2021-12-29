@@ -4,20 +4,19 @@
 
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Allows inserting custom validation logic into token requests
+/// </summary>
+public interface ICustomTokenRequestValidator
 {
     /// <summary>
-    /// Allows inserting custom validation logic into token requests
+    /// Custom validation logic for a token request.
     /// </summary>
-    public interface ICustomTokenRequestValidator
-    {
-        /// <summary>
-        /// Custom validation logic for a token request.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns>
-        /// The validation result
-        /// </returns>
-        Task ValidateAsync(CustomTokenRequestValidationContext context);
-    }
+    /// <param name="context">The context.</param>
+    /// <returns>
+    /// The validation result
+    /// </returns>
+    Task ValidateAsync(CustomTokenRequestValidationContext context);
 }

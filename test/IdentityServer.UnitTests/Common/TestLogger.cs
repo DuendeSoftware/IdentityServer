@@ -4,13 +4,12 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace UnitTests.Common
+namespace UnitTests.Common;
+
+public static class TestLogger
 {
-    public static class TestLogger
+    public static ILogger<T> Create<T>()
     {
-        public static ILogger<T> Create<T>()
-        {
-            return new LoggerFactory().CreateLogger<T>();
-        }
+        return new LoggerFactory().CreateLogger<T>();
     }
 }

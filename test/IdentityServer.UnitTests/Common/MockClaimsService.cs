@@ -9,21 +9,20 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 
-namespace UnitTests.Common
+namespace UnitTests.Common;
+
+class MockClaimsService : IClaimsService
 {
-    class MockClaimsService : IClaimsService
+    public List<Claim> IdentityTokenClaims { get; set; } = new List<Claim>();
+    public List<Claim> AccessTokenClaims { get; set; } = new List<Claim>();
+
+    public Task<IEnumerable<Claim>> GetIdentityTokenClaimsAsync(ClaimsPrincipal subject, ResourceValidationResult resources, bool includeAllIdentityClaims, ValidatedRequest request)
     {
-        public List<Claim> IdentityTokenClaims { get; set; } = new List<Claim>();
-        public List<Claim> AccessTokenClaims { get; set; } = new List<Claim>();
+        return Task.FromResult(IdentityTokenClaims.AsEnumerable());
+    }
 
-        public Task<IEnumerable<Claim>> GetIdentityTokenClaimsAsync(ClaimsPrincipal subject, ResourceValidationResult resources, bool includeAllIdentityClaims, ValidatedRequest request)
-        {
-            return Task.FromResult(IdentityTokenClaims.AsEnumerable());
-        }
-
-        public Task<IEnumerable<Claim>> GetAccessTokenClaimsAsync(ClaimsPrincipal subject, ResourceValidationResult resources, ValidatedRequest request)
-        {
-            return Task.FromResult(AccessTokenClaims.AsEnumerable());
-        }
+    public Task<IEnumerable<Claim>> GetAccessTokenClaimsAsync(ClaimsPrincipal subject, ResourceValidationResult resources, ValidatedRequest request)
+    {
+        return Task.FromResult(AccessTokenClaims.AsEnumerable());
     }
 }

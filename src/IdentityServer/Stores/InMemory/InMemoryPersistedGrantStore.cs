@@ -10,92 +10,91 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 
-namespace Duende.IdentityServer.Stores
+namespace Duende.IdentityServer.Stores;
+
+/// <summary>
+/// In-memory persisted grant store
+/// </summary>
+public class InMemoryPersistedGrantStore : IPersistedGrantStore
 {
-    /// <summary>
-    /// In-memory persisted grant store
-    /// </summary>
-    public class InMemoryPersistedGrantStore : IPersistedGrantStore
+    private readonly ConcurrentDictionary<string, PersistedGrant> _repository = new ConcurrentDictionary<string, PersistedGrant>();
+
+    /// <inheritdoc/>
+    public Task StoreAsync(PersistedGrant grant)
     {
-        private readonly ConcurrentDictionary<string, PersistedGrant> _repository = new ConcurrentDictionary<string, PersistedGrant>();
+        _repository[grant.Key] = grant;
 
-        /// <inheritdoc/>
-        public Task StoreAsync(PersistedGrant grant)
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task<PersistedGrant> GetAsync(string key)
+    {
+        if (key != null && _repository.TryGetValue(key, out PersistedGrant token))
         {
-            _repository[grant.Key] = grant;
-
-            return Task.CompletedTask;
+            return Task.FromResult(token);
         }
 
-        /// <inheritdoc/>
-        public Task<PersistedGrant> GetAsync(string key)
-        {
-            if (key != null && _repository.TryGetValue(key, out PersistedGrant token))
-            {
-                return Task.FromResult(token);
-            }
+        return Task.FromResult<PersistedGrant>(null);
+    }
 
-            return Task.FromResult<PersistedGrant>(null);
-        }
-
-        /// <inheritdoc/>
-        public Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
-        {
-            filter.Validate();
+    /// <inheritdoc/>
+    public Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
+    {
+        filter.Validate();
             
-            var items = Filter(filter);
+        var items = Filter(filter);
             
-            return Task.FromResult(items);
-        }
+        return Task.FromResult(items);
+    }
 
-        /// <inheritdoc/>
-        public Task RemoveAsync(string key)
-        {
-            _repository.TryRemove(key, out _);
+    /// <inheritdoc/>
+    public Task RemoveAsync(string key)
+    {
+        _repository.TryRemove(key, out _);
 
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
+    }
 
-        /// <inheritdoc/>
-        public Task RemoveAllAsync(PersistedGrantFilter filter)
-        {
-            filter.Validate();
+    /// <inheritdoc/>
+    public Task RemoveAllAsync(PersistedGrantFilter filter)
+    {
+        filter.Validate();
 
-            var items = Filter(filter);
+        var items = Filter(filter);
             
-            foreach (var item in items)
-            {
-                _repository.TryRemove(item.Key, out _);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private IEnumerable<PersistedGrant> Filter(PersistedGrantFilter filter)
+        foreach (var item in items)
         {
-            var query =
-                from item in _repository
-                select item.Value;
-
-            if (!String.IsNullOrWhiteSpace(filter.ClientId))
-            {
-                query = query.Where(x => x.ClientId == filter.ClientId);
-            }
-            if (!String.IsNullOrWhiteSpace(filter.SessionId))
-            {
-                query = query.Where(x => x.SessionId == filter.SessionId);
-            }
-            if (!String.IsNullOrWhiteSpace(filter.SubjectId))
-            {
-                query = query.Where(x => x.SubjectId == filter.SubjectId);
-            }
-            if (!String.IsNullOrWhiteSpace(filter.Type))
-            {
-                query = query.Where(x => x.Type == filter.Type);
-            }
-
-            var items = query.ToArray().AsEnumerable();
-            return items;
+            _repository.TryRemove(item.Key, out _);
         }
+
+        return Task.CompletedTask;
+    }
+
+    private IEnumerable<PersistedGrant> Filter(PersistedGrantFilter filter)
+    {
+        var query =
+            from item in _repository
+            select item.Value;
+
+        if (!String.IsNullOrWhiteSpace(filter.ClientId))
+        {
+            query = query.Where(x => x.ClientId == filter.ClientId);
+        }
+        if (!String.IsNullOrWhiteSpace(filter.SessionId))
+        {
+            query = query.Where(x => x.SessionId == filter.SessionId);
+        }
+        if (!String.IsNullOrWhiteSpace(filter.SubjectId))
+        {
+            query = query.Where(x => x.SubjectId == filter.SubjectId);
+        }
+        if (!String.IsNullOrWhiteSpace(filter.Type))
+        {
+            query = query.Where(x => x.Type == filter.Type);
+        }
+
+        var items = query.ToArray().AsEnumerable();
+        return items;
     }
 }

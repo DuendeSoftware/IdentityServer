@@ -11,68 +11,67 @@ using Duende.IdentityServer.ResponseHandling;
 using static Duende.IdentityServer.Constants;
 using IdentityModel;
 
-namespace Duende.IdentityServer.Endpoints.Results
+namespace Duende.IdentityServer.Endpoints.Results;
+
+internal class BackchannelAuthenticationResult : IEndpointResult
 {
-    internal class BackchannelAuthenticationResult : IEndpointResult
+    public BackchannelAuthenticationResponse Response { get; set; }
+
+    public BackchannelAuthenticationResult(BackchannelAuthenticationResponse response)
     {
-        public BackchannelAuthenticationResponse Response { get; set; }
+        Response = response ?? throw new ArgumentNullException(nameof(response));
+    }
 
-        public BackchannelAuthenticationResult(BackchannelAuthenticationResponse response)
+    public async Task ExecuteAsync(HttpContext context)
+    {
+        context.Response.SetNoCache();
+
+        if (Response.IsError)
         {
-            Response = response ?? throw new ArgumentNullException(nameof(response));
-        }
-
-        public async Task ExecuteAsync(HttpContext context)
-        {
-            context.Response.SetNoCache();
-
-            if (Response.IsError)
+            switch (Response.Error)
             {
-                switch (Response.Error)
-                {
-                    case OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient:
-                        context.Response.StatusCode = 401;
-                        break;
-                    case OidcConstants.BackchannelAuthenticationRequestErrors.AccessDenied:
-                        context.Response.StatusCode = 403;
-                        break;
-                    default:
-                        context.Response.StatusCode = 400;
-                        break;
-                }
-
-                await context.Response.WriteJsonAsync(new ErrorResultDto { 
-                    error = Response.Error,
-                    error_description = Response.ErrorDescription
-                });
+                case OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient:
+                    context.Response.StatusCode = 401;
+                    break;
+                case OidcConstants.BackchannelAuthenticationRequestErrors.AccessDenied:
+                    context.Response.StatusCode = 403;
+                    break;
+                default:
+                    context.Response.StatusCode = 400;
+                    break;
             }
-            else
+
+            await context.Response.WriteJsonAsync(new ErrorResultDto { 
+                error = Response.Error,
+                error_description = Response.ErrorDescription
+            });
+        }
+        else
+        {
+            context.Response.StatusCode = 200;
+            await context.Response.WriteJsonAsync(new SuccessResultDto
             {
-                context.Response.StatusCode = 200;
-                await context.Response.WriteJsonAsync(new SuccessResultDto
-                {
-                    auth_req_id = Response.AuthenticationRequestId,
-                    expires_in = Response.ExpiresIn,
-                    interval = Response.Interval
-                });
-            }
+                auth_req_id = Response.AuthenticationRequestId,
+                expires_in = Response.ExpiresIn,
+                interval = Response.Interval
+            });
         }
+    }
 
-        internal class SuccessResultDto
-        {
+    internal class SuccessResultDto
+    {
 #pragma warning disable IDE1006 // Naming Styles
-            public string auth_req_id { get; set; }
-            public int expires_in { get; set; }
-            public int interval { get; set; }
+        public string auth_req_id { get; set; }
+        public int expires_in { get; set; }
+        public int interval { get; set; }
 #pragma warning restore IDE1006 // Naming Styles
-        }
+    }
 
-        internal class ErrorResultDto
-        {
+    internal class ErrorResultDto
+    {
 #pragma warning disable IDE1006 // Naming Styles
-            public string error { get; set; }
-            public string error_description { get; set; }
+        public string error { get; set; }
+        public string error_description { get; set; }
 #pragma warning restore IDE1006 // Naming Styles
-        }
     }
 }

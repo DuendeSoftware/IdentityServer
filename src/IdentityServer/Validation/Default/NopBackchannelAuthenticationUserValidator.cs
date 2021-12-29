@@ -4,23 +4,21 @@
 
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Validation
-{
-    // todo: ciba perhaps make a default IBackchannelAuthenticationUserValidator based on the idtokenhint claims?
-    // and maybe it calls into the profile service?
+namespace Duende.IdentityServer.Validation;
+// todo: ciba perhaps make a default IBackchannelAuthenticationUserValidator based on the idtokenhint claims?
+// and maybe it calls into the profile service?
 
-    /// <summary>
-    /// Nop implementation of IBackchannelAuthenticationUserValidator.
-    /// </summary>
-    public class NopBackchannelAuthenticationUserValidator : IBackchannelAuthenticationUserValidator
+/// <summary>
+/// Nop implementation of IBackchannelAuthenticationUserValidator.
+/// </summary>
+public class NopBackchannelAuthenticationUserValidator : IBackchannelAuthenticationUserValidator
+{
+    /// <inheritdoc/>
+    public Task<BackchannelAuthenticationUserValidatonResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
     {
-        /// <inheritdoc/>
-        public Task<BackchannelAuthenticationUserValidatonResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
-        {
-            var result = new BackchannelAuthenticationUserValidatonResult { 
-                Error = "not implemented"
-            };
-            return Task.FromResult(result);
-        }
+        var result = new BackchannelAuthenticationUserValidatonResult { 
+            Error = "not implemented"
+        };
+        return Task.FromResult(result);
     }
 }

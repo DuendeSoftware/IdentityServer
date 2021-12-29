@@ -9,40 +9,39 @@ using System.Diagnostics;
 
 #pragma warning disable 1591
 
-namespace Duende.IdentityServer.Extensions
+namespace Duende.IdentityServer.Extensions;
+
+public static class IReadableStringCollectionExtensions
 {
-    public static class IReadableStringCollectionExtensions
+    [DebuggerStepThrough]
+    public static NameValueCollection AsNameValueCollection(this IEnumerable<KeyValuePair<string, StringValues>> collection)
     {
-        [DebuggerStepThrough]
-        public static NameValueCollection AsNameValueCollection(this IEnumerable<KeyValuePair<string, StringValues>> collection)
+        var nv = new NameValueCollection();
+
+        foreach (var field in collection)
         {
-            var nv = new NameValueCollection();
-
-            foreach (var field in collection)
+            foreach (var val in field.Value)
             {
-                foreach (var val in field.Value)
-                {
-                    nv.Add(field.Key, val);
-                }
+                nv.Add(field.Key, val);
             }
-
-            return nv;
         }
 
-        [DebuggerStepThrough]
-        public static NameValueCollection AsNameValueCollection(this IDictionary<string, StringValues> collection)
+        return nv;
+    }
+
+    [DebuggerStepThrough]
+    public static NameValueCollection AsNameValueCollection(this IDictionary<string, StringValues> collection)
+    {
+        var nv = new NameValueCollection();
+
+        foreach (var field in collection)
         {
-            var nv = new NameValueCollection();
-
-            foreach (var field in collection)
+            foreach (var item in field.Value)
             {
-                foreach (var item in field.Value)
-                {
-                    nv.Add(field.Key, item);
-                }
+                nv.Add(field.Key, item);
             }
-
-            return nv;
         }
+
+        return nv;
     }
 }

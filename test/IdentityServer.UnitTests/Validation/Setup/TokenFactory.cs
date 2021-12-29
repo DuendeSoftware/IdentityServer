@@ -10,110 +10,109 @@ using Duende.IdentityServer.Models;
 using IdentityModel;
 using UnitTests.Common;
 
-namespace UnitTests.Validation.Setup
+namespace UnitTests.Validation.Setup;
+
+internal static class TokenFactory
 {
-    internal static class TokenFactory
+    public static Token CreateAccessToken(Client client, string subjectId, int lifetime, params string[] scopes)
     {
-        public static Token CreateAccessToken(Client client, string subjectId, int lifetime, params string[] scopes)
+        var claims = new List<Claim> 
         {
-            var claims = new List<Claim> 
-            {
-                new Claim("client_id", client.ClientId),
-                new Claim("sub", subjectId)
-            };
+            new Claim("client_id", client.ClientId),
+            new Claim("sub", subjectId)
+        };
 
-            scopes.ToList().ForEach(s => claims.Add(new Claim("scope", s)));
+        scopes.ToList().ForEach(s => claims.Add(new Claim("scope", s)));
 
-            var token = new Token(OidcConstants.TokenTypes.AccessToken)
-            {
-                CreationTime = DateTime.UtcNow,
-                Audiences = { "https://idsvr.com/resources" },
-                Issuer = "https://idsvr.com",
-                Lifetime = lifetime,
-                Claims = claims,
-                ClientId = client.ClientId,
-                AccessTokenType = client.AccessTokenType
-            };
+        var token = new Token(OidcConstants.TokenTypes.AccessToken)
+        {
+            CreationTime = DateTime.UtcNow,
+            Audiences = { "https://idsvr.com/resources" },
+            Issuer = "https://idsvr.com",
+            Lifetime = lifetime,
+            Claims = claims,
+            ClientId = client.ClientId,
+            AccessTokenType = client.AccessTokenType
+        };
 
-            return token;
+        return token;
+    }
+
+    public static Token CreateAccessTokenLong(Client client, string subjectId, int lifetime, int count, params string[] scopes)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim("client_id", client.ClientId),
+            new Claim("sub", subjectId)
+        };
+
+        for (int i = 0; i < count; i++)
+        {
+            claims.Add(new Claim("junk", "x".Repeat(100)));
         }
 
-        public static Token CreateAccessTokenLong(Client client, string subjectId, int lifetime, int count, params string[] scopes)
+        scopes.ToList().ForEach(s => claims.Add(new Claim("scope", s)));
+
+        var token = new Token(OidcConstants.TokenTypes.AccessToken)
         {
-            var claims = new List<Claim>
-            {
-                new Claim("client_id", client.ClientId),
-                new Claim("sub", subjectId)
-            };
+            CreationTime = DateTime.UtcNow,
+            Audiences = { "https://idsvr.com/resources" },
+            Issuer = "https://idsvr.com",
+            Lifetime = lifetime,
+            Claims = claims,
+            ClientId = client.ClientId,
+            AccessTokenType = client.AccessTokenType
+        };
 
-            for (int i = 0; i < count; i++)
-            {
-                claims.Add(new Claim("junk", "x".Repeat(100)));
-            }
+        return token;
+    }
 
-            scopes.ToList().ForEach(s => claims.Add(new Claim("scope", s)));
+    public static Token CreateIdentityToken(string clientId, string subjectId)
+    {
+        var clients = Factory.CreateClientStore();
 
-            var token = new Token(OidcConstants.TokenTypes.AccessToken)
-            {
-                CreationTime = DateTime.UtcNow,
-                Audiences = { "https://idsvr.com/resources" },
-                Issuer = "https://idsvr.com",
-                Lifetime = lifetime,
-                Claims = claims,
-                ClientId = client.ClientId,
-                AccessTokenType = client.AccessTokenType
-            };
+        var claims = new List<Claim> 
+        {
+            new Claim("sub", subjectId)
+        };
 
-            return token;
+        var token = new Token(OidcConstants.TokenTypes.IdentityToken)
+        {
+            CreationTime = DateTime.UtcNow,
+            Audiences = { clientId },
+            ClientId = clientId,
+            Issuer = "https://idsvr.com",
+            Lifetime = 600,
+            Claims = claims
+        };
+
+        return token;
+    }
+
+    public static Token CreateIdentityTokenLong(string clientId, string subjectId, int count)
+    {
+        var clients = Factory.CreateClientStore();
+
+        var claims = new List<Claim>
+        {
+            new Claim("sub", subjectId)
+        };
+
+        for (int i = 0; i < count; i++)
+        {
+            claims.Add(new Claim("junk", "x".Repeat(100)));
         }
 
-        public static Token CreateIdentityToken(string clientId, string subjectId)
+        var token = new Token(OidcConstants.TokenTypes.IdentityToken)
         {
-            var clients = Factory.CreateClientStore();
+            CreationTime = DateTime.UtcNow,
+            Audiences = { clientId },
+            ClientId = clientId,
+            Issuer = "https://idsvr.com",
+            Lifetime = 600,
+            Claims = claims
+        };
 
-            var claims = new List<Claim> 
-            {
-                new Claim("sub", subjectId)
-            };
-
-            var token = new Token(OidcConstants.TokenTypes.IdentityToken)
-            {
-                CreationTime = DateTime.UtcNow,
-                Audiences = { clientId },
-                ClientId = clientId,
-                Issuer = "https://idsvr.com",
-                Lifetime = 600,
-                Claims = claims
-            };
-
-            return token;
-        }
-
-        public static Token CreateIdentityTokenLong(string clientId, string subjectId, int count)
-        {
-            var clients = Factory.CreateClientStore();
-
-            var claims = new List<Claim>
-            {
-                new Claim("sub", subjectId)
-            };
-
-            for (int i = 0; i < count; i++)
-            {
-                claims.Add(new Claim("junk", "x".Repeat(100)));
-            }
-
-            var token = new Token(OidcConstants.TokenTypes.IdentityToken)
-            {
-                CreationTime = DateTime.UtcNow,
-                Audiences = { clientId },
-                ClientId = clientId,
-                Issuer = "https://idsvr.com",
-                Lifetime = 600,
-                Claims = claims
-            };
-
-            return token;
-        }
+        return token;
     }
 }

@@ -4,27 +4,26 @@
 
 using Duende.IdentityServer.Models;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Class describing the extension grant validation context
+/// </summary>
+public class ExtensionGrantValidationContext
 {
     /// <summary>
-    /// Class describing the extension grant validation context
+    /// Gets or sets the request.
     /// </summary>
-    public class ExtensionGrantValidationContext
-    {
-        /// <summary>
-        /// Gets or sets the request.
-        /// </summary>
-        /// <value>
-        /// The request.
-        /// </value>
-        public ValidatedTokenRequest Request { get; set; }
+    /// <value>
+    /// The request.
+    /// </value>
+    public ValidatedTokenRequest Request { get; set; }
 
-        /// <summary>
-        /// Gets or sets the result.
-        /// </summary>
-        /// <value>
-        /// The result.
-        /// </value>
-        public GrantValidationResult Result { get; set; } = new GrantValidationResult(TokenRequestErrors.InvalidGrant);
-    }
+    /// <summary>
+    /// Gets or sets the result.
+    /// </summary>
+    /// <value>
+    /// The result.
+    /// </value>
+    public GrantValidationResult Result { get; set; } = new GrantValidationResult(TokenRequestErrors.InvalidGrant);
 }

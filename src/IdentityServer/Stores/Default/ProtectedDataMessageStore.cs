@@ -10,78 +10,77 @@ using System;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
 
-namespace Duende.IdentityServer.Stores
+namespace Duende.IdentityServer.Stores;
+
+/// <summary>
+/// IMessageStore implementation that uses data protection to protect message.
+/// </summary>
+/// <typeparam name="TModel"></typeparam>
+public class ProtectedDataMessageStore<TModel> : IMessageStore<TModel>
 {
+    private const string Purpose = "Duende.IdentityServer.Stores.ProtectedDataMessageStore";
+
     /// <summary>
-    /// IMessageStore implementation that uses data protection to protect message.
+    /// The data protector.
     /// </summary>
-    /// <typeparam name="TModel"></typeparam>
-    public class ProtectedDataMessageStore<TModel> : IMessageStore<TModel>
+    protected readonly IDataProtector Protector;
+
+    /// <summary>
+    /// The logger.
+    /// </summary>
+    protected readonly ILogger Logger;
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="provider"></param>
+    /// <param name="logger"></param>
+    public ProtectedDataMessageStore(IDataProtectionProvider provider, ILogger<ProtectedDataMessageStore<TModel>> logger)
     {
-        private const string Purpose = "Duende.IdentityServer.Stores.ProtectedDataMessageStore";
+        Protector = provider.CreateProtector(Purpose);
+        Logger = logger;
+    }
 
-        /// <summary>
-        /// The data protector.
-        /// </summary>
-        protected readonly IDataProtector Protector;
+    /// <inheritdoc />
+    public virtual Task<Message<TModel>> ReadAsync(string value)
+    {
+        Message<TModel> result = null;
 
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        protected readonly ILogger Logger;
-
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <param name="logger"></param>
-        public ProtectedDataMessageStore(IDataProtectionProvider provider, ILogger<ProtectedDataMessageStore<TModel>> logger)
+        if (!String.IsNullOrWhiteSpace(value))
         {
-            Protector = provider.CreateProtector(Purpose);
-            Logger = logger;
-        }
-
-        /// <inheritdoc />
-        public virtual Task<Message<TModel>> ReadAsync(string value)
-        {
-            Message<TModel> result = null;
-
-            if (!String.IsNullOrWhiteSpace(value))
-            {
-                try
-                {
-                    var bytes = Base64Url.Decode(value);
-                    bytes = Protector.Unprotect(bytes);
-                    var json = Encoding.UTF8.GetString(bytes);
-                    result = ObjectSerializer.FromString<Message<TModel>>(json);
-                }
-                catch(Exception ex)
-                {
-                    Logger.LogError(ex, "Exception reading protected message");
-                }
-            }
-
-            return Task.FromResult(result);
-        }
-
-        /// <inheritdoc />
-        public virtual Task<string> WriteAsync(Message<TModel> message)
-        {
-            string value = null;
-
             try
             {
-                var json = ObjectSerializer.ToString(message);
-                var bytes = Encoding.UTF8.GetBytes(json);
-                bytes = Protector.Protect(bytes);
-                value = Base64Url.Encode(bytes);
+                var bytes = Base64Url.Decode(value);
+                bytes = Protector.Unprotect(bytes);
+                var json = Encoding.UTF8.GetString(bytes);
+                result = ObjectSerializer.FromString<Message<TModel>>(json);
             }
             catch(Exception ex)
             {
-                Logger.LogError(ex, "Exception writing protected message");
+                Logger.LogError(ex, "Exception reading protected message");
             }
-
-            return Task.FromResult(value);
         }
+
+        return Task.FromResult(result);
+    }
+
+    /// <inheritdoc />
+    public virtual Task<string> WriteAsync(Message<TModel> message)
+    {
+        string value = null;
+
+        try
+        {
+            var json = ObjectSerializer.ToString(message);
+            var bytes = Encoding.UTF8.GetBytes(json);
+            bytes = Protector.Protect(bytes);
+            value = Base64Url.Encode(bytes);
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError(ex, "Exception writing protected message");
+        }
+
+        return Task.FromResult(value);
     }
 }

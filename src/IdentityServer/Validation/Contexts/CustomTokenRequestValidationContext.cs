@@ -2,19 +2,18 @@
 // See LICENSE in the project root for license information.
 
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Context class for custom token request validation
+/// </summary>
+public class CustomTokenRequestValidationContext
 {
     /// <summary>
-    /// Context class for custom token request validation
+    /// Gets or sets the result.
     /// </summary>
-    public class CustomTokenRequestValidationContext
-    {
-        /// <summary>
-        /// Gets or sets the result.
-        /// </summary>
-        /// <value>
-        /// The result.
-        /// </value>
-        public TokenRequestValidationResult Result { get; set; }
-    }
+    /// <value>
+    /// The result.
+    /// </value>
+    public TokenRequestValidationResult Result { get; set; }
 }

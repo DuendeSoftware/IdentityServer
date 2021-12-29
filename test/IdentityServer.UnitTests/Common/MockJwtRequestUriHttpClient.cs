@@ -6,15 +6,14 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 
-namespace UnitTests.Common
-{
-    public class MockJwtRequestUriHttpClient : IJwtRequestUriHttpClient
-    {
-        public string Jwt { get; set; }
+namespace UnitTests.Common;
 
-        public Task<string> GetJwtAsync(string url, Client client)
-        {
-            return Task.FromResult(Jwt);
-        }
+public class MockJwtRequestUriHttpClient : IJwtRequestUriHttpClient
+{
+    public string Jwt { get; set; }
+
+    public Task<string> GetJwtAsync(string url, Client client)
+    {
+        return Task.FromResult(Jwt);
     }
 }

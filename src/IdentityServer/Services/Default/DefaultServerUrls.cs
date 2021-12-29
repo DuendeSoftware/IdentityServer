@@ -7,52 +7,51 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Implements IServerUrls
+/// </summary>
+public class DefaultServerUrls : IServerUrls
 {
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
     /// <summary>
-    /// Implements IServerUrls
+    /// ctor
     /// </summary>
-    public class DefaultServerUrls : IServerUrls
+    public DefaultServerUrls(IHttpContextAccessor httpContextAccessor)
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        _httpContextAccessor = httpContextAccessor;
+    }
 
-        /// <summary>
-        /// ctor
-        /// </summary>
-        public DefaultServerUrls(IHttpContextAccessor httpContextAccessor)
+    /// <inheritdoc/>
+    public string Origin
+    {
+        get
         {
-            _httpContextAccessor = httpContextAccessor;
+            var request = _httpContextAccessor.HttpContext.Request;
+            return request.Scheme + "://" + request.Host.ToUriComponent();
         }
-
-        /// <inheritdoc/>
-        public string Origin
+        set
         {
-            get
-            {
-                var request = _httpContextAccessor.HttpContext.Request;
-                return request.Scheme + "://" + request.Host.ToUriComponent();
-            }
-            set
-            {
-                var split = value.Split(new[] { "://" }, StringSplitOptions.RemoveEmptyEntries);
+            var split = value.Split(new[] { "://" }, StringSplitOptions.RemoveEmptyEntries);
 
-                var request = _httpContextAccessor.HttpContext.Request;
-                request.Scheme = split.First();
-                request.Host = new HostString(split.Last());
-            }
+            var request = _httpContextAccessor.HttpContext.Request;
+            request.Scheme = split.First();
+            request.Host = new HostString(split.Last());
         }
+    }
 
-        /// <inheritdoc/>
-        public string BasePath
+    /// <inheritdoc/>
+    public string BasePath
+    {
+        get
         {
-            get
-            {
-                return _httpContextAccessor.HttpContext.Items[Constants.EnvironmentKeys.IdentityServerBasePath] as string;
-            }
-            set
-            {
-                _httpContextAccessor.HttpContext.Items[Constants.EnvironmentKeys.IdentityServerBasePath] = value.RemoveTrailingSlash();
-            }
+            return _httpContextAccessor.HttpContext.Items[Constants.EnvironmentKeys.IdentityServerBasePath] as string;
+        }
+        set
+        {
+            _httpContextAccessor.HttpContext.Items[Constants.EnvironmentKeys.IdentityServerBasePath] = value.RemoveTrailingSlash();
         }
     }
 }

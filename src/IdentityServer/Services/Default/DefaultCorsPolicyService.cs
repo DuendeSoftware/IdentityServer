@@ -8,75 +8,74 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Default CORS policy service.
+/// </summary>
+public class DefaultCorsPolicyService : ICorsPolicyService
 {
     /// <summary>
-    /// Default CORS policy service.
+    /// Logger
     /// </summary>
-    public class DefaultCorsPolicyService : ICorsPolicyService
+    protected readonly ILogger Logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DefaultCorsPolicyService"/> class.
+    /// </summary>
+    public DefaultCorsPolicyService(ILogger<DefaultCorsPolicyService> logger)
     {
-        /// <summary>
-        /// Logger
-        /// </summary>
-        protected readonly ILogger Logger;
+        Logger = logger;
+        AllowedOrigins = new HashSet<string>();
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultCorsPolicyService"/> class.
-        /// </summary>
-        public DefaultCorsPolicyService(ILogger<DefaultCorsPolicyService> logger)
+    /// <summary>
+    /// The list allowed origins that are allowed.
+    /// </summary>
+    /// <value>
+    /// The allowed origins.
+    /// </value>
+    public ICollection<string> AllowedOrigins { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether all origins are allowed.
+    /// </summary>
+    /// <value>
+    ///   <c>true</c> if allow all; otherwise, <c>false</c>.
+    /// </value>
+    public bool AllowAll { get; set; }
+
+    /// <summary>
+    /// Determines whether the origin allowed.
+    /// </summary>
+    /// <param name="origin">The origin.</param>
+    /// <returns></returns>
+    public virtual Task<bool> IsOriginAllowedAsync(string origin)
+    {
+        if (!String.IsNullOrWhiteSpace(origin))
         {
-            Logger = logger;
-            AllowedOrigins = new HashSet<string>();
-        }
-
-        /// <summary>
-        /// The list allowed origins that are allowed.
-        /// </summary>
-        /// <value>
-        /// The allowed origins.
-        /// </value>
-        public ICollection<string> AllowedOrigins { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether all origins are allowed.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if allow all; otherwise, <c>false</c>.
-        /// </value>
-        public bool AllowAll { get; set; }
-
-        /// <summary>
-        /// Determines whether the origin allowed.
-        /// </summary>
-        /// <param name="origin">The origin.</param>
-        /// <returns></returns>
-        public virtual Task<bool> IsOriginAllowedAsync(string origin)
-        {
-            if (!String.IsNullOrWhiteSpace(origin))
+            if (AllowAll)
             {
-                if (AllowAll)
-                {
-                    Logger.LogDebug("AllowAll true, so origin: {0} is allowed", origin);
-                    return Task.FromResult(true);
-                }
-
-                if (AllowedOrigins != null)
-                {
-                    if (AllowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Logger.LogDebug("AllowedOrigins configured and origin {0} is allowed", origin);
-                        return Task.FromResult(true);
-                    }
-                    else
-                    {
-                        Logger.LogDebug("AllowedOrigins configured and origin {0} is not allowed", origin);
-                    }
-                }
-
-                Logger.LogDebug("Exiting; origin {0} is not allowed", origin);
+                Logger.LogDebug("AllowAll true, so origin: {0} is allowed", origin);
+                return Task.FromResult(true);
             }
 
-            return Task.FromResult(false);
+            if (AllowedOrigins != null)
+            {
+                if (AllowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.LogDebug("AllowedOrigins configured and origin {0} is allowed", origin);
+                    return Task.FromResult(true);
+                }
+                else
+                {
+                    Logger.LogDebug("AllowedOrigins configured and origin {0} is not allowed", origin);
+                }
+            }
+
+            Logger.LogDebug("Exiting; origin {0} is not allowed", origin);
         }
+
+        return Task.FromResult(false);
     }
 }

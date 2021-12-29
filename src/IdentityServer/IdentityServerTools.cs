@@ -11,81 +11,80 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer
+namespace Duende.IdentityServer;
+
+/// <summary>
+/// Class for useful helpers for interacting with IdentityServer
+/// </summary>
+public class IdentityServerTools
 {
+    internal readonly IServiceProvider ServiceProvider;
+    internal readonly IIssuerNameService IssuerNameService;
+    private readonly ITokenCreationService _tokenCreation;
+    private readonly ISystemClock _clock;
+
     /// <summary>
-    /// Class for useful helpers for interacting with IdentityServer
+    /// Initializes a new instance of the <see cref="IdentityServerTools" /> class.
     /// </summary>
-    public class IdentityServerTools
+    /// <param name="serviceProvider">The provider.</param>
+    /// <param name="issuerNameService">The issuer name service</param>
+    /// <param name="tokenCreation">The token creation service.</param>
+    /// <param name="clock">The clock.</param>
+    public IdentityServerTools(IServiceProvider serviceProvider, IIssuerNameService issuerNameService, ITokenCreationService tokenCreation, ISystemClock clock)
     {
-        internal readonly IServiceProvider ServiceProvider;
-        internal readonly IIssuerNameService IssuerNameService;
-        private readonly ITokenCreationService _tokenCreation;
-        private readonly ISystemClock _clock;
+        ServiceProvider = serviceProvider;
+        IssuerNameService = issuerNameService;
+        _tokenCreation = tokenCreation;
+        _clock = clock;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityServerTools" /> class.
-        /// </summary>
-        /// <param name="serviceProvider">The provider.</param>
-        /// <param name="issuerNameService">The issuer name service</param>
-        /// <param name="tokenCreation">The token creation service.</param>
-        /// <param name="clock">The clock.</param>
-        public IdentityServerTools(IServiceProvider serviceProvider, IIssuerNameService issuerNameService, ITokenCreationService tokenCreation, ISystemClock clock)
+    /// <summary>
+    /// Issues a JWT.
+    /// </summary>
+    /// <param name="lifetime">The lifetime.</param>
+    /// <param name="claims">The claims.</param>
+    /// <returns></returns>
+    /// <exception cref="System.ArgumentNullException">claims</exception>
+    public virtual async Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims)
+    {
+        if (claims == null) throw new ArgumentNullException(nameof(claims));
+
+        var issuer = await IssuerNameService.GetCurrentAsync();
+
+        var token = new Token
         {
-            ServiceProvider = serviceProvider;
-            IssuerNameService = issuerNameService;
-            _tokenCreation = tokenCreation;
-            _clock = clock;
-        }
+            CreationTime = _clock.UtcNow.UtcDateTime,
+            Issuer = issuer,
+            Lifetime = lifetime,
 
-        /// <summary>
-        /// Issues a JWT.
-        /// </summary>
-        /// <param name="lifetime">The lifetime.</param>
-        /// <param name="claims">The claims.</param>
-        /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">claims</exception>
-        public virtual async Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims)
+            Claims = new HashSet<Claim>(claims, new ClaimComparer())
+        };
+
+        return await _tokenCreation.CreateTokenAsync(token);
+    }
+
+    /// <summary>
+    /// Issues a JWT.
+    /// </summary>
+    /// <param name="lifetime">The lifetime.</param>
+    /// <param name="issuer">The issuer.</param>
+    /// <param name="claims">The claims.</param>
+    /// <returns></returns>
+    /// <exception cref="System.ArgumentNullException">claims</exception>
+    public virtual async Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims)
+    {
+        if (String.IsNullOrWhiteSpace(issuer)) throw new ArgumentNullException(nameof(issuer));
+        if (claims == null) throw new ArgumentNullException(nameof(claims));
+
+        var token = new Token
         {
-            if (claims == null) throw new ArgumentNullException(nameof(claims));
+            CreationTime = _clock.UtcNow.UtcDateTime,
+            Issuer = issuer,
+            Lifetime = lifetime,
 
-            var issuer = await IssuerNameService.GetCurrentAsync();
+            Claims = new HashSet<Claim>(claims, new ClaimComparer())
+        };
 
-            var token = new Token
-            {
-                CreationTime = _clock.UtcNow.UtcDateTime,
-                Issuer = issuer,
-                Lifetime = lifetime,
-
-                Claims = new HashSet<Claim>(claims, new ClaimComparer())
-            };
-
-            return await _tokenCreation.CreateTokenAsync(token);
-        }
-
-        /// <summary>
-        /// Issues a JWT.
-        /// </summary>
-        /// <param name="lifetime">The lifetime.</param>
-        /// <param name="issuer">The issuer.</param>
-        /// <param name="claims">The claims.</param>
-        /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">claims</exception>
-        public virtual async Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims)
-        {
-            if (String.IsNullOrWhiteSpace(issuer)) throw new ArgumentNullException(nameof(issuer));
-            if (claims == null) throw new ArgumentNullException(nameof(claims));
-
-            var token = new Token
-            {
-                CreationTime = _clock.UtcNow.UtcDateTime,
-                Issuer = issuer,
-                Lifetime = lifetime,
-
-                Claims = new HashSet<Claim>(claims, new ClaimComparer())
-            };
-
-            return await _tokenCreation.CreateTokenAsync(token);
-        }
+        return await _tokenCreation.CreateTokenAsync(token);
     }
 }

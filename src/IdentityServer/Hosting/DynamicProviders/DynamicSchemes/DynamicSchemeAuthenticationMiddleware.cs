@@ -7,44 +7,43 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Hosting.DynamicProviders
+namespace Duende.IdentityServer.Hosting.DynamicProviders;
+
+class DynamicSchemeAuthenticationMiddleware
 {
-    class DynamicSchemeAuthenticationMiddleware
+    private readonly RequestDelegate _next;
+    private readonly DynamicProviderOptions _options;
+
+    public DynamicSchemeAuthenticationMiddleware(RequestDelegate next, DynamicProviderOptions options)
     {
-        private readonly RequestDelegate _next;
-        private readonly DynamicProviderOptions _options;
+        _next = next;
+        _options = options;
+    }
 
-        public DynamicSchemeAuthenticationMiddleware(RequestDelegate next, DynamicProviderOptions options)
+    public async Task Invoke(HttpContext context)
+    {
+        // this is needed to dynamically load the handler if this load balanced server
+        // was not the one that initiated the call out to the provider
+        if (context.Request.Path.StartsWithSegments(_options.PathPrefix))
         {
-            _next = next;
-            _options = options;
-        }
-
-        public async Task Invoke(HttpContext context)
-        {
-            // this is needed to dynamically load the handler if this load balanced server
-            // was not the one that initiated the call out to the provider
-            if (context.Request.Path.StartsWithSegments(_options.PathPrefix))
+            var startIndex = _options.PathPrefix.ToString().Length;
+            var scheme = context.Request.Path.Value.Substring(startIndex + 1);
+            var idx = scheme.IndexOf('/');
+            if (idx > 0)
             {
-                var startIndex = _options.PathPrefix.ToString().Length;
-                var scheme = context.Request.Path.Value.Substring(startIndex + 1);
-                var idx = scheme.IndexOf('/');
-                if (idx > 0)
-                {
-                    // this assumes the path is: /<PathPrefix>/<scheme>/<extra>
-                    // e.g.: /federation/my-oidc-provider/signin
-                    scheme = scheme.Substring(0, idx);
-                }
-
-                var handlers = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
-                var handler = await handlers.GetHandlerAsync(context, scheme) as IAuthenticationRequestHandler;
-                if (handler != null && await handler.HandleRequestAsync())
-                {
-                    return;
-                }
+                // this assumes the path is: /<PathPrefix>/<scheme>/<extra>
+                // e.g.: /federation/my-oidc-provider/signin
+                scheme = scheme.Substring(0, idx);
             }
 
-            await _next(context);
+            var handlers = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
+            var handler = await handlers.GetHandlerAsync(context, scheme) as IAuthenticationRequestHandler;
+            if (handler != null && await handler.HandleRequestAsync())
+            {
+                return;
+            }
         }
+
+        await _next(context);
     }
 }

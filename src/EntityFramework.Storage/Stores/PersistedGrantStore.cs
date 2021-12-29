@@ -15,172 +15,171 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Services;
 
-namespace Duende.IdentityServer.EntityFramework.Stores
+namespace Duende.IdentityServer.EntityFramework.Stores;
+
+/// <summary>
+/// Implementation of IPersistedGrantStore thats uses EF.
+/// </summary>
+/// <seealso cref="IPersistedGrantStore" />
+public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantStore
 {
     /// <summary>
-    /// Implementation of IPersistedGrantStore thats uses EF.
+    /// The DbContext.
     /// </summary>
-    /// <seealso cref="IPersistedGrantStore" />
-    public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantStore
-    {
-        /// <summary>
-        /// The DbContext.
-        /// </summary>
-        protected readonly IPersistedGrantDbContext Context;
+    protected readonly IPersistedGrantDbContext Context;
 
-        /// <summary>
-        /// The CancellationToken service.
-        /// </summary>
-        protected readonly ICancellationTokenProvider CancellationTokenProvider;
+    /// <summary>
+    /// The CancellationToken service.
+    /// </summary>
+    protected readonly ICancellationTokenProvider CancellationTokenProvider;
         
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        protected readonly ILogger Logger;
+    /// <summary>
+    /// The logger.
+    /// </summary>
+    protected readonly ILogger Logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersistedGrantStore"/> class.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="cancellationTokenProvider"></param>
-        public PersistedGrantStore(IPersistedGrantDbContext context, ILogger<PersistedGrantStore> logger, ICancellationTokenProvider cancellationTokenProvider)
-        {
-            Context = context;
-            Logger = logger;
-            CancellationTokenProvider = cancellationTokenProvider;
-        }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PersistedGrantStore"/> class.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationTokenProvider"></param>
+    public PersistedGrantStore(IPersistedGrantDbContext context, ILogger<PersistedGrantStore> logger, ICancellationTokenProvider cancellationTokenProvider)
+    {
+        Context = context;
+        Logger = logger;
+        CancellationTokenProvider = cancellationTokenProvider;
+    }
 
-        /// <inheritdoc/>
-        public virtual async Task StoreAsync(Duende.IdentityServer.Models.PersistedGrant token)
-        {
-            var existing = (await Context.PersistedGrants.Where(x => x.Key == token.Key)
+    /// <inheritdoc/>
+    public virtual async Task StoreAsync(Duende.IdentityServer.Models.PersistedGrant token)
+    {
+        var existing = (await Context.PersistedGrants.Where(x => x.Key == token.Key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
-                .SingleOrDefault(x => x.Key == token.Key);
-            if (existing == null)
-            {
-                Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
+            .SingleOrDefault(x => x.Key == token.Key);
+        if (existing == null)
+        {
+            Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
 
-                var persistedGrant = token.ToEntity();
-                Context.PersistedGrants.Add(persistedGrant);
-            }
-            else
-            {
-                Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
+            var persistedGrant = token.ToEntity();
+            Context.PersistedGrants.Add(persistedGrant);
+        }
+        else
+        {
+            Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
 
-                token.UpdateEntity(existing);
-            }
-
-            try
-            {
-                await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                Logger.LogWarning("exception updating {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
-            }
+            token.UpdateEntity(existing);
         }
 
-        /// <inheritdoc/>
-        public virtual async Task<Duende.IdentityServer.Models.PersistedGrant> GetAsync(string key)
+        try
         {
-            var persistedGrant = (await Context.PersistedGrants.AsNoTracking().Where(x => x.Key == key)
+            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            Logger.LogWarning("exception updating {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
+        }
+    }
+
+    /// <inheritdoc/>
+    public virtual async Task<Duende.IdentityServer.Models.PersistedGrant> GetAsync(string key)
+    {
+        var persistedGrant = (await Context.PersistedGrants.AsNoTracking().Where(x => x.Key == key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
-                .SingleOrDefault(x => x.Key == key);
-            var model = persistedGrant?.ToModel();
+            .SingleOrDefault(x => x.Key == key);
+        var model = persistedGrant?.ToModel();
 
-            Logger.LogDebug("{persistedGrantKey} found in database: {persistedGrantKeyFound}", key, model != null);
+        Logger.LogDebug("{persistedGrantKey} found in database: {persistedGrantKeyFound}", key, model != null);
 
-            return model;
-        }
+        return model;
+    }
 
-        /// <inheritdoc/>
-        public async Task<IEnumerable<Duende.IdentityServer.Models.PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
-        {
-            filter.Validate();
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Duende.IdentityServer.Models.PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
+    {
+        filter.Validate();
 
-            var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter)
-                .ToArrayAsync(CancellationTokenProvider.CancellationToken);
-            persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
+        var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter)
+            .ToArrayAsync(CancellationTokenProvider.CancellationToken);
+        persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
             
-            var model = persistedGrants.Select(x => x.ToModel());
+        var model = persistedGrants.Select(x => x.ToModel());
 
-            Logger.LogDebug("{persistedGrantCount} persisted grants found for {@filter}", persistedGrants.Length, filter);
+        Logger.LogDebug("{persistedGrantCount} persisted grants found for {@filter}", persistedGrants.Length, filter);
 
-            return model;
-        }
+        return model;
+    }
 
-        /// <inheritdoc/>
-        public virtual async Task RemoveAsync(string key)
-        {
-            var persistedGrant = (await Context.PersistedGrants.Where(x => x.Key == key)
+    /// <inheritdoc/>
+    public virtual async Task RemoveAsync(string key)
+    {
+        var persistedGrant = (await Context.PersistedGrants.Where(x => x.Key == key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
-                .SingleOrDefault(x => x.Key == key);
-            if (persistedGrant!= null)
-            {
-                Logger.LogDebug("removing {persistedGrantKey} persisted grant from database", key);
-
-                Context.PersistedGrants.Remove(persistedGrant);
-
-                try
-                {
-                    await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-                }
-                catch(DbUpdateConcurrencyException ex)
-                {
-                    Logger.LogInformation("exception removing {persistedGrantKey} persisted grant from database: {error}", key, ex.Message);
-                }
-            }
-            else
-            {
-                Logger.LogDebug("no {persistedGrantKey} persisted grant found in database", key);
-            }
-        }
-
-        /// <inheritdoc/>
-        public async Task RemoveAllAsync(PersistedGrantFilter filter)
+            .SingleOrDefault(x => x.Key == key);
+        if (persistedGrant!= null)
         {
-            filter.Validate();
+            Logger.LogDebug("removing {persistedGrantKey} persisted grant from database", key);
 
-            var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter)
-                .ToArrayAsync(CancellationTokenProvider.CancellationToken);
-            persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
-
-            Logger.LogDebug("removing {persistedGrantCount} persisted grants from database for {@filter}", persistedGrants.Length, filter);
-
-            Context.PersistedGrants.RemoveRange(persistedGrants);
+            Context.PersistedGrants.Remove(persistedGrant);
 
             try
             {
                 await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
             }
-            catch (DbUpdateConcurrencyException ex)
+            catch(DbUpdateConcurrencyException ex)
             {
-                Logger.LogInformation("removing {persistedGrantCount} persisted grants from database for subject {@filter}: {error}", persistedGrants.Length, filter, ex.Message);
+                Logger.LogInformation("exception removing {persistedGrantKey} persisted grant from database: {error}", key, ex.Message);
             }
         }
-
-
-        private IQueryable<PersistedGrant> Filter(IQueryable<PersistedGrant> query, PersistedGrantFilter filter)
+        else
         {
-            if (!String.IsNullOrWhiteSpace(filter.ClientId))
-            {
-                query = query.Where(x => x.ClientId == filter.ClientId);
-            }
-            if (!String.IsNullOrWhiteSpace(filter.SessionId))
-            {
-                query = query.Where(x => x.SessionId == filter.SessionId);
-            }
-            if (!String.IsNullOrWhiteSpace(filter.SubjectId))
-            {
-                query = query.Where(x => x.SubjectId == filter.SubjectId);
-            }
-            if (!String.IsNullOrWhiteSpace(filter.Type))
-            {
-                query = query.Where(x => x.Type == filter.Type);
-            }
-
-            return query;
+            Logger.LogDebug("no {persistedGrantKey} persisted grant found in database", key);
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task RemoveAllAsync(PersistedGrantFilter filter)
+    {
+        filter.Validate();
+
+        var persistedGrants = await Filter(Context.PersistedGrants.AsQueryable(), filter)
+            .ToArrayAsync(CancellationTokenProvider.CancellationToken);
+        persistedGrants = Filter(persistedGrants.AsQueryable(), filter).ToArray();
+
+        Logger.LogDebug("removing {persistedGrantCount} persisted grants from database for {@filter}", persistedGrants.Length, filter);
+
+        Context.PersistedGrants.RemoveRange(persistedGrants);
+
+        try
+        {
+            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            Logger.LogInformation("removing {persistedGrantCount} persisted grants from database for subject {@filter}: {error}", persistedGrants.Length, filter, ex.Message);
+        }
+    }
+
+
+    private IQueryable<PersistedGrant> Filter(IQueryable<PersistedGrant> query, PersistedGrantFilter filter)
+    {
+        if (!String.IsNullOrWhiteSpace(filter.ClientId))
+        {
+            query = query.Where(x => x.ClientId == filter.ClientId);
+        }
+        if (!String.IsNullOrWhiteSpace(filter.SessionId))
+        {
+            query = query.Where(x => x.SessionId == filter.SessionId);
+        }
+        if (!String.IsNullOrWhiteSpace(filter.SubjectId))
+        {
+            query = query.Where(x => x.SubjectId == filter.SubjectId);
+        }
+        if (!String.IsNullOrWhiteSpace(filter.Type))
+        {
+            query = query.Where(x => x.Type == filter.Type);
+        }
+
+        return query;
     }
 }

@@ -4,18 +4,17 @@
 
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Validator for handling identity provider configuration
+/// </summary>
+public interface IIdentityProviderConfigurationValidator
 {
     /// <summary>
-    /// Validator for handling identity provider configuration
+    /// Determines whether the configuration of an identity provider is valid.
     /// </summary>
-    public interface IIdentityProviderConfigurationValidator
-    {
-        /// <summary>
-        /// Determines whether the configuration of an identity provider is valid.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        Task ValidateAsync(IdentityProviderConfigurationValidationContext context);
-    }
+    /// <param name="context">The context.</param>
+    /// <returns></returns>
+    Task ValidateAsync(IdentityProviderConfigurationValidationContext context);
 }

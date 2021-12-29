@@ -9,10 +9,9 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
 
-namespace IntegrationTests.Common
+namespace IntegrationTests.Common;
+
+class MockClock : ISystemClock
 {
-    class MockClock : ISystemClock
-    {
-        public DateTimeOffset UtcNow { get; set; } = DateTimeOffset.UtcNow;
-    }
+    public DateTimeOffset UtcNow { get; set; } = DateTimeOffset.UtcNow;
 }

@@ -7,31 +7,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Hosting.DynamicProviders
+namespace Duende.IdentityServer.Hosting.DynamicProviders;
+
+class InMemoryOidcProviderStore : IIdentityProviderStore
 {
-    class InMemoryOidcProviderStore : IIdentityProviderStore
+    private readonly IEnumerable<OidcProvider> _providers;
+
+    public InMemoryOidcProviderStore(IEnumerable<OidcProvider> providers)
     {
-        private readonly IEnumerable<OidcProvider> _providers;
+        _providers = providers;
+    }
 
-        public InMemoryOidcProviderStore(IEnumerable<OidcProvider> providers)
-        {
-            _providers = providers;
-        }
+    public Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
+    {
+        var items = _providers.Select(x => new IdentityProviderName { 
+            Enabled = x.Enabled,
+            DisplayName = x.DisplayName,
+            Scheme = x.Scheme
+        });
+        return Task.FromResult(items);
+    }
 
-        public Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
-        {
-            var items = _providers.Select(x => new IdentityProviderName { 
-                Enabled = x.Enabled,
-                DisplayName = x.DisplayName,
-                Scheme = x.Scheme
-            });
-            return Task.FromResult(items);
-        }
-
-        public Task<IdentityProvider> GetBySchemeAsync(string scheme)
-        {
-            var item = _providers.FirstOrDefault(x => x.Scheme == scheme);
-            return Task.FromResult<IdentityProvider>(item);
-        }
+    public Task<IdentityProvider> GetBySchemeAsync(string scheme)
+    {
+        var item = _providers.FirstOrDefault(x => x.Scheme == scheme);
+        return Task.FromResult<IdentityProvider>(item);
     }
 }

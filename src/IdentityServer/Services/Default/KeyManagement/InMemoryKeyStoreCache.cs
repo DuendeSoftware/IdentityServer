@@ -7,67 +7,66 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services.KeyManagement
+namespace Duende.IdentityServer.Services.KeyManagement;
+
+/// <summary>
+/// In-memory implmenetaion of ISigningKeyStoreCache based on static variables. This expects to be used as a singleton.
+/// </summary>
+class InMemoryKeyStoreCache : ISigningKeyStoreCache
 {
+    private readonly ISystemClock _clock;
+
+    private object _lock = new object();
+
+    private DateTime _expires = DateTime.MinValue;
+    private IEnumerable<KeyContainer> _cache;
+
     /// <summary>
-    /// In-memory implmenetaion of ISigningKeyStoreCache based on static variables. This expects to be used as a singleton.
+    /// Constructor for InMemoryKeyStoreCache.
     /// </summary>
-    class InMemoryKeyStoreCache : ISigningKeyStoreCache
+    /// <param name="clock"></param>
+    public InMemoryKeyStoreCache(ISystemClock clock)
     {
-        private readonly ISystemClock _clock;
+        _clock = clock;
+    }
 
-        private object _lock = new object();
+    /// <summary>
+    /// Returns cached keys.
+    /// </summary>
+    /// <returns></returns>
+    public Task<IEnumerable<KeyContainer>> GetKeysAsync()
+    {
+        DateTime expires;
+        IEnumerable<KeyContainer> keys;
 
-        private DateTime _expires = DateTime.MinValue;
-        private IEnumerable<KeyContainer> _cache;
-
-        /// <summary>
-        /// Constructor for InMemoryKeyStoreCache.
-        /// </summary>
-        /// <param name="clock"></param>
-        public InMemoryKeyStoreCache(ISystemClock clock)
+        lock (_lock)
         {
-            _clock = clock;
+            expires = _expires;
+            keys = _cache;
         }
 
-        /// <summary>
-        /// Returns cached keys.
-        /// </summary>
-        /// <returns></returns>
-        public Task<IEnumerable<KeyContainer>> GetKeysAsync()
+        if (keys != null && expires >= _clock.UtcNow.UtcDateTime)
         {
-            DateTime expires;
-            IEnumerable<KeyContainer> keys;
-
-            lock (_lock)
-            {
-                expires = _expires;
-                keys = _cache;
-            }
-
-            if (keys != null && expires >= _clock.UtcNow.UtcDateTime)
-            {
-                return Task.FromResult(keys);
-            }
-
-            return Task.FromResult<IEnumerable<KeyContainer>>(null);
+            return Task.FromResult(keys);
         }
 
-        /// <summary>
-        /// Caches keys for duration.
-        /// </summary>
-        /// <param name="keys"></param>
-        /// <param name="duration"></param>
-        /// <returns></returns>
-        public Task StoreKeysAsync(IEnumerable<KeyContainer> keys, TimeSpan duration)
-        {
-            lock (_lock)
-            {
-                _expires = _clock.UtcNow.UtcDateTime.Add(duration);
-                _cache = keys;
-            }
+        return Task.FromResult<IEnumerable<KeyContainer>>(null);
+    }
 
-            return Task.CompletedTask;
+    /// <summary>
+    /// Caches keys for duration.
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="duration"></param>
+    /// <returns></returns>
+    public Task StoreKeysAsync(IEnumerable<KeyContainer> keys, TimeSpan duration)
+    {
+        lock (_lock)
+        {
+            _expires = _clock.UtcNow.UtcDateTime.Add(duration);
+            _cache = keys;
         }
+
+        return Task.CompletedTask;
     }
 }

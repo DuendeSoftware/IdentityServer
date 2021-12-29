@@ -15,515 +15,514 @@ using Duende.IdentityServer.Models;
 using static Duende.IdentityServer.Constants;
 using Duende.IdentityServer.Services;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthenticationRequestValidator
 {
-    internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthenticationRequestValidator
+    private readonly IdentityServerOptions _options;
+    private readonly IResourceValidator _resourceValidator;
+    private readonly ITokenValidator _tokenValidator;
+    private readonly IBackchannelAuthenticationUserValidator _backchannelAuthenticationUserValidator;
+    private readonly IJwtRequestValidator _jwtRequestValidator;
+    private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
+    private readonly ILogger<BackchannelAuthenticationRequestValidator> _logger;
+
+    private ValidatedBackchannelAuthenticationRequest _validatedRequest;
+
+    public BackchannelAuthenticationRequestValidator(
+        IdentityServerOptions options,
+        IResourceValidator resourceValidator,
+        ITokenValidator tokenValidator,
+        IBackchannelAuthenticationUserValidator backchannelAuthenticationUserValidator,
+        IJwtRequestValidator jwtRequestValidator,
+        IJwtRequestUriHttpClient jwtRequestUriHttpClient,
+        ILogger<BackchannelAuthenticationRequestValidator> logger)
     {
-        private readonly IdentityServerOptions _options;
-        private readonly IResourceValidator _resourceValidator;
-        private readonly ITokenValidator _tokenValidator;
-        private readonly IBackchannelAuthenticationUserValidator _backchannelAuthenticationUserValidator;
-        private readonly IJwtRequestValidator _jwtRequestValidator;
-        private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
-        private readonly ILogger<BackchannelAuthenticationRequestValidator> _logger;
+        _options = options;
+        _resourceValidator = resourceValidator;
+        _tokenValidator = tokenValidator;
+        _backchannelAuthenticationUserValidator = backchannelAuthenticationUserValidator;
+        _jwtRequestValidator = jwtRequestValidator;
+        _jwtRequestUriHttpClient = jwtRequestUriHttpClient;
+        _logger = logger;
+    }
 
-        private ValidatedBackchannelAuthenticationRequest _validatedRequest;
+    public async Task<BackchannelAuthenticationRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
+    {
+        if (clientValidationResult == null) throw new ArgumentNullException(nameof(clientValidationResult));
 
-        public BackchannelAuthenticationRequestValidator(
-            IdentityServerOptions options,
-            IResourceValidator resourceValidator,
-            ITokenValidator tokenValidator,
-            IBackchannelAuthenticationUserValidator backchannelAuthenticationUserValidator,
-            IJwtRequestValidator jwtRequestValidator,
-            IJwtRequestUriHttpClient jwtRequestUriHttpClient,
-            ILogger<BackchannelAuthenticationRequestValidator> logger)
+        _logger.LogDebug("Start backchannel authentication request validation");
+
+        _validatedRequest = new ValidatedBackchannelAuthenticationRequest
         {
-            _options = options;
-            _resourceValidator = resourceValidator;
-            _tokenValidator = tokenValidator;
-            _backchannelAuthenticationUserValidator = backchannelAuthenticationUserValidator;
-            _jwtRequestValidator = jwtRequestValidator;
-            _jwtRequestUriHttpClient = jwtRequestUriHttpClient;
-            _logger = logger;
+            Raw = parameters ?? throw new ArgumentNullException(nameof(parameters)),
+            Options = _options
+        };
+        _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
+
+        //////////////////////////////////////////////////////////
+        // Client must be configured for CIBA
+        //////////////////////////////////////////////////////////
+        if (!clientValidationResult.Client.AllowedGrantTypes.Contains(OidcConstants.GrantTypes.Ciba))
+        {
+            LogError("Client {clientId} not configured with the CIBA grant type.", clientValidationResult.Client.ClientId);
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnauthorizedClient, "Unauthorized client");
         }
 
-        public async Task<BackchannelAuthenticationRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
+        //////////////////////////////////////////////////////////
+        // load request object
+        //////////////////////////////////////////////////////////
+        var jwtRequest = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.Request);
+
+        // check length restrictions
+        if (jwtRequest.IsPresent())
         {
-            if (clientValidationResult == null) throw new ArgumentNullException(nameof(clientValidationResult));
-
-            _logger.LogDebug("Start backchannel authentication request validation");
-
-            _validatedRequest = new ValidatedBackchannelAuthenticationRequest
+            if (jwtRequest.Length >= _options.InputLengthRestrictions.Jwt)
             {
-                Raw = parameters ?? throw new ArgumentNullException(nameof(parameters)),
-                Options = _options
-            };
-            _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
+                LogError("request value is too long");
+                return Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid request value");
+            }
+        }
 
-            //////////////////////////////////////////////////////////
-            // Client must be configured for CIBA
-            //////////////////////////////////////////////////////////
-            if (!clientValidationResult.Client.AllowedGrantTypes.Contains(OidcConstants.GrantTypes.Ciba))
+        _validatedRequest.RequestObject = jwtRequest;
+
+        //////////////////////////////////////////////////////////
+        // validate request object
+        //////////////////////////////////////////////////////////
+        var roValidationResult = await TryValidateRequestObjectAsync();
+        if (!roValidationResult.Success)
+        {
+            return roValidationResult.ErrorResult;
+        }
+
+        if (_validatedRequest.Client.RequireRequestObject &&
+            !_validatedRequest.RequestObjectValues.Any())
+        {
+            LogError("Client is configured for RequireRequestObject but none present");
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest);
+        }
+
+        //////////////////////////////////////////////////////////
+        // scope must be present
+        //////////////////////////////////////////////////////////
+        var scope = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.Scope);
+        if (scope.IsMissing())
+        {
+            LogError("Missing scope");
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Missing scope");
+        }
+
+        if (scope.Length > _options.InputLengthRestrictions.Scope)
+        {
+            LogError("scopes too long.");
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid scope");
+        }
+
+        _validatedRequest.RequestedScopes = scope.FromSpaceSeparatedString().Distinct().ToList();
+
+        //////////////////////////////////////////////////////////
+        // openid scope required
+        //////////////////////////////////////////////////////////
+        if (!_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
+        {
+            LogError("openid scope missing.");
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Missing the openid scope");
+        }
+
+        //////////////////////////////////////////////////////////
+        // check for resource indicators and valid format
+        //////////////////////////////////////////////////////////
+        var resourceIndicators = _validatedRequest.Raw.GetValues("resource") ?? Enumerable.Empty<string>();
+
+        if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
+        {
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Resource indicator maximum length exceeded");
+        }
+
+        if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
+        {
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Invalid resource indicator format");
+        }
+
+        _validatedRequest.RequestedResourceIndiators = resourceIndicators?.ToList();
+
+        //////////////////////////////////////////////////////////
+        // check if scopes are valid/supported and check for resource scopes
+        //////////////////////////////////////////////////////////
+        var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+        {
+            Client = _validatedRequest.Client,
+            Scopes = _validatedRequest.RequestedScopes,
+            ResourceIndicators = resourceIndicators,
+            IncludeNonIsolatedApiResources = _validatedRequest.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess),
+        });
+
+        if (!validatedResources.Succeeded)
+        {
+            if (validatedResources.InvalidResourceIndicators.Any())
             {
-                LogError("Client {clientId} not configured with the CIBA grant type.", clientValidationResult.Client.ClientId);
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnauthorizedClient, "Unauthorized client");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Invalid resource indicator");
             }
 
-            //////////////////////////////////////////////////////////
-            // load request object
-            //////////////////////////////////////////////////////////
-            var jwtRequest = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.Request);
-
-            // check length restrictions
-            if (jwtRequest.IsPresent())
+            if (validatedResources.InvalidScopes.Any())
             {
-                if (jwtRequest.Length >= _options.InputLengthRestrictions.Jwt)
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidScope, "Invalid scope");
+            }
+        }
+
+        LicenseValidator.ValidateResourceIndicators(resourceIndicators);
+        _validatedRequest.ValidatedResources = validatedResources;
+
+
+        //////////////////////////////////////////////////////////
+        // check requested_expiry
+        //////////////////////////////////////////////////////////
+        var requestLifetime = _validatedRequest.Client.CibaLifetime ?? _options.Ciba.DefaultLifetime;
+        var requestedExpiry = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.RequestedExpiry);
+        if (requestedExpiry.IsPresent())
+        {
+            // Int32.MaxValue == 2147483647, which is 10 characters in length
+            // so using 9 so we don't overflow below on the Int32.Parse
+            if (requestedExpiry.Length > 9)
+            {
+                LogError("requested_expiry too long");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid requested_expiry");
+            }
+
+            if (Int32.TryParse(requestedExpiry, out var expiryValue) &&
+                expiryValue > 0 &&
+                expiryValue <= requestLifetime)
+            {
+                _validatedRequest.Expiry = expiryValue;
+            }
+            else
+            {
+                LogError("requested_expiry value out of valid range");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid requested_expiry");
+            }
+        }
+        else
+        {
+            _validatedRequest.Expiry = requestLifetime;
+        }
+            
+
+        //////////////////////////////////////////////////////////
+        // check acr_values
+        //////////////////////////////////////////////////////////
+        var acrValues = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.AcrValues);
+        if (acrValues.IsPresent())
+        {
+            if (acrValues.Length > _options.InputLengthRestrictions.AcrValues)
+            {
+                LogError("Acr values too long");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid acr_values");
+            }
+
+            _validatedRequest.AuthenticationContextReferenceClasses = acrValues.FromSpaceSeparatedString().Distinct().ToList();
+
+            //////////////////////////////////////////////////////////
+            // check custom acr_values: idp and tenant
+            //////////////////////////////////////////////////////////
+            var tenant = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.Tenant));
+            if (tenant != null)
+            {
+                _validatedRequest.AuthenticationContextReferenceClasses.Remove(tenant);
+                tenant = tenant.Substring(KnownAcrValues.Tenant.Length);
+                _validatedRequest.Tenant = tenant;
+            }
+
+            var idp = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.HomeRealm));
+            if (idp != null)
+            {
+                _validatedRequest.AuthenticationContextReferenceClasses.Remove(idp);
+                idp = idp.Substring(KnownAcrValues.HomeRealm.Length);
+
+                // check if idp is present but client does not allow it, and then ignore it
+                if (_validatedRequest.Client.IdentityProviderRestrictions != null && 
+                    _validatedRequest.Client.IdentityProviderRestrictions.Any())
                 {
-                    LogError("request value is too long");
-                    return Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid request value");
+                    if (!_validatedRequest.Client.IdentityProviderRestrictions.Contains(idp))
+                    {
+                        _logger.LogWarning("idp requested ({idp}) is not in client restriction list.", idp);
+                        idp = null;
+                    }
                 }
+
+                _validatedRequest.IdP = idp;
+            }
+        }
+
+
+        //////////////////////////////////////////////////////////
+        // login hints
+        //////////////////////////////////////////////////////////
+        var loginHint = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.LoginHint);
+        var loginHintToken = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.LoginHintToken);
+        var idTokenHint = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.IdTokenHint);
+
+        var loginHintCount = 0;
+        if (loginHint.IsPresent()) loginHintCount++;
+        if (loginHintToken.IsPresent()) loginHintCount++;
+        if (idTokenHint.IsPresent()) loginHintCount++;
+
+        if (loginHintCount == 0)
+        {
+            LogError("Missing login_hint_token, id_token_hint, or login_hint");
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Missing login_hint_token, id_token_hint, or login_hint");
+        }
+        else if (loginHintCount > 1)
+        {
+            LogError("Too many of login_hint_token, id_token_hint, or login_hint");
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Too many of login_hint_token, id_token_hint, or login_hint");
+        }
+
+        //////////////////////////////////////////////////////////
+        // check login_hint
+        //////////////////////////////////////////////////////////
+        if (loginHint.IsPresent())
+        {
+            if (loginHint.Length > _options.InputLengthRestrictions.LoginHint)
+            {
+                LogError("Login hint too long");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid login_hint");
             }
 
-            _validatedRequest.RequestObject = jwtRequest;
+            _validatedRequest.LoginHint = loginHint;
+        }
 
-            //////////////////////////////////////////////////////////
-            // validate request object
-            //////////////////////////////////////////////////////////
-            var roValidationResult = await TryValidateRequestObjectAsync();
-            if (!roValidationResult.Success)
+        //////////////////////////////////////////////////////////
+        // check login_hint_token
+        //////////////////////////////////////////////////////////
+        if (loginHintToken.IsPresent())
+        {
+            if (loginHintToken.Length > _options.InputLengthRestrictions.LoginHintToken)
             {
-                return roValidationResult.ErrorResult;
+                LogError("Login hint token too long");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid login_hint_token");
             }
 
-            if (_validatedRequest.Client.RequireRequestObject &&
-                !_validatedRequest.RequestObjectValues.Any())
+            _validatedRequest.LoginHintToken = loginHintToken;
+        }
+
+        //////////////////////////////////////////////////////////
+        // check id_token_hint
+        //////////////////////////////////////////////////////////
+        if (idTokenHint.IsPresent())
+        {
+            if (idTokenHint.Length > _options.InputLengthRestrictions.IdTokenHint)
             {
-                LogError("Client is configured for RequireRequestObject but none present");
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest);
+                LogError("id token hint too long");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid id_token_hint");
             }
 
-            //////////////////////////////////////////////////////////
-            // scope must be present
-            //////////////////////////////////////////////////////////
-            var scope = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.Scope);
-            if (scope.IsMissing())
+            var idTokenHintValidationResult = await _tokenValidator.ValidateIdentityTokenAsync(idTokenHint, _validatedRequest.ClientId, false);
+            if (idTokenHintValidationResult.IsError)
             {
-                LogError("Missing scope");
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Missing scope");
+                LogError("id token hint failed to validate: " + idTokenHintValidationResult.Error, idTokenHintValidationResult.ErrorDescription);
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid id_token_hint");
             }
 
-            if (scope.Length > _options.InputLengthRestrictions.Scope)
+            _validatedRequest.IdTokenHint = idTokenHint;
+            _validatedRequest.IdTokenHintClaims = idTokenHintValidationResult.Claims;
+        }
+
+        //////////////////////////////////////////////////////////
+        // check user_code
+        //////////////////////////////////////////////////////////
+        var userCode = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.UserCode);
+        if (userCode.IsPresent())
+        {
+            if (userCode.Length > _options.InputLengthRestrictions.UserCode)
             {
-                LogError("scopes too long.");
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid scope");
+                LogError("user_code too long");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid user_code");
             }
 
-            _validatedRequest.RequestedScopes = scope.FromSpaceSeparatedString().Distinct().ToList();
+            _validatedRequest.UserCode = userCode;
+        }
 
-            //////////////////////////////////////////////////////////
-            // openid scope required
-            //////////////////////////////////////////////////////////
-            if (!_validatedRequest.RequestedScopes.Contains(IdentityServerConstants.StandardScopes.OpenId))
+        //////////////////////////////////////////////////////////
+        // check binding_message
+        //////////////////////////////////////////////////////////
+        var bindingMessage = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.BindingMessage);
+        if (bindingMessage.IsPresent())
+        {
+            if (bindingMessage.Length > _options.InputLengthRestrictions.BindingMessage)
             {
-                LogError("openid scope missing.");
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Missing the openid scope");
+                LogError("binding_message too long");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidBindingMessage, "Invalid binding_message");
             }
 
-            //////////////////////////////////////////////////////////
-            // check for resource indicators and valid format
-            //////////////////////////////////////////////////////////
-            var resourceIndicators = _validatedRequest.Raw.GetValues("resource") ?? Enumerable.Empty<string>();
+            _validatedRequest.BindingMessage = bindingMessage;
+        }
 
-            if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
+        //////////////////////////////////////////////////////////
+        // validate the login hint w/ custom validator
+        //////////////////////////////////////////////////////////
+        var userResult = await _backchannelAuthenticationUserValidator.ValidateRequestAsync(new BackchannelAuthenticationUserValidatorContext
+        {
+            Client = _validatedRequest.Client,
+            IdTokenHint = _validatedRequest.IdTokenHint,
+            LoginHint = _validatedRequest.LoginHint,
+            LoginHintToken = _validatedRequest.LoginHintToken,
+            IdTokenHintClaims = _validatedRequest.IdTokenHintClaims,
+            UserCode = _validatedRequest.UserCode,
+            BindingMessage = _validatedRequest.BindingMessage
+        });
+
+        if (userResult.IsError)
+        {
+            if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.AccessDenied)
             {
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Resource indicator maximum length exceeded");
+                LogError("Request was denied access for that user");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.AccessDenied, userResult.ErrorDescription);
+            }
+            if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.ExpiredLoginHintToken)
+            {
+                LogError("Expired login_hint_token");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.ExpiredLoginHintToken, userResult.ErrorDescription ?? "Expired login_hint_token");
+            }
+            if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId)
+            {
+                LogError("Unknown user id");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId, userResult.ErrorDescription);
+            }
+            if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.MissingUserCode)
+            {
+                LogError("Missing user_code");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.MissingUserCode, userResult.ErrorDescription);
+            }
+            if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.InvalidUserCode)
+            {
+                LogError("Invalid user_code");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidUserCode, userResult.ErrorDescription);
+            }
+            if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.InvalidBindingMessage)
+            {
+                LogError("Invalid binding_message");
+                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidBindingMessage, userResult.ErrorDescription);
             }
 
-            if (!resourceIndicators.AreValidResourceIndicatorFormat(_logger))
-            {
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Invalid resource indicator format");
-            }
+            LogError("Unexpected error from IBackchannelAuthenticationUserValidator: {error}", userResult.Error);
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId);
+        }
 
-            _validatedRequest.RequestedResourceIndiators = resourceIndicators?.ToList();
+        if (userResult.Subject == null || !userResult.Subject.HasClaim(x => x.Type == JwtClaimTypes.Subject))
+        {
+            LogError("No subject or subject id returned from IBackchannelAuthenticationUserValidator");
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId);
+        }
 
-            //////////////////////////////////////////////////////////
-            // check if scopes are valid/supported and check for resource scopes
-            //////////////////////////////////////////////////////////
-            var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
-            {
-                Client = _validatedRequest.Client,
-                Scopes = _validatedRequest.RequestedScopes,
-                ResourceIndicators = resourceIndicators,
-                IncludeNonIsolatedApiResources = _validatedRequest.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess),
+        _validatedRequest.Subject = userResult.Subject;
+
+        LogSuccess();
+        return new BackchannelAuthenticationRequestValidationResult(_validatedRequest);
+    }
+
+    private async Task<(bool Success, BackchannelAuthenticationRequestValidationResult ErrorResult)> TryValidateRequestObjectAsync()
+    {
+        //////////////////////////////////////////////////////////
+        // validate request object
+        /////////////////////////////////////////////////////////
+        if (_validatedRequest.RequestObject.IsPresent())
+        {
+            // validate the request JWT for this client
+            var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(new JwtRequestValidationContext {
+                Client = _validatedRequest.Client, 
+                JwtTokenString = _validatedRequest.RequestObject,
+                StrictJarValidation = false,
+                IncludeJti = true
             });
-
-            if (!validatedResources.Succeeded)
+            if (jwtRequestValidationResult.IsError)
             {
-                if (validatedResources.InvalidResourceIndicators.Any())
-                {
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Invalid resource indicator");
-                }
+                LogError("request JWT validation failure", jwtRequestValidationResult.Error);
+                return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid JWT request"));
+            }
 
-                if (validatedResources.InvalidScopes.Any())
+            // client_id not required in JWT, but just in case we will validate it
+            var payloadClientId = jwtRequestValidationResult.Payload.SingleOrDefault(x => x.Type == JwtClaimTypes.ClientId)?.Value;
+            if (payloadClientId.IsPresent() && _validatedRequest.Client.ClientId != payloadClientId)
+            {
+                LogError("client_id found in the JWT request object does not match client_id used to authenticate", new { invalidClientId = payloadClientId, clientId = _validatedRequest.Client.ClientId });
+                return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid client_id in JWT request"));
+            }
+
+            // validate jti in request token
+            var jti = jwtRequestValidationResult.Payload.SingleOrDefault(x => x.Type == JwtClaimTypes.JwtId)?.Value;
+            if (jti.IsMissing())
+            {
+                LogError("Missing jti in JWT request object");
+                return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Missing jti in JWT request object"));
+            }
+
+            // validate that no request params are in body, and merge them into the request collection
+            foreach(var claim in jwtRequestValidationResult.Payload)
+            {
+                // we already checked client_id above
+                if (claim.Type != JwtClaimTypes.ClientId)
                 {
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidScope, "Invalid scope");
+                    if (_validatedRequest.Raw.AllKeys.Contains(claim.Type))
+                    {
+                        LogError("Parameter from JWT request object also found in request body: {name}", claim.Type);
+                        return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Parameter from JWT request object also found in request body"));
+                    }
+                    else if (claim.Type != JwtClaimTypes.JwtId)
+                    {
+                        _validatedRequest.Raw.Add(claim.Type, claim.Value);
+                    }
                 }
             }
 
-            LicenseValidator.ValidateResourceIndicators(resourceIndicators);
-            _validatedRequest.ValidatedResources = validatedResources;
+            _validatedRequest.RequestObjectValues = jwtRequestValidationResult.Payload;
+        }
+
+        return (true, null);
+    }
 
 
-            //////////////////////////////////////////////////////////
-            // check requested_expiry
-            //////////////////////////////////////////////////////////
-            var requestLifetime = _validatedRequest.Client.CibaLifetime ?? _options.Ciba.DefaultLifetime;
-            var requestedExpiry = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.RequestedExpiry);
-            if (requestedExpiry.IsPresent())
+
+    private BackchannelAuthenticationRequestValidationResult Invalid(string error, string errorDescription = null)
+    {
+        return new BackchannelAuthenticationRequestValidationResult(_validatedRequest, error, errorDescription);
+    }
+
+    private void LogError(string message = null, object values = null)
+    {
+        LogWithRequestDetails(LogLevel.Error, message, values);
+    }
+
+    private void LogWithRequestDetails(LogLevel logLevel, string message = null, object values = null)
+    {
+        var details = new BackchannelAuthenticationRequestValidationLog(_validatedRequest, _options.Logging.TokenRequestSensitiveValuesFilter);
+
+        if (message.IsPresent())
+        {
+            try
             {
-                // Int32.MaxValue == 2147483647, which is 10 characters in length
-                // so using 9 so we don't overflow below on the Int32.Parse
-                if (requestedExpiry.Length > 9)
+                if (values == null)
                 {
-                    LogError("requested_expiry too long");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid requested_expiry");
-                }
-
-                if (Int32.TryParse(requestedExpiry, out var expiryValue) &&
-                    expiryValue > 0 &&
-                    expiryValue <= requestLifetime)
-                {
-                    _validatedRequest.Expiry = expiryValue;
+                    _logger.Log(logLevel, message + ", {@details}", details);
                 }
                 else
                 {
-                    LogError("requested_expiry value out of valid range");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid requested_expiry");
+                    _logger.Log(logLevel, message + "{@values}, details: {@details}", values, details);
                 }
+
             }
-            else
+            catch (Exception ex)
             {
-                _validatedRequest.Expiry = requestLifetime;
+                _logger.LogError("Error logging {exception}, request details: {@details}", ex.Message, details);
             }
-            
-
-            //////////////////////////////////////////////////////////
-            // check acr_values
-            //////////////////////////////////////////////////////////
-            var acrValues = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.AcrValues);
-            if (acrValues.IsPresent())
-            {
-                if (acrValues.Length > _options.InputLengthRestrictions.AcrValues)
-                {
-                    LogError("Acr values too long");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid acr_values");
-                }
-
-                _validatedRequest.AuthenticationContextReferenceClasses = acrValues.FromSpaceSeparatedString().Distinct().ToList();
-
-                //////////////////////////////////////////////////////////
-                // check custom acr_values: idp and tenant
-                //////////////////////////////////////////////////////////
-                var tenant = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.Tenant));
-                if (tenant != null)
-                {
-                    _validatedRequest.AuthenticationContextReferenceClasses.Remove(tenant);
-                    tenant = tenant.Substring(KnownAcrValues.Tenant.Length);
-                    _validatedRequest.Tenant = tenant;
-                }
-
-                var idp = _validatedRequest.AuthenticationContextReferenceClasses.FirstOrDefault(x => x.StartsWith(KnownAcrValues.HomeRealm));
-                if (idp != null)
-                {
-                    _validatedRequest.AuthenticationContextReferenceClasses.Remove(idp);
-                    idp = idp.Substring(KnownAcrValues.HomeRealm.Length);
-
-                    // check if idp is present but client does not allow it, and then ignore it
-                    if (_validatedRequest.Client.IdentityProviderRestrictions != null && 
-                        _validatedRequest.Client.IdentityProviderRestrictions.Any())
-                    {
-                        if (!_validatedRequest.Client.IdentityProviderRestrictions.Contains(idp))
-                        {
-                            _logger.LogWarning("idp requested ({idp}) is not in client restriction list.", idp);
-                            idp = null;
-                        }
-                    }
-
-                    _validatedRequest.IdP = idp;
-                }
-            }
-
-
-            //////////////////////////////////////////////////////////
-            // login hints
-            //////////////////////////////////////////////////////////
-            var loginHint = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.LoginHint);
-            var loginHintToken = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.LoginHintToken);
-            var idTokenHint = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.IdTokenHint);
-
-            var loginHintCount = 0;
-            if (loginHint.IsPresent()) loginHintCount++;
-            if (loginHintToken.IsPresent()) loginHintCount++;
-            if (idTokenHint.IsPresent()) loginHintCount++;
-
-            if (loginHintCount == 0)
-            {
-                LogError("Missing login_hint_token, id_token_hint, or login_hint");
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Missing login_hint_token, id_token_hint, or login_hint");
-            }
-            else if (loginHintCount > 1)
-            {
-                LogError("Too many of login_hint_token, id_token_hint, or login_hint");
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Too many of login_hint_token, id_token_hint, or login_hint");
-            }
-
-            //////////////////////////////////////////////////////////
-            // check login_hint
-            //////////////////////////////////////////////////////////
-            if (loginHint.IsPresent())
-            {
-                if (loginHint.Length > _options.InputLengthRestrictions.LoginHint)
-                {
-                    LogError("Login hint too long");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid login_hint");
-                }
-
-                _validatedRequest.LoginHint = loginHint;
-            }
-
-            //////////////////////////////////////////////////////////
-            // check login_hint_token
-            //////////////////////////////////////////////////////////
-            if (loginHintToken.IsPresent())
-            {
-                if (loginHintToken.Length > _options.InputLengthRestrictions.LoginHintToken)
-                {
-                    LogError("Login hint token too long");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid login_hint_token");
-                }
-
-                _validatedRequest.LoginHintToken = loginHintToken;
-            }
-
-            //////////////////////////////////////////////////////////
-            // check id_token_hint
-            //////////////////////////////////////////////////////////
-            if (idTokenHint.IsPresent())
-            {
-                if (idTokenHint.Length > _options.InputLengthRestrictions.IdTokenHint)
-                {
-                    LogError("id token hint too long");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid id_token_hint");
-                }
-
-                var idTokenHintValidationResult = await _tokenValidator.ValidateIdentityTokenAsync(idTokenHint, _validatedRequest.ClientId, false);
-                if (idTokenHintValidationResult.IsError)
-                {
-                    LogError("id token hint failed to validate: " + idTokenHintValidationResult.Error, idTokenHintValidationResult.ErrorDescription);
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid id_token_hint");
-                }
-
-                _validatedRequest.IdTokenHint = idTokenHint;
-                _validatedRequest.IdTokenHintClaims = idTokenHintValidationResult.Claims;
-            }
-
-            //////////////////////////////////////////////////////////
-            // check user_code
-            //////////////////////////////////////////////////////////
-            var userCode = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.UserCode);
-            if (userCode.IsPresent())
-            {
-                if (userCode.Length > _options.InputLengthRestrictions.UserCode)
-                {
-                    LogError("user_code too long");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest, "Invalid user_code");
-                }
-
-                _validatedRequest.UserCode = userCode;
-            }
-
-            //////////////////////////////////////////////////////////
-            // check binding_message
-            //////////////////////////////////////////////////////////
-            var bindingMessage = _validatedRequest.Raw.Get(OidcConstants.BackchannelAuthenticationRequest.BindingMessage);
-            if (bindingMessage.IsPresent())
-            {
-                if (bindingMessage.Length > _options.InputLengthRestrictions.BindingMessage)
-                {
-                    LogError("binding_message too long");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidBindingMessage, "Invalid binding_message");
-                }
-
-                _validatedRequest.BindingMessage = bindingMessage;
-            }
-
-            //////////////////////////////////////////////////////////
-            // validate the login hint w/ custom validator
-            //////////////////////////////////////////////////////////
-            var userResult = await _backchannelAuthenticationUserValidator.ValidateRequestAsync(new BackchannelAuthenticationUserValidatorContext
-            {
-                Client = _validatedRequest.Client,
-                IdTokenHint = _validatedRequest.IdTokenHint,
-                LoginHint = _validatedRequest.LoginHint,
-                LoginHintToken = _validatedRequest.LoginHintToken,
-                IdTokenHintClaims = _validatedRequest.IdTokenHintClaims,
-                UserCode = _validatedRequest.UserCode,
-                BindingMessage = _validatedRequest.BindingMessage
-            });
-
-            if (userResult.IsError)
-            {
-                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.AccessDenied)
-                {
-                    LogError("Request was denied access for that user");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.AccessDenied, userResult.ErrorDescription);
-                }
-                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.ExpiredLoginHintToken)
-                {
-                    LogError("Expired login_hint_token");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.ExpiredLoginHintToken, userResult.ErrorDescription ?? "Expired login_hint_token");
-                }
-                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId)
-                {
-                    LogError("Unknown user id");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId, userResult.ErrorDescription);
-                }
-                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.MissingUserCode)
-                {
-                    LogError("Missing user_code");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.MissingUserCode, userResult.ErrorDescription);
-                }
-                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.InvalidUserCode)
-                {
-                    LogError("Invalid user_code");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidUserCode, userResult.ErrorDescription);
-                }
-                if (userResult.Error == OidcConstants.BackchannelAuthenticationRequestErrors.InvalidBindingMessage)
-                {
-                    LogError("Invalid binding_message");
-                    return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidBindingMessage, userResult.ErrorDescription);
-                }
-
-                LogError("Unexpected error from IBackchannelAuthenticationUserValidator: {error}", userResult.Error);
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId);
-            }
-
-            if (userResult.Subject == null || !userResult.Subject.HasClaim(x => x.Type == JwtClaimTypes.Subject))
-            {
-                LogError("No subject or subject id returned from IBackchannelAuthenticationUserValidator");
-                return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnknownUserId);
-            }
-
-            _validatedRequest.Subject = userResult.Subject;
-
-            LogSuccess();
-            return new BackchannelAuthenticationRequestValidationResult(_validatedRequest);
         }
-
-        private async Task<(bool Success, BackchannelAuthenticationRequestValidationResult ErrorResult)> TryValidateRequestObjectAsync()
+        else
         {
-            //////////////////////////////////////////////////////////
-            // validate request object
-            /////////////////////////////////////////////////////////
-            if (_validatedRequest.RequestObject.IsPresent())
-            {
-                // validate the request JWT for this client
-                var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(new JwtRequestValidationContext {
-                    Client = _validatedRequest.Client, 
-                    JwtTokenString = _validatedRequest.RequestObject,
-                    StrictJarValidation = false,
-                    IncludeJti = true
-                });
-                if (jwtRequestValidationResult.IsError)
-                {
-                    LogError("request JWT validation failure", jwtRequestValidationResult.Error);
-                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid JWT request"));
-                }
-
-                // client_id not required in JWT, but just in case we will validate it
-                var payloadClientId = jwtRequestValidationResult.Payload.SingleOrDefault(x => x.Type == JwtClaimTypes.ClientId)?.Value;
-                if (payloadClientId.IsPresent() && _validatedRequest.Client.ClientId != payloadClientId)
-                {
-                    LogError("client_id found in the JWT request object does not match client_id used to authenticate", new { invalidClientId = payloadClientId, clientId = _validatedRequest.Client.ClientId });
-                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid client_id in JWT request"));
-                }
-
-                // validate jti in request token
-                var jti = jwtRequestValidationResult.Payload.SingleOrDefault(x => x.Type == JwtClaimTypes.JwtId)?.Value;
-                if (jti.IsMissing())
-                {
-                    LogError("Missing jti in JWT request object");
-                    return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Missing jti in JWT request object"));
-                }
-
-                // validate that no request params are in body, and merge them into the request collection
-                foreach(var claim in jwtRequestValidationResult.Payload)
-                {
-                    // we already checked client_id above
-                    if (claim.Type != JwtClaimTypes.ClientId)
-                    {
-                        if (_validatedRequest.Raw.AllKeys.Contains(claim.Type))
-                        {
-                            LogError("Parameter from JWT request object also found in request body: {name}", claim.Type);
-                            return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Parameter from JWT request object also found in request body"));
-                        }
-                        else if (claim.Type != JwtClaimTypes.JwtId)
-                        {
-                            _validatedRequest.Raw.Add(claim.Type, claim.Value);
-                        }
-                    }
-                }
-
-                _validatedRequest.RequestObjectValues = jwtRequestValidationResult.Payload;
-            }
-
-            return (true, null);
+            _logger.Log(logLevel, "{@details}", details);
         }
+    }
 
-
-
-        private BackchannelAuthenticationRequestValidationResult Invalid(string error, string errorDescription = null)
-        {
-            return new BackchannelAuthenticationRequestValidationResult(_validatedRequest, error, errorDescription);
-        }
-
-        private void LogError(string message = null, object values = null)
-        {
-            LogWithRequestDetails(LogLevel.Error, message, values);
-        }
-
-        private void LogWithRequestDetails(LogLevel logLevel, string message = null, object values = null)
-        {
-            var details = new BackchannelAuthenticationRequestValidationLog(_validatedRequest, _options.Logging.TokenRequestSensitiveValuesFilter);
-
-            if (message.IsPresent())
-            {
-                try
-                {
-                    if (values == null)
-                    {
-                        _logger.Log(logLevel, message + ", {@details}", details);
-                    }
-                    else
-                    {
-                        _logger.Log(logLevel, message + "{@values}, details: {@details}", values, details);
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error logging {exception}, request details: {@details}", ex.Message, details);
-                }
-            }
-            else
-            {
-                _logger.Log(logLevel, "{@details}", details);
-            }
-        }
-
-        private void LogSuccess()
-        {
-            LogWithRequestDetails(LogLevel.Information, "Backchannel authentication request validation success");
-        }
+    private void LogSuccess()
+    {
+        LogWithRequestDetails(LogLevel.Information, "Backchannel authentication request validation success");
     }
 }

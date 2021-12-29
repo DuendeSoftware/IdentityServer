@@ -17,161 +17,160 @@ using IdentityModel.Client;
 using IntegrationTests.Common;
 using Xunit;
 
-namespace IntegrationTests.Conformance.Basic
+namespace IntegrationTests.Conformance.Basic;
+
+public class CodeFlowTests 
 {
-    public class CodeFlowTests 
+    private const string Category = "Conformance.Basic.CodeFlowTests";
+
+    private IdentityServerPipeline _pipeline = new IdentityServerPipeline();
+
+    public CodeFlowTests()
     {
-        private const string Category = "Conformance.Basic.CodeFlowTests";
-
-        private IdentityServerPipeline _pipeline = new IdentityServerPipeline();
-
-        public CodeFlowTests()
+        _pipeline.IdentityScopes.Add(new IdentityResources.OpenId());
+        _pipeline.Clients.Add(new Client
         {
-            _pipeline.IdentityScopes.Add(new IdentityResources.OpenId());
-            _pipeline.Clients.Add(new Client
+            Enabled = true,
+            ClientId = "code_pipeline.Client",
+            ClientSecrets = new List<Secret>
             {
-                Enabled = true,
-                ClientId = "code_pipeline.Client",
-                ClientSecrets = new List<Secret>
-                {
-                    new Secret("secret".Sha512())
-                },
+                new Secret("secret".Sha512())
+            },
 
-                AllowedGrantTypes = GrantTypes.Code,
-                AllowedScopes = { "openid" },
+            AllowedGrantTypes = GrantTypes.Code,
+            AllowedScopes = { "openid" },
 
-                RequireConsent = false,
-                RequirePkce = false,
-                RedirectUris = new List<string>
-                {
-                    "https://code_pipeline.Client/callback",
-                    "https://code_pipeline.Client/callback?foo=bar&baz=quux"
-                }
-            });
-
-            _pipeline.Users.Add(new TestUser
+            RequireConsent = false,
+            RequirePkce = false,
+            RedirectUris = new List<string>
             {
-                SubjectId = "bob",
-                Username = "bob",
-                Claims = new Claim[]
-                   {
-                        new Claim("name", "Bob Loblaw"),
-                        new Claim("email", "bob@loblaw.com"),
-                        new Claim("role", "Attorney")
-                   }
-            });
+                "https://code_pipeline.Client/callback",
+                "https://code_pipeline.Client/callback?foo=bar&baz=quux"
+            }
+        });
 
-            _pipeline.Initialize();
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task No_state_should_not_result_in_shash()
+        _pipeline.Users.Add(new TestUser
         {
-            await _pipeline.LoginAsync("bob");
-
-            var nonce = Guid.NewGuid().ToString();
-
-            _pipeline.BrowserClient.AllowAutoRedirect = false;
-            var url = _pipeline.CreateAuthorizeUrl(
-                           clientId: "code_pipeline.Client",
-                           responseType: "code",
-                           scope: "openid",
-                           redirectUri: "https://code_pipeline.Client/callback?foo=bar&baz=quux",
-                           nonce: nonce);
-            var response = await _pipeline.BrowserClient.GetAsync(url);
-
-            var authorization = _pipeline.ParseAuthorizationResponseUrl(response.Headers.Location.ToString());
-            authorization.Code.Should().NotBeNull();
-
-            var code = authorization.Code;
-
-            // backchannel client
-            var wrapper = new MessageHandlerWrapper(_pipeline.Handler);
-            var tokenClient = new HttpClient(wrapper);
-            var tokenResult = await tokenClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+            SubjectId = "bob",
+            Username = "bob",
+            Claims = new Claim[]
             {
-                Address = IdentityServerPipeline.TokenEndpoint,
-                ClientId = "code_pipeline.Client",
-                ClientSecret = "secret",
+                new Claim("name", "Bob Loblaw"),
+                new Claim("email", "bob@loblaw.com"),
+                new Claim("role", "Attorney")
+            }
+        });
 
-                Code = code,
-                RedirectUri = "https://code_pipeline.Client/callback?foo=bar&baz=quux"
-            });
+        _pipeline.Initialize();
+    }
 
-            tokenResult.IsError.Should().BeFalse();
-            tokenResult.HttpErrorReason.Should().Be("OK");
-            tokenResult.TokenType.Should().Be("Bearer");
-            tokenResult.AccessToken.Should().NotBeNull();
-            tokenResult.ExpiresIn.Should().BeGreaterThan(0);
-            tokenResult.IdentityToken.Should().NotBeNull();
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task No_state_should_not_result_in_shash()
+    {
+        await _pipeline.LoginAsync("bob");
 
-            var token = new JwtSecurityToken(tokenResult.IdentityToken);
+        var nonce = Guid.NewGuid().ToString();
+
+        _pipeline.BrowserClient.AllowAutoRedirect = false;
+        var url = _pipeline.CreateAuthorizeUrl(
+            clientId: "code_pipeline.Client",
+            responseType: "code",
+            scope: "openid",
+            redirectUri: "https://code_pipeline.Client/callback?foo=bar&baz=quux",
+            nonce: nonce);
+        var response = await _pipeline.BrowserClient.GetAsync(url);
+
+        var authorization = _pipeline.ParseAuthorizationResponseUrl(response.Headers.Location.ToString());
+        authorization.Code.Should().NotBeNull();
+
+        var code = authorization.Code;
+
+        // backchannel client
+        var wrapper = new MessageHandlerWrapper(_pipeline.Handler);
+        var tokenClient = new HttpClient(wrapper);
+        var tokenResult = await tokenClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "code_pipeline.Client",
+            ClientSecret = "secret",
+
+            Code = code,
+            RedirectUri = "https://code_pipeline.Client/callback?foo=bar&baz=quux"
+        });
+
+        tokenResult.IsError.Should().BeFalse();
+        tokenResult.HttpErrorReason.Should().Be("OK");
+        tokenResult.TokenType.Should().Be("Bearer");
+        tokenResult.AccessToken.Should().NotBeNull();
+        tokenResult.ExpiresIn.Should().BeGreaterThan(0);
+        tokenResult.IdentityToken.Should().NotBeNull();
+
+        var token = new JwtSecurityToken(tokenResult.IdentityToken);
             
-            var s_hash = token.Claims.FirstOrDefault(c => c.Type == "s_hash");
+        var s_hash = token.Claims.FirstOrDefault(c => c.Type == "s_hash");
+        s_hash.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    [Trait("Category", Category)]
+    public async Task StateHash_should_be_emitted_based_on_options(bool emitStateHash)
+    {
+        _pipeline.Options.EmitStateHash = emitStateHash;
+            
+        await _pipeline.LoginAsync("bob");
+
+        var nonce = Guid.NewGuid().ToString();
+
+        _pipeline.BrowserClient.AllowAutoRedirect = false;
+        var url = _pipeline.CreateAuthorizeUrl(
+            clientId: "code_pipeline.Client",
+            responseType: "code",
+            scope: "openid",
+            redirectUri: "https://code_pipeline.Client/callback?foo=bar&baz=quux",
+            state: "state",
+            nonce: nonce);
+        var response = await _pipeline.BrowserClient.GetAsync(url);
+
+        var authorization = _pipeline.ParseAuthorizationResponseUrl(response.Headers.Location.ToString());
+        authorization.Code.Should().NotBeNull();
+
+        var code = authorization.Code;
+
+        // backchannel client
+        var wrapper = new MessageHandlerWrapper(_pipeline.Handler);
+        var tokenClient = new HttpClient(wrapper);
+        var tokenResult = await tokenClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "code_pipeline.Client",
+            ClientSecret = "secret",
+
+            Code = code,
+            RedirectUri = "https://code_pipeline.Client/callback?foo=bar&baz=quux"
+        });
+
+        tokenResult.IsError.Should().BeFalse();
+        tokenResult.HttpErrorReason.Should().Be("OK");
+        tokenResult.TokenType.Should().Be("Bearer");
+        tokenResult.AccessToken.Should().NotBeNull();
+        tokenResult.ExpiresIn.Should().BeGreaterThan(0);
+        tokenResult.IdentityToken.Should().NotBeNull();
+
+        var token = new JwtSecurityToken(tokenResult.IdentityToken);
+            
+        var s_hash = token.Claims.FirstOrDefault(c => c.Type == "s_hash");
+
+        if (emitStateHash)
+        {
+            s_hash.Should().NotBeNull();
+            s_hash.Value.Should().Be(CryptoHelper.CreateHashClaimValue("state", "RS256"));
+        }
+        else
+        {
             s_hash.Should().BeNull();
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        [Trait("Category", Category)]
-        public async Task StateHash_should_be_emitted_based_on_options(bool emitStateHash)
-        {
-            _pipeline.Options.EmitStateHash = emitStateHash;
-            
-            await _pipeline.LoginAsync("bob");
-
-            var nonce = Guid.NewGuid().ToString();
-
-            _pipeline.BrowserClient.AllowAutoRedirect = false;
-            var url = _pipeline.CreateAuthorizeUrl(
-                           clientId: "code_pipeline.Client",
-                           responseType: "code",
-                           scope: "openid",
-                           redirectUri: "https://code_pipeline.Client/callback?foo=bar&baz=quux",
-                           state: "state",
-                           nonce: nonce);
-            var response = await _pipeline.BrowserClient.GetAsync(url);
-
-            var authorization = _pipeline.ParseAuthorizationResponseUrl(response.Headers.Location.ToString());
-            authorization.Code.Should().NotBeNull();
-
-            var code = authorization.Code;
-
-            // backchannel client
-            var wrapper = new MessageHandlerWrapper(_pipeline.Handler);
-            var tokenClient = new HttpClient(wrapper);
-            var tokenResult = await tokenClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
-            {
-                Address = IdentityServerPipeline.TokenEndpoint,
-                ClientId = "code_pipeline.Client",
-                ClientSecret = "secret",
-
-                Code = code,
-                RedirectUri = "https://code_pipeline.Client/callback?foo=bar&baz=quux"
-            });
-
-            tokenResult.IsError.Should().BeFalse();
-            tokenResult.HttpErrorReason.Should().Be("OK");
-            tokenResult.TokenType.Should().Be("Bearer");
-            tokenResult.AccessToken.Should().NotBeNull();
-            tokenResult.ExpiresIn.Should().BeGreaterThan(0);
-            tokenResult.IdentityToken.Should().NotBeNull();
-
-            var token = new JwtSecurityToken(tokenResult.IdentityToken);
-            
-            var s_hash = token.Claims.FirstOrDefault(c => c.Type == "s_hash");
-
-            if (emitStateHash)
-            {
-                s_hash.Should().NotBeNull();
-                s_hash.Value.Should().Be(CryptoHelper.CreateHashClaimValue("state", "RS256"));
-            }
-            else
-            {
-                s_hash.Should().BeNull();
-            }
         }
     }
 }

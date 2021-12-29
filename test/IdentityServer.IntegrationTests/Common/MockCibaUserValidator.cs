@@ -5,17 +5,16 @@
 using Duende.IdentityServer.Validation;
 using System.Threading.Tasks;
 
-namespace IntegrationTests.Common
-{
-    internal class MockCibaUserValidator : IBackchannelAuthenticationUserValidator
-    {
-        public BackchannelAuthenticationUserValidatonResult Result { get; set; } = new BackchannelAuthenticationUserValidatonResult();
-        public BackchannelAuthenticationUserValidatorContext UserValidatorContext { get; set; }
+namespace IntegrationTests.Common;
 
-        public Task<BackchannelAuthenticationUserValidatonResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
-        {
-            UserValidatorContext = userValidatorContext;
-            return Task.FromResult(Result);
-        }
+internal class MockCibaUserValidator : IBackchannelAuthenticationUserValidator
+{
+    public BackchannelAuthenticationUserValidatonResult Result { get; set; } = new BackchannelAuthenticationUserValidatonResult();
+    public BackchannelAuthenticationUserValidatorContext UserValidatorContext { get; set; }
+
+    public Task<BackchannelAuthenticationUserValidatonResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
+    {
+        UserValidatorContext = userValidatorContext;
+        return Task.FromResult(Result);
     }
 }

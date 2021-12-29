@@ -7,25 +7,24 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 
-namespace UnitTests.Common
+namespace UnitTests.Common;
+
+public class MockReturnUrlParser : ReturnUrlParser
 {
-    public class MockReturnUrlParser : ReturnUrlParser
+    public AuthorizationRequest AuthorizationRequestResult { get; set; }
+    public bool IsValidReturnUrlResult { get; set; }
+
+    public MockReturnUrlParser() : base(Enumerable.Empty<IReturnUrlParser>())
     {
-        public AuthorizationRequest AuthorizationRequestResult { get; set; }
-        public bool IsValidReturnUrlResult { get; set; }
+    }
 
-        public MockReturnUrlParser() : base(Enumerable.Empty<IReturnUrlParser>())
-        {
-        }
+    public override Task<AuthorizationRequest> ParseAsync(string returnUrl)
+    {
+        return Task.FromResult(AuthorizationRequestResult);
+    }
 
-        public override Task<AuthorizationRequest> ParseAsync(string returnUrl)
-        {
-            return Task.FromResult(AuthorizationRequestResult);
-        }
-
-        public override bool IsValidReturnUrl(string returnUrl)
-        {
-            return IsValidReturnUrlResult;
-        }
+    public override bool IsValidReturnUrl(string returnUrl)
+    {
+        return IsValidReturnUrlResult;
     }
 }

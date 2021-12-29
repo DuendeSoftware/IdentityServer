@@ -9,31 +9,30 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework;
 using Duende.IdentityServer.EntityFramework.Entities;
 
-namespace IdentityServerHost
+namespace IdentityServerHost;
+
+public class TestOperationalStoreNotification : IOperationalStoreNotification
 {
-    public class TestOperationalStoreNotification : IOperationalStoreNotification
+    public TestOperationalStoreNotification()
     {
-        public TestOperationalStoreNotification()
-        {
-            Console.WriteLine("ctor");
-        }
+        Console.WriteLine("ctor");
+    }
 
-        public Task PersistedGrantsRemovedAsync(IEnumerable<PersistedGrant> persistedGrants, CancellationToken cancellationToken = default)
+    public Task PersistedGrantsRemovedAsync(IEnumerable<PersistedGrant> persistedGrants, CancellationToken cancellationToken = default)
+    {
+        foreach (var grant in persistedGrants)
         {
-            foreach (var grant in persistedGrants)
-            {
-                Console.WriteLine("cleaned: " + grant.Type);
-            }
-            return Task.CompletedTask;
+            Console.WriteLine("cleaned: " + grant.Type);
         }
+        return Task.CompletedTask;
+    }
 
-        public Task DeviceCodesRemovedAsync(IEnumerable<DeviceFlowCodes> deviceCodes, CancellationToken cancellationToken = default)
+    public Task DeviceCodesRemovedAsync(IEnumerable<DeviceFlowCodes> deviceCodes, CancellationToken cancellationToken = default)
+    {
+        foreach (var deviceCode in deviceCodes) 
         {
-            foreach (var deviceCode in deviceCodes) 
-            {
-                Console.WriteLine("cleaned device code");
-            }
-            return Task.CompletedTask;
+            Console.WriteLine("cleaned device code");
         }
+        return Task.CompletedTask;
     }
 }

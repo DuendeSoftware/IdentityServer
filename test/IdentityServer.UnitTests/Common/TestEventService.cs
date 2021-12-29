@@ -10,28 +10,27 @@ using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
 using FluentAssertions;
 
-namespace UnitTests.Common
+namespace UnitTests.Common;
+
+public class TestEventService : IEventService
 {
-    public class TestEventService : IEventService
+    private Dictionary<Type, object> _events = new Dictionary<Type, object>();
+
+    public Task RaiseAsync(Event evt)
     {
-        private Dictionary<Type, object> _events = new Dictionary<Type, object>();
+        _events.Add(evt.GetType(), evt);
+        return Task.CompletedTask;
+    }
 
-        public Task RaiseAsync(Event evt)
-        {
-            _events.Add(evt.GetType(), evt);
-            return Task.CompletedTask;
-        }
+    public T AssertEventWasRaised<T>()
+        where T : class
+    {
+        _events.ContainsKey(typeof(T)).Should().BeTrue();
+        return (T)_events.Where(x => x.Key == typeof(T)).Select(x=>x.Value).First();
+    }
 
-        public T AssertEventWasRaised<T>()
-            where T : class
-        {
-            _events.ContainsKey(typeof(T)).Should().BeTrue();
-            return (T)_events.Where(x => x.Key == typeof(T)).Select(x=>x.Value).First();
-        }
-
-        public bool CanRaiseEventType(EventTypes evtType)
-        {
-            return true;
-        }
+    public bool CanRaiseEventType(EventTypes evtType)
+    {
+        return true;
     }
 }

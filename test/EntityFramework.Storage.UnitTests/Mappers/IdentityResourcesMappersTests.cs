@@ -5,25 +5,24 @@
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Xunit;
 
-namespace UnitTests.Mappers
+namespace UnitTests.Mappers;
+
+public class IdentityResourcesMappersTests
 {
-    public class IdentityResourcesMappersTests
+    [Fact]
+    public void IdentityResourceAutomapperConfigurationIsValid()
     {
-        [Fact]
-        public void IdentityResourceAutomapperConfigurationIsValid()
-        {
-            IdentityResourceMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<IdentityResourceMapperProfile>();
-        }
+        IdentityResourceMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<IdentityResourceMapperProfile>();
+    }
 
-        [Fact]
-        public void CanMapIdentityResources()
-        {
-            var model = new Duende.IdentityServer.Models.IdentityResource();
-            var mappedEntity = model.ToEntity();
-            var mappedModel = mappedEntity.ToModel();
+    [Fact]
+    public void CanMapIdentityResources()
+    {
+        var model = new Duende.IdentityServer.Models.IdentityResource();
+        var mappedEntity = model.ToEntity();
+        var mappedModel = mappedEntity.ToModel();
 
-            Assert.NotNull(mappedModel);
-            Assert.NotNull(mappedEntity);
-        }
+        Assert.NotNull(mappedModel);
+        Assert.NotNull(mappedEntity);
     }
 }

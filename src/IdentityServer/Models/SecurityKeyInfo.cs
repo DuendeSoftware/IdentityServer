@@ -4,21 +4,20 @@
 
 using Microsoft.IdentityModel.Tokens;
 
-namespace Duende.IdentityServer.Models
+namespace Duende.IdentityServer.Models;
+
+/// <summary>
+/// Information about a security key
+/// </summary>
+public class SecurityKeyInfo
 {
     /// <summary>
-    /// Information about a security key
+    /// The key
     /// </summary>
-    public class SecurityKeyInfo
-    {
-        /// <summary>
-        /// The key
-        /// </summary>
-        public SecurityKey Key { get; set; }
+    public SecurityKey Key { get; set; }
 
-        /// <summary>
-        /// The signing algorithm
-        /// </summary>
-        public string SigningAlgorithm { get; set; }
-    }
+    /// <summary>
+    /// The signing algorithm
+    /// </summary>
+    public string SigningAlgorithm { get; set; }
 }

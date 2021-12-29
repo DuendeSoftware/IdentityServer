@@ -10,94 +10,93 @@ using IdentityModel;
 using UnitTests.Validation.Setup;
 using Xunit;
 
-namespace UnitTests.Validation.TokenRequest_Validation
+namespace UnitTests.Validation.TokenRequest_Validation;
+
+public class TokenRequestValidation_ExtensionGrants_Invalid
 {
-    public class TokenRequestValidation_ExtensionGrants_Invalid
+    private const string Category = "TokenRequest Validation - Extension Grants - Invalid";
+
+    private IClientStore _clients = Factory.CreateClientStore();
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Invalid_Extension_Grant_Type_For_Client_Credentials_Client()
     {
-        private const string Category = "TokenRequest Validation - Extension Grants - Invalid";
+        var client = await _clients.FindEnabledClientByIdAsync("client");
+        var validator = Factory.CreateTokenRequestValidator();
 
-        private IClientStore _clients = Factory.CreateClientStore();
-
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Invalid_Extension_Grant_Type_For_Client_Credentials_Client()
+        var parameters = new NameValueCollection
         {
-            var client = await _clients.FindEnabledClientByIdAsync("client");
-            var validator = Factory.CreateTokenRequestValidator();
+            { OidcConstants.TokenRequest.GrantType, "customGrant" },
+            { OidcConstants.TokenRequest.Scope, "resource" }
+        };
 
-            var parameters = new NameValueCollection
-            {
-                { OidcConstants.TokenRequest.GrantType, "customGrant" },
-                { OidcConstants.TokenRequest.Scope, "resource" }
-            };
+        var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
 
-            var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.UnsupportedGrantType);
+    }
 
-            result.IsError.Should().BeTrue();
-            result.Error.Should().Be(OidcConstants.TokenErrors.UnsupportedGrantType);
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Restricted_Extension_Grant_Type()
+    {
+        var client = await _clients.FindEnabledClientByIdAsync("customgrantclient");
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Restricted_Extension_Grant_Type()
+        var validator = Factory.CreateTokenRequestValidator();
+
+        var parameters = new NameValueCollection
         {
-            var client = await _clients.FindEnabledClientByIdAsync("customgrantclient");
+            { OidcConstants.TokenRequest.GrantType, "unknown_grant_type" },
+            { OidcConstants.TokenRequest.Scope, "resource" }
+        };
 
-            var validator = Factory.CreateTokenRequestValidator();
+        var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
 
-            var parameters = new NameValueCollection
-            {
-                { OidcConstants.TokenRequest.GrantType, "unknown_grant_type" },
-                { OidcConstants.TokenRequest.Scope, "resource" }
-            };
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.UnsupportedGrantType);
+    }
 
-            var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Customer_Error_and_Description_Extension_Grant_Type()
+    {
+        var client = await _clients.FindEnabledClientByIdAsync("customgrantclient");
 
-            result.IsError.Should().BeTrue();
-            result.Error.Should().Be(OidcConstants.TokenErrors.UnsupportedGrantType);
-        }
+        var validator = Factory.CreateTokenRequestValidator(extensionGrantValidators: new[] { new TestGrantValidator(isInvalid: true, errorDescription: "custom error description") });
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Customer_Error_and_Description_Extension_Grant_Type()
+        var parameters = new NameValueCollection
         {
-            var client = await _clients.FindEnabledClientByIdAsync("customgrantclient");
+            { OidcConstants.TokenRequest.GrantType, "custom_grant" },
+            { OidcConstants.TokenRequest.Scope, "resource" }
+        };
 
-            var validator = Factory.CreateTokenRequestValidator(extensionGrantValidators: new[] { new TestGrantValidator(isInvalid: true, errorDescription: "custom error description") });
+        var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
 
-            var parameters = new NameValueCollection
-            {
-                { OidcConstants.TokenRequest.GrantType, "custom_grant" },
-                { OidcConstants.TokenRequest.Scope, "resource" }
-            };
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+        result.ErrorDescription.Should().Be("custom error description");
+    }
 
-            var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task inactive_user_should_fail()
+    {
+        var client = await _clients.FindEnabledClientByIdAsync("customgrantclient");
 
-            result.IsError.Should().BeTrue();
-            result.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
-            result.ErrorDescription.Should().Be("custom error description");
-        }
+        var validator = Factory.CreateTokenRequestValidator(
+            profile: new TestProfileService(shouldBeActive: false));
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task inactive_user_should_fail()
+        var parameters = new NameValueCollection
         {
-            var client = await _clients.FindEnabledClientByIdAsync("customgrantclient");
+            { OidcConstants.TokenRequest.GrantType, "custom_grant" },
+            { OidcConstants.TokenRequest.Scope, "resource" }
+        };
 
-            var validator = Factory.CreateTokenRequestValidator(
-                profile: new TestProfileService(shouldBeActive: false));
+        var result = await validator.ValidateRequestAsync(
+            parameters, 
+            client.ToValidationResult());
 
-            var parameters = new NameValueCollection
-            {
-                { OidcConstants.TokenRequest.GrantType, "custom_grant" },
-                { OidcConstants.TokenRequest.Scope, "resource" }
-            };
-
-            var result = await validator.ValidateRequestAsync(
-                parameters, 
-                client.ToValidationResult());
-
-            result.IsError.Should().BeTrue();
-        }
+        result.IsError.Should().BeTrue();
     }
 }

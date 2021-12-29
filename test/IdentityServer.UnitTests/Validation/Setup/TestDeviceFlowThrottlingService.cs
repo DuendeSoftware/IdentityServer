@@ -6,17 +6,16 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 
-namespace UnitTests.Validation.Setup
+namespace UnitTests.Validation.Setup;
+
+public class TestDeviceFlowThrottlingService : IDeviceFlowThrottlingService
 {
-    public class TestDeviceFlowThrottlingService : IDeviceFlowThrottlingService
+    private readonly bool shouldSlownDown;
+
+    public TestDeviceFlowThrottlingService(bool shouldSlownDown = false)
     {
-        private readonly bool shouldSlownDown;
-
-        public TestDeviceFlowThrottlingService(bool shouldSlownDown = false)
-        {
-            this.shouldSlownDown = shouldSlownDown;
-        }
-
-        public Task<bool> ShouldSlowDown(string deviceCode, DeviceCode details) => Task.FromResult(shouldSlownDown);
+        this.shouldSlownDown = shouldSlownDown;
     }
+
+    public Task<bool> ShouldSlowDown(string deviceCode, DeviceCode details) => Task.FromResult(shouldSlownDown);
 }

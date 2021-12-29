@@ -12,65 +12,64 @@ using IdentityModel.Client;
 using IntegrationTests.Common;
 using Xunit;
 
-namespace IntegrationTests.Hosting
+namespace IntegrationTests.Hosting;
+
+public class SubpathHosting
 {
-    public class SubpathHosting
+    private const string Category = "Subpath endpoint";
+
+    private IdentityServerPipeline _mockPipeline = new IdentityServerPipeline();
+
+    private Client _client1;
+
+    public SubpathHosting()
     {
-        private const string Category = "Subpath endpoint";
-
-        private IdentityServerPipeline _mockPipeline = new IdentityServerPipeline();
-
-        private Client _client1;
-
-        public SubpathHosting()
-        {
-            _mockPipeline.Clients.AddRange(new Client[] {
-                _client1 = new Client
-                {
-                    ClientId = "client1",
-                    AllowedGrantTypes = GrantTypes.Implicit,
-                    RequireConsent = false,
-                    AllowedScopes = new List<string> { "openid", "profile" },
-                    RedirectUris = new List<string> { "https://client1/callback" },
-                    AllowAccessTokensViaBrowser = true
-                }
-            });
-
-            _mockPipeline.Users.Add(new TestUser
+        _mockPipeline.Clients.AddRange(new Client[] {
+            _client1 = new Client
             {
-                SubjectId = "bob",
-                Username = "bob",
-                Claims = new Claim[]
-                {
-                    new Claim("name", "Bob Loblaw"),
-                    new Claim("email", "bob@loblaw.com"),
-                    new Claim("role", "Attorney")
-                }
-            });
+                ClientId = "client1",
+                AllowedGrantTypes = GrantTypes.Implicit,
+                RequireConsent = false,
+                AllowedScopes = new List<string> { "openid", "profile" },
+                RedirectUris = new List<string> { "https://client1/callback" },
+                AllowAccessTokensViaBrowser = true
+            }
+        });
 
-            _mockPipeline.IdentityScopes.AddRange(new IdentityResource[] {
-                new IdentityResources.OpenId(),
-                new IdentityResources.Profile(),
-                new IdentityResources.Email()
-            });
-            
-            _mockPipeline.Initialize("/subpath");
-        }
-
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task anonymous_user_should_be_redirected_to_login_page()
+        _mockPipeline.Users.Add(new TestUser
         {
-            var url = new RequestUrl("https://server/subpath/connect/authorize").CreateAuthorizeUrl(
-                clientId: "client1",
-                responseType: "id_token",
-                scope: "openid",
-                redirectUri: "https://client1/callback",
-                state: "123_state",
-                nonce: "123_nonce");
-            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+            SubjectId = "bob",
+            Username = "bob",
+            Claims = new Claim[]
+            {
+                new Claim("name", "Bob Loblaw"),
+                new Claim("email", "bob@loblaw.com"),
+                new Claim("role", "Attorney")
+            }
+        });
 
-            _mockPipeline.LoginWasCalled.Should().BeTrue();
-        }
+        _mockPipeline.IdentityScopes.AddRange(new IdentityResource[] {
+            new IdentityResources.OpenId(),
+            new IdentityResources.Profile(),
+            new IdentityResources.Email()
+        });
+            
+        _mockPipeline.Initialize("/subpath");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task anonymous_user_should_be_redirected_to_login_page()
+    {
+        var url = new RequestUrl("https://server/subpath/connect/authorize").CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "id_token",
+            scope: "openid",
+            redirectUri: "https://client1/callback",
+            state: "123_state",
+            nonce: "123_nonce");
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.LoginWasCalled.Should().BeTrue();
     }
 }

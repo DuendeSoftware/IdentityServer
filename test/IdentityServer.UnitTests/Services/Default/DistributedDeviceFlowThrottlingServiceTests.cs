@@ -16,150 +16,149 @@ using Microsoft.Extensions.Caching.Distributed;
 using Xunit;
 using Duende.IdentityServer.Stores;
 
-namespace UnitTests.Services.Default
+namespace UnitTests.Services.Default;
+
+public class DistributedDeviceFlowThrottlingServiceTests
 {
-    public class DistributedDeviceFlowThrottlingServiceTests
+    private TestCache cache = new TestCache();
+    InMemoryClientStore _store;
+
+    private readonly IdentityServerOptions options = new IdentityServerOptions {DeviceFlow = new DeviceFlowOptions {Interval = 5}};
+    private readonly DeviceCode deviceCode = new DeviceCode
     {
-        private TestCache cache = new TestCache();
-        InMemoryClientStore _store;
+        Lifetime = 300,
+        CreationTime = DateTime.UtcNow
+    };
 
-        private readonly IdentityServerOptions options = new IdentityServerOptions {DeviceFlow = new DeviceFlowOptions {Interval = 5}};
-        private readonly DeviceCode deviceCode = new DeviceCode
-        {
-            Lifetime = 300,
-            CreationTime = DateTime.UtcNow
-        };
+    private const string CacheKey = "devicecode_";
+    private readonly DateTime testDate = new DateTime(2018, 09, 01, 8, 0, 0, DateTimeKind.Utc);
 
-        private const string CacheKey = "devicecode_";
-        private readonly DateTime testDate = new DateTime(2018, 09, 01, 8, 0, 0, DateTimeKind.Utc);
-
-        public DistributedDeviceFlowThrottlingServiceTests()
-        {
-            _store = new InMemoryClientStore(new List<Client>());
-        }
-
-        [Fact]
-        public async Task First_Poll()
-        {
-            var handle = Guid.NewGuid().ToString();
-            var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock {UtcNowFunc = () => testDate}, options);
-
-            var result = await service.ShouldSlowDown(handle, deviceCode);
-
-            result.Should().BeFalse();
-
-            CheckCacheEntry(handle);
-        }
-
-        [Fact]
-        public async Task Second_Poll_Too_Fast()
-        {
-            var handle = Guid.NewGuid().ToString();
-            var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock { UtcNowFunc = () => testDate }, options);
-
-            cache.Set(CacheKey + handle, Encoding.UTF8.GetBytes(testDate.AddSeconds(-1).ToString("O")));
-
-            var result = await service.ShouldSlowDown(handle, deviceCode);
-
-            result.Should().BeTrue();
-            
-            CheckCacheEntry(handle);
-        }
-
-        [Fact]
-        public async Task Second_Poll_After_Interval()
-        {
-            var handle = Guid.NewGuid().ToString();
-            
-            var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock { UtcNowFunc = () => testDate }, options);
-
-            cache.Set($"devicecode_{handle}", Encoding.UTF8.GetBytes(testDate.AddSeconds(-deviceCode.Lifetime - 1).ToString("O")));
-
-            var result = await service.ShouldSlowDown(handle, deviceCode);
-
-            result.Should().BeFalse();
-
-            CheckCacheEntry(handle);
-        }
-
-        /// <summary>
-        /// Addresses race condition from #3860
-        /// </summary>
-        [Fact]
-        public async Task Expired_Device_Code_Should_Not_Have_Expiry_in_Past()
-        {
-            var handle = Guid.NewGuid().ToString();
-            deviceCode.CreationTime = testDate.AddSeconds(-deviceCode.Lifetime * 2);
-
-            var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock { UtcNowFunc = () => testDate }, options);
-
-            var result = await service.ShouldSlowDown(handle, deviceCode);
-            
-            result.Should().BeFalse();
-
-            cache.Items.TryGetValue(CacheKey + handle, out var values).Should().BeTrue();
-            values?.Item2.AbsoluteExpiration.Should().BeOnOrAfter(testDate);
-        }
-
-        private void CheckCacheEntry(string handle)
-        {
-            cache.Items.TryGetValue(CacheKey + handle, out var values).Should().BeTrue();
-
-            var dateTimeAsString = Encoding.UTF8.GetString(values?.Item1);
-            var dateTime = DateTime.Parse(dateTimeAsString).ToUniversalTime();
-            dateTime.Should().Be(testDate);
-
-            values?.Item2.AbsoluteExpiration.Should().BeCloseTo(testDate.AddSeconds(deviceCode.Lifetime));
-        }
+    public DistributedDeviceFlowThrottlingServiceTests()
+    {
+        _store = new InMemoryClientStore(new List<Client>());
     }
 
-    internal class TestCache : IDistributedCache
+    [Fact]
+    public async Task First_Poll()
     {
-        public readonly Dictionary<string, Tuple<byte[], DistributedCacheEntryOptions>> Items =
-            new Dictionary<string, Tuple<byte[], DistributedCacheEntryOptions>>();
+        var handle = Guid.NewGuid().ToString();
+        var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock {UtcNowFunc = () => testDate}, options);
 
-        public byte[] Get(string key)
-        {
-            if (Items.TryGetValue(key, out var value)) return value.Item1;
-            return null;
-        }
+        var result = await service.ShouldSlowDown(handle, deviceCode);
 
-        public Task<byte[]> GetAsync(string key, CancellationToken token = new CancellationToken())
-        {
-            return Task.FromResult(Get(key));
-        }
+        result.Should().BeFalse();
 
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
-        {
-            Items.Remove(key);
+        CheckCacheEntry(handle);
+    }
 
-            Items.Add(key, new Tuple<byte[], DistributedCacheEntryOptions>(value, options));
-        }
+    [Fact]
+    public async Task Second_Poll_Too_Fast()
+    {
+        var handle = Guid.NewGuid().ToString();
+        var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock { UtcNowFunc = () => testDate }, options);
 
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = new CancellationToken())
-        {
-            Set(key, value, options);
-            return Task.CompletedTask;
-        }
+        cache.Set(CacheKey + handle, Encoding.UTF8.GetBytes(testDate.AddSeconds(-1).ToString("O")));
 
-        public void Refresh(string key)
-        {
-            throw new NotImplementedException();
-        }
+        var result = await service.ShouldSlowDown(handle, deviceCode);
 
-        public Task RefreshAsync(string key, CancellationToken token = new CancellationToken())
-        {
-            throw new NotImplementedException();
-        }
+        result.Should().BeTrue();
+            
+        CheckCacheEntry(handle);
+    }
 
-        public void Remove(string key)
-        {
-            throw new NotImplementedException();
-        }
+    [Fact]
+    public async Task Second_Poll_After_Interval()
+    {
+        var handle = Guid.NewGuid().ToString();
+            
+        var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock { UtcNowFunc = () => testDate }, options);
 
-        public Task RemoveAsync(string key, CancellationToken token = new CancellationToken())
-        {
-            throw new NotImplementedException();
-        }
+        cache.Set($"devicecode_{handle}", Encoding.UTF8.GetBytes(testDate.AddSeconds(-deviceCode.Lifetime - 1).ToString("O")));
+
+        var result = await service.ShouldSlowDown(handle, deviceCode);
+
+        result.Should().BeFalse();
+
+        CheckCacheEntry(handle);
+    }
+
+    /// <summary>
+    /// Addresses race condition from #3860
+    /// </summary>
+    [Fact]
+    public async Task Expired_Device_Code_Should_Not_Have_Expiry_in_Past()
+    {
+        var handle = Guid.NewGuid().ToString();
+        deviceCode.CreationTime = testDate.AddSeconds(-deviceCode.Lifetime * 2);
+
+        var service = new DistributedDeviceFlowThrottlingService(cache, _store, new StubClock { UtcNowFunc = () => testDate }, options);
+
+        var result = await service.ShouldSlowDown(handle, deviceCode);
+            
+        result.Should().BeFalse();
+
+        cache.Items.TryGetValue(CacheKey + handle, out var values).Should().BeTrue();
+        values?.Item2.AbsoluteExpiration.Should().BeOnOrAfter(testDate);
+    }
+
+    private void CheckCacheEntry(string handle)
+    {
+        cache.Items.TryGetValue(CacheKey + handle, out var values).Should().BeTrue();
+
+        var dateTimeAsString = Encoding.UTF8.GetString(values?.Item1);
+        var dateTime = DateTime.Parse(dateTimeAsString).ToUniversalTime();
+        dateTime.Should().Be(testDate);
+
+        values?.Item2.AbsoluteExpiration.Should().BeCloseTo(testDate.AddSeconds(deviceCode.Lifetime));
+    }
+}
+
+internal class TestCache : IDistributedCache
+{
+    public readonly Dictionary<string, Tuple<byte[], DistributedCacheEntryOptions>> Items =
+        new Dictionary<string, Tuple<byte[], DistributedCacheEntryOptions>>();
+
+    public byte[] Get(string key)
+    {
+        if (Items.TryGetValue(key, out var value)) return value.Item1;
+        return null;
+    }
+
+    public Task<byte[]> GetAsync(string key, CancellationToken token = new CancellationToken())
+    {
+        return Task.FromResult(Get(key));
+    }
+
+    public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
+    {
+        Items.Remove(key);
+
+        Items.Add(key, new Tuple<byte[], DistributedCacheEntryOptions>(value, options));
+    }
+
+    public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = new CancellationToken())
+    {
+        Set(key, value, options);
+        return Task.CompletedTask;
+    }
+
+    public void Refresh(string key)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task RefreshAsync(string key, CancellationToken token = new CancellationToken())
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Remove(string key)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task RemoveAsync(string key, CancellationToken token = new CancellationToken())
+    {
+        throw new NotImplementedException();
     }
 }

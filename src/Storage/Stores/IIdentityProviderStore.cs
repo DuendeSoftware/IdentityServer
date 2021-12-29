@@ -5,23 +5,22 @@ using Duende.IdentityServer.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Stores
+namespace Duende.IdentityServer.Stores;
+
+/// <summary>
+/// Interface to model storage of identity providers.
+/// </summary>
+public interface IIdentityProviderStore
 {
     /// <summary>
-    /// Interface to model storage of identity providers.
+    /// Gets all identity providers name.
     /// </summary>
-    public interface IIdentityProviderStore
-    {
-        /// <summary>
-        /// Gets all identity providers name.
-        /// </summary>
-        Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync();
+    Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync();
         
-        /// <summary>
-        /// Gets the identity provider by scheme name.
-        /// </summary>
-        /// <param name="scheme"></param>
-        /// <returns></returns>
-        Task<IdentityProvider> GetBySchemeAsync(string scheme);
-    }
+    /// <summary>
+    /// Gets the identity provider by scheme name.
+    /// </summary>
+    /// <param name="scheme"></param>
+    /// <returns></returns>
+    Task<IdentityProvider> GetBySchemeAsync(string scheme);
 }

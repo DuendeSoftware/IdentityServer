@@ -4,11 +4,10 @@
 
 #pragma warning disable 1591
 
-namespace Duende.IdentityServer.EntityFramework.Entities
+namespace Duende.IdentityServer.EntityFramework.Entities;
+
+public class ClientSecret : Secret
 {
-    public class ClientSecret : Secret
-    {
-        public int ClientId { get; set; }
-        public Client Client { get; set; }
-    }
+    public int ClientId { get; set; }
+    public Client Client { get; set; }
 }
