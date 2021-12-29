@@ -516,7 +516,7 @@ public static class IdentityServerBuilderExtensionsAdditional
     {
         builder.Services.TryAddTransient(typeof(T));
         builder.Services.TryAddTransient(typeof(ValidatingIdentityProviderStore<T>));
-        builder.Services.AddTransientDecorator<IIdentityProviderStore, NonCachingIdentityProviderStore<ValidatingIdentityProviderStore<T>>>();
+        builder.Services.AddTransient<IIdentityProviderStore, NonCachingIdentityProviderStore<ValidatingIdentityProviderStore<T>>>();
 
         return builder;
     }
