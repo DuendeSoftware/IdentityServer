@@ -5,22 +5,21 @@
 using IdentityModel;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Default handle generation service
+/// </summary>
+/// <seealso cref="IHandleGenerationService" />
+public class DefaultHandleGenerationService : IHandleGenerationService
 {
     /// <summary>
-    /// Default handle generation service
+    /// Generates a handle.
     /// </summary>
-    /// <seealso cref="IHandleGenerationService" />
-    public class DefaultHandleGenerationService : IHandleGenerationService
+    /// <param name="length">The length.</param>
+    /// <returns></returns>
+    public Task<string> GenerateAsync(int length)
     {
-        /// <summary>
-        /// Generates a handle.
-        /// </summary>
-        /// <param name="length">The length.</param>
-        /// <returns></returns>
-        public Task<string> GenerateAsync(int length)
-        {
-            return Task.FromResult(CryptoRandom.CreateUniqueId(length, CryptoRandom.OutputFormat.Hex));
-        }
+        return Task.FromResult(CryptoRandom.CreateUniqueId(length, CryptoRandom.OutputFormat.Hex));
     }
 }

@@ -4,14 +4,13 @@
 
 using System.Threading;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Implementation of ICancellationTokenProvider that returns CancellationToken.None
+/// </summary>
+public class NoneCancellationTokenProvider : ICancellationTokenProvider
 {
-    /// <summary>
-    /// Implementation of ICancellationTokenProvider that returns CancellationToken.None
-    /// </summary>
-    public class NoneCancellationTokenProvider : ICancellationTokenProvider
-    {
-        /// <inheritdoc/>
-        public CancellationToken CancellationToken => CancellationToken.None;
-    }
+    /// <inheritdoc/>
+    public CancellationToken CancellationToken => CancellationToken.None;
 }

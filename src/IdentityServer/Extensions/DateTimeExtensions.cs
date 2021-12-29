@@ -5,43 +5,42 @@
 using System;
 using System.Diagnostics;
 
-namespace Duende.IdentityServer.Extensions
+namespace Duende.IdentityServer.Extensions;
+
+internal static class DateTimeExtensions
 {
-    internal static class DateTimeExtensions
+    [DebuggerStepThrough]
+    public static bool HasExceeded(this DateTime creationTime, int seconds, DateTime now)
     {
-        [DebuggerStepThrough]
-        public static bool HasExceeded(this DateTime creationTime, int seconds, DateTime now)
+        return (now > creationTime.AddSeconds(seconds));
+    }
+
+    [DebuggerStepThrough]
+    public static int GetLifetimeInSeconds(this DateTime creationTime, DateTime now)
+    {
+        return ((int)(now - creationTime).TotalSeconds);
+    }
+
+    [DebuggerStepThrough]
+    public static bool HasExpired(this DateTime? expirationTime, DateTime now)
+    {
+        if (expirationTime.HasValue &&
+            expirationTime.Value.HasExpired(now))
         {
-            return (now > creationTime.AddSeconds(seconds));
+            return true;
         }
 
-        [DebuggerStepThrough]
-        public static int GetLifetimeInSeconds(this DateTime creationTime, DateTime now)
+        return false;
+    }
+
+    [DebuggerStepThrough]
+    public static bool HasExpired(this DateTime expirationTime, DateTime now)
+    {
+        if (now > expirationTime)
         {
-            return ((int)(now - creationTime).TotalSeconds);
+            return true;
         }
 
-        [DebuggerStepThrough]
-        public static bool HasExpired(this DateTime? expirationTime, DateTime now)
-        {
-            if (expirationTime.HasValue &&
-                expirationTime.Value.HasExpired(now))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        [DebuggerStepThrough]
-        public static bool HasExpired(this DateTime expirationTime, DateTime now)
-        {
-            if (now > expirationTime)
-            {
-                return true;
-            }
-
-            return false;
-        }
+        return false;
     }
 }

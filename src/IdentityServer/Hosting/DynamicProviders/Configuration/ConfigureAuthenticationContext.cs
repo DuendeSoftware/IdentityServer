@@ -6,35 +6,34 @@ using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace Duende.IdentityServer.Hosting.DynamicProviders
+namespace Duende.IdentityServer.Hosting.DynamicProviders;
+
+/// <summary>
+/// Context for configuring an authenitcaiton handler from a dynamic identity provider.
+/// </summary>
+/// <typeparam name="TAuthenticationOptions"></typeparam>
+/// <typeparam name="TIdentityProvider"></typeparam>
+public class ConfigureAuthenticationContext<TAuthenticationOptions, TIdentityProvider>
+    where TAuthenticationOptions : RemoteAuthenticationOptions
+    where TIdentityProvider : IdentityProvider
 {
     /// <summary>
-    /// Context for configuring an authenitcaiton handler from a dynamic identity provider.
+    /// The authentcation options.
     /// </summary>
-    /// <typeparam name="TAuthenticationOptions"></typeparam>
-    /// <typeparam name="TIdentityProvider"></typeparam>
-    public class ConfigureAuthenticationContext<TAuthenticationOptions, TIdentityProvider>
-        where TAuthenticationOptions : RemoteAuthenticationOptions
-        where TIdentityProvider : IdentityProvider
-    {
-        /// <summary>
-        /// The authentcation options.
-        /// </summary>
-        public TAuthenticationOptions AuthenticationOptions { get; set; }
+    public TAuthenticationOptions AuthenticationOptions { get; set; }
 
-        /// <summary>
-        /// The identity provider.
-        /// </summary>
-        public TIdentityProvider IdentityProvider { get; set; }
+    /// <summary>
+    /// The identity provider.
+    /// </summary>
+    public TIdentityProvider IdentityProvider { get; set; }
 
-        /// <summary>
-        /// The dynamic identity provider options.
-        /// </summary>
-        public DynamicProviderOptions DynamicProviderOptions { get; set; }
+    /// <summary>
+    /// The dynamic identity provider options.
+    /// </summary>
+    public DynamicProviderOptions DynamicProviderOptions { get; set; }
 
-        /// <summary>
-        /// The path prefix for callback paths the authentication handler is to use.
-        /// </summary>
-        public PathString PathPrefix { get; set; }
-    }
+    /// <summary>
+    /// The path prefix for callback paths the authentication handler is to use.
+    /// </summary>
+    public PathString PathPrefix { get; set; }
 }

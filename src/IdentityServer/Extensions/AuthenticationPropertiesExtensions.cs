@@ -9,128 +9,127 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Duende.IdentityServer.Extensions
+namespace Duende.IdentityServer.Extensions;
+
+/// <summary>
+/// Extensions for AuthenticationProperties
+/// </summary>
+public static class AuthenticationPropertiesExtensions
 {
+    internal const string SessionIdKey = "session_id";
+    internal const string ClientListKey = "client_list";
+
     /// <summary>
-    /// Extensions for AuthenticationProperties
+    /// Gets the user's session identifier.
     /// </summary>
-    public static class AuthenticationPropertiesExtensions
+    /// <param name="properties"></param>
+    /// <returns></returns>
+    public static string GetSessionId(this AuthenticationProperties properties)
     {
-        internal const string SessionIdKey = "session_id";
-        internal const string ClientListKey = "client_list";
-
-        /// <summary>
-        /// Gets the user's session identifier.
-        /// </summary>
-        /// <param name="properties"></param>
-        /// <returns></returns>
-        public static string GetSessionId(this AuthenticationProperties properties)
+        if (properties?.Items.ContainsKey(SessionIdKey) == true)
         {
-            if (properties?.Items.ContainsKey(SessionIdKey) == true)
-            {
-                return properties.Items[SessionIdKey];
-            }
-
-            return null;
+            return properties.Items[SessionIdKey];
         }
 
-        /// <summary>
-        /// Sets the user's session identifier.
-        /// </summary>
-        /// <param name="properties"></param>
-        /// <param name="sid">The session id</param>
-        /// <returns></returns>
-        public static void SetSessionId(this AuthenticationProperties properties, string sid)
+        return null;
+    }
+
+    /// <summary>
+    /// Sets the user's session identifier.
+    /// </summary>
+    /// <param name="properties"></param>
+    /// <param name="sid">The session id</param>
+    /// <returns></returns>
+    public static void SetSessionId(this AuthenticationProperties properties, string sid)
+    {
+        properties.Items[SessionIdKey] = sid;
+    }
+
+    /// <summary>
+    /// Gets the list of client ids the user has signed into during their session.
+    /// </summary>
+    /// <param name="properties"></param>
+    /// <returns></returns>
+    public static IEnumerable<string> GetClientList(this AuthenticationProperties properties)
+    {
+        if (properties?.Items.ContainsKey(ClientListKey) == true)
         {
-            properties.Items[SessionIdKey] = sid;
+            var value = properties.Items[ClientListKey];
+            return DecodeList(value);
         }
 
-        /// <summary>
-        /// Gets the list of client ids the user has signed into during their session.
-        /// </summary>
-        /// <param name="properties"></param>
-        /// <returns></returns>
-        public static IEnumerable<string> GetClientList(this AuthenticationProperties properties)
-        {
-            if (properties?.Items.ContainsKey(ClientListKey) == true)
-            {
-                var value = properties.Items[ClientListKey];
-                return DecodeList(value);
-            }
+        return Enumerable.Empty<string>();
+    }
 
-            return Enumerable.Empty<string>();
+    /// <summary>
+    /// Removes the list of client ids.
+    /// </summary>
+    /// <param name="properties"></param>
+    public static void RemoveClientList(this AuthenticationProperties properties)
+    {
+        properties?.Items.Remove(ClientListKey);
+    }
+
+    /// <summary>
+    /// Sets the list of client ids.
+    /// </summary>
+    /// <param name="properties"></param>
+    /// <param name="clientIds"></param>
+    public static void SetClientList(this AuthenticationProperties properties, IEnumerable<string> clientIds)
+    {
+        var value = EncodeList(clientIds);
+        if (value == null)
+        {
+            properties.Items.Remove(ClientListKey);
         }
-
-        /// <summary>
-        /// Removes the list of client ids.
-        /// </summary>
-        /// <param name="properties"></param>
-        public static void RemoveClientList(this AuthenticationProperties properties)
+        else
         {
-            properties?.Items.Remove(ClientListKey);
+            properties.Items[ClientListKey] = value;
         }
+    }
 
-        /// <summary>
-        /// Sets the list of client ids.
-        /// </summary>
-        /// <param name="properties"></param>
-        /// <param name="clientIds"></param>
-        public static void SetClientList(this AuthenticationProperties properties, IEnumerable<string> clientIds)
+    /// <summary>
+    /// Adds a client to the list of clients the user has signed into during their session.
+    /// </summary>
+    /// <param name="properties"></param>
+    /// <param name="clientId"></param>
+    public static void AddClientId(this AuthenticationProperties properties, string clientId)
+    {
+        if (clientId == null) throw new ArgumentNullException(nameof(clientId));
+
+        var clients = properties.GetClientList();
+        if (!clients.Contains(clientId))
         {
-            var value = EncodeList(clientIds);
-            if (value == null)
-            {
-                properties.Items.Remove(ClientListKey);
-            }
-            else
-            {
-                properties.Items[ClientListKey] = value;
-            }
-        }
-
-        /// <summary>
-        /// Adds a client to the list of clients the user has signed into during their session.
-        /// </summary>
-        /// <param name="properties"></param>
-        /// <param name="clientId"></param>
-        public static void AddClientId(this AuthenticationProperties properties, string clientId)
-        {
-            if (clientId == null) throw new ArgumentNullException(nameof(clientId));
-
-            var clients = properties.GetClientList();
-            if (!clients.Contains(clientId))
-            {
-                var update = clients.ToList();
-                update.Add(clientId);
+            var update = clients.ToList();
+            update.Add(clientId);
                 
-                properties.SetClientList(update);
-            }
+            properties.SetClientList(update);
         }
+    }
 
 
-        private static IEnumerable<string> DecodeList(string value)
+    private static IEnumerable<string> DecodeList(string value)
+    {
+        if (value.IsPresent())
         {
-            if (value.IsPresent())
-            {
-                var bytes = Base64Url.Decode(value);
-                value = Encoding.UTF8.GetString(bytes);
-                return ObjectSerializer.FromString<string[]>(value);
-            }
-
-            return Enumerable.Empty<string>();
+            var bytes = Base64Url.Decode(value);
+            value = Encoding.UTF8.GetString(bytes);
+            return ObjectSerializer.FromString<string[]>(value);
         }
 
-        private static string EncodeList(IEnumerable<string> list)
+        return Enumerable.Empty<string>();
+    }
+
+    private static string EncodeList(IEnumerable<string> list)
+    {
+        if (list != null && list.Any())
         {
-            if (list != null && list.Any())
-            {
-                var value = ObjectSerializer.ToString(list);
-                var bytes = Encoding.UTF8.GetBytes(value);
-                value = Base64Url.Encode(bytes);
-                return value;
-            }
-
-            return null;
+            var value = ObjectSerializer.ToString(list);
+            var bytes = Encoding.UTF8.GetBytes(value);
+            value = Base64Url.Encode(bytes);
+            return value;
         }
+
+        return null;
     }
 }

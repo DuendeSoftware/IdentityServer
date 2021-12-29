@@ -8,89 +8,88 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Default identity provider configuration validator
+/// </summary>
+/// <seealso cref="IIdentityProviderConfigurationValidator" />
+public class DefaultIdentityProviderConfigurationValidator : IIdentityProviderConfigurationValidator
 {
+    private readonly IdentityServerOptions _options;
+
     /// <summary>
-    /// Default identity provider configuration validator
+    /// Constructor for DefaultIdentityProviderConfigurationValidator
     /// </summary>
-    /// <seealso cref="IIdentityProviderConfigurationValidator" />
-    public class DefaultIdentityProviderConfigurationValidator : IIdentityProviderConfigurationValidator
+    public DefaultIdentityProviderConfigurationValidator(IdentityServerOptions options)
     {
-        private readonly IdentityServerOptions _options;
+        _options = options;
+    }
 
-        /// <summary>
-        /// Constructor for DefaultIdentityProviderConfigurationValidator
-        /// </summary>
-        public DefaultIdentityProviderConfigurationValidator(IdentityServerOptions options)
+    /// <inheritdoc/>
+    public virtual async Task ValidateAsync(IdentityProviderConfigurationValidationContext context)
+    {
+        var type = _options.DynamicProviders.FindProviderType(context.IdentityProvider.Type);
+        if (type == null)
         {
-            _options = options;
+            context.SetError("IdentityProvider Type has not been registered with AddProviderType on the DynamicProviderOptions.");
+            return;
         }
 
-        /// <inheritdoc/>
-        public virtual async Task ValidateAsync(IdentityProviderConfigurationValidationContext context)
+        if (String.IsNullOrWhiteSpace(context.IdentityProvider.Scheme))
         {
-            var type = _options.DynamicProviders.FindProviderType(context.IdentityProvider.Type);
-            if (type == null)
-            {
-                context.SetError("IdentityProvider Type has not been registered with AddProviderType on the DynamicProviderOptions.");
-                return;
-            }
+            context.SetError("Scheme is missing.");
+            return;
+        }
 
-            if (String.IsNullOrWhiteSpace(context.IdentityProvider.Scheme))
-            {
-                context.SetError("Scheme is missing.");
-                return;
-            }
-
-            if (context.IdentityProvider is OidcProvider oidc)
-            {
-                var oidcContext = new IdentityProviderConfigurationValidationContext<OidcProvider>(oidc);
-                await ValidateOidcProviderAsync(oidcContext);
+        if (context.IdentityProvider is OidcProvider oidc)
+        {
+            var oidcContext = new IdentityProviderConfigurationValidationContext<OidcProvider>(oidc);
+            await ValidateOidcProviderAsync(oidcContext);
                 
-                if (!oidcContext.IsValid)
-                {
-                    context.SetError(oidcContext.ErrorMessage);
-                }
-
-                return;
+            if (!oidcContext.IsValid)
+            {
+                context.SetError(oidcContext.ErrorMessage);
             }
-        }
 
-        /// <summary>
-        /// Validates the OIDC identity provider.
-        /// </summary>
-        /// <returns>A string that represents the error. Null if there is no error.</returns>
-        protected virtual Task ValidateOidcProviderAsync(IdentityProviderConfigurationValidationContext<OidcProvider> context)
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Validates the OIDC identity provider.
+    /// </summary>
+    /// <returns>A string that represents the error. Null if there is no error.</returns>
+    protected virtual Task ValidateOidcProviderAsync(IdentityProviderConfigurationValidationContext<OidcProvider> context)
+    {
+        if (String.IsNullOrWhiteSpace(context.IdentityProvider.Authority))
         {
-            if (String.IsNullOrWhiteSpace(context.IdentityProvider.Authority))
-            {
-                context.SetError("Authority is missing.");
-            }
-            
-            if (String.IsNullOrWhiteSpace(context.IdentityProvider.ClientId))
-            {
-                context.SetError("ClientId is missing.");
-            }
-
-            if (String.IsNullOrWhiteSpace(context.IdentityProvider.ResponseType))
-            {
-                context.SetError("ResponseType is missing.");
-            }
-            else
-            {
-                var parts = context.IdentityProvider.ResponseType.Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct();
-                if (parts.Contains(IdentityModel.OidcConstants.ResponseTypes.Code) && String.IsNullOrWhiteSpace(context.IdentityProvider.ClientSecret))
-                {
-                    context.SetError("ClientSecret is missing.");
-                }
-            }
-
-            if (String.IsNullOrWhiteSpace(context.IdentityProvider.Scope))
-            {
-                context.SetError("Scope is missing.");
-            }
-
-            return Task.CompletedTask;
+            context.SetError("Authority is missing.");
         }
+            
+        if (String.IsNullOrWhiteSpace(context.IdentityProvider.ClientId))
+        {
+            context.SetError("ClientId is missing.");
+        }
+
+        if (String.IsNullOrWhiteSpace(context.IdentityProvider.ResponseType))
+        {
+            context.SetError("ResponseType is missing.");
+        }
+        else
+        {
+            var parts = context.IdentityProvider.ResponseType.Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct();
+            if (parts.Contains(IdentityModel.OidcConstants.ResponseTypes.Code) && String.IsNullOrWhiteSpace(context.IdentityProvider.ClientSecret))
+            {
+                context.SetError("ClientSecret is missing.");
+            }
+        }
+
+        if (String.IsNullOrWhiteSpace(context.IdentityProvider.Scope))
+        {
+            context.SetError("Scope is missing.");
+        }
+
+        return Task.CompletedTask;
     }
 }

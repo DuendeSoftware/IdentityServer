@@ -15,89 +15,88 @@ using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Services;
 
-namespace Duende.IdentityServer.Endpoints.Results
+namespace Duende.IdentityServer.Endpoints.Results;
+
+/// <summary>
+/// Result for endsession
+/// </summary>
+/// <seealso cref="IEndpointResult" />
+public class EndSessionResult : IEndpointResult
 {
+    private readonly EndSessionValidationResult _result;
+
     /// <summary>
-    /// Result for endsession
+    /// Initializes a new instance of the <see cref="EndSessionResult"/> class.
     /// </summary>
-    /// <seealso cref="IEndpointResult" />
-    public class EndSessionResult : IEndpointResult
+    /// <param name="result">The result.</param>
+    /// <exception cref="System.ArgumentNullException">result</exception>
+    public EndSessionResult(EndSessionValidationResult result)
     {
-        private readonly EndSessionValidationResult _result;
+        _result = result ?? throw new ArgumentNullException(nameof(result));
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EndSessionResult"/> class.
-        /// </summary>
-        /// <param name="result">The result.</param>
-        /// <exception cref="System.ArgumentNullException">result</exception>
-        public EndSessionResult(EndSessionValidationResult result)
+    internal EndSessionResult(
+        EndSessionValidationResult result,
+        IdentityServerOptions options,
+        ISystemClock clock,
+        IServerUrls urls,
+        IMessageStore<LogoutMessage> logoutMessageStore)
+        : this(result)
+    {
+        _options = options;
+        _clock = clock;
+        _urls = urls;
+        _logoutMessageStore = logoutMessageStore;
+    }
+
+    private IdentityServerOptions _options;
+    private ISystemClock _clock;
+    private IServerUrls _urls;
+    private IMessageStore<LogoutMessage> _logoutMessageStore;
+
+    private void Init(HttpContext context)
+    {
+        _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
+        _clock = _clock ?? context.RequestServices.GetRequiredService<ISystemClock>();
+        _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
+        _logoutMessageStore = _logoutMessageStore ?? context.RequestServices.GetRequiredService<IMessageStore<LogoutMessage>>();
+    }
+
+    /// <summary>
+    /// Executes the result.
+    /// </summary>
+    /// <param name="context">The HTTP context.</param>
+    /// <returns></returns>
+    public async Task ExecuteAsync(HttpContext context)
+    {
+        Init(context);
+
+        var validatedRequest = _result.IsError ? null : _result.ValidatedRequest;
+
+        string id = null;
+
+        if (validatedRequest != null)
         {
-            _result = result ?? throw new ArgumentNullException(nameof(result));
-        }
-
-        internal EndSessionResult(
-            EndSessionValidationResult result,
-            IdentityServerOptions options,
-            ISystemClock clock,
-            IServerUrls urls,
-            IMessageStore<LogoutMessage> logoutMessageStore)
-            : this(result)
-        {
-            _options = options;
-            _clock = clock;
-            _urls = urls;
-            _logoutMessageStore = logoutMessageStore;
-        }
-
-        private IdentityServerOptions _options;
-        private ISystemClock _clock;
-        private IServerUrls _urls;
-        private IMessageStore<LogoutMessage> _logoutMessageStore;
-
-        private void Init(HttpContext context)
-        {
-            _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-            _clock = _clock ?? context.RequestServices.GetRequiredService<ISystemClock>();
-            _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
-            _logoutMessageStore = _logoutMessageStore ?? context.RequestServices.GetRequiredService<IMessageStore<LogoutMessage>>();
-        }
-
-        /// <summary>
-        /// Executes the result.
-        /// </summary>
-        /// <param name="context">The HTTP context.</param>
-        /// <returns></returns>
-        public async Task ExecuteAsync(HttpContext context)
-        {
-            Init(context);
-
-            var validatedRequest = _result.IsError ? null : _result.ValidatedRequest;
-
-            string id = null;
-
-            if (validatedRequest != null)
+            var logoutMessage = new LogoutMessage(validatedRequest);
+            if (logoutMessage.ContainsPayload)
             {
-                var logoutMessage = new LogoutMessage(validatedRequest);
-                if (logoutMessage.ContainsPayload)
-                {
-                    var msg = new Message<LogoutMessage>(logoutMessage, _clock.UtcNow.UtcDateTime);
-                    id = await _logoutMessageStore.WriteAsync(msg);
-                }
+                var msg = new Message<LogoutMessage>(logoutMessage, _clock.UtcNow.UtcDateTime);
+                id = await _logoutMessageStore.WriteAsync(msg);
             }
-
-            var redirect = _options.UserInteraction.LogoutUrl;
-
-            if (redirect.IsLocalUrl())
-            {
-                redirect = _urls.GetIdentityServerRelativeUrl(redirect);
-            }
-
-            if (id != null)
-            {
-                redirect = redirect.AddQueryString(_options.UserInteraction.LogoutIdParameter, id);
-            }
-
-            context.Response.Redirect(redirect);
         }
+
+        var redirect = _options.UserInteraction.LogoutUrl;
+
+        if (redirect.IsLocalUrl())
+        {
+            redirect = _urls.GetIdentityServerRelativeUrl(redirect);
+        }
+
+        if (id != null)
+        {
+            redirect = redirect.AddQueryString(_options.UserInteraction.LogoutIdParameter, id);
+        }
+
+        context.Response.Redirect(redirect);
     }
 }

@@ -5,18 +5,17 @@
 using System.Threading.Tasks;
 using Duende.IdentityServer.Validation;
 
-namespace Duende.IdentityServer.ResponseHandling
+namespace Duende.IdentityServer.ResponseHandling;
+
+/// <summary>
+/// Interface the backchannel authentication response generator
+/// </summary>
+public interface IBackchannelAuthenticationResponseGenerator
 {
     /// <summary>
-    /// Interface the backchannel authentication response generator
+    /// Processes the response.
     /// </summary>
-    public interface IBackchannelAuthenticationResponseGenerator
-    {
-        /// <summary>
-        /// Processes the response.
-        /// </summary>
-        /// <param name="validationResult">The validation result.</param>
-        /// <returns></returns>
-        Task<BackchannelAuthenticationResponse> ProcessAsync(BackchannelAuthenticationRequestValidationResult validationResult);
-    }
+    /// <param name="validationResult">The validation result.</param>
+    /// <returns></returns>
+    Task<BackchannelAuthenticationResponse> ProcessAsync(BackchannelAuthenticationRequestValidationResult validationResult);
 }

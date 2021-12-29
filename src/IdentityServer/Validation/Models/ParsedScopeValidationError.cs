@@ -4,42 +4,41 @@
 
 using System;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Models an error parsing a scope.
+/// </summary>
+public class ParsedScopeValidationError
 {
     /// <summary>
-    /// Models an error parsing a scope.
+    /// Ctor
     /// </summary>
-    public class ParsedScopeValidationError
+    /// <param name="rawValue"></param>
+    /// <param name="error"></param>
+    public ParsedScopeValidationError(string rawValue, string error)
     {
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="rawValue"></param>
-        /// <param name="error"></param>
-        public ParsedScopeValidationError(string rawValue, string error)
+        if (String.IsNullOrWhiteSpace(rawValue))
         {
-            if (String.IsNullOrWhiteSpace(rawValue))
-            {
-                throw new ArgumentNullException(nameof(rawValue));
-            }
-
-            if (String.IsNullOrWhiteSpace(error))
-            {
-                throw new ArgumentNullException(nameof(error));
-            }
-
-            RawValue = rawValue;
-            Error = error;
+            throw new ArgumentNullException(nameof(rawValue));
         }
 
-        /// <summary>
-        /// The original (raw) value of the scope.
-        /// </summary>
-        public string RawValue { get; set; }
+        if (String.IsNullOrWhiteSpace(error))
+        {
+            throw new ArgumentNullException(nameof(error));
+        }
 
-        /// <summary>
-        /// Error message describing why the raw scope failed to be parsed.
-        /// </summary>
-        public string Error { get; set; }
+        RawValue = rawValue;
+        Error = error;
     }
+
+    /// <summary>
+    /// The original (raw) value of the scope.
+    /// </summary>
+    public string RawValue { get; set; }
+
+    /// <summary>
+    /// Error message describing why the raw scope failed to be parsed.
+    /// </summary>
+    public string Error { get; set; }
 }

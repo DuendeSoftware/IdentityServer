@@ -6,48 +6,47 @@ using System;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Duende.IdentityServer.Services.KeyManagement
+namespace Duende.IdentityServer.Services.KeyManagement;
+
+/// <summary>
+/// Container class for RsaSecurityKey.
+/// </summary>
+public class RsaKeyContainer : KeyContainer
 {
     /// <summary>
-    /// Container class for RsaSecurityKey.
+    /// Constructor for RsaKeyContainer.
     /// </summary>
-    public class RsaKeyContainer : KeyContainer
+    public RsaKeyContainer() : base()
     {
-        /// <summary>
-        /// Constructor for RsaKeyContainer.
-        /// </summary>
-        public RsaKeyContainer() : base()
-        {
-        }
+    }
 
-        /// <summary>
-        /// Constructor for RsaKeyContainer.
-        /// </summary>
-        public RsaKeyContainer(RsaSecurityKey key, string algorithm, DateTime created)
-            : base(key.KeyId, algorithm, created)
+    /// <summary>
+    /// Constructor for RsaKeyContainer.
+    /// </summary>
+    public RsaKeyContainer(RsaSecurityKey key, string algorithm, DateTime created)
+        : base(key.KeyId, algorithm, created)
+    {
+        if (key.Rsa != null)
         {
-            if (key.Rsa != null)
-            {
-                Parameters = key.Rsa.ExportParameters(includePrivateParameters: true);
-            }
-            else
-            {
-                Parameters = key.Parameters;
-            }
+            Parameters = key.Rsa.ExportParameters(includePrivateParameters: true);
         }
-
-        /// <summary>
-        /// The RSAParameters.
-        /// </summary>
-        public RSAParameters Parameters { get; set; }
-
-        /// <inheritdoc/>
-        public override AsymmetricSecurityKey ToSecurityKey()
+        else
         {
-            return new RsaSecurityKey(Parameters)
-            {
-                KeyId = Id
-            };
+            Parameters = key.Parameters;
         }
+    }
+
+    /// <summary>
+    /// The RSAParameters.
+    /// </summary>
+    public RSAParameters Parameters { get; set; }
+
+    /// <inheritdoc/>
+    public override AsymmetricSecurityKey ToSecurityKey()
+    {
+        return new RsaSecurityKey(Parameters)
+        {
+            KeyId = Id
+        };
     }
 }

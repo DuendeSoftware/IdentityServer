@@ -15,161 +15,160 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Default implementation of IBackchannelAuthenticationInteractionService.
+/// </summary>
+public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAuthenticationInteractionService
 {
+    private readonly IBackChannelAuthenticationRequestStore _requestStore;
+    private readonly IClientStore _clientStore;
+    private readonly IUserSession _session;
+    private readonly IResourceValidator _resourceValidator;
+    private readonly ISystemClock _systemClock;
+    private readonly ILogger<DefaultBackchannelAuthenticationInteractionService> _logger;
+
     /// <summary>
-    /// Default implementation of IBackchannelAuthenticationInteractionService.
+    /// Ctor
     /// </summary>
-    public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAuthenticationInteractionService
+    public DefaultBackchannelAuthenticationInteractionService(
+        IBackChannelAuthenticationRequestStore requestStore,
+        IClientStore clients,
+        IUserSession session,
+        IResourceValidator resourceValidator,
+        ISystemClock systemClock,
+        ILogger<DefaultBackchannelAuthenticationInteractionService> logger
+    )
     {
-        private readonly IBackChannelAuthenticationRequestStore _requestStore;
-        private readonly IClientStore _clientStore;
-        private readonly IUserSession _session;
-        private readonly IResourceValidator _resourceValidator;
-        private readonly ISystemClock _systemClock;
-        private readonly ILogger<DefaultBackchannelAuthenticationInteractionService> _logger;
+        _requestStore = requestStore;
+        _clientStore = clients;
+        _session = session;
+        _resourceValidator = resourceValidator;
+        _systemClock = systemClock;
+        _logger = logger;
+    }
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        public DefaultBackchannelAuthenticationInteractionService(
-            IBackChannelAuthenticationRequestStore requestStore,
-            IClientStore clients,
-            IUserSession session,
-            IResourceValidator resourceValidator,
-            ISystemClock systemClock,
-            ILogger<DefaultBackchannelAuthenticationInteractionService> logger
-)
+    async Task<BackchannelUserLoginRequest> CreateAsync(BackChannelAuthenticationRequest request)
+    {
+        if (request == null)
         {
-            _requestStore = requestStore;
-            _clientStore = clients;
-            _session = session;
-            _resourceValidator = resourceValidator;
-            _systemClock = systemClock;
-            _logger = logger;
+            return null;
         }
 
-        async Task<BackchannelUserLoginRequest> CreateAsync(BackChannelAuthenticationRequest request)
+        var client = await _clientStore.FindEnabledClientByIdAsync(request.ClientId);
+        if (client == null)
         {
-            if (request == null)
-            {
-                return null;
-            }
-
-            var client = await _clientStore.FindEnabledClientByIdAsync(request.ClientId);
-            if (client == null)
-            {
-                return null;
-            }
-
-            var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
-            {
-                Client = client,
-                Scopes = request.RequestedScopes,
-                ResourceIndicators = request.RequestedResourceIndicators,
-            });
-
-            return new BackchannelUserLoginRequest
-            {
-                InternalId = request.InternalId,
-                Subject = request.Subject,
-                Client = client,
-                ValidatedResources = validatedResources,
-                RequestedResourceIndicators = request.RequestedResourceIndicators,
-                AuthenticationContextReferenceClasses = request.AuthenticationContextReferenceClasses,
-                BindingMessage = request.BindingMessage,
-            };
+            return null;
         }
 
-        /// <inheritdoc/>
-        public async Task<BackchannelUserLoginRequest> GetLoginRequestByInternalIdAsync(string id)
+        var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
         {
-            var request = await _requestStore.GetByInternalIdAsync(id);
-            return await CreateAsync(request);
-        }
+            Client = client,
+            Scopes = request.RequestedScopes,
+            ResourceIndicators = request.RequestedResourceIndicators,
+        });
 
-        /// <inheritdoc/>
-        public async Task<IEnumerable<BackchannelUserLoginRequest>> GetPendingLoginRequestsForCurrentUserAsync()
+        return new BackchannelUserLoginRequest
         {
-            var list = new List<BackchannelUserLoginRequest>();
+            InternalId = request.InternalId,
+            Subject = request.Subject,
+            Client = client,
+            ValidatedResources = validatedResources,
+            RequestedResourceIndicators = request.RequestedResourceIndicators,
+            AuthenticationContextReferenceClasses = request.AuthenticationContextReferenceClasses,
+            BindingMessage = request.BindingMessage,
+        };
+    }
 
-            var user = await _session.GetUserAsync();
-            if (user != null)
+    /// <inheritdoc/>
+    public async Task<BackchannelUserLoginRequest> GetLoginRequestByInternalIdAsync(string id)
+    {
+        var request = await _requestStore.GetByInternalIdAsync(id);
+        return await CreateAsync(request);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<BackchannelUserLoginRequest>> GetPendingLoginRequestsForCurrentUserAsync()
+    {
+        var list = new List<BackchannelUserLoginRequest>();
+
+        var user = await _session.GetUserAsync();
+        if (user != null)
+        {
+            _logger.LogDebug("No user present");
+
+            var items = await _requestStore.GetLoginsForUserAsync(user.GetSubjectId());
+            foreach (var item in items)
             {
-                _logger.LogDebug("No user present");
-
-                var items = await _requestStore.GetLoginsForUserAsync(user.GetSubjectId());
-                foreach (var item in items)
+                if (!item.IsComplete)
                 {
-                    if (!item.IsComplete)
+                    var req = await CreateAsync(item);
+                    if (req != null)
                     {
-                        var req = await CreateAsync(item);
-                        if (req != null)
-                        {
-                            list.Add(req);
-                        }
+                        list.Add(req);
                     }
                 }
             }
-
-            return list;
         }
 
-        /// <inheritdoc/>
-        public async Task CompleteLoginRequestAsync(CompleteBackchannelLoginRequest competionRequest)
+        return list;
+    }
+
+    /// <inheritdoc/>
+    public async Task CompleteLoginRequestAsync(CompleteBackchannelLoginRequest competionRequest)
+    {
+        if (competionRequest == null) throw new ArgumentNullException(nameof(competionRequest));
+
+        var request = await _requestStore.GetByInternalIdAsync(competionRequest.InternalId);
+        if (request == null)
         {
-            if (competionRequest == null) throw new ArgumentNullException(nameof(competionRequest));
-
-            var request = await _requestStore.GetByInternalIdAsync(competionRequest.InternalId);
-            if (request == null)
-            {
-                throw new InvalidOperationException("Invalid backchannel authentication request id.");
-            }
-
-            var subject = competionRequest.Subject ?? await _session.GetUserAsync();
-            if (subject == null)
-            {
-                throw new InvalidOperationException("Invalid subject.");
-            }
-            
-            if (subject.GetSubjectId() != request.Subject.GetSubjectId())
-            {
-                throw new InvalidOperationException($"User's subject id: '{subject.GetSubjectId()}' does not match subject id for backchannel authentication request: '{request.Subject.GetSubjectId()}'.");
-            }
-
-            var sid = (competionRequest.Subject == null) ?
-                await _session.GetSessionIdAsync() :
-                competionRequest.SessionId;
-
-            if (competionRequest.ScopesValuesConsented != null)
-            {
-                var extra = competionRequest.ScopesValuesConsented.Except(request.RequestedScopes);
-                if (extra.Any())
-                {
-                    throw new InvalidOperationException("More scopes consented than originally requested.");
-                }
-            }
-
-            var subjectClone = subject.Clone();
-            if (!subject.HasClaim(x => x.Type == JwtClaimTypes.AuthenticationTime))
-            {
-                subjectClone.Identities.First().AddClaim(new Claim(JwtClaimTypes.AuthenticationTime, _systemClock.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer));
-            }
-
-            if (!subject.HasClaim(x => x.Type == JwtClaimTypes.IdentityProvider))
-            {
-                subjectClone.Identities.First().AddClaim(new Claim(JwtClaimTypes.IdentityProvider, IdentityServerConstants.LocalIdentityProvider));
-            }
-
-            request.IsComplete = true;
-            request.Subject = subjectClone;
-            request.SessionId = sid;
-            request.AuthorizedScopes = competionRequest.ScopesValuesConsented;
-            request.Description = competionRequest.Description;
-
-            await _requestStore.UpdateByInternalIdAsync(competionRequest.InternalId, request);
-
-            _logger.LogDebug("Successful update for backchannel authentication request id {id}", competionRequest.InternalId);
+            throw new InvalidOperationException("Invalid backchannel authentication request id.");
         }
+
+        var subject = competionRequest.Subject ?? await _session.GetUserAsync();
+        if (subject == null)
+        {
+            throw new InvalidOperationException("Invalid subject.");
+        }
+            
+        if (subject.GetSubjectId() != request.Subject.GetSubjectId())
+        {
+            throw new InvalidOperationException($"User's subject id: '{subject.GetSubjectId()}' does not match subject id for backchannel authentication request: '{request.Subject.GetSubjectId()}'.");
+        }
+
+        var sid = (competionRequest.Subject == null) ?
+            await _session.GetSessionIdAsync() :
+            competionRequest.SessionId;
+
+        if (competionRequest.ScopesValuesConsented != null)
+        {
+            var extra = competionRequest.ScopesValuesConsented.Except(request.RequestedScopes);
+            if (extra.Any())
+            {
+                throw new InvalidOperationException("More scopes consented than originally requested.");
+            }
+        }
+
+        var subjectClone = subject.Clone();
+        if (!subject.HasClaim(x => x.Type == JwtClaimTypes.AuthenticationTime))
+        {
+            subjectClone.Identities.First().AddClaim(new Claim(JwtClaimTypes.AuthenticationTime, _systemClock.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer));
+        }
+
+        if (!subject.HasClaim(x => x.Type == JwtClaimTypes.IdentityProvider))
+        {
+            subjectClone.Identities.First().AddClaim(new Claim(JwtClaimTypes.IdentityProvider, IdentityServerConstants.LocalIdentityProvider));
+        }
+
+        request.IsComplete = true;
+        request.Subject = subjectClone;
+        request.SessionId = sid;
+        request.AuthorizedScopes = competionRequest.ScopesValuesConsented;
+        request.Description = competionRequest.Description;
+
+        await _requestStore.UpdateByInternalIdAsync(competionRequest.InternalId, request);
+
+        _logger.LogDebug("Successful update for backchannel authentication request id {id}", competionRequest.InternalId);
     }
 }

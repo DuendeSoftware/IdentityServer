@@ -13,82 +13,81 @@ using FluentAssertions;
 using UnitTests.Common;
 using Xunit;
 
-namespace UnitTests.Validation
+namespace UnitTests.Validation;
+
+public class UserInfoRequestValidation
 {
-    public class UserInfoRequestValidation
+    private const string Category = "UserInfo Request Validation Tests";
+    private IClientStore _clients = new InMemoryClientStore(TestClients.Get());
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task token_without_sub_should_fail()
     {
-        private const string Category = "UserInfo Request Validation Tests";
-        private IClientStore _clients = new InMemoryClientStore(TestClients.Get());
-
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task token_without_sub_should_fail()
+        var tokenResult = new TokenValidationResult
         {
-            var tokenResult = new TokenValidationResult
-            {
-                IsError = false,
-                Client = await _clients.FindEnabledClientByIdAsync("codeclient"),
-                Claims = new List<Claim>()
-            };
+            IsError = false,
+            Client = await _clients.FindEnabledClientByIdAsync("codeclient"),
+            Claims = new List<Claim>()
+        };
 
-            var validator = new UserInfoRequestValidator(
-                new TestTokenValidator(tokenResult),
-                new TestProfileService(shouldBeActive: true),
-                TestLogger.Create<UserInfoRequestValidator>());
+        var validator = new UserInfoRequestValidator(
+            new TestTokenValidator(tokenResult),
+            new TestProfileService(shouldBeActive: true),
+            TestLogger.Create<UserInfoRequestValidator>());
 
-            var result = await validator.ValidateRequestAsync("token");
+        var result = await validator.ValidateRequestAsync("token");
 
-            result.IsError.Should().BeTrue();
-            result.Error.Should().Be(OidcConstants.ProtectedResourceErrors.InvalidToken);
-        }
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.ProtectedResourceErrors.InvalidToken);
+    }
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task active_user_should_succeed()
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task active_user_should_succeed()
+    {
+        var tokenResult = new TokenValidationResult
         {
-            var tokenResult = new TokenValidationResult
+            IsError = false,
+            Client = await _clients.FindEnabledClientByIdAsync("codeclient"),
+            Claims = new List<Claim>
             {
-                IsError = false,
-                Client = await _clients.FindEnabledClientByIdAsync("codeclient"),
-                Claims = new List<Claim>
-                {
-                    new Claim("sub", "123")
-                },
-            };
+                new Claim("sub", "123")
+            },
+        };
 
-            var validator = new UserInfoRequestValidator(
-                new TestTokenValidator(tokenResult),
-                new TestProfileService(shouldBeActive: true),
-                TestLogger.Create<UserInfoRequestValidator>());
+        var validator = new UserInfoRequestValidator(
+            new TestTokenValidator(tokenResult),
+            new TestProfileService(shouldBeActive: true),
+            TestLogger.Create<UserInfoRequestValidator>());
 
-            var result = await validator.ValidateRequestAsync("token");
+        var result = await validator.ValidateRequestAsync("token");
 
-            result.IsError.Should().BeFalse();
-        }
+        result.IsError.Should().BeFalse();
+    }
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task inactive_user_should_fail()
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task inactive_user_should_fail()
+    {
+        var tokenResult = new TokenValidationResult
         {
-            var tokenResult = new TokenValidationResult
+            IsError = false,
+            Client = await _clients.FindEnabledClientByIdAsync("codeclient"),
+            Claims = new List<Claim>
             {
-                IsError = false,
-                Client = await _clients.FindEnabledClientByIdAsync("codeclient"),
-                Claims = new List<Claim>
-                {
-                    new Claim("sub", "123")
-                },
-            };
+                new Claim("sub", "123")
+            },
+        };
 
-            var validator = new UserInfoRequestValidator(
-                new TestTokenValidator(tokenResult),
-                new TestProfileService(shouldBeActive: false),
-                TestLogger.Create<UserInfoRequestValidator>());
+        var validator = new UserInfoRequestValidator(
+            new TestTokenValidator(tokenResult),
+            new TestProfileService(shouldBeActive: false),
+            TestLogger.Create<UserInfoRequestValidator>());
 
-            var result = await validator.ValidateRequestAsync("token");
+        var result = await validator.ValidateRequestAsync("token");
 
-            result.IsError.Should().BeTrue();
-            result.Error.Should().Be(OidcConstants.ProtectedResourceErrors.InvalidToken);
-        }
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.ProtectedResourceErrors.InvalidToken);
     }
 }

@@ -7,20 +7,19 @@ using Duende.IdentityServer.Services;
 using FluentAssertions;
 using Xunit;
 
-namespace UnitTests.Services.Default
+namespace UnitTests.Services.Default;
+
+public class NumericUserCodeGeneratorTests
 {
-    public class NumericUserCodeGeneratorTests
+    [Fact]
+    public async Task GenerateAsync_should_return_expected_code()
     {
-        [Fact]
-        public async Task GenerateAsync_should_return_expected_code()
-        {
-            var sut = new NumericUserCodeGenerator();
+        var sut = new NumericUserCodeGenerator();
 
-            var userCode = await sut.GenerateAsync();
-            var userCodeInt = int.Parse(userCode);
+        var userCode = await sut.GenerateAsync();
+        var userCodeInt = int.Parse(userCode);
 
-            userCodeInt.Should().BeGreaterOrEqualTo(100000000);
-            userCodeInt.Should().BeLessOrEqualTo(999999999);
-        }
+        userCodeInt.Should().BeGreaterOrEqualTo(100000000);
+        userCodeInt.Should().BeLessOrEqualTo(999999999);
     }
 }

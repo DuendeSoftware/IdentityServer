@@ -3,11 +3,10 @@
 
 #pragma warning disable 1591
 
-namespace Duende.IdentityServer.EntityFramework.Entities
+namespace Duende.IdentityServer.EntityFramework.Entities;
+
+public class ApiResourceClaim : UserClaim
 {
-    public class ApiResourceClaim : UserClaim
-    {
-        public int ApiResourceId { get; set; }
-        public ApiResource ApiResource { get; set; }
-    }
+    public int ApiResourceId { get; set; }
+    public ApiResource ApiResource { get; set; }
 }

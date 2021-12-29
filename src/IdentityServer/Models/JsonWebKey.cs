@@ -3,21 +3,20 @@
 
 #pragma warning disable 1591
 
-namespace Duende.IdentityServer.Models
-{
-    public class JsonWebKey
-    {
-        public string kty { get; set; }
-        public string use { get; set; }
-        public string kid { get; set; }
-        public string x5t { get; set; }
-        public string e { get; set; }
-        public string n { get; set; }
-        public string[] x5c { get; set; }
-        public string alg { get; set; }
+namespace Duende.IdentityServer.Models;
 
-        public string x { get; set; }
-        public string y { get; set; }
-        public string crv { get; set; }
-    }
+public class JsonWebKey
+{
+    public string kty { get; set; }
+    public string use { get; set; }
+    public string kid { get; set; }
+    public string x5t { get; set; }
+    public string e { get; set; }
+    public string n { get; set; }
+    public string[] x5c { get; set; }
+    public string alg { get; set; }
+
+    public string x { get; set; }
+    public string y { get; set; }
+    public string crv { get; set; }
 }

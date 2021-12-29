@@ -6,57 +6,56 @@ using System;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// User code generator using 9 digit number
+/// </summary>
+/// <seealso cref="IUserCodeGenerator" />
+public class NumericUserCodeGenerator : IUserCodeGenerator
 {
     /// <summary>
-    /// User code generator using 9 digit number
+    /// Gets the type of the user code.
     /// </summary>
-    /// <seealso cref="IUserCodeGenerator" />
-    public class NumericUserCodeGenerator : IUserCodeGenerator
+    /// <value>
+    /// The type of the user code.
+    /// </value>
+    public string UserCodeType => IdentityServerConstants.UserCodeTypes.Numeric;
+
+    /// <summary>
+    /// Gets the retry limit.
+    /// </summary>
+    /// <value>
+    /// The retry limit for getting a unique value.
+    /// </value>
+    public int RetryLimit => 5;
+
+    /// <summary>
+    /// Generates the user code.
+    /// </summary>
+    /// <returns></returns>
+    public Task<string> GenerateAsync()
     {
-        /// <summary>
-        /// Gets the type of the user code.
-        /// </summary>
-        /// <value>
-        /// The type of the user code.
-        /// </value>
-        public string UserCodeType => IdentityServerConstants.UserCodeTypes.Numeric;
+        var next = Next(100000000, 999999999);
+        return Task.FromResult(next.ToString());
+    }
 
-        /// <summary>
-        /// Gets the retry limit.
-        /// </summary>
-        /// <value>
-        /// The retry limit for getting a unique value.
-        /// </value>
-        public int RetryLimit => 5;
+    private int Next(int minValue, int maxValue)
+    {
+        if (minValue > maxValue) throw new ArgumentOutOfRangeException(nameof(minValue));
+        if (minValue == maxValue) return minValue;
+        long diff = maxValue - minValue;
 
-        /// <summary>
-        /// Generates the user code.
-        /// </summary>
-        /// <returns></returns>
-        public Task<string> GenerateAsync()
+        while (true)
         {
-            var next = Next(100000000, 999999999);
-            return Task.FromResult(next.ToString());
-        }
+            var uint32Buffer = RandomNumberGenerator.GetBytes(8);
+            var rand = BitConverter.ToUInt32(uint32Buffer, 0);
 
-        private int Next(int minValue, int maxValue)
-        {
-            if (minValue > maxValue) throw new ArgumentOutOfRangeException(nameof(minValue));
-            if (minValue == maxValue) return minValue;
-            long diff = maxValue - minValue;
-
-            while (true)
+            const long max = 1 + (long) uint.MaxValue;
+            var remainder = max % diff;
+            if (rand < max - remainder)
             {
-                var uint32Buffer = RandomNumberGenerator.GetBytes(8);
-                var rand = BitConverter.ToUInt32(uint32Buffer, 0);
-
-                const long max = 1 + (long) uint.MaxValue;
-                var remainder = max % diff;
-                if (rand < max - remainder)
-                {
-                    return (int) (minValue + rand % diff);
-                }
+                return (int) (minValue + rand % diff);
             }
         }
     }

@@ -7,40 +7,39 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace UnitTests.Extensions
+namespace UnitTests.Extensions;
+
+public class HttpRequestExtensionsTests
 {
-    public class HttpRequestExtensionsTests
+    [Fact]
+    public void GetCorsOrigin_valid_cors_request_should_return_cors_origin()
     {
-        [Fact]
-        public void GetCorsOrigin_valid_cors_request_should_return_cors_origin()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Scheme = "http";
-            ctx.Request.Host = new HostString("foo");
-            ctx.Request.Headers.Add("Origin", "http://bar");
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Scheme = "http";
+        ctx.Request.Host = new HostString("foo");
+        ctx.Request.Headers.Add("Origin", "http://bar");
 
-            ctx.Request.GetCorsOrigin().Should().Be("http://bar");
-        }
+        ctx.Request.GetCorsOrigin().Should().Be("http://bar");
+    }
 
-        [Fact]
-        public void GetCorsOrigin_origin_from_same_host_should_not_return_cors_origin()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Scheme = "http";
-            ctx.Request.Host = new HostString("foo");
-            ctx.Request.Headers.Add("Origin", "http://foo");
+    [Fact]
+    public void GetCorsOrigin_origin_from_same_host_should_not_return_cors_origin()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Scheme = "http";
+        ctx.Request.Host = new HostString("foo");
+        ctx.Request.Headers.Add("Origin", "http://foo");
 
-            ctx.Request.GetCorsOrigin().Should().BeNull();
-        }
+        ctx.Request.GetCorsOrigin().Should().BeNull();
+    }
 
-        [Fact]
-        public void GetCorsOrigin_no_origin_should_not_return_cors_origin()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Scheme = "http";
-            ctx.Request.Host = new HostString("foo");
+    [Fact]
+    public void GetCorsOrigin_no_origin_should_not_return_cors_origin()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Scheme = "http";
+        ctx.Request.Host = new HostString("foo");
 
-            ctx.Request.GetCorsOrigin().Should().BeNull();
-        }
+        ctx.Request.GetCorsOrigin().Should().BeNull();
     }
 }

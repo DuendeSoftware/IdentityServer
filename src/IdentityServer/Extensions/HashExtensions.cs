@@ -7,65 +7,64 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Duende.IdentityServer.Models
+namespace Duende.IdentityServer.Models;
+
+/// <summary>
+/// Extension methods for hashing strings
+/// </summary>
+public static class HashExtensions
 {
     /// <summary>
-    /// Extension methods for hashing strings
+    /// Creates a SHA256 hash of the specified input.
     /// </summary>
-    public static class HashExtensions
+    /// <param name="input">The input.</param>
+    /// <returns>A hash</returns>
+    public static string Sha256(this string input)
     {
-        /// <summary>
-        /// Creates a SHA256 hash of the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>A hash</returns>
-        public static string Sha256(this string input)
+        if (input.IsMissing()) return string.Empty;
+
+        using (var sha = SHA256.Create())
         {
-            if (input.IsMissing()) return string.Empty;
+            var bytes = Encoding.UTF8.GetBytes(input);
+            var hash = sha.ComputeHash(bytes);
 
-            using (var sha = SHA256.Create())
-            {
-                var bytes = Encoding.UTF8.GetBytes(input);
-                var hash = sha.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
+        }
+    }
 
-                return Convert.ToBase64String(hash);
-            }
+    /// <summary>
+    /// Creates a SHA256 hash of the specified input.
+    /// </summary>
+    /// <param name="input">The input.</param>
+    /// <returns>A hash.</returns>
+    public static byte[] Sha256(this byte[] input)
+    {
+        if (input == null)
+        {
+            return null;
         }
 
-        /// <summary>
-        /// Creates a SHA256 hash of the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>A hash.</returns>
-        public static byte[] Sha256(this byte[] input)
+        using (var sha = SHA256.Create())
         {
-            if (input == null)
-            {
-                return null;
-            }
-
-            using (var sha = SHA256.Create())
-            {
-                return sha.ComputeHash(input);
-            }
+            return sha.ComputeHash(input);
         }
+    }
 
-        /// <summary>
-        /// Creates a SHA512 hash of the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>A hash</returns>
-        public static string Sha512(this string input)
+    /// <summary>
+    /// Creates a SHA512 hash of the specified input.
+    /// </summary>
+    /// <param name="input">The input.</param>
+    /// <returns>A hash</returns>
+    public static string Sha512(this string input)
+    {
+        if (input.IsMissing()) return string.Empty;
+
+        using (var sha = SHA512.Create())
         {
-            if (input.IsMissing()) return string.Empty;
+            var bytes = Encoding.UTF8.GetBytes(input);
+            var hash = sha.ComputeHash(bytes);
 
-            using (var sha = SHA512.Create())
-            {
-                var bytes = Encoding.UTF8.GetBytes(input);
-                var hash = sha.ComputeHash(bytes);
-
-                return Convert.ToBase64String(hash);
-            }
+            return Convert.ToBase64String(hash);
         }
     }
 }

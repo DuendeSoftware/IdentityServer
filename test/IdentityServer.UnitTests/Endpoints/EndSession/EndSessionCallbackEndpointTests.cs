@@ -5,20 +5,19 @@
 using Duende.IdentityServer.Endpoints;
 using Microsoft.Extensions.Logging;
 
-namespace UnitTests.Endpoints.EndSession
+namespace UnitTests.Endpoints.EndSession;
+
+public class EndSessionCallbackEndpointTests
 {
-    public class EndSessionCallbackEndpointTests
+    private const string Category = "End Session Callback Endpoint";
+
+    StubEndSessionRequestValidator _stubEndSessionRequestValidator = new StubEndSessionRequestValidator();
+    EndSessionCallbackEndpoint _subject;
+
+    public EndSessionCallbackEndpointTests()
     {
-        private const string Category = "End Session Callback Endpoint";
-
-        StubEndSessionRequestValidator _stubEndSessionRequestValidator = new StubEndSessionRequestValidator();
-        EndSessionCallbackEndpoint _subject;
-
-        public EndSessionCallbackEndpointTests()
-        {
-            _subject = new EndSessionCallbackEndpoint(
-                _stubEndSessionRequestValidator,
-                new LoggerFactory().CreateLogger<EndSessionCallbackEndpoint>());
-        }
+        _subject = new EndSessionCallbackEndpoint(
+            _stubEndSessionRequestValidator,
+            new LoggerFactory().CreateLogger<EndSessionCallbackEndpoint>());
     }
 }

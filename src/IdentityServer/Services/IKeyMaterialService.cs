@@ -7,31 +7,30 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Interface for the key material service
+/// </summary>
+public interface IKeyMaterialService
 {
     /// <summary>
-    /// Interface for the key material service
+    /// Gets all validation keys.
     /// </summary>
-    public interface IKeyMaterialService
-    {
-        /// <summary>
-        /// Gets all validation keys.
-        /// </summary>
-        /// <returns></returns>
-        Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync();
+    /// <returns></returns>
+    Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync();
 
-        /// <summary>
-        /// Gets the signing credentials.
-        /// </summary>
-        /// <param name="allowedAlgorithms">Collection of algorithms used to filter the server supported algorithms. 
-        /// A value of null or empty indicates that the server default should be returned.</param>
-        /// <returns></returns>
-        Task<SigningCredentials> GetSigningCredentialsAsync(IEnumerable<string> allowedAlgorithms = null);
+    /// <summary>
+    /// Gets the signing credentials.
+    /// </summary>
+    /// <param name="allowedAlgorithms">Collection of algorithms used to filter the server supported algorithms. 
+    /// A value of null or empty indicates that the server default should be returned.</param>
+    /// <returns></returns>
+    Task<SigningCredentials> GetSigningCredentialsAsync(IEnumerable<string> allowedAlgorithms = null);
 
-        /// <summary>
-        /// Gets all signing credentials.
-        /// </summary>
-        /// <returns></returns>
-        Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync();
-    }
+    /// <summary>
+    /// Gets all signing credentials.
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync();
 }

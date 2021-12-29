@@ -2,46 +2,45 @@
 // See LICENSE in the project root for license information.
 
 
-namespace Duende.IdentityServer.Models
+namespace Duende.IdentityServer.Models;
+
+/// <summary>
+/// Token request errors
+/// </summary>
+public enum TokenRequestErrors
 {
     /// <summary>
-    /// Token request errors
+    /// invalid_request
     /// </summary>
-    public enum TokenRequestErrors
-    {
-        /// <summary>
-        /// invalid_request
-        /// </summary>
-        InvalidRequest,
+    InvalidRequest,
 
-        /// <summary>
-        /// invalid_client
-        /// </summary>
-        InvalidClient,
+    /// <summary>
+    /// invalid_client
+    /// </summary>
+    InvalidClient,
 
-        /// <summary>
-        /// invalid_grant
-        /// </summary>
-        InvalidGrant,
+    /// <summary>
+    /// invalid_grant
+    /// </summary>
+    InvalidGrant,
 
-        /// <summary>
-        /// unauthorized_client
-        /// </summary>
-        UnauthorizedClient,
+    /// <summary>
+    /// unauthorized_client
+    /// </summary>
+    UnauthorizedClient,
 
-        /// <summary>
-        /// unsupported_grant_type
-        /// </summary>
-        UnsupportedGrantType,
+    /// <summary>
+    /// unsupported_grant_type
+    /// </summary>
+    UnsupportedGrantType,
 
-        /// <summary>
-        /// invalid_scope
-        /// </summary>
-        InvalidScope,
+    /// <summary>
+    /// invalid_scope
+    /// </summary>
+    InvalidScope,
 
-        /// <summary>
-        /// invalid_target
-        /// </summary>
-        InvalidTarget
-    }
+    /// <summary>
+    /// invalid_target
+    /// </summary>
+    InvalidTarget
 }

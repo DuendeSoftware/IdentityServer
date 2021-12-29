@@ -5,16 +5,15 @@
 using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
 
-namespace UnitTests.Common
-{
-    public class StubHandleGenerationService : DefaultHandleGenerationService, IHandleGenerationService
-    {
-        public string Handle { get; set; }
+namespace UnitTests.Common;
 
-        public new Task<string> GenerateAsync(int length)
-        {
-            if (Handle != null) return Task.FromResult(Handle);
-            return base.GenerateAsync(length);
-        }
+public class StubHandleGenerationService : DefaultHandleGenerationService, IHandleGenerationService
+{
+    public string Handle { get; set; }
+
+    public new Task<string> GenerateAsync(int length)
+    {
+        if (Handle != null) return Task.FromResult(Handle);
+        return base.GenerateAsync(length);
     }
 }

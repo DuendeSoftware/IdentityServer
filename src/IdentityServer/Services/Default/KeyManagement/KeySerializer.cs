@@ -3,24 +3,23 @@
 
 using System.Text.Json;
 
-namespace Duende.IdentityServer.Services.KeyManagement
+namespace Duende.IdentityServer.Services.KeyManagement;
+
+internal static class KeySerializer
 {
-    internal static class KeySerializer
+    static JsonSerializerOptions _settings =
+        new JsonSerializerOptions
+        {
+            IncludeFields = true
+        };
+
+    public static string Serialize<T>(T item)
     {
-        static JsonSerializerOptions _settings =
-            new JsonSerializerOptions
-            {
-                IncludeFields = true
-            };
+        return JsonSerializer.Serialize(item, item.GetType(), _settings);
+    }
 
-        public static string Serialize<T>(T item)
-        {
-            return JsonSerializer.Serialize(item, item.GetType(), _settings);
-        }
-
-        public static T Deserialize<T>(string json)
-        {
-            return JsonSerializer.Deserialize<T>(json, _settings);
-        }
+    public static T Deserialize<T>(string json)
+    {
+        return JsonSerializer.Deserialize<T>(json, _settings);
     }
 }

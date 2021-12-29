@@ -6,35 +6,34 @@ using Duende.IdentityServer.Models;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Validation;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Implements refresh token creation and validation
+/// </summary>
+public interface IRefreshTokenService
 {
     /// <summary>
-    /// Implements refresh token creation and validation
+    /// Validates a refresh token.
     /// </summary>
-    public interface IRefreshTokenService
-    {
-        /// <summary>
-        /// Validates a refresh token.
-        /// </summary>
-        /// <param name="token">The refresh token.</param>
-        /// <param name="client">The client.</param>
-        /// <returns></returns>
-        Task<TokenValidationResult> ValidateRefreshTokenAsync(string token, Client client);
+    /// <param name="token">The refresh token.</param>
+    /// <param name="client">The client.</param>
+    /// <returns></returns>
+    Task<TokenValidationResult> ValidateRefreshTokenAsync(string token, Client client);
 
-        /// <summary>
-        /// Creates the refresh token.
-        /// </summary>
-        /// <returns>
-        /// The refresh token handle
-        /// </returns>
-        Task<string> CreateRefreshTokenAsync(RefreshTokenCreationRequest request);
+    /// <summary>
+    /// Creates the refresh token.
+    /// </summary>
+    /// <returns>
+    /// The refresh token handle
+    /// </returns>
+    Task<string> CreateRefreshTokenAsync(RefreshTokenCreationRequest request);
 
-        /// <summary>
-        /// Updates the refresh token.
-        /// </summary>
-        /// <returns>
-        /// The refresh token handle
-        /// </returns>
-        Task<string> UpdateRefreshTokenAsync(RefreshTokenUpdateRequest request);
-    }
+    /// <summary>
+    /// Updates the refresh token.
+    /// </summary>
+    /// <returns>
+    /// The refresh token handle
+    /// </returns>
+    Task<string> UpdateRefreshTokenAsync(RefreshTokenUpdateRequest request);
 }

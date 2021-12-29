@@ -8,26 +8,25 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 
-namespace Duende.IdentityServer.Configuration
+namespace Duende.IdentityServer.Configuration;
+
+internal class ConfigureOpenIdConnectOptions : IPostConfigureOptions<OpenIdConnectOptions>
 {
-    internal class ConfigureOpenIdConnectOptions : IPostConfigureOptions<OpenIdConnectOptions>
+    private string[] _schemes;
+    private readonly IServiceProvider _serviceProvider;
+
+    public ConfigureOpenIdConnectOptions(string[] schemes, IServiceProvider serviceProvider)
     {
-        private string[] _schemes;
-        private readonly IServiceProvider _serviceProvider;
+        _schemes = schemes ?? throw new ArgumentNullException(nameof(schemes));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    }
 
-        public ConfigureOpenIdConnectOptions(string[] schemes, IServiceProvider serviceProvider)
+    public void PostConfigure(string name, OpenIdConnectOptions options)
+    {
+        // no schemes means configure them all
+        if (_schemes.Length == 0 || _schemes.Contains(name))
         {
-            _schemes = schemes ?? throw new ArgumentNullException(nameof(schemes));
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
-        public void PostConfigure(string name, OpenIdConnectOptions options)
-        {
-            // no schemes means configure them all
-            if (_schemes.Length == 0 || _schemes.Contains(name))
-            {
-                options.StateDataFormat = new DistributedCacheStateDataFormatter(_serviceProvider, name);
-            }
+            options.StateDataFormat = new DistributedCacheStateDataFormatter(_serviceProvider, name);
         }
     }
 }

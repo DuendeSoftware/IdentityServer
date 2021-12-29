@@ -14,114 +14,113 @@ using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Duende.IdentityServer.EntityFramework.Stores
+namespace Duende.IdentityServer.EntityFramework.Stores;
+
+/// <summary>
+/// Implementation of ISigningKeyStore thats uses EF.
+/// </summary>
+/// <seealso cref="ISigningKeyStore" />
+public class SigningKeyStore : ISigningKeyStore
 {
+    const string Use = "signing";
+
     /// <summary>
-    /// Implementation of ISigningKeyStore thats uses EF.
+    /// The DbContext.
     /// </summary>
-    /// <seealso cref="ISigningKeyStore" />
-    public class SigningKeyStore : ISigningKeyStore
+    protected readonly IPersistedGrantDbContext Context;
+
+    /// <summary>
+    /// The CancellationToken provider.
+    /// </summary>
+    protected readonly ICancellationTokenProvider CancellationTokenProvider;
+
+    /// <summary>
+    /// The logger.
+    /// </summary>
+    protected readonly ILogger<SigningKeyStore> Logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SigningKeyStore"/> class.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationTokenProvider"></param>
+    /// <exception cref="ArgumentNullException">context</exception>
+    public SigningKeyStore(IPersistedGrantDbContext context, ILogger<SigningKeyStore> logger, ICancellationTokenProvider cancellationTokenProvider)
     {
-        const string Use = "signing";
+        Context = context ?? throw new ArgumentNullException(nameof(context));
+        Logger = logger;
+        CancellationTokenProvider = cancellationTokenProvider;
+    }
 
-        /// <summary>
-        /// The DbContext.
-        /// </summary>
-        protected readonly IPersistedGrantDbContext Context;
-
-        /// <summary>
-        /// The CancellationToken provider.
-        /// </summary>
-        protected readonly ICancellationTokenProvider CancellationTokenProvider;
-
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        protected readonly ILogger<SigningKeyStore> Logger;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SigningKeyStore"/> class.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="cancellationTokenProvider"></param>
-        /// <exception cref="ArgumentNullException">context</exception>
-        public SigningKeyStore(IPersistedGrantDbContext context, ILogger<SigningKeyStore> logger, ICancellationTokenProvider cancellationTokenProvider)
+    /// <summary>
+    /// Loads all keys from store.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IEnumerable<SerializedKey>> LoadKeysAsync()
+    {
+        var entities = await Context.Keys.Where(x => x.Use == Use)
+            .AsNoTracking()
+            .ToArrayAsync(CancellationTokenProvider.CancellationToken);
+        return entities.Select(key => new SerializedKey
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            Logger = logger;
-            CancellationTokenProvider = cancellationTokenProvider;
-        }
+            Id = key.Id,
+            Created = key.Created,
+            Version = key.Version,
+            Algorithm = key.Algorithm,
+            Data = key.Data,
+            DataProtected = key.DataProtected,
+            IsX509Certificate = key.IsX509Certificate
+        });
+    }
 
-        /// <summary>
-        /// Loads all keys from store.
-        /// </summary>
-        /// <returns></returns>
-        public async Task<IEnumerable<SerializedKey>> LoadKeysAsync()
+    /// <summary>
+    /// Persists new key in store.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public Task StoreKeyAsync(SerializedKey key)
+    {
+        var entity = new Key
         {
-            var entities = await Context.Keys.Where(x => x.Use == Use)
-                .AsNoTracking()
-                .ToArrayAsync(CancellationTokenProvider.CancellationToken);
-            return entities.Select(key => new SerializedKey
+            Id = key.Id,
+            Use = Use,
+            Created = key.Created,
+            Version = key.Version,
+            Algorithm = key.Algorithm,
+            Data = key.Data,
+            DataProtected = key.DataProtected,
+            IsX509Certificate = key.IsX509Certificate
+        };
+        Context.Keys.Add(entity);
+        return Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes key from storage.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public async Task DeleteKeyAsync(string id)
+    {
+        var item = await Context.Keys.Where(x => x.Use == Use && x.Id == id)
+            .FirstOrDefaultAsync(CancellationTokenProvider.CancellationToken);
+        if (item != null)
+        {
+            try
             {
-                Id = key.Id,
-                Created = key.Created,
-                Version = key.Version,
-                Algorithm = key.Algorithm,
-                Data = key.Data,
-                DataProtected = key.DataProtected,
-                IsX509Certificate = key.IsX509Certificate
-            });
-        }
-
-        /// <summary>
-        /// Persists new key in store.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public Task StoreKeyAsync(SerializedKey key)
-        {
-            var entity = new Key
+                Context.Keys.Remove(item);
+                await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
             {
-                Id = key.Id,
-                Use = Use,
-                Created = key.Created,
-                Version = key.Version,
-                Algorithm = key.Algorithm,
-                Data = key.Data,
-                DataProtected = key.DataProtected,
-                IsX509Certificate = key.IsX509Certificate
-            };
-            Context.Keys.Add(entity);
-            return Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-        }
-
-        /// <summary>
-        /// Deletes key from storage.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task DeleteKeyAsync(string id)
-        {
-            var item = await Context.Keys.Where(x => x.Use == Use && x.Id == id)
-                .FirstOrDefaultAsync(CancellationTokenProvider.CancellationToken);
-            if (item != null)
-            {
-                try
+                foreach(var entity in ex.Entries)
                 {
-                    Context.Keys.Remove(item);
-                    await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+                    entity.State = EntityState.Detached;
                 }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    foreach(var entity in ex.Entries)
-                    {
-                        entity.State = EntityState.Detached;
-                    }
 
-                    // already deleted, so we can eat this exception
-                    Logger.LogDebug("Concurrency exception caught deleting key id {kid}", id);
-                }
+                // already deleted, so we can eat this exception
+                Logger.LogDebug("Concurrency exception caught deleting key id {kid}", id);
             }
         }
     }

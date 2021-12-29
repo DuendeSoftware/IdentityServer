@@ -4,16 +4,15 @@
 
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Interface for request object validator
+/// </summary>
+public interface IJwtRequestValidator
 {
     /// <summary>
-    /// Interface for request object validator
+    /// Validates a JWT request object
     /// </summary>
-    public interface IJwtRequestValidator
-    {
-        /// <summary>
-        /// Validates a JWT request object
-        /// </summary>
-        Task<JwtRequestValidationResult> ValidateAsync(JwtRequestValidationContext context);
-    }
+    Task<JwtRequestValidationResult> ValidateAsync(JwtRequestValidationContext context);
 }

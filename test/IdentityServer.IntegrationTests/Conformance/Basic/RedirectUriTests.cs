@@ -13,148 +13,147 @@ using FluentAssertions;
 using IntegrationTests.Common;
 using Xunit;
 
-namespace IntegrationTests.Conformance.Basic
+namespace IntegrationTests.Conformance.Basic;
+
+public class RedirectUriTests
 {
-    public class RedirectUriTests
+    private const string Category = "Conformance.Basic.RedirectUriTests";
+
+    private IdentityServerPipeline _mockPipeline = new IdentityServerPipeline();
+
+    public RedirectUriTests()
     {
-        private const string Category = "Conformance.Basic.RedirectUriTests";
+        _mockPipeline.Initialize();
 
-        private IdentityServerPipeline _mockPipeline = new IdentityServerPipeline();
-
-        public RedirectUriTests()
+        _mockPipeline.Clients.Add(new Client
         {
-            _mockPipeline.Initialize();
-
-            _mockPipeline.Clients.Add(new Client
+            Enabled = true,
+            ClientId = "code_client",
+            ClientSecrets = new List<Secret>
             {
-                Enabled = true,
-                ClientId = "code_client",
-                ClientSecrets = new List<Secret>
-                {
-                    new Secret("secret".Sha512())
-                },
+                new Secret("secret".Sha512())
+            },
 
-                AllowedGrantTypes = GrantTypes.Code,
-                AllowedScopes = { "openid" },
+            AllowedGrantTypes = GrantTypes.Code,
+            AllowedScopes = { "openid" },
 
-                RequireConsent = false,
-                RequirePkce = false,
-                RedirectUris = new List<string>
-                {
-                    "https://code_client/callback",
-                    "https://code_client/callback?foo=bar&baz=quux"
-                }
-            });
-
-            _mockPipeline.IdentityScopes.Add(new IdentityResources.OpenId());
-
-            _mockPipeline.Users.Add(new TestUser
+            RequireConsent = false,
+            RequirePkce = false,
+            RedirectUris = new List<string>
             {
-                SubjectId = "bob",
-                Username = "bob",
-                Claims = new Claim[]
-                    {
-                        new Claim("name", "Bob Loblaw"),
-                        new Claim("email", "bob@loblaw.com"),
-                        new Claim("role", "Attorney")
-                    }
-            });
-        }
+                "https://code_client/callback",
+                "https://code_client/callback?foo=bar&baz=quux"
+            }
+        });
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Reject_redirect_uri_not_matching_registered_redirect_uri()
+        _mockPipeline.IdentityScopes.Add(new IdentityResources.OpenId());
+
+        _mockPipeline.Users.Add(new TestUser
         {
-            await _mockPipeline.LoginAsync("bob");
+            SubjectId = "bob",
+            Username = "bob",
+            Claims = new Claim[]
+            {
+                new Claim("name", "Bob Loblaw"),
+                new Claim("email", "bob@loblaw.com"),
+                new Claim("role", "Attorney")
+            }
+        });
+    }
 
-            var nonce = Guid.NewGuid().ToString();
-            var state = Guid.NewGuid().ToString();
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Reject_redirect_uri_not_matching_registered_redirect_uri()
+    {
+        await _mockPipeline.LoginAsync("bob");
 
-            var url = _mockPipeline.CreateAuthorizeUrl(
-                           clientId: "code_client",
-                           responseType: "code",
-                           scope: "openid",
-                           redirectUri: "https://bad",
-                           state: state,
-                           nonce: nonce);
-            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        var nonce = Guid.NewGuid().ToString();
+        var state = Guid.NewGuid().ToString();
 
-            _mockPipeline.ErrorWasCalled.Should().BeTrue();
-            _mockPipeline.ErrorMessage.Error.Should().Be("invalid_request");
-        }
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "code_client",
+            responseType: "code",
+            scope: "openid",
+            redirectUri: "https://bad",
+            state: state,
+            nonce: nonce);
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Reject_request_without_redirect_uri_when_multiple_registered()
-        {
-            await _mockPipeline.LoginAsync("bob");
+        _mockPipeline.ErrorWasCalled.Should().BeTrue();
+        _mockPipeline.ErrorMessage.Error.Should().Be("invalid_request");
+    }
 
-            var nonce = Guid.NewGuid().ToString();
-            var state = Guid.NewGuid().ToString();
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Reject_request_without_redirect_uri_when_multiple_registered()
+    {
+        await _mockPipeline.LoginAsync("bob");
 
-            var url = _mockPipeline.CreateAuthorizeUrl(
-                          clientId: "code_client",
-                          responseType: "code",
-                          scope: "openid",
-                          // redirectUri deliberately absent 
-                          redirectUri: null,
-                          state: state,
-                          nonce: nonce);
-            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        var nonce = Guid.NewGuid().ToString();
+        var state = Guid.NewGuid().ToString();
 
-            _mockPipeline.ErrorWasCalled.Should().BeTrue();
-            _mockPipeline.ErrorMessage.Error.Should().Be("invalid_request");
-        }
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "code_client",
+            responseType: "code",
+            scope: "openid",
+            // redirectUri deliberately absent 
+            redirectUri: null,
+            state: state,
+            nonce: nonce);
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Preserves_query_parameters_in_redirect_uri()
-        {
-            await _mockPipeline.LoginAsync("bob");
+        _mockPipeline.ErrorWasCalled.Should().BeTrue();
+        _mockPipeline.ErrorMessage.Error.Should().Be("invalid_request");
+    }
 
-            var nonce = Guid.NewGuid().ToString();
-            var state = Guid.NewGuid().ToString();
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Preserves_query_parameters_in_redirect_uri()
+    {
+        await _mockPipeline.LoginAsync("bob");
 
-            _mockPipeline.BrowserClient.AllowAutoRedirect = false;
-            var url = _mockPipeline.CreateAuthorizeUrl(
-                           clientId: "code_client",
-                           responseType: "code",
-                           scope: "openid",
-                           redirectUri: "https://code_client/callback?foo=bar&baz=quux",
-                           state: state,
-                           nonce: nonce);
-            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        var nonce = Guid.NewGuid().ToString();
+        var state = Guid.NewGuid().ToString();
 
-            response.StatusCode.Should().Be(HttpStatusCode.Redirect);
-            response.Headers.Location.ToString().Should().StartWith("https://code_client/callback?");
-            var authorization = _mockPipeline.ParseAuthorizationResponseUrl(response.Headers.Location.ToString());
-            authorization.Code.Should().NotBeNull();
-            authorization.State.Should().Be(state);
-            var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(response.Headers.Location.Query);
-            query["foo"].ToString().Should().Be("bar");
-            query["baz"].ToString().Should().Be("quux");
-        }
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "code_client",
+            responseType: "code",
+            scope: "openid",
+            redirectUri: "https://code_client/callback?foo=bar&baz=quux",
+            state: state,
+            nonce: nonce);
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Rejects_redirect_uri_when_query_parameter_does_not_match()
-        {
-            await _mockPipeline.LoginAsync("bob");
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://code_client/callback?");
+        var authorization = _mockPipeline.ParseAuthorizationResponseUrl(response.Headers.Location.ToString());
+        authorization.Code.Should().NotBeNull();
+        authorization.State.Should().Be(state);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(response.Headers.Location.Query);
+        query["foo"].ToString().Should().Be("bar");
+        query["baz"].ToString().Should().Be("quux");
+    }
 
-            var nonce = Guid.NewGuid().ToString();
-            var state = Guid.NewGuid().ToString();
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Rejects_redirect_uri_when_query_parameter_does_not_match()
+    {
+        await _mockPipeline.LoginAsync("bob");
 
-            var url = _mockPipeline.CreateAuthorizeUrl(
-                           clientId: "code_client",
-                           responseType: "code",
-                           scope: "openid",
-                           redirectUri: "https://code_client/callback?baz=quux&foo=bar",
-                           state: state,
-                           nonce: nonce);
-            var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        var nonce = Guid.NewGuid().ToString();
+        var state = Guid.NewGuid().ToString();
 
-            _mockPipeline.ErrorWasCalled.Should().BeTrue();
-            _mockPipeline.ErrorMessage.Error.Should().Be("invalid_request");
-        }
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "code_client",
+            responseType: "code",
+            scope: "openid",
+            redirectUri: "https://code_client/callback?baz=quux&foo=bar",
+            state: state,
+            nonce: nonce);
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.ErrorWasCalled.Should().BeTrue();
+        _mockPipeline.ErrorMessage.Error.Should().Be("invalid_request");
     }
 }

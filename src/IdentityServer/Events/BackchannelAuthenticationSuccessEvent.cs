@@ -5,77 +5,76 @@
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Validation;
 
-namespace Duende.IdentityServer.Events
+namespace Duende.IdentityServer.Events;
+
+/// <summary>
+/// Event for successful backchannel authentication result
+/// </summary>
+/// <seealso cref="Event" />
+public class BackchannelAuthenticationSuccessEvent : Event
 {
     /// <summary>
-    /// Event for successful backchannel authentication result
+    /// Initializes a new instance of the <see cref="BackchannelAuthenticationSuccessEvent"/> class.
     /// </summary>
-    /// <seealso cref="Event" />
-    public class BackchannelAuthenticationSuccessEvent : Event
+    /// <param name="request">The request.</param>
+    public BackchannelAuthenticationSuccessEvent(BackchannelAuthenticationRequestValidationResult request)
+        : this()
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BackchannelAuthenticationSuccessEvent"/> class.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        public BackchannelAuthenticationSuccessEvent(BackchannelAuthenticationRequestValidationResult request)
-            : this()
-        {
-            ClientId = request.ValidatedRequest.Client.ClientId;
-            ClientName = request.ValidatedRequest.Client.ClientName;
-            Endpoint = Constants.EndpointNames.BackchannelAuthentication;
-            SubjectId = request.ValidatedRequest.Subject?.GetSubjectId();
-            Scopes = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BackchannelAuthenticationSuccessEvent"/> class.
-        /// </summary>
-        protected BackchannelAuthenticationSuccessEvent()
-            : base(EventCategories.BackchannelAuthentication,
-                  "Backchannel Authentication Success",
-                  EventTypes.Success,
-                  EventIds.BackchannelAuthenticationSuccess)
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the client identifier.
-        /// </summary>
-        /// <value>
-        /// The client identifier.
-        /// </value>
-        public string ClientId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the client.
-        /// </summary>
-        /// <value>
-        /// The name of the client.
-        /// </value>
-        public string ClientName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the endpoint.
-        /// </summary>
-        /// <value>
-        /// The endpoint.
-        /// </value>
-        public string Endpoint { get; set; }
-
-        /// <summary>
-        /// Gets or sets the subject identifier.
-        /// </summary>
-        /// <value>
-        /// The subject identifier.
-        /// </value>
-        public string SubjectId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scopes.
-        /// </summary>
-        /// <value>
-        /// The scopes.
-        /// </value>
-        public string Scopes { get; set; }
+        ClientId = request.ValidatedRequest.Client.ClientId;
+        ClientName = request.ValidatedRequest.Client.ClientName;
+        Endpoint = Constants.EndpointNames.BackchannelAuthentication;
+        SubjectId = request.ValidatedRequest.Subject?.GetSubjectId();
+        Scopes = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString();
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BackchannelAuthenticationSuccessEvent"/> class.
+    /// </summary>
+    protected BackchannelAuthenticationSuccessEvent()
+        : base(EventCategories.BackchannelAuthentication,
+            "Backchannel Authentication Success",
+            EventTypes.Success,
+            EventIds.BackchannelAuthenticationSuccess)
+    {
+    }
+
+    /// <summary>
+    /// Gets or sets the client identifier.
+    /// </summary>
+    /// <value>
+    /// The client identifier.
+    /// </value>
+    public string ClientId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the client.
+    /// </summary>
+    /// <value>
+    /// The name of the client.
+    /// </value>
+    public string ClientName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the endpoint.
+    /// </summary>
+    /// <value>
+    /// The endpoint.
+    /// </value>
+    public string Endpoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets the subject identifier.
+    /// </summary>
+    /// <value>
+    /// The subject identifier.
+    /// </value>
+    public string SubjectId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the scopes.
+    /// </summary>
+    /// <value>
+    /// The scopes.
+    /// </value>
+    public string Scopes { get; set; }
 }

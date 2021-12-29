@@ -15,173 +15,172 @@ using FluentAssertions;
 using UnitTests.Common;
 using Xunit;
 
-namespace UnitTests.Validation.EndSessionRequestValidation
+namespace UnitTests.Validation.EndSessionRequestValidation;
+
+public class EndSessionRequestValidatorTests
 {
-    public class EndSessionRequestValidatorTests
+    private EndSessionRequestValidator _subject;
+    private IdentityServerOptions _options;
+    private StubTokenValidator _stubTokenValidator = new StubTokenValidator();
+    private StubRedirectUriValidator _stubRedirectUriValidator = new StubRedirectUriValidator();
+    private MockHttpContextAccessor _context = new MockHttpContextAccessor();
+    private MockUserSession _userSession = new MockUserSession();
+    private MockLogoutNotificationService _mockLogoutNotificationService = new MockLogoutNotificationService();
+    private MockMessageStore<LogoutNotificationContext> _mockEndSessionMessageStore = new MockMessageStore<LogoutNotificationContext>();
+
+    private ClaimsPrincipal _user;
+
+    public EndSessionRequestValidatorTests()
     {
-        private EndSessionRequestValidator _subject;
-        private IdentityServerOptions _options;
-        private StubTokenValidator _stubTokenValidator = new StubTokenValidator();
-        private StubRedirectUriValidator _stubRedirectUriValidator = new StubRedirectUriValidator();
-        private MockHttpContextAccessor _context = new MockHttpContextAccessor();
-        private MockUserSession _userSession = new MockUserSession();
-        private MockLogoutNotificationService _mockLogoutNotificationService = new MockLogoutNotificationService();
-        private MockMessageStore<LogoutNotificationContext> _mockEndSessionMessageStore = new MockMessageStore<LogoutNotificationContext>();
+        _user = new IdentityServerUser("alice").CreatePrincipal();
 
-        private ClaimsPrincipal _user;
+        _options = TestIdentityServerOptions.Create();
+        _subject = new EndSessionRequestValidator(
+            _context,
+            _options,
+            _stubTokenValidator,
+            _stubRedirectUriValidator,
+            _userSession,
+            _mockLogoutNotificationService,
+            _mockEndSessionMessageStore,
+            TestLogger.Create<EndSessionRequestValidator>());
+    }
 
-        public EndSessionRequestValidatorTests()
+    [Fact]
+    public async Task anonymous_user_when_options_require_authenticated_user_should_return_error()
+    {
+        _options.Authentication.RequireAuthenticatedUserForSignOutMessage = true;
+
+        var parameters = new NameValueCollection();
+        var result = await _subject.ValidateAsync(parameters, null);
+        result.IsError.Should().BeTrue();
+
+        result = await _subject.ValidateAsync(parameters, new ClaimsPrincipal());
+        result.IsError.Should().BeTrue();
+
+        result = await _subject.ValidateAsync(parameters, new ClaimsPrincipal(new ClaimsIdentity()));
+        result.IsError.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task valid_params_should_return_success()
+    {
+        _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
         {
-            _user = new IdentityServerUser("alice").CreatePrincipal();
+            IsError = false,
+            Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
+            Client = new Client() { ClientId = "client"}
+        };
+        _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
 
-            _options = TestIdentityServerOptions.Create();
-            _subject = new EndSessionRequestValidator(
-                _context,
-                _options,
-                _stubTokenValidator,
-                _stubRedirectUriValidator,
-                _userSession,
-                _mockLogoutNotificationService,
-                _mockEndSessionMessageStore,
-                TestLogger.Create<EndSessionRequestValidator>());
-        }
+        var parameters = new NameValueCollection();
+        parameters.Add("id_token_hint", "id_token");
+        parameters.Add("post_logout_redirect_uri", "http://client/signout-cb");
+        parameters.Add("client_id", "client1");
+        parameters.Add("state", "foo");
 
-        [Fact]
-        public async Task anonymous_user_when_options_require_authenticated_user_should_return_error()
+        var result = await _subject.ValidateAsync(parameters, _user);
+        result.IsError.Should().BeFalse();
+
+        result.ValidatedRequest.Client.ClientId.Should().Be("client");
+        result.ValidatedRequest.PostLogOutUri.Should().Be("http://client/signout-cb");
+        result.ValidatedRequest.State.Should().Be("foo");
+        result.ValidatedRequest.Subject.GetSubjectId().Should().Be(_user.GetSubjectId());
+    }
+
+    [Fact]
+    public async Task no_post_logout_redirect_uri_should_not_use_single_registered_uri()
+    {
+        _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
         {
-            _options.Authentication.RequireAuthenticatedUserForSignOutMessage = true;
+            IsError = false,
+            Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
+            Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<string> { "foo" } }
+        };
+        _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
 
-            var parameters = new NameValueCollection();
-            var result = await _subject.ValidateAsync(parameters, null);
-            result.IsError.Should().BeTrue();
+        var parameters = new NameValueCollection();
+        parameters.Add("id_token_hint", "id_token");
 
-            result = await _subject.ValidateAsync(parameters, new ClaimsPrincipal());
-            result.IsError.Should().BeTrue();
+        var result = await _subject.ValidateAsync(parameters, _user);
+        result.IsError.Should().BeFalse();
+        result.ValidatedRequest.PostLogOutUri.Should().BeNull();
+    }
 
-            result = await _subject.ValidateAsync(parameters, new ClaimsPrincipal(new ClaimsIdentity()));
-            result.IsError.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task valid_params_should_return_success()
+    [Fact]
+    public async Task no_post_logout_redirect_uri_should_not_use_multiple_registered_uri()
+    {
+        _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
         {
-            _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
-            {
-                IsError = false,
-                Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
-                Client = new Client() { ClientId = "client"}
-            };
-            _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
+            IsError = false,
+            Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
+            Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<string> { "foo", "bar" } }
+        };
+        _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
 
-            var parameters = new NameValueCollection();
-            parameters.Add("id_token_hint", "id_token");
-            parameters.Add("post_logout_redirect_uri", "http://client/signout-cb");
-            parameters.Add("client_id", "client1");
-            parameters.Add("state", "foo");
+        var parameters = new NameValueCollection();
+        parameters.Add("id_token_hint", "id_token");
 
-            var result = await _subject.ValidateAsync(parameters, _user);
-            result.IsError.Should().BeFalse();
+        var result = await _subject.ValidateAsync(parameters, _user);
+        result.IsError.Should().BeFalse();
+        result.ValidatedRequest.PostLogOutUri.Should().BeNull();
+    }
 
-            result.ValidatedRequest.Client.ClientId.Should().Be("client");
-            result.ValidatedRequest.PostLogOutUri.Should().Be("http://client/signout-cb");
-            result.ValidatedRequest.State.Should().Be("foo");
-            result.ValidatedRequest.Subject.GetSubjectId().Should().Be(_user.GetSubjectId());
-        }
-
-        [Fact]
-        public async Task no_post_logout_redirect_uri_should_not_use_single_registered_uri()
+    [Fact]
+    public async Task post_logout_uri_fails_validation_should_not_honor_logout_uri()
+    {
+        _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
         {
-            _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
-            {
-                IsError = false,
-                Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
-                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<string> { "foo" } }
-            };
-            _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
+            IsError = false,
+            Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
+            Client = new Client() { ClientId = "client" }
+        };
+        _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = false;
 
-            var parameters = new NameValueCollection();
-            parameters.Add("id_token_hint", "id_token");
+        var parameters = new NameValueCollection();
+        parameters.Add("id_token_hint", "id_token");
+        parameters.Add("post_logout_redirect_uri", "http://client/signout-cb");
+        parameters.Add("client_id", "client1");
+        parameters.Add("state", "foo");
 
-            var result = await _subject.ValidateAsync(parameters, _user);
-            result.IsError.Should().BeFalse();
-            result.ValidatedRequest.PostLogOutUri.Should().BeNull();
-        }
+        var result = await _subject.ValidateAsync(parameters, _user);
+        result.IsError.Should().BeFalse();
 
-        [Fact]
-        public async Task no_post_logout_redirect_uri_should_not_use_multiple_registered_uri()
-        {
-            _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
-            {
-                IsError = false,
-                Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
-                Client = new Client() { ClientId = "client1", PostLogoutRedirectUris = new List<string> { "foo", "bar" } }
-            };
-            _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
-
-            var parameters = new NameValueCollection();
-            parameters.Add("id_token_hint", "id_token");
-
-            var result = await _subject.ValidateAsync(parameters, _user);
-            result.IsError.Should().BeFalse();
-            result.ValidatedRequest.PostLogOutUri.Should().BeNull();
-        }
-
-        [Fact]
-        public async Task post_logout_uri_fails_validation_should_not_honor_logout_uri()
-        {
-            _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
-            {
-                IsError = false,
-                Claims = new Claim[] { new Claim("sub", _user.GetSubjectId()) },
-                Client = new Client() { ClientId = "client" }
-            };
-            _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = false;
-
-            var parameters = new NameValueCollection();
-            parameters.Add("id_token_hint", "id_token");
-            parameters.Add("post_logout_redirect_uri", "http://client/signout-cb");
-            parameters.Add("client_id", "client1");
-            parameters.Add("state", "foo");
-
-            var result = await _subject.ValidateAsync(parameters, _user);
-            result.IsError.Should().BeFalse();
-
-            result.ValidatedRequest.Client.ClientId.Should().Be("client");
-            result.ValidatedRequest.Subject.GetSubjectId().Should().Be(_user.GetSubjectId());
+        result.ValidatedRequest.Client.ClientId.Should().Be("client");
+        result.ValidatedRequest.Subject.GetSubjectId().Should().Be(_user.GetSubjectId());
             
-            result.ValidatedRequest.State.Should().BeNull();
-            result.ValidatedRequest.PostLogOutUri.Should().BeNull();
-        }
+        result.ValidatedRequest.State.Should().BeNull();
+        result.ValidatedRequest.PostLogOutUri.Should().BeNull();
+    }
 
-        [Fact]
-        public async Task subject_mismatch_should_return_error()
+    [Fact]
+    public async Task subject_mismatch_should_return_error()
+    {
+        _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
         {
-            _stubTokenValidator.IdentityTokenValidationResult = new TokenValidationResult()
-            {
-                IsError = false,
-                Claims = new Claim[] { new Claim("sub", "xoxo") },
-                Client = new Client() { ClientId = "client" }
-            };
-            _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
+            IsError = false,
+            Claims = new Claim[] { new Claim("sub", "xoxo") },
+            Client = new Client() { ClientId = "client" }
+        };
+        _stubRedirectUriValidator.IsPostLogoutRedirectUriValid = true;
 
-            var parameters = new NameValueCollection();
-            parameters.Add("id_token_hint", "id_token");
-            parameters.Add("post_logout_redirect_uri", "http://client/signout-cb");
-            parameters.Add("client_id", "client1");
-            parameters.Add("state", "foo");
+        var parameters = new NameValueCollection();
+        parameters.Add("id_token_hint", "id_token");
+        parameters.Add("post_logout_redirect_uri", "http://client/signout-cb");
+        parameters.Add("client_id", "client1");
+        parameters.Add("state", "foo");
 
-            var result = await _subject.ValidateAsync(parameters, _user);
-            result.IsError.Should().BeTrue();
-        }
+        var result = await _subject.ValidateAsync(parameters, _user);
+        result.IsError.Should().BeTrue();
+    }
 
-        [Fact]
-        public async Task successful_request_should_return_inputs()
-        {
-            var parameters = new NameValueCollection();
+    [Fact]
+    public async Task successful_request_should_return_inputs()
+    {
+        var parameters = new NameValueCollection();
 
-            var result = await _subject.ValidateAsync(parameters, _user);
-            result.IsError.Should().BeFalse();
-            result.ValidatedRequest.Raw.Should().BeSameAs(parameters);
-        }
+        var result = await _subject.ValidateAsync(parameters, _user);
+        result.IsError.Should().BeFalse();
+        result.ValidatedRequest.Raw.Should().BeSameAs(parameters);
     }
 }

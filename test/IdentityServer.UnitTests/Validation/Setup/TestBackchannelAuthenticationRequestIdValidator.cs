@@ -5,27 +5,26 @@
 using Duende.IdentityServer.Validation;
 using System.Threading.Tasks;
 
-namespace UnitTests.Validation.Setup
+namespace UnitTests.Validation.Setup;
+
+internal class TestBackchannelAuthenticationRequestIdValidator : IBackchannelAuthenticationRequestIdValidator
 {
-    internal class TestBackchannelAuthenticationRequestIdValidator : IBackchannelAuthenticationRequestIdValidator
+    private readonly bool shouldError;
+
+    public TestBackchannelAuthenticationRequestIdValidator(bool shouldError = false)
     {
-        private readonly bool shouldError;
+        this.shouldError = shouldError;
+    }
 
-        public TestBackchannelAuthenticationRequestIdValidator(bool shouldError = false)
-        {
-            this.shouldError = shouldError;
-        }
+    //public DeviceCode DeviceCodeResult { get; set; } = new DeviceCode();
 
-        //public DeviceCode DeviceCodeResult { get; set; } = new DeviceCode();
+    public Task ValidateAsync(BackchannelAuthenticationRequestIdValidationContext context)
+    {
+        if (shouldError) context.Result = new TokenRequestValidationResult(context.Request, "error");
+        else context.Result = new TokenRequestValidationResult(context.Request);
 
-        public Task ValidateAsync(BackchannelAuthenticationRequestIdValidationContext context)
-        {
-            if (shouldError) context.Result = new TokenRequestValidationResult(context.Request, "error");
-            else context.Result = new TokenRequestValidationResult(context.Request);
+        //context.Request.DeviceCode = DeviceCodeResult;
 
-            //context.Request.DeviceCode = DeviceCodeResult;
-
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

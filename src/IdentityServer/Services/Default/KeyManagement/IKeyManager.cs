@@ -4,23 +4,22 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services.KeyManagement
+namespace Duende.IdentityServer.Services.KeyManagement;
+
+/// <summary>
+/// Interface to model loading the keys.
+/// </summary>
+public interface IKeyManager
 {
     /// <summary>
-    /// Interface to model loading the keys.
+    /// Returns the current signing keys.
     /// </summary>
-    public interface IKeyManager
-    {
-        /// <summary>
-        /// Returns the current signing keys.
-        /// </summary>
-        /// <returns></returns>
-        Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync();
+    /// <returns></returns>
+    Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync();
 
-        /// <summary>
-        /// Returns all the validation keys.
-        /// </summary>
-        /// <returns></returns>
-        Task<IEnumerable<KeyContainer>> GetAllKeysAsync();
-    }
+    /// <summary>
+    /// Returns all the validation keys.
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<KeyContainer>> GetAllKeysAsync();
 }

@@ -5,16 +5,15 @@
 using Duende.IdentityServer.Models;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Interface for sending a user a login request from a backchannel authentication request.
+/// </summary>
+public interface IBackchannelAuthenticationUserNotificationService
 {
     /// <summary>
-    /// Interface for sending a user a login request from a backchannel authentication request.
+    /// Sends a notification for the user to login.
     /// </summary>
-    public interface IBackchannelAuthenticationUserNotificationService
-    {
-        /// <summary>
-        /// Sends a notification for the user to login.
-        /// </summary>
-        Task SendLoginRequestAsync(BackchannelUserLoginRequest request);
-    }
+    Task SendLoginRequestAsync(BackchannelUserLoginRequest request);
 }

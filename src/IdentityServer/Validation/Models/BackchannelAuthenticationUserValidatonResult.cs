@@ -5,31 +5,30 @@
 using System;
 using System.Security.Claims;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Represents the result of a backchannel authentication request.
+/// </summary>
+public class BackchannelAuthenticationUserValidatonResult
 {
     /// <summary>
-    /// Represents the result of a backchannel authentication request.
+    /// Indicates if this represents an error.
     /// </summary>
-    public class BackchannelAuthenticationUserValidatonResult
-    {
-        /// <summary>
-        /// Indicates if this represents an error.
-        /// </summary>
-        public bool IsError => !String.IsNullOrWhiteSpace(Error);
+    public bool IsError => !String.IsNullOrWhiteSpace(Error);
 
-        /// <summary>
-        /// Gets or sets the error.
-        /// </summary>
-        public string Error { get; set; }
+    /// <summary>
+    /// Gets or sets the error.
+    /// </summary>
+    public string Error { get; set; }
         
-        /// <summary>
-        /// Gets or sets the error description.
-        /// </summary>
-        public string ErrorDescription { get; set; }
+    /// <summary>
+    /// Gets or sets the error description.
+    /// </summary>
+    public string ErrorDescription { get; set; }
 
-        /// <summary>
-        /// Gets or sets the subject based upon the provided hint.
-        /// </summary>
-        public ClaimsPrincipal Subject { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the subject based upon the provided hint.
+    /// </summary>
+    public ClaimsPrincipal Subject { get; set; }
 }

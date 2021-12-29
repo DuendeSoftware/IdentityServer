@@ -10,103 +10,102 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Duende.IdentityServer.Hosting
+namespace Duende.IdentityServer.Hosting;
+
+/// <summary>
+///     Middleware for re-writing the MTLS enabled endpoints to the standard protocol endpoints
+/// </summary>
+public class MutualTlsEndpointMiddleware
 {
+    private readonly ILogger<MutualTlsEndpointMiddleware> _logger;
+    private readonly RequestDelegate _next;
+    private readonly IdentityServerOptions _options;
+
     /// <summary>
-    ///     Middleware for re-writing the MTLS enabled endpoints to the standard protocol endpoints
+    ///     ctor
     /// </summary>
-    public class MutualTlsEndpointMiddleware
+    /// <param name="next"></param>
+    /// <param name="options"></param>
+    /// <param name="logger"></param>
+    public MutualTlsEndpointMiddleware(RequestDelegate next, IdentityServerOptions options,
+        ILogger<MutualTlsEndpointMiddleware> logger)
     {
-        private readonly ILogger<MutualTlsEndpointMiddleware> _logger;
-        private readonly RequestDelegate _next;
-        private readonly IdentityServerOptions _options;
+        _next = next;
+        _options = options;
+        _logger = logger;
+    }
 
-        /// <summary>
-        ///     ctor
-        /// </summary>
-        /// <param name="next"></param>
-        /// <param name="options"></param>
-        /// <param name="logger"></param>
-        public MutualTlsEndpointMiddleware(RequestDelegate next, IdentityServerOptions options,
-            ILogger<MutualTlsEndpointMiddleware> logger)
+    /// <inheritdoc />
+    public async Task Invoke(HttpContext context, IAuthenticationSchemeProvider schemes)
+    {
+        if (_options.MutualTls.Enabled)
         {
-            _next = next;
-            _options = options;
-            _logger = logger;
-        }
-
-        /// <inheritdoc />
-        public async Task Invoke(HttpContext context, IAuthenticationSchemeProvider schemes)
-        {
-            if (_options.MutualTls.Enabled)
+            // domain-based MTLS
+            if (_options.MutualTls.DomainName.IsPresent())
             {
-                // domain-based MTLS
-                if (_options.MutualTls.DomainName.IsPresent())
+                // separate domain
+                if (_options.MutualTls.DomainName.Contains("."))
                 {
-                    // separate domain
-                    if (_options.MutualTls.DomainName.Contains("."))
-                    {
-                        if (context.Request.Host.Host.Equals(_options.MutualTls.DomainName,
+                    if (context.Request.Host.Host.Equals(_options.MutualTls.DomainName,
                             StringComparison.OrdinalIgnoreCase))
-                        {
-                            var result = await TriggerCertificateAuthentication(context);
-                            if (!result.Succeeded)
-                            {
-                                return;
-                            }
-                        }
-                    }
-                    // sub-domain
-                    else
                     {
-                        if (context.Request.Host.Host.StartsWith(_options.MutualTls.DomainName + ".", StringComparison.OrdinalIgnoreCase))
+                        var result = await TriggerCertificateAuthentication(context);
+                        if (!result.Succeeded)
                         {
-                            var result = await TriggerCertificateAuthentication(context);
-                            if (!result.Succeeded)
-                            {
-                                return;
-                            }
+                            return;
                         }
                     }
                 }
-                // path based MTLS
-                else if (context.Request.Path.StartsWithSegments(Constants.ProtocolRoutePaths.MtlsPathPrefix.EnsureLeadingSlash(), out var subPath))
+                // sub-domain
+                else
                 {
-                    var result = await TriggerCertificateAuthentication(context);
-
-                    if (result.Succeeded)
+                    if (context.Request.Host.Host.StartsWith(_options.MutualTls.DomainName + ".", StringComparison.OrdinalIgnoreCase))
                     {
-                        var path = Constants.ProtocolRoutePaths.ConnectPathPrefix +
-                                   subPath.ToString().EnsureLeadingSlash();
-                        path = path.EnsureLeadingSlash();
-
-                        _logger.LogDebug("Rewriting MTLS request from: {oldPath} to: {newPath}",
-                            context.Request.Path.ToString(), path);
-                        context.Request.Path = path;
-                    }
-                    else
-                    {
-                        return;
+                        var result = await TriggerCertificateAuthentication(context);
+                        if (!result.Succeeded)
+                        {
+                            return;
+                        }
                     }
                 }
             }
-            
-            await _next(context);
-        }
-
-        private async Task<AuthenticateResult> TriggerCertificateAuthentication(HttpContext context)
-        {
-            var x509AuthResult =
-                await context.AuthenticateAsync(_options.MutualTls.ClientCertificateAuthenticationScheme);
-
-            if (!x509AuthResult.Succeeded)
+            // path based MTLS
+            else if (context.Request.Path.StartsWithSegments(Constants.ProtocolRoutePaths.MtlsPathPrefix.EnsureLeadingSlash(), out var subPath))
             {
-                _logger.LogDebug("MTLS authentication failed, error: {error}.",
-                    x509AuthResult.Failure?.Message);
-                await context.ForbidAsync(_options.MutualTls.ClientCertificateAuthenticationScheme);
-            }
+                var result = await TriggerCertificateAuthentication(context);
 
-            return x509AuthResult;
+                if (result.Succeeded)
+                {
+                    var path = Constants.ProtocolRoutePaths.ConnectPathPrefix +
+                               subPath.ToString().EnsureLeadingSlash();
+                    path = path.EnsureLeadingSlash();
+
+                    _logger.LogDebug("Rewriting MTLS request from: {oldPath} to: {newPath}",
+                        context.Request.Path.ToString(), path);
+                    context.Request.Path = path;
+                }
+                else
+                {
+                    return;
+                }
+            }
         }
+            
+        await _next(context);
+    }
+
+    private async Task<AuthenticateResult> TriggerCertificateAuthentication(HttpContext context)
+    {
+        var x509AuthResult =
+            await context.AuthenticateAsync(_options.MutualTls.ClientCertificateAuthenticationScheme);
+
+        if (!x509AuthResult.Succeeded)
+        {
+            _logger.LogDebug("MTLS authentication failed, error: {error}.",
+                x509AuthResult.Failure?.Message);
+            await context.ForbidAsync(_options.MutualTls.ClientCertificateAuthenticationScheme);
+        }
+
+        return x509AuthResult;
     }
 }

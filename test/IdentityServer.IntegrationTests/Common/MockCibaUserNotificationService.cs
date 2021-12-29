@@ -6,16 +6,15 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using System.Threading.Tasks;
 
-namespace IntegrationTests.Common
-{
-    internal class MockCibaUserNotificationService : IBackchannelAuthenticationUserNotificationService
-    {
-        public BackchannelUserLoginRequest LoginRequest { get; set; }
+namespace IntegrationTests.Common;
 
-        public Task SendLoginRequestAsync(BackchannelUserLoginRequest request)
-        {
-            LoginRequest = request;
-            return Task.CompletedTask;
-        }
+internal class MockCibaUserNotificationService : IBackchannelAuthenticationUserNotificationService
+{
+    public BackchannelUserLoginRequest LoginRequest { get; set; }
+
+    public Task SendLoginRequestAsync(BackchannelUserLoginRequest request)
+    {
+        LoginRequest = request;
+        return Task.CompletedTask;
     }
 }

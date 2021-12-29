@@ -4,18 +4,17 @@
 
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// The backchannel authentication request id validator
+/// </summary>
+public interface IBackchannelAuthenticationRequestIdValidator
 {
     /// <summary>
-    /// The backchannel authentication request id validator
+    /// Validates the authentication request id.
     /// </summary>
-    public interface IBackchannelAuthenticationRequestIdValidator
-    {
-        /// <summary>
-        /// Validates the authentication request id.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        Task ValidateAsync(BackchannelAuthenticationRequestIdValidationContext context);
-    }
+    /// <param name="context">The context.</param>
+    /// <returns></returns>
+    Task ValidateAsync(BackchannelAuthenticationRequestIdValidationContext context);
 }

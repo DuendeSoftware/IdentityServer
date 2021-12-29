@@ -10,28 +10,27 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 
-namespace UnitTests.Common
+namespace UnitTests.Common;
+
+public class MockConsentService : IConsentService
 {
-    public class MockConsentService : IConsentService
+    public bool RequiresConsentResult { get; set; }
+
+    public Task<bool> RequiresConsentAsync(ClaimsPrincipal subject, Client client, IEnumerable<ParsedScopeValue> parsedScopes)
     {
-        public bool RequiresConsentResult { get; set; }
+        return Task.FromResult(RequiresConsentResult);
+    }
 
-        public Task<bool> RequiresConsentAsync(ClaimsPrincipal subject, Client client, IEnumerable<ParsedScopeValue> parsedScopes)
-        {
-            return Task.FromResult(RequiresConsentResult);
-        }
+    public ClaimsPrincipal ConsentSubject { get; set; }
+    public Client ConsentClient { get; set; }
+    public IEnumerable<string> ConsentScopes { get; set; }
 
-        public ClaimsPrincipal ConsentSubject { get; set; }
-        public Client ConsentClient { get; set; }
-        public IEnumerable<string> ConsentScopes { get; set; }
+    public Task UpdateConsentAsync(ClaimsPrincipal subject, Client client, IEnumerable<ParsedScopeValue> parsedScopes)
+    {
+        ConsentSubject = subject;
+        ConsentClient = client;
+        ConsentScopes = parsedScopes?.Select(x => x.RawValue);
 
-        public Task UpdateConsentAsync(ClaimsPrincipal subject, Client client, IEnumerable<ParsedScopeValue> parsedScopes)
-        {
-            ConsentSubject = subject;
-            ConsentClient = client;
-            ConsentScopes = parsedScopes?.Select(x => x.RawValue);
-
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

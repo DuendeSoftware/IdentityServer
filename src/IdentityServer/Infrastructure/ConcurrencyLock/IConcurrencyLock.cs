@@ -4,23 +4,22 @@
 
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Internal
+namespace Duende.IdentityServer.Internal;
+
+/// <summary>
+/// Interface to model locking.
+/// </summary>
+public interface IConcurrencyLock<T>
 {
     /// <summary>
-    /// Interface to model locking.
+    /// Locks. Returns false if lock was not obtained within in the timeout.
     /// </summary>
-    public interface IConcurrencyLock<T>
-    {
-        /// <summary>
-        /// Locks. Returns false if lock was not obtained within in the timeout.
-        /// </summary>
-        /// <returns></returns>
-        Task<bool> LockAsync(int millisecondsTimeout);
+    /// <returns></returns>
+    Task<bool> LockAsync(int millisecondsTimeout);
 
-        /// <summary>
-        /// Unlocks
-        /// </summary>
-        /// <returns></returns>
-        void Unlock();
-    }
+    /// <summary>
+    /// Unlocks
+    /// </summary>
+    /// <returns></returns>
+    void Unlock();
 }

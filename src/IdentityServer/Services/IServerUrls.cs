@@ -2,26 +2,25 @@
 // See LICENSE in the project root for license information.
 
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Configures the per-request URLs and paths into the current server
+/// </summary>
+public interface IServerUrls
 {
     /// <summary>
-    /// Configures the per-request URLs and paths into the current server
+    /// Gets or sets the origin for IdentityServer. For example, "https://server.acme.com:5001".
     /// </summary>
-    public interface IServerUrls
-    {
-        /// <summary>
-        /// Gets or sets the origin for IdentityServer. For example, "https://server.acme.com:5001".
-        /// </summary>
-        string Origin { get; set; }
+    string Origin { get; set; }
 
-        /// <summary>
-        /// Gets or sets the base path of IdentityServer.
-        /// </summary>
-        string BasePath { get; set; }
+    /// <summary>
+    /// Gets or sets the base path of IdentityServer.
+    /// </summary>
+    string BasePath { get; set; }
         
-        /// <summary>
-        /// Gets the base URL for IdentityServer.
-        /// </summary>
-        string BaseUrl { get => Origin + BasePath; }
-    }
+    /// <summary>
+    /// Gets the base URL for IdentityServer.
+    /// </summary>
+    string BaseUrl { get => Origin + BasePath; }
 }

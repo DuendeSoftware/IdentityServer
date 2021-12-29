@@ -8,106 +8,105 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Duende.IdentityServer.Infrastructure
+namespace Duende.IdentityServer.Infrastructure;
+
+/// <summary>
+/// State formatter using IDistributedCache
+/// </summary>
+public class DistributedCacheStateDataFormatter : ISecureDataFormat<AuthenticationProperties>
 {
+    private readonly string _name;
+    private readonly IServiceProvider _provider;
+
     /// <summary>
-    /// State formatter using IDistributedCache
+    /// Initializes a new instance of the <see cref="DistributedCacheStateDataFormatter"/> class.
     /// </summary>
-    public class DistributedCacheStateDataFormatter : ISecureDataFormat<AuthenticationProperties>
+    /// <param name="provider">The service provider.</param>
+    /// <param name="name">The scheme name.</param>
+    public DistributedCacheStateDataFormatter(IServiceProvider provider, string name)
     {
-        private readonly string _name;
-        private readonly IServiceProvider _provider;
+        _provider = provider;
+        _name = name;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DistributedCacheStateDataFormatter"/> class.
-        /// </summary>
-        /// <param name="provider">The service provider.</param>
-        /// <param name="name">The scheme name.</param>
-        public DistributedCacheStateDataFormatter(IServiceProvider provider, string name)
+    private string CacheKeyPrefix => "DistributedCacheStateDataFormatter";
+
+    private IDistributedCache Cache => _provider.GetRequiredService<IDistributedCache>();
+    private IDataProtector Protector => _provider.GetRequiredService<IDataProtectionProvider>().CreateProtector(CacheKeyPrefix, _name);
+
+    /// <summary>
+    /// Protects the specified data.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <returns></returns>
+    public string Protect(AuthenticationProperties data)
+    {
+        return Protect(data, null);
+    }
+
+    /// <summary>
+    /// Protects the specified data.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <param name="purpose">The purpose.</param>
+    /// <returns></returns>
+    public string Protect(AuthenticationProperties data, string purpose)
+    {
+        var key = Guid.NewGuid().ToString();
+        var cacheKey = $"{CacheKeyPrefix}-{_name}-{purpose}-{key}";
+        var json = ObjectSerializer.ToString(data);
+
+        var options = new DistributedCacheEntryOptions();
+        if (data.ExpiresUtc.HasValue)
         {
-            _provider = provider;
-            _name = name;
+            options.SetAbsoluteExpiration(data.ExpiresUtc.Value);
+        }
+        else
+        {
+            options.SetSlidingExpiration(Constants.DefaultCacheDuration);
         }
 
-        private string CacheKeyPrefix => "DistributedCacheStateDataFormatter";
+        // Rather than encrypt the full AuthenticationProperties
+        // cache the data and encrypt the key that points to the data
+        Cache.SetString(cacheKey, json, options);
 
-        private IDistributedCache Cache => _provider.GetRequiredService<IDistributedCache>();
-        private IDataProtector Protector => _provider.GetRequiredService<IDataProtectionProvider>().CreateProtector(CacheKeyPrefix, _name);
+        return Protector.Protect(key);
+    }
 
-        /// <summary>
-        /// Protects the specified data.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public string Protect(AuthenticationProperties data)
+    /// <summary>
+    /// Unprotects the specified protected text.
+    /// </summary>
+    /// <param name="protectedText">The protected text.</param>
+    /// <returns></returns>
+    public AuthenticationProperties Unprotect(string protectedText)
+    {
+        return Unprotect(protectedText, null);
+    }
+
+    /// <summary>
+    /// Unprotects the specified protected text.
+    /// </summary>
+    /// <param name="protectedText">The protected text.</param>
+    /// <param name="purpose">The purpose.</param>
+    /// <returns></returns>
+    public AuthenticationProperties Unprotect(string protectedText, string purpose)
+    {
+        if (String.IsNullOrWhiteSpace(protectedText))
         {
-            return Protect(data, null);
+            return null;
         }
 
-        /// <summary>
-        /// Protects the specified data.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <param name="purpose">The purpose.</param>
-        /// <returns></returns>
-        public string Protect(AuthenticationProperties data, string purpose)
+        // Decrypt the key and retrieve the data from the cache.
+        var key = Protector.Unprotect(protectedText);
+        var cacheKey = $"{CacheKeyPrefix}-{_name}-{purpose}-{key}";
+        var json = Cache.GetString(cacheKey);
+
+        if (json == null)
         {
-            var key = Guid.NewGuid().ToString();
-            var cacheKey = $"{CacheKeyPrefix}-{_name}-{purpose}-{key}";
-            var json = ObjectSerializer.ToString(data);
-
-            var options = new DistributedCacheEntryOptions();
-            if (data.ExpiresUtc.HasValue)
-            {
-                options.SetAbsoluteExpiration(data.ExpiresUtc.Value);
-            }
-            else
-            {
-                options.SetSlidingExpiration(Constants.DefaultCacheDuration);
-            }
-
-            // Rather than encrypt the full AuthenticationProperties
-            // cache the data and encrypt the key that points to the data
-            Cache.SetString(cacheKey, json, options);
-
-            return Protector.Protect(key);
+            return null;
         }
 
-        /// <summary>
-        /// Unprotects the specified protected text.
-        /// </summary>
-        /// <param name="protectedText">The protected text.</param>
-        /// <returns></returns>
-        public AuthenticationProperties Unprotect(string protectedText)
-        {
-            return Unprotect(protectedText, null);
-        }
-
-        /// <summary>
-        /// Unprotects the specified protected text.
-        /// </summary>
-        /// <param name="protectedText">The protected text.</param>
-        /// <param name="purpose">The purpose.</param>
-        /// <returns></returns>
-        public AuthenticationProperties Unprotect(string protectedText, string purpose)
-        {
-            if (String.IsNullOrWhiteSpace(protectedText))
-            {
-                return null;
-            }
-
-            // Decrypt the key and retrieve the data from the cache.
-            var key = Protector.Unprotect(protectedText);
-            var cacheKey = $"{CacheKeyPrefix}-{_name}-{purpose}-{key}";
-            var json = Cache.GetString(cacheKey);
-
-            if (json == null)
-            {
-                return null;
-            }
-
-            var props = ObjectSerializer.FromString<AuthenticationProperties>(json);
-            return props;
-        }
+        var props = ObjectSerializer.FromString<AuthenticationProperties>(json);
+        return props;
     }
 }

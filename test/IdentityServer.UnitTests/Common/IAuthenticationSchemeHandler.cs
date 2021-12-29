@@ -2,9 +2,8 @@
 // See LICENSE in the project root for license information.
 
 
-namespace UnitTests.Common
+namespace UnitTests.Common;
+
+internal interface IAuthenticationSchemeHandler
 {
-    internal interface IAuthenticationSchemeHandler
-    {
-    }
 }

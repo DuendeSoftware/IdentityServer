@@ -7,144 +7,143 @@ using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Stores;
 using Microsoft.Extensions.Logging;
 
-namespace Duende.IdentityServer.ResponseHandling
+namespace Duende.IdentityServer.ResponseHandling;
+
+/// <summary>
+/// Default revocation response generator
+/// </summary>
+/// <seealso cref="ITokenRevocationResponseGenerator" />
+public class TokenRevocationResponseGenerator : ITokenRevocationResponseGenerator
 {
     /// <summary>
-    /// Default revocation response generator
+    /// Gets the reference token store.
     /// </summary>
-    /// <seealso cref="ITokenRevocationResponseGenerator" />
-    public class TokenRevocationResponseGenerator : ITokenRevocationResponseGenerator
+    /// <value>
+    /// The reference token store.
+    /// </value>
+    protected readonly IReferenceTokenStore ReferenceTokenStore;
+
+    /// <summary>
+    /// Gets the refresh token store.
+    /// </summary>
+    /// <value>
+    /// The refresh token store.
+    /// </value>
+    protected readonly IRefreshTokenStore RefreshTokenStore;
+
+    /// <summary>
+    /// Gets the logger.
+    /// </summary>
+    /// <value>
+    /// The logger.
+    /// </value>
+    protected readonly ILogger Logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TokenRevocationResponseGenerator" /> class.
+    /// </summary>
+    /// <param name="referenceTokenStore">The reference token store.</param>
+    /// <param name="refreshTokenStore">The refresh token store.</param>
+    /// <param name="logger">The logger.</param>
+    public TokenRevocationResponseGenerator(IReferenceTokenStore referenceTokenStore, IRefreshTokenStore refreshTokenStore, ILogger<TokenRevocationResponseGenerator> logger)
     {
-        /// <summary>
-        /// Gets the reference token store.
-        /// </summary>
-        /// <value>
-        /// The reference token store.
-        /// </value>
-        protected readonly IReferenceTokenStore ReferenceTokenStore;
+        ReferenceTokenStore = referenceTokenStore;
+        RefreshTokenStore = refreshTokenStore;
+        Logger = logger;
+    }
 
-        /// <summary>
-        /// Gets the refresh token store.
-        /// </summary>
-        /// <value>
-        /// The refresh token store.
-        /// </value>
-        protected readonly IRefreshTokenStore RefreshTokenStore;
-
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <value>
-        /// The logger.
-        /// </value>
-        protected readonly ILogger Logger;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TokenRevocationResponseGenerator" /> class.
-        /// </summary>
-        /// <param name="referenceTokenStore">The reference token store.</param>
-        /// <param name="refreshTokenStore">The refresh token store.</param>
-        /// <param name="logger">The logger.</param>
-        public TokenRevocationResponseGenerator(IReferenceTokenStore referenceTokenStore, IRefreshTokenStore refreshTokenStore, ILogger<TokenRevocationResponseGenerator> logger)
+    /// <summary>
+    /// Creates the revocation endpoint response and processes the revocation request.
+    /// </summary>
+    /// <param name="validationResult">The userinfo request validation result.</param>
+    /// <returns></returns>
+    public virtual async Task<TokenRevocationResponse> ProcessAsync(TokenRevocationRequestValidationResult validationResult)
+    {
+        var response = new TokenRevocationResponse
         {
-            ReferenceTokenStore = referenceTokenStore;
-            RefreshTokenStore = refreshTokenStore;
-            Logger = logger;
+            Success = false,
+            TokenType = validationResult.TokenTypeHint
+        };
+
+        // revoke tokens
+        if (validationResult.TokenTypeHint == Constants.TokenTypeHints.AccessToken)
+        {
+            Logger.LogTrace("Hint was for access token");
+            response.Success = await RevokeAccessTokenAsync(validationResult);
         }
-
-        /// <summary>
-        /// Creates the revocation endpoint response and processes the revocation request.
-        /// </summary>
-        /// <param name="validationResult">The userinfo request validation result.</param>
-        /// <returns></returns>
-        public virtual async Task<TokenRevocationResponse> ProcessAsync(TokenRevocationRequestValidationResult validationResult)
+        else if (validationResult.TokenTypeHint == Constants.TokenTypeHints.RefreshToken)
         {
-            var response = new TokenRevocationResponse
-            {
-                Success = false,
-                TokenType = validationResult.TokenTypeHint
-            };
+            Logger.LogTrace("Hint was for refresh token");
+            response.Success = await RevokeRefreshTokenAsync(validationResult);
+        }
+        else
+        {
+            Logger.LogTrace("No hint for token type");
 
-            // revoke tokens
-            if (validationResult.TokenTypeHint == Constants.TokenTypeHints.AccessToken)
+            response.Success = await RevokeAccessTokenAsync(validationResult);
+
+            if (!response.Success)
             {
-                Logger.LogTrace("Hint was for access token");
-                response.Success = await RevokeAccessTokenAsync(validationResult);
-            }
-            else if (validationResult.TokenTypeHint == Constants.TokenTypeHints.RefreshToken)
-            {
-                Logger.LogTrace("Hint was for refresh token");
                 response.Success = await RevokeRefreshTokenAsync(validationResult);
+                response.TokenType = Constants.TokenTypeHints.RefreshToken;
             }
             else
             {
-                Logger.LogTrace("No hint for token type");
-
-                response.Success = await RevokeAccessTokenAsync(validationResult);
-
-                if (!response.Success)
-                {
-                    response.Success = await RevokeRefreshTokenAsync(validationResult);
-                    response.TokenType = Constants.TokenTypeHints.RefreshToken;
-                }
-                else
-                {
-                    response.TokenType = Constants.TokenTypeHints.AccessToken;
-                }
+                response.TokenType = Constants.TokenTypeHints.AccessToken;
             }
-
-            return response;
         }
 
-        /// <summary>
-        /// Revoke access token only if it belongs to client doing the request.
-        /// </summary>
-        protected virtual async Task<bool> RevokeAccessTokenAsync(TokenRevocationRequestValidationResult validationResult)
+        return response;
+    }
+
+    /// <summary>
+    /// Revoke access token only if it belongs to client doing the request.
+    /// </summary>
+    protected virtual async Task<bool> RevokeAccessTokenAsync(TokenRevocationRequestValidationResult validationResult)
+    {
+        var token = await ReferenceTokenStore.GetReferenceTokenAsync(validationResult.Token);
+
+        if (token != null)
         {
-            var token = await ReferenceTokenStore.GetReferenceTokenAsync(validationResult.Token);
-
-            if (token != null)
+            if (token.ClientId == validationResult.Client.ClientId)
             {
-                if (token.ClientId == validationResult.Client.ClientId)
-                {
-                    Logger.LogDebug("Access token revoked");
-                    await ReferenceTokenStore.RemoveReferenceTokenAsync(validationResult.Token);
-                }
-                else
-                {
-                    Logger.LogWarning("Client {clientId} denied from revoking access token belonging to Client {tokenClientId}", validationResult.Client.ClientId, token.ClientId);
-                }
-
-                return true;
+                Logger.LogDebug("Access token revoked");
+                await ReferenceTokenStore.RemoveReferenceTokenAsync(validationResult.Token);
+            }
+            else
+            {
+                Logger.LogWarning("Client {clientId} denied from revoking access token belonging to Client {tokenClientId}", validationResult.Client.ClientId, token.ClientId);
             }
 
-            return false;
+            return true;
         }
 
-        /// <summary>
-        /// Revoke refresh token only if it belongs to client doing the request
-        /// </summary>
-        protected virtual async Task<bool> RevokeRefreshTokenAsync(TokenRevocationRequestValidationResult validationResult)
+        return false;
+    }
+
+    /// <summary>
+    /// Revoke refresh token only if it belongs to client doing the request
+    /// </summary>
+    protected virtual async Task<bool> RevokeRefreshTokenAsync(TokenRevocationRequestValidationResult validationResult)
+    {
+        var token = await RefreshTokenStore.GetRefreshTokenAsync(validationResult.Token);
+
+        if (token != null)
         {
-            var token = await RefreshTokenStore.GetRefreshTokenAsync(validationResult.Token);
-
-            if (token != null)
+            if (token.ClientId == validationResult.Client.ClientId)
             {
-                if (token.ClientId == validationResult.Client.ClientId)
-                {
-                    Logger.LogDebug("Refresh token revoked");
-                    await RefreshTokenStore.RemoveRefreshTokenAsync(validationResult.Token);
-                    await ReferenceTokenStore.RemoveReferenceTokensAsync(token.SubjectId, token.ClientId);
-                }
-                else
-                {
-                    Logger.LogWarning("Client {clientId} denied from revoking a refresh token belonging to Client {tokenClientId}", validationResult.Client.ClientId, token.ClientId);
-                }
-
-                return true;
+                Logger.LogDebug("Refresh token revoked");
+                await RefreshTokenStore.RemoveRefreshTokenAsync(validationResult.Token);
+                await ReferenceTokenStore.RemoveReferenceTokensAsync(token.SubjectId, token.ClientId);
+            }
+            else
+            {
+                Logger.LogWarning("Client {clientId} denied from revoking a refresh token belonging to Client {tokenClientId}", validationResult.Client.ClientId, token.ClientId);
             }
 
-            return false;
+            return true;
         }
+
+        return false;
     }
 }

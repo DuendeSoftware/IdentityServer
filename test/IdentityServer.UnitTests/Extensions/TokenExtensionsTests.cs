@@ -13,35 +13,34 @@ using System.Text.Json;
 using UnitTests.Common;
 using Xunit;
 
-namespace UnitTests.Extensions
+namespace UnitTests.Extensions;
+
+public class TokenExtensionsTests
 {
-    public class TokenExtensionsTests
+    [Theory]
+    [InlineData("test_bool", "TRUE", ClaimValueTypes.Boolean, "\"test_bool\":true")]
+    [InlineData("test_bool", "False", ClaimValueTypes.Boolean, "\"test_bool\":false")]
+    [InlineData("test_int32", "1", ClaimValueTypes.Integer, "\"test_int32\":1")]
+    [InlineData("test_int32", "02", ClaimValueTypes.Integer32, "\"test_int32\":2")]
+    [InlineData("test_int64", "0123456789012", ClaimValueTypes.Integer64, "\"test_int64\":123456789012")]
+    [InlineData("test_json_array", " [ \"value1\" , \"value2\" , \"value3\" ] ", "json", 
+        "\"test_json_array\":[\"value1\",\"value2\",\"value3\"]")]
+    [InlineData("test_json_obj", " { \"value1\": \"value2\" , \"value3\": [ \"value4\", \"value5\" ] } ", "json", 
+        "\"test_json_obj\":{\"value1\":\"value2\",\"value3\":[\"value4\",\"value5\"]}")]
+    [InlineData("test_any", "raw\"string\tspecial char", "any", "\"test_any\":\"raw\\u0022string\\tspecial char\"")]
+    public void TestClaimValueTypes(string type, string value, string valueType, string expected)
     {
-        [Theory]
-        [InlineData("test_bool", "TRUE", ClaimValueTypes.Boolean, "\"test_bool\":true")]
-        [InlineData("test_bool", "False", ClaimValueTypes.Boolean, "\"test_bool\":false")]
-        [InlineData("test_int32", "1", ClaimValueTypes.Integer, "\"test_int32\":1")]
-        [InlineData("test_int32", "02", ClaimValueTypes.Integer32, "\"test_int32\":2")]
-        [InlineData("test_int64", "0123456789012", ClaimValueTypes.Integer64, "\"test_int64\":123456789012")]
-        [InlineData("test_json_array", " [ \"value1\" , \"value2\" , \"value3\" ] ", "json", 
-            "\"test_json_array\":[\"value1\",\"value2\",\"value3\"]")]
-        [InlineData("test_json_obj", " { \"value1\": \"value2\" , \"value3\": [ \"value4\", \"value5\" ] } ", "json", 
-            "\"test_json_obj\":{\"value1\":\"value2\",\"value3\":[\"value4\",\"value5\"]}")]
-        [InlineData("test_any", "raw\"string\tspecial char", "any", "\"test_any\":\"raw\\u0022string\\tspecial char\"")]
-        public void TestClaimValueTypes(string type, string value, string valueType, string expected)
+        var token = new Token(OidcConstants.TokenTypes.AccessToken)
         {
-            var token = new Token(OidcConstants.TokenTypes.AccessToken)
-            {
-                Issuer = "issuer",
-                Claims = new List<Claim> { new Claim(type, value, valueType) },
-            };
+            Issuer = "issuer",
+            Claims = new List<Claim> { new Claim(type, value, valueType) },
+        };
 
-            var payloadDict = token.CreateJwtPayloadDictionary(new IdentityServerOptions(), new SystemClock(), 
-                TestLogger.Create<TokenExtensionsTests>());
+        var payloadDict = token.CreateJwtPayloadDictionary(new IdentityServerOptions(), new SystemClock(), 
+            TestLogger.Create<TokenExtensionsTests>());
 
-            var payloadJson = JsonSerializer.Serialize(payloadDict);
+        var payloadJson = JsonSerializer.Serialize(payloadDict);
 
-            Assert.Contains(expected, payloadJson);
-        }
+        Assert.Contains(expected, payloadJson);
     }
 }

@@ -9,60 +9,60 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Duende.IdentityServer.Extensions;
 
-namespace Duende.IdentityServer.Endpoints.Results
+namespace Duende.IdentityServer.Endpoints.Results;
+
+internal class CheckSessionResult : IEndpointResult
 {
-    internal class CheckSessionResult : IEndpointResult
+    public CheckSessionResult()
     {
-        public CheckSessionResult()
+    }
+
+    internal CheckSessionResult(IdentityServerOptions options)
+    {
+        _options = options;
+    }
+
+    private IdentityServerOptions _options;
+    private static volatile string FormattedHtml;
+    private static readonly object Lock = new object();
+    private static volatile string LastCheckSessionCookieName;
+
+    private void Init(HttpContext context)
+    {
+        _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
+    }
+
+    public async Task ExecuteAsync(HttpContext context)
+    {
+        Init(context);
+
+        AddCspHeaders(context);
+
+        var html = GetHtml(_options.Authentication.CheckSessionCookieName);
+        await context.Response.WriteHtmlAsync(html);
+    }
+
+    private void AddCspHeaders(HttpContext context)
+    {
+        context.Response.AddScriptCspHeaders(_options.Csp, "sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI=");
+    }
+    private string GetHtml(string cookieName)
+    {
+        if (cookieName != LastCheckSessionCookieName)
         {
-        }
-
-        internal CheckSessionResult(IdentityServerOptions options)
-        {
-            _options = options;
-        }
-
-        private IdentityServerOptions _options;
-        private static volatile string FormattedHtml;
-        private static readonly object Lock = new object();
-        private static volatile string LastCheckSessionCookieName;
-
-        private void Init(HttpContext context)
-        {
-            _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-        }
-
-        public async Task ExecuteAsync(HttpContext context)
-        {
-            Init(context);
-
-            AddCspHeaders(context);
-
-            var html = GetHtml(_options.Authentication.CheckSessionCookieName);
-            await context.Response.WriteHtmlAsync(html);
-        }
-
-        private void AddCspHeaders(HttpContext context)
-        {
-            context.Response.AddScriptCspHeaders(_options.Csp, "sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI=");
-        }
-        private string GetHtml(string cookieName)
-        {
-            if (cookieName != LastCheckSessionCookieName)
+            lock (Lock)
             {
-                lock (Lock)
+                if (cookieName != LastCheckSessionCookieName)
                 {
-                    if (cookieName != LastCheckSessionCookieName)
-                    {
-                        FormattedHtml = Html.Replace("{cookieName}", cookieName);
-                        LastCheckSessionCookieName = cookieName;
-                    }
+                    FormattedHtml = Html.Replace("{cookieName}", cookieName);
+                    LastCheckSessionCookieName = cookieName;
                 }
             }
-            return FormattedHtml;
         }
+        return FormattedHtml;
+    }
 
-        private const string Html = @"
+    private const string Html = @"
 <!DOCTYPE html>
 <!--Copyright (c) Duende Software. All rights reserved.-->
 <!--See LICENSE in the project root for license information.-->
@@ -374,5 +374,4 @@ if (typeof define == 'function' && define.amd) define([], function() { return Sh
 </body>
 </html>
 ";
-    }
 }

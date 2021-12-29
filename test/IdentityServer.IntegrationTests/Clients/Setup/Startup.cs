@@ -7,58 +7,57 @@ using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace IntegrationTests.Clients.Setup
+namespace IntegrationTests.Clients.Setup;
+
+public class Startup
 {
-    public class Startup
+    static public ICustomTokenRequestValidator CustomTokenRequestValidator { get; set; } 
+
+    public void ConfigureServices(IServiceCollection services)
     {
-        static public ICustomTokenRequestValidator CustomTokenRequestValidator { get; set; } 
+        services.AddAuthentication();
 
-        public void ConfigureServices(IServiceCollection services)
+        var builder = services.AddIdentityServer(options =>
         {
-            services.AddAuthentication();
+            options.IssuerUri = "https://idsvr4";
 
-            var builder = services.AddIdentityServer(options =>
+            options.Events = new EventsOptions
             {
-                options.IssuerUri = "https://idsvr4";
+                RaiseErrorEvents = true,
+                RaiseFailureEvents = true,
+                RaiseInformationEvents = true,
+                RaiseSuccessEvents = true
+            };
+            options.KeyManagement.Enabled = false;
+        });
 
-                options.Events = new EventsOptions
-                {
-                    RaiseErrorEvents = true,
-                    RaiseFailureEvents = true,
-                    RaiseInformationEvents = true,
-                    RaiseSuccessEvents = true
-                };
-                options.KeyManagement.Enabled = false;
-            });
+        builder.AddInMemoryClients(Clients.Get());
+        builder.AddInMemoryIdentityResources(Scopes.GetIdentityScopes());
+        builder.AddInMemoryApiResources(Scopes.GetApiResources());
+        builder.AddInMemoryApiScopes(Scopes.GetApiScopes());
+        builder.AddTestUsers(Users.Get());
 
-            builder.AddInMemoryClients(Clients.Get());
-            builder.AddInMemoryIdentityResources(Scopes.GetIdentityScopes());
-            builder.AddInMemoryApiResources(Scopes.GetApiResources());
-            builder.AddInMemoryApiScopes(Scopes.GetApiScopes());
-            builder.AddTestUsers(Users.Get());
+        builder.AddDeveloperSigningCredential(persistKey: false);
 
-            builder.AddDeveloperSigningCredential(persistKey: false);
+        builder.AddExtensionGrantValidator<ExtensionGrantValidator>();
+        builder.AddExtensionGrantValidator<ExtensionGrantValidator2>();
+        builder.AddExtensionGrantValidator<NoSubjectExtensionGrantValidator>();
+        builder.AddExtensionGrantValidator<DynamicParameterExtensionGrantValidator>();
 
-            builder.AddExtensionGrantValidator<ExtensionGrantValidator>();
-            builder.AddExtensionGrantValidator<ExtensionGrantValidator2>();
-            builder.AddExtensionGrantValidator<NoSubjectExtensionGrantValidator>();
-            builder.AddExtensionGrantValidator<DynamicParameterExtensionGrantValidator>();
+        builder.AddProfileService<CustomProfileService>();
 
-            builder.AddProfileService<CustomProfileService>();
+        builder.AddJwtBearerClientAuthentication();
+        builder.AddSecretValidator<ConfirmationSecretValidator>();
 
-            builder.AddJwtBearerClientAuthentication();
-            builder.AddSecretValidator<ConfirmationSecretValidator>();
-
-            // add a custom token request validator if set
-            if (CustomTokenRequestValidator != null)
-            {
-                builder.Services.AddTransient(r => CustomTokenRequestValidator);
-            }
-        }
-
-        public void Configure(IApplicationBuilder app)
+        // add a custom token request validator if set
+        if (CustomTokenRequestValidator != null)
         {
-            app.UseIdentityServer();
+            builder.Services.AddTransient(r => CustomTokenRequestValidator);
         }
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseIdentityServer();
     }
 }

@@ -7,38 +7,37 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 
-namespace IntegrationTests.Clients.Setup
-{
-    public class ExtensionGrantValidator : IExtensionGrantValidator
-    {
-        public Task ValidateAsync(ExtensionGrantValidationContext context)
-        {
-            var credential = context.Request.Raw.Get("custom_credential");
-            var extraClaim = context.Request.Raw.Get("extra_claim");
+namespace IntegrationTests.Clients.Setup;
 
-            if (credential != null)
+public class ExtensionGrantValidator : IExtensionGrantValidator
+{
+    public Task ValidateAsync(ExtensionGrantValidationContext context)
+    {
+        var credential = context.Request.Raw.Get("custom_credential");
+        var extraClaim = context.Request.Raw.Get("extra_claim");
+
+        if (credential != null)
+        {
+            if (extraClaim != null)
             {
-                if (extraClaim != null)
-                {
-                    context.Result = new GrantValidationResult(
-                        subject: "818727",
-                        claims: new[] { new Claim("extra_claim", extraClaim) },
-                        authenticationMethod: GrantType);
-                }
-                else
-                {
-                    context.Result = new GrantValidationResult(subject: "818727", authenticationMethod: GrantType);
-                }
+                context.Result = new GrantValidationResult(
+                    subject: "818727",
+                    claims: new[] { new Claim("extra_claim", extraClaim) },
+                    authenticationMethod: GrantType);
             }
             else
             {
-                // custom error message
-                context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "invalid_custom_credential");
+                context.Result = new GrantValidationResult(subject: "818727", authenticationMethod: GrantType);
             }
-
-            return Task.CompletedTask;
+        }
+        else
+        {
+            // custom error message
+            context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "invalid_custom_credential");
         }
 
-        public string GrantType =>  "custom";
+        return Task.CompletedTask;
     }
+
+    public string GrantType =>  "custom";
 }

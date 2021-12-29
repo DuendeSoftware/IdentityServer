@@ -7,121 +7,120 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Duende.IdentityServer.Stores.Serialization
+namespace Duende.IdentityServer.Stores.Serialization;
+
+/// <summary>
+/// Options for how persisted grants are persisted.
+/// </summary>
+public class PersistentGrantOptions
 {
     /// <summary>
-    /// Options for how persisted grants are persisted.
+    /// Data protect the persisted grants "data" column.
     /// </summary>
-    public class PersistentGrantOptions
+    public bool DataProtectData { get; set; } = true;
+}
+
+/// <summary>
+/// JSON-based persisted grant serializer
+/// </summary>
+/// <seealso cref="IPersistentGrantSerializer" />
+public class PersistentGrantSerializer : IPersistentGrantSerializer
+{
+    private static readonly JsonSerializerOptions Settings;
+
+    private readonly PersistentGrantOptions _options;
+    private readonly IDataProtector _provider;
+
+    static PersistentGrantSerializer()
     {
-        /// <summary>
-        /// Data protect the persisted grants "data" column.
-        /// </summary>
-        public bool DataProtectData { get; set; } = true;
+        Settings = new JsonSerializerOptions
+        {
+            IgnoreReadOnlyFields = true,
+            IgnoreReadOnlyProperties = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+            
+        Settings.Converters.Add(new ClaimConverter());
+        Settings.Converters.Add(new ClaimsPrincipalConverter());
     }
 
     /// <summary>
-    /// JSON-based persisted grant serializer
+    /// Ctor.
     /// </summary>
-    /// <seealso cref="IPersistentGrantSerializer" />
-    public class PersistentGrantSerializer : IPersistentGrantSerializer
+    /// <param name="options"></param>
+    /// <param name="dataProtectionProvider"></param>
+    public PersistentGrantSerializer(PersistentGrantOptions options = null, IDataProtectionProvider dataProtectionProvider = null)
     {
-        private static readonly JsonSerializerOptions Settings;
+        _options = options;
+        _provider = dataProtectionProvider?.CreateProtector(nameof(PersistentGrantSerializer));
+    }
 
-        private readonly PersistentGrantOptions _options;
-        private readonly IDataProtector _provider;
+    bool ShouldDataProtect => _options?.DataProtectData == true && _provider != null;
 
-        static PersistentGrantSerializer()
+    /// <summary>
+    /// Serializes the specified value.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns></returns>
+    public string Serialize<T>(T value)
+    {
+        var payload = JsonSerializer.Serialize(value, Settings);
+
+        if (ShouldDataProtect)
         {
-            Settings = new JsonSerializerOptions
-            {
-                IgnoreReadOnlyFields = true,
-                IgnoreReadOnlyProperties = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            };
+            payload = _provider.Protect(payload);
+        }
             
-            Settings.Converters.Add(new ClaimConverter());
-            Settings.Converters.Add(new ClaimsPrincipalConverter());
+        var data = new PersistentGrantDataContainer
+        { 
+            PersistentGrantDataContainerVersion = 1,
+            DataProtected = ShouldDataProtect,
+            Payload = payload,
+        };
+
+        return JsonSerializer.Serialize(data, Settings);
+    }
+
+    /// <summary>
+    /// Deserializes the specified string.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="json">The json.</param>
+    /// <returns></returns>
+    public T Deserialize<T>(string json)
+    {
+        var container = JsonSerializer.Deserialize<PersistentGrantDataContainer>(json, Settings);
+            
+        if (container.PersistentGrantDataContainerVersion == 0)
+        {
+            return JsonSerializer.Deserialize<T>(json, Settings);
         }
 
-        /// <summary>
-        /// Ctor.
-        /// </summary>
-        /// <param name="options"></param>
-        /// <param name="dataProtectionProvider"></param>
-        public PersistentGrantSerializer(PersistentGrantOptions options = null, IDataProtectionProvider dataProtectionProvider = null)
+        if (container.PersistentGrantDataContainerVersion == 1)
         {
-            _options = options;
-            _provider = dataProtectionProvider?.CreateProtector(nameof(PersistentGrantSerializer));
-        }
-
-        bool ShouldDataProtect => _options?.DataProtectData == true && _provider != null;
-
-        /// <summary>
-        /// Serializes the specified value.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public string Serialize<T>(T value)
-        {
-            var payload = JsonSerializer.Serialize(value, Settings);
-
-            if (ShouldDataProtect)
-            {
-                payload = _provider.Protect(payload);
-            }
-            
-            var data = new PersistentGrantDataContainer
-            { 
-                PersistentGrantDataContainerVersion = 1,
-                DataProtected = ShouldDataProtect,
-                Payload = payload,
-            };
-
-            return JsonSerializer.Serialize(data, Settings);
-        }
-
-        /// <summary>
-        /// Deserializes the specified string.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="json">The json.</param>
-        /// <returns></returns>
-        public T Deserialize<T>(string json)
-        {
-            var container = JsonSerializer.Deserialize<PersistentGrantDataContainer>(json, Settings);
-            
-            if (container.PersistentGrantDataContainerVersion == 0)
-            {
-                return JsonSerializer.Deserialize<T>(json, Settings);
-            }
-
-            if (container.PersistentGrantDataContainerVersion == 1)
-            {
-                var payload = container.Payload;
+            var payload = container.Payload;
                 
-                if (container.DataProtected)
+            if (container.DataProtected)
+            {
+                if (_provider == null)
                 {
-                    if (_provider == null)
-                    {
-                        throw new Exception("No IDataProtectionProvider configured.");
-                    }
-
-                    payload = _provider.Unprotect(container.Payload);
+                    throw new Exception("No IDataProtectionProvider configured.");
                 }
 
-                return JsonSerializer.Deserialize<T>(payload, Settings);
+                payload = _provider.Unprotect(container.Payload);
             }
 
-            throw new Exception($"Invalid version in persisted grant data: '{container.PersistentGrantDataContainerVersion}'.");
+            return JsonSerializer.Deserialize<T>(payload, Settings);
         }
-    }
 
-    class PersistentGrantDataContainer
-    {
-        public int PersistentGrantDataContainerVersion { get; set; }
-        public bool DataProtected { get; set; }
-        public string Payload { get; set; }
+        throw new Exception($"Invalid version in persisted grant data: '{container.PersistentGrantDataContainerVersion}'.");
     }
+}
+
+class PersistentGrantDataContainer
+{
+    public int PersistentGrantDataContainerVersion { get; set; }
+    public bool DataProtected { get; set; }
+    public string Payload { get; set; }
 }

@@ -14,90 +14,89 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Hosting
+namespace Duende.IdentityServer.Hosting;
+
+internal class CorsPolicyProvider : ICorsPolicyProvider
 {
-    internal class CorsPolicyProvider : ICorsPolicyProvider
+    private readonly ILogger _logger;
+    private readonly ICorsPolicyProvider _inner;
+    private readonly IServiceProvider _provider;
+    private readonly IdentityServerOptions _options;
+
+    public CorsPolicyProvider(
+        ILogger<CorsPolicyProvider> logger,
+        Decorator<ICorsPolicyProvider> inner,
+        IdentityServerOptions options,
+        IServiceProvider provider)
     {
-        private readonly ILogger _logger;
-        private readonly ICorsPolicyProvider _inner;
-        private readonly IServiceProvider _provider;
-        private readonly IdentityServerOptions _options;
+        _logger = logger;
+        _inner = inner.Instance;
+        _options = options;
+        _provider = provider;
+    }
 
-        public CorsPolicyProvider(
-            ILogger<CorsPolicyProvider> logger,
-            Decorator<ICorsPolicyProvider> inner,
-            IdentityServerOptions options,
-            IServiceProvider provider)
+    public Task<CorsPolicy> GetPolicyAsync(HttpContext context, string policyName)
+    {
+        if (_options.Cors.CorsPolicyName == policyName)
         {
-            _logger = logger;
-            _inner = inner.Instance;
-            _options = options;
-            _provider = provider;
+            return ProcessAsync(context);
         }
-
-        public Task<CorsPolicy> GetPolicyAsync(HttpContext context, string policyName)
+        else
         {
-            if (_options.Cors.CorsPolicyName == policyName)
-            {
-                return ProcessAsync(context);
-            }
-            else
-            {
-                return _inner.GetPolicyAsync(context, policyName);
-            }
+            return _inner.GetPolicyAsync(context, policyName);
         }
+    }
 
-        private async Task<CorsPolicy> ProcessAsync(HttpContext context)
+    private async Task<CorsPolicy> ProcessAsync(HttpContext context)
+    {
+        var origin = context.Request.GetCorsOrigin();
+        if (origin != null)
         {
-            var origin = context.Request.GetCorsOrigin();
-            if (origin != null)
+            var path = context.Request.Path;
+            if (IsPathAllowed(path))
             {
-                var path = context.Request.Path;
-                if (IsPathAllowed(path))
+                _logger.LogDebug("CORS request made for path: {path} from origin: {origin}", path, origin);
+
+                // manually resolving this from DI because this: 
+                // https://github.com/aspnet/CORS/issues/105
+                var corsPolicyService = _provider.GetRequiredService<ICorsPolicyService>();
+
+                if (await corsPolicyService.IsOriginAllowedAsync(origin))
                 {
-                    _logger.LogDebug("CORS request made for path: {path} from origin: {origin}", path, origin);
-
-                    // manually resolving this from DI because this: 
-                    // https://github.com/aspnet/CORS/issues/105
-                    var corsPolicyService = _provider.GetRequiredService<ICorsPolicyService>();
-
-                    if (await corsPolicyService.IsOriginAllowedAsync(origin))
-                    {
-                        _logger.LogDebug("CorsPolicyService allowed origin: {origin}", origin);
-                        return Allow(origin);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("CorsPolicyService did not allow origin: {origin}", origin);
-                    }
+                    _logger.LogDebug("CorsPolicyService allowed origin: {origin}", origin);
+                    return Allow(origin);
                 }
                 else
                 {
-                    _logger.LogDebug("CORS request made for path: {path} from origin: {origin} but was ignored because path was not for an allowed IdentityServer CORS endpoint", path, origin);
+                    _logger.LogWarning("CorsPolicyService did not allow origin: {origin}", origin);
                 }
             }
-
-            return null;
-        }
-
-        private CorsPolicy Allow(string origin)
-        {
-            var policyBuilder = new CorsPolicyBuilder()
-                .WithOrigins(origin)
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-
-            if (_options.Cors.PreflightCacheDuration.HasValue)
+            else
             {
-                policyBuilder.SetPreflightMaxAge(_options.Cors.PreflightCacheDuration.Value);
+                _logger.LogDebug("CORS request made for path: {path} from origin: {origin} but was ignored because path was not for an allowed IdentityServer CORS endpoint", path, origin);
             }
-
-            return policyBuilder.Build();
         }
 
-        private bool IsPathAllowed(PathString path)
+        return null;
+    }
+
+    private CorsPolicy Allow(string origin)
+    {
+        var policyBuilder = new CorsPolicyBuilder()
+            .WithOrigins(origin)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+
+        if (_options.Cors.PreflightCacheDuration.HasValue)
         {
-            return _options.Cors.CorsPaths.Any(x => path == x);
+            policyBuilder.SetPreflightMaxAge(_options.Cors.PreflightCacheDuration.Value);
         }
+
+        return policyBuilder.Build();
+    }
+
+    private bool IsPathAllowed(PathString path)
+    {
+        return _options.Cors.CorsPaths.Any(x => path == x);
     }
 }

@@ -14,186 +14,185 @@ using UnitTests.Validation.Setup;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace UnitTests.Validation.Secrets
+namespace UnitTests.Validation.Secrets;
+
+public class MutualTlsSecretValidation
 {
-    public class MutualTlsSecretValidation
-    {
-        private const string Category = "Secrets - MutualTls Secret Validation";
+    private const string Category = "Secrets - MutualTls Secret Validation";
        
-        private IClientStore _clients = new InMemoryClientStore(ClientValidationTestClients.Get());
+    private IClientStore _clients = new InMemoryClientStore(ClientValidationTestClients.Get());
 
-        ///////////////////
-        // thumbprints
-        ///////////////////
+    ///////////////////
+    // thumbprints
+    ///////////////////
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Thumbprint_invalid_secret_type_should_not_match()
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Thumbprint_invalid_secret_type_should_not_match()
+    {
+        ISecretValidator validator = new X509ThumbprintSecretValidator(new Logger<X509ThumbprintSecretValidator>(new LoggerFactory()));
+
+        var clientId = "mtls_client_invalid";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
+
+        var secret = new ParsedSecret
         {
-            ISecretValidator validator = new X509ThumbprintSecretValidator(new Logger<X509ThumbprintSecretValidator>(new LoggerFactory()));
+            Id = clientId,
+            Credential = "secret",
+            Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
+        };
 
-            var clientId = "mtls_client_invalid";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+        var result = await validator.ValidateAsync(client.ClientSecrets, secret);
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "secret",
-                Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
-            };
+        result.Success.Should().BeFalse();
+    }
 
-            var result = await validator.ValidateAsync(client.ClientSecrets, secret);
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Thumbprint_missing_cert_should_throw()
+    {
+        ISecretValidator validator = new X509ThumbprintSecretValidator(new Logger<X509ThumbprintSecretValidator>(new LoggerFactory()));
 
-            result.Success.Should().BeFalse();
-        }
+        var clientId = "mtls_client_invalid";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Thumbprint_missing_cert_should_throw()
+        var secret = new ParsedSecret
         {
-            ISecretValidator validator = new X509ThumbprintSecretValidator(new Logger<X509ThumbprintSecretValidator>(new LoggerFactory()));
+            Id = clientId,
+            Credential = "secret",
+            Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
+        };
 
-            var clientId = "mtls_client_invalid";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+        Func<Task> act = async () => await validator.ValidateAsync(client.ClientSecrets, secret);
+        act.Should().Throw<InvalidOperationException>();
+    }
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "secret",
-                Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
-            };
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Thumbprint_invalid_secret_should_not_match()
+    {
+        ISecretValidator validator = new X509ThumbprintSecretValidator(new Logger<X509ThumbprintSecretValidator>(new LoggerFactory()));
 
-            Func<Task> act = async () => await validator.ValidateAsync(client.ClientSecrets, secret);
-            act.Should().Throw<InvalidOperationException>();
-        }
+        var clientId = "mtls_client_invalid";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Thumbprint_invalid_secret_should_not_match()
+        var secret = new ParsedSecret
         {
-            ISecretValidator validator = new X509ThumbprintSecretValidator(new Logger<X509ThumbprintSecretValidator>(new LoggerFactory()));
+            Id = clientId,
+            Credential = TestCert.Load(),
+            Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
+        };
 
-            var clientId = "mtls_client_invalid";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+        var result = await validator.ValidateAsync(client.ClientSecrets, secret);
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = TestCert.Load(),
-                Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
-            };
+        result.Success.Should().BeFalse();
+    }
 
-            var result = await validator.ValidateAsync(client.ClientSecrets, secret);
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Thumbprint_valid_secret_should_match()
+    {
+        ISecretValidator validator = new X509ThumbprintSecretValidator(new Logger<X509ThumbprintSecretValidator>(new LoggerFactory()));
 
-            result.Success.Should().BeFalse();
-        }
+        var clientId = "mtls_client_valid";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Thumbprint_valid_secret_should_match()
+        var secret = new ParsedSecret
         {
-            ISecretValidator validator = new X509ThumbprintSecretValidator(new Logger<X509ThumbprintSecretValidator>(new LoggerFactory()));
+            Id = clientId,
+            Credential = TestCert.Load(),
+            Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
+        };
 
-            var clientId = "mtls_client_valid";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+        var result = await validator.ValidateAsync(client.ClientSecrets, secret);
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = TestCert.Load(),
-                Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
-            };
+        result.Success.Should().BeTrue();
+    }
 
-            var result = await validator.ValidateAsync(client.ClientSecrets, secret);
+    ///////////////////
+    // names
+    ///////////////////
 
-            result.Success.Should().BeTrue();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Name_invalid_secret_type_should_not_match()
+    {
+        ISecretValidator validator = new X509NameSecretValidator(new Logger<X509NameSecretValidator>(new LoggerFactory()));
 
-        ///////////////////
-        // names
-        ///////////////////
+        var clientId = "mtls_client_invalid";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Name_invalid_secret_type_should_not_match()
+        var secret = new ParsedSecret
         {
-            ISecretValidator validator = new X509NameSecretValidator(new Logger<X509NameSecretValidator>(new LoggerFactory()));
+            Id = clientId,
+            Credential = "secret",
+            Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
+        };
 
-            var clientId = "mtls_client_invalid";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+        var result = await validator.ValidateAsync(client.ClientSecrets, secret);
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "secret",
-                Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
-            };
+        result.Success.Should().BeFalse();
+    }
 
-            var result = await validator.ValidateAsync(client.ClientSecrets, secret);
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Name_missing_cert_should_throw()
+    {
+        ISecretValidator validator = new X509NameSecretValidator(new Logger<X509NameSecretValidator>(new LoggerFactory()));
 
-            result.Success.Should().BeFalse();
-        }
+        var clientId = "mtls_client_invalid";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Name_missing_cert_should_throw()
+        var secret = new ParsedSecret
         {
-            ISecretValidator validator = new X509NameSecretValidator(new Logger<X509NameSecretValidator>(new LoggerFactory()));
+            Id = clientId,
+            Credential = "secret",
+            Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
+        };
 
-            var clientId = "mtls_client_invalid";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+        Func<Task> act = async () => await validator.ValidateAsync(client.ClientSecrets, secret);
+        act.Should().Throw<InvalidOperationException>();
+    }
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = "secret",
-                Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
-            };
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Name_invalid_secret_should_not_match()
+    {
+        ISecretValidator validator = new X509NameSecretValidator(new Logger<X509NameSecretValidator>(new LoggerFactory()));
 
-            Func<Task> act = async () => await validator.ValidateAsync(client.ClientSecrets, secret);
-            act.Should().Throw<InvalidOperationException>();
-        }
+        var clientId = "mtls_client_invalid";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Name_invalid_secret_should_not_match()
+        var secret = new ParsedSecret
         {
-            ISecretValidator validator = new X509NameSecretValidator(new Logger<X509NameSecretValidator>(new LoggerFactory()));
+            Id = clientId,
+            Credential = TestCert.Load(),
+            Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
+        };
 
-            var clientId = "mtls_client_invalid";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+        var result = await validator.ValidateAsync(client.ClientSecrets, secret);
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = TestCert.Load(),
-                Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
-            };
+        result.Success.Should().BeFalse();
+    }
 
-            var result = await validator.ValidateAsync(client.ClientSecrets, secret);
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Name_valid_secret_should_match()
+    {
+        ISecretValidator validator = new X509NameSecretValidator(new Logger<X509NameSecretValidator>(new LoggerFactory()));
 
-            result.Success.Should().BeFalse();
-        }
+        var clientId = "mtls_client_valid";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Name_valid_secret_should_match()
+        var secret = new ParsedSecret
         {
-            ISecretValidator validator = new X509NameSecretValidator(new Logger<X509NameSecretValidator>(new LoggerFactory()));
+            Id = clientId,
+            Credential = TestCert.Load(),
+            Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
+        };
 
-            var clientId = "mtls_client_valid";
-            var client = await _clients.FindEnabledClientByIdAsync(clientId);
+        var result = await validator.ValidateAsync(client.ClientSecrets, secret);
 
-            var secret = new ParsedSecret
-            {
-                Id = clientId,
-                Credential = TestCert.Load(),
-                Type = IdentityServerConstants.ParsedSecretTypes.X509Certificate
-            };
-
-            var result = await validator.ValidateAsync(client.ClientSecrets, secret);
-
-            result.Success.Should().BeTrue();
-        }
+        result.Success.Should().BeTrue();
     }
 }

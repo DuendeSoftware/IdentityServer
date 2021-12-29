@@ -8,14 +8,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 #pragma warning disable 1591
 
-namespace Duende.IdentityServer.Hosting
+namespace Duende.IdentityServer.Hosting;
+
+public static class CorsMiddlewareExtensions
 {
-    public static class CorsMiddlewareExtensions
+    public static void ConfigureCors(this IApplicationBuilder app)
     {
-        public static void ConfigureCors(this IApplicationBuilder app)
-        {
-            var options = app.ApplicationServices.GetRequiredService<IdentityServerOptions>();
-            app.UseCors(options.Cors.CorsPolicyName);
-        }
+        var options = app.ApplicationServices.GetRequiredService<IdentityServerOptions>();
+        app.UseCors(options.Cors.CorsPolicyName);
     }
 }

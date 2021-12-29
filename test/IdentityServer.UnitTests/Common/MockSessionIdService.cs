@@ -3,41 +3,40 @@
 
 
 
-namespace UnitTests.Common
-{
-    //public class MockSessionIdService : ISessionIdService
-    //{
-    //    public bool RemoveCookieWasCalled { get; private set; }
-    //    public string SessionId { get; set; } = "session_id";
+namespace UnitTests.Common;
 
-    //    public void CreateSessionId(SignInContext context)
-    //    {
-    //    }
+//public class MockSessionIdService : ISessionIdService
+//{
+//    public bool RemoveCookieWasCalled { get; private set; }
+//    public string SessionId { get; set; } = "session_id";
 
-    //    public Task EnsureSessionCookieAsync()
-    //    {
-    //        return Task.CompletedTask;
-    //    }
+//    public void CreateSessionId(SignInContext context)
+//    {
+//    }
 
-    //    public string GetCookieName()
-    //    {
-    //        return "sessionid";
-    //    }
+//    public Task EnsureSessionCookieAsync()
+//    {
+//        return Task.CompletedTask;
+//    }
 
-    //    public string GetCookieValue()
-    //    {
-    //        return SessionId;
-    //    }
+//    public string GetCookieName()
+//    {
+//        return "sessionid";
+//    }
 
-    //    public Task<string> GetCurrentSessionIdAsync()
-    //    {
-    //        return Task.FromResult(SessionId);
-    //    }
+//    public string GetCookieValue()
+//    {
+//        return SessionId;
+//    }
 
-    //    public void RemoveCookie()
-    //    {
-    //        RemoveCookieWasCalled = true;
-    //        SessionId = null;
-    //    }
-    //}
-}
+//    public Task<string> GetCurrentSessionIdAsync()
+//    {
+//        return Task.FromResult(SessionId);
+//    }
+
+//    public void RemoveCookie()
+//    {
+//        RemoveCookieWasCalled = true;
+//        SessionId = null;
+//    }
+//}

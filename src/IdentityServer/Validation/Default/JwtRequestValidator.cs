@@ -16,194 +16,193 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Duende.IdentityServer.Validation
+namespace Duende.IdentityServer.Validation;
+
+/// <summary>
+/// Validates JWT authorization request objects
+/// </summary>
+public class JwtRequestValidator : IJwtRequestValidator
 {
+    private readonly string _audienceUri;
+
     /// <summary>
-    /// Validates JWT authorization request objects
+    /// JWT handler
     /// </summary>
-    public class JwtRequestValidator : IJwtRequestValidator
+    protected JsonWebTokenHandler Handler;
+
+    /// <summary>
+    /// The audience URI to use
+    /// </summary>
+    protected async Task<string> GetAudienceUri()
     {
-        private readonly string _audienceUri;
-
-        /// <summary>
-        /// JWT handler
-        /// </summary>
-        protected JsonWebTokenHandler Handler;
-
-        /// <summary>
-        /// The audience URI to use
-        /// </summary>
-        protected async Task<string> GetAudienceUri()
+        if (_audienceUri.IsPresent())
         {
-            if (_audienceUri.IsPresent())
-            {
-                return _audienceUri;
-            }
-
-            return await IssuerNameService.GetCurrentAsync();
+            return _audienceUri;
         }
 
-        /// <summary>
-        /// The logger
-        /// </summary>
-        protected readonly ILogger Logger;
+        return await IssuerNameService.GetCurrentAsync();
+    }
 
-        /// <summary>
-        /// The options
-        /// </summary>
-        protected readonly IdentityServerOptions Options;
+    /// <summary>
+    /// The logger
+    /// </summary>
+    protected readonly ILogger Logger;
 
-        /// <summary>
-        /// The issuer name service
-        /// </summary>
-        protected readonly IIssuerNameService IssuerNameService;
+    /// <summary>
+    /// The options
+    /// </summary>
+    protected readonly IdentityServerOptions Options;
 
-        /// <summary>
-        /// Instantiates an instance of private_key_jwt secret validator
-        /// </summary>
-        public JwtRequestValidator(IdentityServerOptions options, IIssuerNameService issuerNameService,
-            ILogger<JwtRequestValidator> logger)
-        {
-            Options = options;
-            IssuerNameService = issuerNameService;
-            Logger = logger;
+    /// <summary>
+    /// The issuer name service
+    /// </summary>
+    protected readonly IIssuerNameService IssuerNameService;
+
+    /// <summary>
+    /// Instantiates an instance of private_key_jwt secret validator
+    /// </summary>
+    public JwtRequestValidator(IdentityServerOptions options, IIssuerNameService issuerNameService,
+        ILogger<JwtRequestValidator> logger)
+    {
+        Options = options;
+        IssuerNameService = issuerNameService;
+        Logger = logger;
             
-            Handler = new JsonWebTokenHandler
-            {
-                MaximumTokenSizeInBytes = options.InputLengthRestrictions.Jwt
-            };
-        }
-
-        /// <summary>
-        /// Instantiates an instance of private_key_jwt secret validator (used for testing)
-        /// </summary>
-        internal JwtRequestValidator(string audience, ILogger<JwtRequestValidator> logger)
+        Handler = new JsonWebTokenHandler
         {
-            _audienceUri = audience;
+            MaximumTokenSizeInBytes = options.InputLengthRestrictions.Jwt
+        };
+    }
+
+    /// <summary>
+    /// Instantiates an instance of private_key_jwt secret validator (used for testing)
+    /// </summary>
+    internal JwtRequestValidator(string audience, ILogger<JwtRequestValidator> logger)
+    {
+        _audienceUri = audience;
             
-            Logger = logger;
-            Handler = new JsonWebTokenHandler();
+        Logger = logger;
+        Handler = new JsonWebTokenHandler();
+    }
+
+    /// <inheritdoc/>
+    public virtual async Task<JwtRequestValidationResult> ValidateAsync(JwtRequestValidationContext context)
+    {
+        if (context == null) throw new ArgumentNullException(nameof(context));
+        if (context.Client == null) throw new ArgumentNullException(nameof(context.Client));
+        if (String.IsNullOrWhiteSpace(context.JwtTokenString)) throw new ArgumentNullException(nameof(context.JwtTokenString));
+
+        var fail = new JwtRequestValidationResult { IsError = true };
+
+        List<SecurityKey> trustedKeys;
+        try
+        {
+            trustedKeys = await GetKeysAsync(context.Client);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Could not parse client secrets");
+            return fail;
         }
 
-        /// <inheritdoc/>
-        public virtual async Task<JwtRequestValidationResult> ValidateAsync(JwtRequestValidationContext context)
+        if (!trustedKeys.Any())
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            if (context.Client == null) throw new ArgumentNullException(nameof(context.Client));
-            if (String.IsNullOrWhiteSpace(context.JwtTokenString)) throw new ArgumentNullException(nameof(context.JwtTokenString));
-
-            var fail = new JwtRequestValidationResult { IsError = true };
-
-            List<SecurityKey> trustedKeys;
-            try
-            {
-                trustedKeys = await GetKeysAsync(context.Client);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Could not parse client secrets");
-                return fail;
-            }
-
-            if (!trustedKeys.Any())
-            {
-                Logger.LogError("There are no keys available to validate JWT.");
-                return fail;
-            }
-
-            JsonWebToken jwtSecurityToken;
-            try
-            {
-                jwtSecurityToken = await ValidateJwtAsync(context, trustedKeys);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "JWT token validation error");
-                return fail;
-            }
-
-            if (jwtSecurityToken.TryGetPayloadValue<string>(OidcConstants.AuthorizeRequest.Request, out _) ||
-                jwtSecurityToken.TryGetPayloadValue<string>(OidcConstants.AuthorizeRequest.RequestUri, out _))
-            {
-                Logger.LogError("JWT payload must not contain request or request_uri");
-                return fail;
-            }
-
-            var payload = await ProcessPayloadAsync(context, jwtSecurityToken);
-
-            var result = new JwtRequestValidationResult
-            {
-                IsError = false,
-                Payload = payload
-            };
-
-            Logger.LogDebug("JWT request object validation success.");
-            return result;
+            Logger.LogError("There are no keys available to validate JWT.");
+            return fail;
         }
 
-        /// <summary>
-        /// Retrieves keys for a given client
-        /// </summary>
-        /// <param name="client">The client</param>
-        /// <returns></returns>
-        protected virtual Task<List<SecurityKey>> GetKeysAsync(Client client)
+        JsonWebToken jwtSecurityToken;
+        try
         {
-            return client.ClientSecrets.GetKeysAsync();
+            jwtSecurityToken = await ValidateJwtAsync(context, trustedKeys);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "JWT token validation error");
+            return fail;
         }
 
-        /// <summary>
-        /// Validates the JWT token
-        /// </summary>
-        protected virtual async Task<JsonWebToken> ValidateJwtAsync(JwtRequestValidationContext context, IEnumerable<SecurityKey> keys)
+        if (jwtSecurityToken.TryGetPayloadValue<string>(OidcConstants.AuthorizeRequest.Request, out _) ||
+            jwtSecurityToken.TryGetPayloadValue<string>(OidcConstants.AuthorizeRequest.RequestUri, out _))
         {
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                IssuerSigningKeys = keys,
-                ValidateIssuerSigningKey = true,
-
-                ValidIssuer = context.Client.ClientId,
-                ValidateIssuer = true,
-
-                ValidAudience = await GetAudienceUri(),
-                ValidateAudience = true,
-
-                RequireSignedTokens = true,
-                RequireExpirationTime = true
-            };
-
-            var strictJarValidation = context.StrictJarValidation.HasValue ? context.StrictJarValidation.Value : Options.StrictJarValidation;
-            if (strictJarValidation)
-            {
-                tokenValidationParameters.ValidTypes = new[] { JwtClaimTypes.JwtTypes.AuthorizationRequest };
-            }
-
-            var result = Handler.ValidateToken(context.JwtTokenString, tokenValidationParameters);
-            if (!result.IsValid)
-            {
-                throw result.Exception;
-            }
-
-            return (JsonWebToken)result.SecurityToken;
+            Logger.LogError("JWT payload must not contain request or request_uri");
+            return fail;
         }
 
-        /// <summary>
-        /// Processes the JWT contents
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="token">The JWT token</param>
-        /// <returns></returns>
-        protected virtual Task<List<Claim>> ProcessPayloadAsync(JwtRequestValidationContext context, JsonWebToken token)
+        var payload = await ProcessPayloadAsync(context, jwtSecurityToken);
+
+        var result = new JwtRequestValidationResult
         {
-            // filter JWT validation values
-            var filter = Constants.Filters.JwtRequestClaimTypesFilter.ToList();
-            if (context.IncludeJti)
-            {
-                // don't filter out the jti claim
-                filter.Remove(JwtClaimTypes.JwtId);
-            }
+            IsError = false,
+            Payload = payload
+        };
+
+        Logger.LogDebug("JWT request object validation success.");
+        return result;
+    }
+
+    /// <summary>
+    /// Retrieves keys for a given client
+    /// </summary>
+    /// <param name="client">The client</param>
+    /// <returns></returns>
+    protected virtual Task<List<SecurityKey>> GetKeysAsync(Client client)
+    {
+        return client.ClientSecrets.GetKeysAsync();
+    }
+
+    /// <summary>
+    /// Validates the JWT token
+    /// </summary>
+    protected virtual async Task<JsonWebToken> ValidateJwtAsync(JwtRequestValidationContext context, IEnumerable<SecurityKey> keys)
+    {
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            IssuerSigningKeys = keys,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = context.Client.ClientId,
+            ValidateIssuer = true,
+
+            ValidAudience = await GetAudienceUri(),
+            ValidateAudience = true,
+
+            RequireSignedTokens = true,
+            RequireExpirationTime = true
+        };
+
+        var strictJarValidation = context.StrictJarValidation.HasValue ? context.StrictJarValidation.Value : Options.StrictJarValidation;
+        if (strictJarValidation)
+        {
+            tokenValidationParameters.ValidTypes = new[] { JwtClaimTypes.JwtTypes.AuthorizationRequest };
+        }
+
+        var result = Handler.ValidateToken(context.JwtTokenString, tokenValidationParameters);
+        if (!result.IsValid)
+        {
+            throw result.Exception;
+        }
+
+        return (JsonWebToken)result.SecurityToken;
+    }
+
+    /// <summary>
+    /// Processes the JWT contents
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="token">The JWT token</param>
+    /// <returns></returns>
+    protected virtual Task<List<Claim>> ProcessPayloadAsync(JwtRequestValidationContext context, JsonWebToken token)
+    {
+        // filter JWT validation values
+        var filter = Constants.Filters.JwtRequestClaimTypesFilter.ToList();
+        if (context.IncludeJti)
+        {
+            // don't filter out the jti claim
+            filter.Remove(JwtClaimTypes.JwtId);
+        }
             
-            var filtered = token.Claims.Where(claim => !filter.Contains(claim.Type));
-            return Task.FromResult(filtered.ToList());
-        }
+        var filtered = token.Claims.Where(claim => !filter.Contains(claim.Type));
+        return Task.FromResult(filtered.ToList());
     }
 }

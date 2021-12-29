@@ -11,160 +11,159 @@ using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace UnitTests.Validation
+namespace UnitTests.Validation;
+
+public class BearerTokenUsageValidation
 {
-    public class BearerTokenUsageValidation
+    private const string Category = "BearerTokenUsageValidator Tests";
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task No_Header_no_Body_Get()
     {
-        private const string Category = "BearerTokenUsageValidator Tests";
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "GET";
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task No_Header_no_Body_Get()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "GET";
+        var validator = new BearerTokenUsageValidator(TestLogger.Create< BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create< BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
+        result.TokenFound.Should().BeFalse();
+    }
 
-            result.TokenFound.Should().BeFalse();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task No_Header_no_Body_Post()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "POST";
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task No_Header_no_Body_Post()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "POST";
+        var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
+        result.TokenFound.Should().BeFalse();
+    }
 
-            result.TokenFound.Should().BeFalse();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Non_Bearer_Scheme_Header()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "GET";
+        ctx.Request.Headers.Add("Authorization", new string[] { "Foo Bar" });
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Non_Bearer_Scheme_Header()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "GET";
-            ctx.Request.Headers.Add("Authorization", new string[] { "Foo Bar" });
+        var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
+        result.TokenFound.Should().BeFalse();
+    }
 
-            result.TokenFound.Should().BeFalse();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Empty_Bearer_Scheme_Header()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "GET";
+        ctx.Request.Headers.Add("Authorization", new string[] { "Bearer" });
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Empty_Bearer_Scheme_Header()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "GET";
-            ctx.Request.Headers.Add("Authorization", new string[] { "Bearer" });
+        var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
+        result.TokenFound.Should().BeFalse();
+    }
 
-            result.TokenFound.Should().BeFalse();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Whitespaces_Bearer_Scheme_Header()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "GET";
+        ctx.Request.Headers.Add("Authorization", new string[] { "Bearer           " });
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Whitespaces_Bearer_Scheme_Header()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "GET";
-            ctx.Request.Headers.Add("Authorization", new string[] { "Bearer           " });
+        var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
+        result.TokenFound.Should().BeFalse();
+    }
 
-            result.TokenFound.Should().BeFalse();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Valid_Bearer_Scheme_Header()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "GET";
+        ctx.Request.Headers.Add("Authorization", new string[] { "Bearer token" });
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Valid_Bearer_Scheme_Header()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "GET";
-            ctx.Request.Headers.Add("Authorization", new string[] { "Bearer token" });
+        var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
+        result.TokenFound.Should().BeTrue();
+        result.Token.Should().Be("token");
+        result.UsageType.Should().Be(BearerTokenUsageType.AuthorizationHeader);
+    }
 
-            result.TokenFound.Should().BeTrue();
-            result.Token.Should().Be("token");
-            result.UsageType.Should().Be(BearerTokenUsageType.AuthorizationHeader);
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Valid_Body_Post()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "POST";
+        ctx.Request.ContentType = "application/x-www-form-urlencoded";
+        var body = "access_token=token";
+        ctx.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Valid_Body_Post()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "POST";
-            ctx.Request.ContentType = "application/x-www-form-urlencoded";
-            var body = "access_token=token";
-            ctx.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+        var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
+        result.TokenFound.Should().BeTrue();
+        result.Token.Should().Be("token");
+        result.UsageType.Should().Be(BearerTokenUsageType.PostBody);
+    }
 
-            result.TokenFound.Should().BeTrue();
-            result.Token.Should().Be("token");
-            result.UsageType.Should().Be(BearerTokenUsageType.PostBody);
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Body_Post_empty_Token()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "POST";
+        ctx.Request.ContentType = "application/x-www-form-urlencoded";
+        var body = "access_token=";
+        ctx.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Body_Post_empty_Token()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "POST";
-            ctx.Request.ContentType = "application/x-www-form-urlencoded";
-            var body = "access_token=";
-            ctx.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+        var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
+        result.TokenFound.Should().BeFalse();
+    }
 
-            result.TokenFound.Should().BeFalse();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Body_Post_Whitespace_Token()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "POST";
+        ctx.Request.ContentType = "application/x-www-form-urlencoded";
+        var body = "access_token=                ";
+        ctx.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Body_Post_Whitespace_Token()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "POST";
-            ctx.Request.ContentType = "application/x-www-form-urlencoded";
-            var body = "access_token=                ";
-            ctx.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+        var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
+        result.TokenFound.Should().BeFalse();
+    }
 
-            result.TokenFound.Should().BeFalse();
-        }
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Body_Post_no_Token()
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Method = "POST";
+        ctx.Request.ContentType = "application/x-www-form-urlencoded";
+        var body = "foo=bar";
+        ctx.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
-        [Fact]
-        [Trait("Category", Category)]
-        public async Task Body_Post_no_Token()
-        {
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Method = "POST";
-            ctx.Request.ContentType = "application/x-www-form-urlencoded";
-            var body = "foo=bar";
-            ctx.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+        var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
+        var result = await validator.ValidateAsync(ctx);
 
-            var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
-            var result = await validator.ValidateAsync(ctx);
-
-            result.TokenFound.Should().BeFalse();
-        }
+        result.TokenFound.Should().BeFalse();
     }
 }

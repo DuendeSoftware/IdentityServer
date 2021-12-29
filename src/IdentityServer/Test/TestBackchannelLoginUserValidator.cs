@@ -9,50 +9,49 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Implementation of IBackchannelAuthenticationUserValidator using the test user store.
+/// </summary>
+public class TestBackchannelLoginUserValidator : IBackchannelAuthenticationUserValidator
 {
+    private readonly TestUserStore _testUserStore;
+
     /// <summary>
-    /// Implementation of IBackchannelAuthenticationUserValidator using the test user store.
+    /// Ctor
     /// </summary>
-    public class TestBackchannelLoginUserValidator : IBackchannelAuthenticationUserValidator
+    public TestBackchannelLoginUserValidator(TestUserStore testUserStore)
     {
-        private readonly TestUserStore _testUserStore;
+        _testUserStore = testUserStore;
+    }
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        public TestBackchannelLoginUserValidator(TestUserStore testUserStore)
+    /// <inheritdoc/>
+    public Task<BackchannelAuthenticationUserValidatonResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
+    {
+        var result = new BackchannelAuthenticationUserValidatonResult();
+
+        TestUser user = default;
+
+        if (userValidatorContext.LoginHint != null)
         {
-            _testUserStore = testUserStore;
+            user = _testUserStore.FindByUsername(userValidatorContext.LoginHint);
+        }
+        else if (userValidatorContext.IdTokenHintClaims != null)
+        {
+            user = _testUserStore.FindBySubjectId(userValidatorContext.IdTokenHintClaims.SingleOrDefault(x => x.Type == JwtClaimTypes.Subject)?.Value);
         }
 
-        /// <inheritdoc/>
-        public Task<BackchannelAuthenticationUserValidatonResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
+        if (user != null && user.IsActive)
         {
-            var result = new BackchannelAuthenticationUserValidatonResult();
-
-            TestUser user = default;
-
-            if (userValidatorContext.LoginHint != null)
+            var claims = new List<Claim>
             {
-                user = _testUserStore.FindByUsername(userValidatorContext.LoginHint);
-            }
-            else if (userValidatorContext.IdTokenHintClaims != null)
-            {
-                user = _testUserStore.FindBySubjectId(userValidatorContext.IdTokenHintClaims.SingleOrDefault(x => x.Type == JwtClaimTypes.Subject)?.Value);
-            }
-
-            if (user != null && user.IsActive)
-            {
-                var claims = new List<Claim>
-                {
-                    new Claim(JwtClaimTypes.Subject, user.SubjectId)
-                };
-                var ci = new ClaimsIdentity(claims, "ciba");
-                result.Subject = new ClaimsPrincipal(ci);
-            }
+                new Claim(JwtClaimTypes.Subject, user.SubjectId)
+            };
+            var ci = new ClaimsIdentity(claims, "ciba");
+            result.Subject = new ClaimsPrincipal(ci);
+        }
  
-            return Task.FromResult(result);
-        }
+        return Task.FromResult(result);
     }
 }

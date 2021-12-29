@@ -8,27 +8,26 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 
-namespace UnitTests.Common
+namespace UnitTests.Common;
+
+public class MockMessageStore<TModel> : IMessageStore<TModel>
 {
-    public class MockMessageStore<TModel> : IMessageStore<TModel>
+    public Dictionary<string, Message<TModel>> Messages { get; set; } = new Dictionary<string, Message<TModel>>();
+
+    public Task<Message<TModel>> ReadAsync(string id)
     {
-        public Dictionary<string, Message<TModel>> Messages { get; set; } = new Dictionary<string, Message<TModel>>();
-
-        public Task<Message<TModel>> ReadAsync(string id)
+        Message<TModel> val = null;
+        if (id != null)
         {
-            Message<TModel> val = null;
-            if (id != null)
-            {
-                Messages.TryGetValue(id, out val);
-            }
-            return Task.FromResult(val);
+            Messages.TryGetValue(id, out val);
         }
+        return Task.FromResult(val);
+    }
 
-        public Task<string> WriteAsync(Message<TModel> message)
-        {
-            var id = Guid.NewGuid().ToString();
-            Messages[id] = message;
-            return Task.FromResult(id);
-        }
+    public Task<string> WriteAsync(Message<TModel> message)
+    {
+        var id = Guid.NewGuid().ToString();
+        Messages[id] = message;
+        return Task.FromResult(id);
     }
 }

@@ -8,90 +8,89 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// DI extension methods for adding IdentityServer
+/// </summary>
+public static class IdentityServerServiceCollectionExtensions
 {
     /// <summary>
-    /// DI extension methods for adding IdentityServer
+    /// Creates a builder.
     /// </summary>
-    public static class IdentityServerServiceCollectionExtensions
+    /// <param name="services">The services.</param>
+    /// <returns></returns>
+    public static IIdentityServerBuilder AddIdentityServerBuilder(this IServiceCollection services)
     {
-        /// <summary>
-        /// Creates a builder.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <returns></returns>
-        public static IIdentityServerBuilder AddIdentityServerBuilder(this IServiceCollection services)
-        {
-            return new IdentityServerBuilder(services);
-        }
+        return new IdentityServerBuilder(services);
+    }
 
-        /// <summary>
-        /// Adds IdentityServer.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <returns></returns>
-        public static IIdentityServerBuilder AddIdentityServer(this IServiceCollection services)
-        {
-            var builder = services.AddIdentityServerBuilder();
+    /// <summary>
+    /// Adds IdentityServer.
+    /// </summary>
+    /// <param name="services">The services.</param>
+    /// <returns></returns>
+    public static IIdentityServerBuilder AddIdentityServer(this IServiceCollection services)
+    {
+        var builder = services.AddIdentityServerBuilder();
 
-            builder
-                .AddRequiredPlatformServices()
-                .AddCookieAuthentication()
-                .AddCoreServices()
-                .AddDefaultEndpoints()
-                .AddPluggableServices()
-                .AddKeyManagement()
-                .AddDynamicProvidersCore()
-                .AddOidcDynamicProvider()
-                .AddValidators()
-                .AddResponseGenerators()
-                .AddDefaultSecretParsers()
-                .AddDefaultSecretValidators();
+        builder
+            .AddRequiredPlatformServices()
+            .AddCookieAuthentication()
+            .AddCoreServices()
+            .AddDefaultEndpoints()
+            .AddPluggableServices()
+            .AddKeyManagement()
+            .AddDynamicProvidersCore()
+            .AddOidcDynamicProvider()
+            .AddValidators()
+            .AddResponseGenerators()
+            .AddDefaultSecretParsers()
+            .AddDefaultSecretValidators();
 
-            // provide default in-memory implementation, not suitable for most production scenarios
-            builder.AddInMemoryPersistedGrants();
+        // provide default in-memory implementation, not suitable for most production scenarios
+        builder.AddInMemoryPersistedGrants();
 
-            return builder;
-        }
+        return builder;
+    }
 
-        /// <summary>
-        /// Adds IdentityServer.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="setupAction">The setup action.</param>
-        /// <returns></returns>
-        public static IIdentityServerBuilder AddIdentityServer(this IServiceCollection services, Action<IdentityServerOptions> setupAction)
-        {
-            services.Configure(setupAction);
-            return services.AddIdentityServer();
-        }
+    /// <summary>
+    /// Adds IdentityServer.
+    /// </summary>
+    /// <param name="services">The services.</param>
+    /// <param name="setupAction">The setup action.</param>
+    /// <returns></returns>
+    public static IIdentityServerBuilder AddIdentityServer(this IServiceCollection services, Action<IdentityServerOptions> setupAction)
+    {
+        services.Configure(setupAction);
+        return services.AddIdentityServer();
+    }
 
-        /// <summary>
-        /// Adds the IdentityServer.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="configuration">The configuration.</param>
-        /// <returns></returns>
-        public static IIdentityServerBuilder AddIdentityServer(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.Configure<IdentityServerOptions>(configuration);
-            return services.AddIdentityServer();
-        }
+    /// <summary>
+    /// Adds the IdentityServer.
+    /// </summary>
+    /// <param name="services">The services.</param>
+    /// <param name="configuration">The configuration.</param>
+    /// <returns></returns>
+    public static IIdentityServerBuilder AddIdentityServer(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<IdentityServerOptions>(configuration);
+        return services.AddIdentityServer();
+    }
 
-        /// <summary>
-        /// Configures the OpenIdConnect handlers to persist the state parameter into the server-side IDistributedCache.
-        /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="schemes">The schemes to configure. If none provided, then all OpenIdConnect schemes will use the cache.</param>
-        public static IServiceCollection AddOidcStateDataFormatterCache(this IServiceCollection services, params string[] schemes)
-        {
-            services.AddSingleton<IPostConfigureOptions<OpenIdConnectOptions>>(
-                svcs => new ConfigureOpenIdConnectOptions(
-                    schemes,
-                    svcs)
-            );
+    /// <summary>
+    /// Configures the OpenIdConnect handlers to persist the state parameter into the server-side IDistributedCache.
+    /// </summary>
+    /// <param name="services">The services.</param>
+    /// <param name="schemes">The schemes to configure. If none provided, then all OpenIdConnect schemes will use the cache.</param>
+    public static IServiceCollection AddOidcStateDataFormatterCache(this IServiceCollection services, params string[] schemes)
+    {
+        services.AddSingleton<IPostConfigureOptions<OpenIdConnectOptions>>(
+            svcs => new ConfigureOpenIdConnectOptions(
+                schemes,
+                svcs)
+        );
 
-            return services;
-        }
+        return services;
     }
 }

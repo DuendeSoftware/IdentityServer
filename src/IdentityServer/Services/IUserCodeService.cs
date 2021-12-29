@@ -4,18 +4,17 @@
 
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services
+namespace Duende.IdentityServer.Services;
+
+/// <summary>
+/// Implements user code generation
+/// </summary>
+public interface IUserCodeService
 {
     /// <summary>
-    /// Implements user code generation
+    /// Gets the user code generator.
     /// </summary>
-    public interface IUserCodeService
-    {
-        /// <summary>
-        /// Gets the user code generator.
-        /// </summary>
-        /// <param name="userCodeType">Type of user code.</param>
-        /// <returns></returns>
-        Task<IUserCodeGenerator> GetGenerator(string userCodeType);
-    }
+    /// <param name="userCodeType">Type of user code.</param>
+    /// <returns></returns>
+    Task<IUserCodeGenerator> GetGenerator(string userCodeType);
 }
