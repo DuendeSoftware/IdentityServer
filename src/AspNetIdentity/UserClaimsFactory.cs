@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -54,7 +54,6 @@ internal class UserClaimsFactory<TUser> : IUserClaimsPrincipalFactory<TUser>
             {
                 identity.AddClaims(new[]
                 {
-                    new Claim(JwtClaimTypes.Email, email),
                     new Claim(JwtClaimTypes.EmailVerified,
                         await _userManager.IsEmailConfirmedAsync(user) ? "true" : "false", ClaimValueTypes.Boolean)
                 });
