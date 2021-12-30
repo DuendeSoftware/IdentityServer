@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -36,6 +36,7 @@ public static class IdentityServerBuilderExtensions
             options.ClaimsIdentity.UserIdClaimType = JwtClaimTypes.Subject;
             options.ClaimsIdentity.UserNameClaimType = JwtClaimTypes.Name;
             options.ClaimsIdentity.RoleClaimType = JwtClaimTypes.Role;
+            options.ClaimsIdentity.EmailClaimType = JwtClaimTypes.Email;
         });
 
         builder.Services.Configure<SecurityStampValidatorOptions>(opts =>
