@@ -50,6 +50,8 @@ public class IdentityServerMiddleware
         IIssuerNameService issuerNameService,
         IBackChannelLogoutService backChannelLogoutService)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("IdentityServerMiddleware");
+        
         // this will check the authentication session and from it emit the check session
         // cookie needed from JS-based signout clients.
         await session.EnsureSessionIdCookieAsync();
