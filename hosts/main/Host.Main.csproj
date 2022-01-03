@@ -4,6 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
         <RootNamespace>IdentityServerHost</RootNamespace>
+        <UserSecretsId>e60c119c-8b86-4016-9d44-80e25948dbba</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,8 +20,16 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="All" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
+        <PackageReference Include="OpenTelemetry" Version="1.2.0-rc1" />
+        <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.2.0-rc1" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.2.0-rc1" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc8" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc8" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc8" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.0.0-rc8" />
 
         <PackageReference Include="Serilog.AspNetCore" />
+        
     </ItemGroup>
 
     <ItemGroup>
