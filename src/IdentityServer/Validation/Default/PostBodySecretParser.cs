@@ -49,6 +49,8 @@ public class PostBodySecretParser : ISecretParser
     /// </returns>
     public async Task<ParsedSecret> ParseAsync(HttpContext context)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("PostBodySecretParser");
+        
         _logger.LogDebug("Start parsing for secret in post body");
 
         if (!context.Request.HasApplicationFormContentType())

@@ -36,6 +36,8 @@ public class DefaultResourceValidator : IResourceValidator
     /// <inheritdoc/>
     public virtual async Task<ResourceValidationResult> ValidateRequestedResourcesAsync(ResourceValidationRequest request)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("ValidateRequestedResources");
+        
         if (request == null) throw new ArgumentNullException(nameof(request));
 
         var result = new ResourceValidationResult();

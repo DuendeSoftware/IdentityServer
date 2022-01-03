@@ -40,6 +40,8 @@ public class HashedSharedSecretValidator : ISecretValidator
     /// <exception cref="System.ArgumentNullException">Id or cedential</exception>
     public Task<SecretValidationResult> ValidateAsync(IEnumerable<Secret> secrets, ParsedSecret parsedSecret)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("HashedSharedSecretValidation");
+        
         var fail = Task.FromResult(new SecretValidationResult { Success = false });
         var success = Task.FromResult(new SecretValidationResult { Success = true });
 

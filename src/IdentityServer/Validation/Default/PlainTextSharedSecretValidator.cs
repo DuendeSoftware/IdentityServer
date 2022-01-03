@@ -40,6 +40,8 @@ public class PlainTextSharedSecretValidator : ISecretValidator
     /// <exception cref="System.ArgumentException">id or credential is missing.</exception>
     public Task<SecretValidationResult> ValidateAsync(IEnumerable<Secret> secrets, ParsedSecret parsedSecret)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("PlainTextSharedSecretValidation");
+        
         var fail = Task.FromResult(new SecretValidationResult { Success = false });
         var success = Task.FromResult(new SecretValidationResult { Success = true });
 
