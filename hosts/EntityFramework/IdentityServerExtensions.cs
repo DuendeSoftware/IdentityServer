@@ -1,4 +1,3 @@
-using Duende.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,17 +11,7 @@ internal static class IdentityServerExtensions
     {
         var connectionString = builder.Configuration.GetConnectionString("db");
 
-        builder.Services
-            .AddIdentityServer(options => 
-            {
-                options.KeyManagement.SigningAlgorithms = new[]
-                {
-                    new SigningAlgorithmOptions("RS256")
-                    {
-                        UseX509Certificate = true
-                    }
-                };
-            })
+        builder.Services.AddIdentityServer()
             .AddTestUsers(TestUsers.Users)
             // this adds the config data from DB (clients, resources, CORS)
             .AddConfigurationStore(options =>
