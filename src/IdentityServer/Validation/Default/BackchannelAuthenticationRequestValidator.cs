@@ -69,6 +69,8 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
             return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnauthorizedClient, "Unauthorized client");
         }
 
+        LicenseValidator.ValidateCiba();
+
         //////////////////////////////////////////////////////////
         // load request object
         //////////////////////////////////////////////////////////

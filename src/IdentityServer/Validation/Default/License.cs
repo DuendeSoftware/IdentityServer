@@ -72,13 +72,22 @@ internal class License
                 ResourceIsolationFeature = true;
                 break;
         }
-            
+
         DynamicProvidersFeature = claims.HasClaim("feature", "dynamic_providers");
         switch (Edition)
         {
             case LicenseEdition.Enterprise:
             case LicenseEdition.Community:
                 DynamicProvidersFeature = true;
+                break;
+        }
+        
+        CibaFeature = claims.HasClaim("feature", "ciba");
+        switch (Edition)
+        {
+            case LicenseEdition.Enterprise:
+            case LicenseEdition.Community:
+                CibaFeature = true;
                 break;
         }
 
@@ -178,6 +187,7 @@ internal class License
     public bool DynamicProvidersFeature { get; set; }
     public bool ISVFeature { get; set; }
     public bool BffFeature { get; set; }
+    public bool CibaFeature { get; set; }
 
     public enum LicenseEdition
     {
