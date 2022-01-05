@@ -34,7 +34,7 @@
     <!--misc -->
     <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(WilsonVersion)" />
     <PackageReference Update="System.IdentityModel.Tokens.Jwt" Version="$(WilsonVersion)" />
-    <PackageReference Update="AutoMapper" Version="[10.0.0,11.0)" />
+    <PackageReference Update="AutoMapper" Version="[11.0.0,12.0)" />
     <PackageReference Update="Serilog.AspNetCore" Version="4.1.0" />     
     
     <!--microsoft asp.net core -->
