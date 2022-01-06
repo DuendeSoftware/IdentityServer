@@ -60,6 +60,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
             subject.ISVFeature.Should().BeFalse();
+            subject.CibaFeature.Should().BeTrue();
         }
         {
             var subject = new License(new Claim("edition", "business"));
@@ -72,6 +73,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.BffFeature.Should().BeTrue();
             subject.ISVFeature.Should().BeFalse();
+            subject.CibaFeature.Should().BeFalse();
         }
         {
             var subject = new License(new Claim("edition", "starter"));
@@ -84,6 +86,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.BffFeature.Should().BeFalse();
             subject.ISVFeature.Should().BeFalse();
+            subject.CibaFeature.Should().BeFalse();
         }
         {
             var subject = new License(new Claim("edition", "community"));
@@ -96,6 +99,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
             subject.ISVFeature.Should().BeFalse();
+            subject.CibaFeature.Should().BeTrue();
         }
 
         // BFF
@@ -110,6 +114,7 @@ public class LicenseValidatorTests
             subject.ResourceIsolationFeature.Should().BeFalse();
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.ISVFeature.Should().BeFalse();
+            subject.CibaFeature.Should().BeFalse();
         }
 
         // ISV
@@ -124,6 +129,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
             subject.ISVFeature.Should().BeTrue();
+            subject.CibaFeature.Should().BeTrue();
         }
         {
             var subject = new License(new Claim("edition", "business"), new Claim("feature", "isv"));
@@ -136,6 +142,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.BffFeature.Should().BeTrue();
             subject.ISVFeature.Should().BeTrue();
+            subject.CibaFeature.Should().BeFalse();
         }
         {
             var subject = new License(new Claim("edition", "starter"), new Claim("feature", "isv"));
@@ -148,6 +155,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.BffFeature.Should().BeFalse();
             subject.ISVFeature.Should().BeTrue();
+            subject.CibaFeature.Should().BeFalse();
         }
         {
             Action a = () => new License(new Claim("edition", "community"), new Claim("feature", "isv"));
@@ -178,11 +186,13 @@ public class LicenseValidatorTests
                 new Claim("client_limit", "20"),
                 new Claim("issuer_limit", "5"),
                 new Claim("feature", "resource_isolation"),
+                new Claim("feature", "ciba"),
                 new Claim("feature", "dynamic_providers"));
             subject.ClientLimit.Should().Be(20);
             subject.IssuerLimit.Should().Be(5);
             subject.ResourceIsolationFeature.Should().BeTrue();
             subject.DynamicProvidersFeature.Should().BeTrue();
+            subject.CibaFeature.Should().BeTrue();
         }
         {
             var subject = new License(
@@ -204,6 +214,7 @@ public class LicenseValidatorTests
                 new Claim("feature", "isv"),
                 new Claim("feature", "resource_isolation"),
                 new Claim("feature", "bff"),
+                new Claim("feature", "ciba"),
                 new Claim("feature", "dynamic_providers"));
             subject.ClientLimit.Should().Be(20);
             subject.IssuerLimit.Should().Be(5);
@@ -212,6 +223,7 @@ public class LicenseValidatorTests
             subject.BffFeature.Should().BeTrue();
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.ISVFeature.Should().BeTrue();
+            subject.CibaFeature.Should().BeTrue();
         }
         {
             var subject = new License(
@@ -245,17 +257,21 @@ public class LicenseValidatorTests
             var subject = new License(
                 new Claim("edition", "business"),
                 new Claim("feature", "isv"),
+                new Claim("feature", "ciba"),
                 new Claim("client_limit", "20"));
             subject.ClientLimit.Should().Be(20);
+            subject.CibaFeature.Should().BeTrue();
         }
         {
             var subject = new License(
                 new Claim("edition", "starter"),
                 new Claim("feature", "isv"),
                 new Claim("feature", "bff"),
+                new Claim("feature", "ciba"),
                 new Claim("client_limit", "20"));
             subject.ClientLimit.Should().Be(20);
             subject.BffFeature.Should().BeTrue();
+            subject.CibaFeature.Should().BeTrue();
         }
 
         {
@@ -291,6 +307,7 @@ public class LicenseValidatorTests
                 new Claim("issuer_limit", "10"),
                 new Claim("feature", "resource_isolation"),
                 new Claim("feature", "dynamic_providers"),
+                new Claim("feature", "ciba"),
                 new Claim("feature", "key_management")
             );
             subject.BffFeature.Should().BeTrue();
@@ -299,6 +316,7 @@ public class LicenseValidatorTests
             subject.KeyManagementFeature.Should().BeFalse();
             subject.ResourceIsolationFeature.Should().BeFalse();
             subject.DynamicProvidersFeature.Should().BeFalse();
+            subject.CibaFeature.Should().BeFalse();
         }
     }
 

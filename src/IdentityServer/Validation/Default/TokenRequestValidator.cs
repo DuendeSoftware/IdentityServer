@@ -726,6 +726,8 @@ internal class TokenRequestValidator : ITokenRequestValidator
             return Invalid(OidcConstants.TokenErrors.UnauthorizedClient);
         }
 
+        LicenseValidator.ValidateCiba();
+
         /////////////////////////////////////////////
         // validate authentication request id parameter
         /////////////////////////////////////////////
