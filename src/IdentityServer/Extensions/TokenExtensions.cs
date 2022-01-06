@@ -98,15 +98,19 @@ namespace Duende.IdentityServer.Extensions
                 // other claims
                 foreach (var claimType in simpleClaimTypes)
                 {
-                    var claims = token.Claims.Where(c => c.Type == claimType).ToArray();
+                    // we ignore claims that are added by the above code for token verification
+                    if (!payload.ContainsKey(claimType))
+                    {
+                        var claims = token.Claims.Where(c => c.Type == claimType).ToArray();
 
-                    if (claims.Count() > 1)
-                    {
-                        payload.Add(claimType, AddObjects(claims));
-                    }
-                    else
-                    {
-                        payload.Add(claimType, AddObject(claims.First()));
+                        if (claims.Count() > 1)
+                        {
+                            payload.Add(claimType, AddObjects(claims));
+                        }
+                        else
+                        {
+                            payload.Add(claimType, AddObject(claims.First()));
+                        }
                     }
                 }
 
