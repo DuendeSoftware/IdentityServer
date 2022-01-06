@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -12,7 +12,7 @@ public class IdentityResourcesMappersTests
     [Fact]
     public void IdentityResourceAutomapperConfigurationIsValid()
     {
-        IdentityResourceMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<IdentityResourceMapperProfile>();
+        IdentityResourceMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
     }
 
     [Fact]

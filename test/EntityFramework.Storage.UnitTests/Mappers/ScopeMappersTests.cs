@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -14,7 +14,7 @@ public class ScopesMappersTests
     [Fact]
     public void ScopeAutomapperConfigurationIsValid()
     {
-        ScopeMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<ScopeMapperProfile>();
+        ScopeMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
     }
 
     [Fact]

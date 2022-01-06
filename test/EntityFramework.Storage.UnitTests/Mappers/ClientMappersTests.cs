@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -16,7 +16,7 @@ public class ClientMappersTests
     [Fact]
     public void AutomapperConfigurationIsValid()
     {
-        ClientMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<ClientMapperProfile>();
+        ClientMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
     }
 
     [Fact]
