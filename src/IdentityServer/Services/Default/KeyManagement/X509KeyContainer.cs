@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
@@ -31,11 +32,11 @@ public class X509KeyContainer : KeyContainer
         : base(key.KeyId, algorithm, created)
     {
         HasX509Certificate = true;
-            
+
         var distinguishedName = new X500DistinguishedName($"CN={issuer}");
 
         var request = new CertificateRequest(
-            distinguishedName, key.Rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+          distinguishedName, key.Rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
         request.CertificateExtensions.Add(
             new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
@@ -90,7 +91,24 @@ public class X509KeyContainer : KeyContainer
     {
         if (_cert == null)
         {
-            _cert = new X509Certificate2(Convert.FromBase64String(CertificateRawData));
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                try
+                {
+                    _cert = new X509Certificate2(Convert.FromBase64String(CertificateRawData));
+                }
+                // handling this as it typically means the user profile is not loaded, and this is about the best way to detect this.
+                // when the user profile is not loaded, using X509KeyStorageFlags.MachineKeySet is the only way for this to work on windows.
+                // https://stackoverflow.com/questions/52750160/what-is-the-rationale-for-all-the-different-x509keystorageflags/52840537#52840537
+                catch (Exception ex) when (ex.GetType().Name == "WindowsCryptographicException")
+                {
+                    _cert = new X509Certificate2(Convert.FromBase64String(CertificateRawData), (string) null, X509KeyStorageFlags.MachineKeySet);
+                }
+            }
+            else
+            {
+                _cert = new X509Certificate2(Convert.FromBase64String(CertificateRawData));
+            }
         }
 
         var key = new X509SecurityKey(_cert, Id);
