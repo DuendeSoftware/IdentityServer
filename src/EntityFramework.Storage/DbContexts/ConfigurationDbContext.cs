@@ -131,6 +131,9 @@ public class ConfigurationDbContext<TContext> : DbContext, IConfigurationDbConte
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        optionsBuilder.ConfigureWarnings(w => w.Ignore(new EventId[] { RelationalEventId.MultipleCollectionIncludeWarning }));
+        if (!optionsBuilder.Options.IsFrozen)
+        {
+            optionsBuilder.ConfigureWarnings(w => w.Ignore(new EventId[] { RelationalEventId.MultipleCollectionIncludeWarning }));
+        }
     }
 }
