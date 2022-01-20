@@ -184,6 +184,8 @@ public class Index : PageModel
             {
                 View.ExternalProviders = new[] { new ViewModel.ExternalProvider { AuthenticationScheme = context.IdP } };
             }
+
+            return;
         }
 
         var schemes = await _schemeProvider.GetAllSchemesAsync();
