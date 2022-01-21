@@ -1,7 +1,7 @@
 # Duende IdentityServer
 The most flexible and standards-compliant OpenID Connect and OAuth 2.x framework for ASP.NET Core
 
-[Web site](https://duendesoftware.com/products/identityserver) and [documentation](https://docs.duendesoftware.com/identityserver/v5)
+[Web site](https://duendesoftware.com/products/identityserver) and [documentation](https://docs.duendesoftware.com/identityserver/v6)
 
 ## How to build
 
