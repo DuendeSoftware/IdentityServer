@@ -124,8 +124,9 @@ public class IdentityProviderConfigurationValidation
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task missing_secret_should_fail()
+    public async Task missing_secret_should_be_allowed()
     {
+        // we allow no secret because they might pull it from somewhere else
         var idp = new OidcProvider
         {
             Scheme = "scheme",
@@ -139,8 +140,7 @@ public class IdentityProviderConfigurationValidation
         var ctx = new IdentityProviderConfigurationValidationContext(idp);
         await _validator.ValidateAsync(ctx);
 
-        ctx.IsValid.Should().BeFalse();
-        ctx.ErrorMessage.ToLowerInvariant().Should().Contain("clientsecret");
+        ctx.IsValid.Should().BeTrue();
     }
 
     [Fact]
