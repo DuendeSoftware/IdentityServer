@@ -69,6 +69,7 @@ internal static class ILoggerDevExtensions
     }
     
     // todo: understand ordering of extension method visibility
+    // https://codeblog.jonskeet.uk/2010/11/03/using-extension-method-resolution-rules-to-decorate-awaiters/
     // public static void LogDebug<T0, T1>(this ILogger logger, string message, T0 arg0, T1 arg1)
     // {
     //     if (logger.IsEnabled(LogLevel.Debug))
