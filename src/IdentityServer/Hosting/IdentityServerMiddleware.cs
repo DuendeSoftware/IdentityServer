@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Events;
+using Duende.IdentityServer.Logging;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 
@@ -20,16 +21,19 @@ public class IdentityServerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
+    private readonly IDevLogger<IdentityServerMiddleware> _devLogger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IdentityServerMiddleware"/> class.
     /// </summary>
     /// <param name="next">The next.</param>
     /// <param name="logger">The logger.</param>
-    public IdentityServerMiddleware(RequestDelegate next, ILogger<IdentityServerMiddleware> logger)
+    /// <param name="devLogger">The dev logger.</param>
+    public IdentityServerMiddleware(RequestDelegate next, ILogger<IdentityServerMiddleware> logger, IDevLogger<IdentityServerMiddleware> devLogger)
     {
         _next = next;
         _logger = logger;
+        _devLogger = devLogger;
     }
 
     /// <summary>
@@ -58,7 +62,7 @@ public class IdentityServerMiddleware
         {
             if (context.GetSignOutCalled())
             {
-                _logger.LogDebug("SignOutCalled set; processing post-signout session cleanup.");
+                _devLogger.DevLogDebug("SignOutCalled set; processing post-signout session cleanup.");
 
                 // this clears our session id cookie so JS clients can detect the user has signed out
                 await session.RemoveSessionIdCookieAsync();
@@ -79,13 +83,15 @@ public class IdentityServerMiddleware
             {
                 LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 
-                _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
-
+                // todo: does this need to be info?
+                //_logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
+                _logger.InvokeEndpoint(endpoint.GetType().FullName, context.Request.Path.ToString());
+                
                 var result = await endpoint.ProcessAsync(context);
 
                 if (result != null)
                 {
-                    _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);
+                    _devLogger.DevLogTrace("Invoking result: {type}", result.GetType().FullName);
                     await result.ExecuteAsync(context);
                 }
 
@@ -94,8 +100,10 @@ public class IdentityServerMiddleware
         }
         catch (Exception ex)
         {
+            // todo: better way to log exceptions?
             await events.RaiseAsync(new UnhandledExceptionEvent(ex));
-            _logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
+            _logger.UnhandledException(ex.Message);
+            //_logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
             throw;
         }
 
