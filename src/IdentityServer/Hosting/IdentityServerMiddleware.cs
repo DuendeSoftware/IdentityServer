@@ -99,7 +99,7 @@ public class IdentityServerMiddleware
         {
             // todo: better way to log exceptions?
             await events.RaiseAsync(new UnhandledExceptionEvent(ex));
-            _devLogger.UnhandledException(ex.Message);
+            _devLogger.UnhandledException(ex);
             //_logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
             throw;
         }
