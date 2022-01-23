@@ -20,19 +20,16 @@ namespace Duende.IdentityServer.Hosting;
 public class IdentityServerMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly ILogger _logger;
     private readonly IDevLogger<IdentityServerMiddleware> _devLogger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IdentityServerMiddleware"/> class.
     /// </summary>
     /// <param name="next">The next.</param>
-    /// <param name="logger">The logger.</param>
     /// <param name="devLogger">The dev logger.</param>
-    public IdentityServerMiddleware(RequestDelegate next, ILogger<IdentityServerMiddleware> logger, IDevLogger<IdentityServerMiddleware> devLogger)
+    public IdentityServerMiddleware(RequestDelegate next, IDevLogger<IdentityServerMiddleware> devLogger)
     {
         _next = next;
-        _logger = logger;
         _devLogger = devLogger;
     }
 
@@ -85,7 +82,7 @@ public class IdentityServerMiddleware
 
                 // todo: does this need to be info?
                 //_logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
-                _logger.InvokeEndpoint(endpoint.GetType().FullName, context.Request.Path.ToString());
+                _devLogger.InvokeEndpoint(endpoint.GetType().FullName, context.Request.Path.ToString());
                 
                 var result = await endpoint.ProcessAsync(context);
 
@@ -102,7 +99,7 @@ public class IdentityServerMiddleware
         {
             // todo: better way to log exceptions?
             await events.RaiseAsync(new UnhandledExceptionEvent(ex));
-            _logger.UnhandledException(ex.Message);
+            _devLogger.UnhandledException(ex.Message);
             //_logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
             throw;
         }

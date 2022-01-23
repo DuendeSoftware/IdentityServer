@@ -1,8 +1,15 @@
+using Microsoft.Extensions.Logging;
+
 namespace Duende.IdentityServer.Logging;
 
 #pragma warning disable 1591
 
-public interface IDevLogger<T>
+public interface IDevLogger<out T> : IDevLogger
+{
+    
+}
+
+public interface IDevLogger : ILogger
 {
     void DevLogDebug(string message);
     void DevLogDebug<T0>(string message, T0 arg0);
