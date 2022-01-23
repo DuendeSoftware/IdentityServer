@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Logging;
 
-internal static partial class IDevLoggerExtensions
+internal static partial class DevLoggerExtensions
 {
     [LoggerMessage(EventId = 0, EventName = "UnhandledException", Level = LogLevel.Critical,
         Message = "Unhandled exception")]

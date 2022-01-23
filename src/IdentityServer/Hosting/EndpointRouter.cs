@@ -34,13 +34,13 @@ internal class EndpointRouter : IEndpointRouter
             if (context.Request.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
             {
                 var endpointName = endpoint.Name;
-                _logger.LogDebug("Request path {path} matched to endpoint type {endpoint}", context.Request.Path, endpointName);
+                _logger.DevLogDebug("Request path {path} matched to endpoint type {endpoint}", context.Request.Path, endpointName);
 
                 return GetEndpointHandler(endpoint, context);
             }
         }
 
-        _logger.LogTrace("No endpoint entry found for request path: {path}", context.Request.Path);
+        _logger.DevLogTrace("No endpoint entry found for request path: {path}", context.Request.Path);
 
         return null;
     }
@@ -51,11 +51,11 @@ internal class EndpointRouter : IEndpointRouter
         {
             if (context.RequestServices.GetService(endpoint.Handler) is IEndpointHandler handler)
             {
-                _logger.LogDebug("Endpoint enabled: {endpoint}, successfully created handler: {endpointHandler}", endpoint.Name, endpoint.Handler.FullName);
+                _logger.DevLogDebug("Endpoint enabled: {endpoint}, successfully created handler: {endpointHandler}", endpoint.Name, endpoint.Handler.FullName);
                 return handler;
             }
 
-            _logger.LogDebug("Endpoint enabled: {endpoint}, failed to create handler: {endpointHandler}", endpoint.Name, endpoint.Handler.FullName);
+            _logger.DevLogDebug("Endpoint enabled: {endpoint}, failed to create handler: {endpointHandler}", endpoint.Name, endpoint.Handler.FullName);
         }
         else
         {
