@@ -36,27 +36,7 @@ public class NumericUserCodeGenerator : IUserCodeGenerator
     /// <returns></returns>
     public Task<string> GenerateAsync()
     {
-        var next = Next(100000000, 999999999);
+        var next = RandomNumberGenerator.GetInt32(100000000, 1000000000);
         return Task.FromResult(next.ToString());
-    }
-
-    private int Next(int minValue, int maxValue)
-    {
-        if (minValue > maxValue) throw new ArgumentOutOfRangeException(nameof(minValue));
-        if (minValue == maxValue) return minValue;
-        long diff = maxValue - minValue;
-
-        while (true)
-        {
-            var uint32Buffer = RandomNumberGenerator.GetBytes(8);
-            var rand = BitConverter.ToUInt32(uint32Buffer, 0);
-
-            const long max = 1 + (long) uint.MaxValue;
-            var remainder = max % diff;
-            if (rand < max - remainder)
-            {
-                return (int) (minValue + rand % diff);
-            }
-        }
     }
 }
