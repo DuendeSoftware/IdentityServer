@@ -51,7 +51,7 @@ internal class EndpointRouter : IEndpointRouter
         {
             if (context.RequestServices.GetService(endpoint.Handler) is IEndpointHandler handler)
             {
-                _logger.DevLogDebug("Endpoint enabled: {endpoint}, successfully created handler: {endpointHandler}", endpoint.Name, endpoint.Handler.FullName);
+                _logger.LogDebug("Endpoint enabled: {endpoint}, successfully created handler: {endpointHandler}", endpoint.Name, endpoint.Handler.FullName);
                 return handler;
             }
 
