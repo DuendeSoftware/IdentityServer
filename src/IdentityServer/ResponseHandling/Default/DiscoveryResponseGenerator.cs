@@ -279,6 +279,11 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
             {
                 standardGrantTypes.Add(OidcConstants.GrantTypes.DeviceCode);
             }
+            
+            if (Options.Endpoints.EnableBackchannelAuthenticationEndpoint)
+            {
+                standardGrantTypes.Add(OidcConstants.GrantTypes.Ciba);
+            }
 
             var showGrantTypes = new List<string>(standardGrantTypes);
 
