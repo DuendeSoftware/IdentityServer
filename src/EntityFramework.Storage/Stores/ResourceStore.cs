@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.Models;
@@ -58,6 +59,9 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("ResourceStore.FindApiResourcesByNameAsync");
+        activity?.SetTag("api_resource_names", apiResourceNames.ToSpaceSeparatedString());
+        
         if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
         var query =
@@ -95,6 +99,9 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("ResourceStore.FindApiResourcesByScopeNameAsync");
+        activity?.SetTag("scope_names", scopeNames.ToSpaceSeparatedString());
+        
         var names = scopeNames.ToArray();
 
         var query =
@@ -125,6 +132,9 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("ResourceStore.FindIdentityResourcesByScopeNameAsync");
+        activity?.SetTag("scope_names", scopeNames.ToSpaceSeparatedString());
+        
         var scopes = scopeNames.ToArray();
 
         var query =
@@ -152,6 +162,9 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("ResourceStore.FindApiScopesByNameAsync");
+        activity?.SetTag("scope_names", scopeNames.ToSpaceSeparatedString());
+        
         var scopes = scopeNames.ToArray();
 
         var query =
@@ -178,6 +191,8 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<Resources> GetAllResourcesAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("ResourceStore.GetAllResourcesAsync");
+        
         var identity = Context.IdentityResources
             .Include(x => x.UserClaims)
             .Include(x => x.Properties)

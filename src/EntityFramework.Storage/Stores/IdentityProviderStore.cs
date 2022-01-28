@@ -54,17 +54,23 @@ public class IdentityProviderStore : IIdentityProviderStore
     /// <inheritdoc/>
     public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("IdentityProviderStore.GetAllSchemeNamesAsync");
+        
         var query = Context.IdentityProviders.Select(x => new IdentityProviderName { 
             Enabled = x.Enabled,
             Scheme = x.Scheme,
             DisplayName  = x.DisplayName
         });
+        
         return await query.ToArrayAsync(CancellationTokenProvider.CancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("IdentityProviderStore.GetBySchemeAsync");
+        activity?.SetTag("scheme_name", scheme);
+        
         var idp = (await Context.IdentityProviders.AsNoTracking().Where(x => x.Scheme == scheme)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
             .SingleOrDefault(x => x.Scheme == scheme);
