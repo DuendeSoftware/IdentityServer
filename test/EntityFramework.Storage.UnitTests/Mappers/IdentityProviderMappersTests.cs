@@ -14,7 +14,7 @@ public class IdentityProviderMappersTests
     [Fact]
     public void IdentityProviderAutomapperConfigurationIsValid()
     {
-        IdentityProviderMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<IdentityProviderMapperProfile>();
+        IdentityProviderMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
     }
 
     [Fact]

@@ -56,7 +56,7 @@ public class Index : PageModel
         if (View.IsExternalLoginOnly)
         {
             // we only have one option for logging in and it's an external provider
-            return RedirectToPage("/ExternalLogin/Challenge/Index", new { scheme = View.ExternalLoginScheme, returnUrl });
+            return RedirectToPage("/ExternalLogin/Challenge", new { scheme = View.ExternalLoginScheme, returnUrl });
         }
 
         return Page();
@@ -184,6 +184,8 @@ public class Index : PageModel
             {
                 View.ExternalProviders = new[] { new ViewModel.ExternalProvider { AuthenticationScheme = context.IdP } };
             }
+
+            return;
         }
 
         var schemes = await _schemeProvider.GetAllSchemesAsync();

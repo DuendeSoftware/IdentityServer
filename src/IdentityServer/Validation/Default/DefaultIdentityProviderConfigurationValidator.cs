@@ -76,14 +76,6 @@ public class DefaultIdentityProviderConfigurationValidator : IIdentityProviderCo
         {
             context.SetError("ResponseType is missing.");
         }
-        else
-        {
-            var parts = context.IdentityProvider.ResponseType.Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct();
-            if (parts.Contains(IdentityModel.OidcConstants.ResponseTypes.Code) && String.IsNullOrWhiteSpace(context.IdentityProvider.ClientSecret))
-            {
-                context.SetError("ClientSecret is missing.");
-            }
-        }
 
         if (String.IsNullOrWhiteSpace(context.IdentityProvider.Scope))
         {

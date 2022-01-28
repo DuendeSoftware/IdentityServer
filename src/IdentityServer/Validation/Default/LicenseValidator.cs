@@ -184,6 +184,14 @@ internal class LicenseValidator
         }
     }
 
+    public static void ValidateCiba()
+    {
+        if (_license != null && !_license.CibaFeature)
+        {
+            _logger.LogError("A CIBA (client initiated backchannel authentication) request was made. Your license for Duende IdentityServer does not permit the CIBA feature.");
+        }
+    }
+
     internal static License ValidateKey(string licenseKey)
     {
         if (!String.IsNullOrWhiteSpace(licenseKey))

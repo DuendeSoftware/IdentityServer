@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -15,7 +15,7 @@ public class ApiResourceMappersTests
     [Fact]
     public void AutomapperConfigurationIsValid()
     {
-        ApiResourceMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid<ApiResourceMapperProfile>();
+        ApiResourceMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
     }
 
     [Fact]
