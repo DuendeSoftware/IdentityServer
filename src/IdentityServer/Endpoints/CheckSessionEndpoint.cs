@@ -22,6 +22,8 @@ internal class CheckSessionEndpoint : IEndpointHandler
 
     public Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
+        using var activity = Tracing.ActivitySource.StartActivity(Constants.EndpointNames.CheckSession + "Endpoint");
+        
         IEndpointResult result;
 
         if (!HttpMethods.IsGet(context.Request.Method))
