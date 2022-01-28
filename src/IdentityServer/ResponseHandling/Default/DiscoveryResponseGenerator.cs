@@ -94,6 +94,8 @@ namespace Duende.IdentityServer.ResponseHandling
         /// <param name="issuerUri">The issuer URI.</param>
         public virtual async Task<Dictionary<string, object>> CreateDiscoveryDocumentAsync(string baseUrl, string issuerUri)
         {
+            using var activity = Tracing.ActivitySource.StartActivity("CreateDiscoveryDocumentAsync");
+            
             var entries = new Dictionary<string, object>
             {
                 { OidcConstants.Discovery.Issuer, issuerUri }

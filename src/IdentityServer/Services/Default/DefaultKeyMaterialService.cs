@@ -43,6 +43,8 @@ namespace Duende.IdentityServer.Services
         /// <inheritdoc/>
         public async Task<SigningCredentials> GetSigningCredentialsAsync(IEnumerable<string> allowedAlgorithms = null)
         {
+            using var activity = Tracing.ActivitySource.StartActivity("DefaultKeyMaterialService.GetSigningCredentialsAsync");
+
             if (allowedAlgorithms.IsNullOrEmpty())
             {
                 var list = _signingCredentialStores.ToList();
@@ -78,6 +80,8 @@ namespace Duende.IdentityServer.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync()
         {
+            using var activity = Tracing.ActivitySource.StartActivity("DefaultKeyMaterialService.GetAllSigningCredentialsAsync");
+            
             var credentials = new List<SigningCredentials>();
 
             foreach (var store in _signingCredentialStores)
@@ -101,6 +105,8 @@ namespace Duende.IdentityServer.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
         {
+            using var activity = Tracing.ActivitySource.StartActivity("DefaultKeyMaterialService.GetValidationKeysAsync");
+            
             var keys = new List<SecurityKeyInfo>();
 
             var automaticSigningKeys = await _keyManagerKeyStore.GetValidationKeysAsync();
