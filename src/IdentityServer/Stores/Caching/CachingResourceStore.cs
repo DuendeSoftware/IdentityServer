@@ -72,6 +72,8 @@ public class CachingResourceStore<T> : IResourceStore
 
     private string GetKey(IEnumerable<string> names)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.GetKey");
+        
         if (names == null || !names.Any()) return string.Empty;
         return "sha256-" + names.OrderBy(x => x).Aggregate((x, y) => x + "," + y).Sha256();
     }
@@ -79,6 +81,8 @@ public class CachingResourceStore<T> : IResourceStore
     /// <inheritdoc/>
     public async Task<Resources> GetAllResourcesAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.GetAllResourcesAsync");
+        
         var key = AllKey;
 
         var all = await _allCache.GetOrAddAsync(key,
@@ -91,6 +95,8 @@ public class CachingResourceStore<T> : IResourceStore
     /// <inheritdoc/>
     public async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.FindApiResourcesByScopeNameAsync");
+            
         var apiResourceNames = new HashSet<string>();
         var uncachedScopes = new List<string>();
         foreach (var scope in scopeNames)
@@ -159,6 +165,8 @@ public class CachingResourceStore<T> : IResourceStore
     /// <inheritdoc/>
     public async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.FindApiResourcesByNameAsync");
+        
         return await FindItemsAsync(apiResourceNames, _apiResourceCache, 
             async names => new Resources(null, await _inner.FindApiResourcesByNameAsync(names), null), 
             x => x.ApiResources, x => x.Name, "ApiResources-");
@@ -167,6 +175,8 @@ public class CachingResourceStore<T> : IResourceStore
     /// <inheritdoc/>
     public async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.FindIdentityResourcesByScopeNameAsync");
+        
         return await FindItemsAsync(scopeNames, _identityCache, 
             async names => new Resources(await _inner.FindIdentityResourcesByScopeNameAsync(names), null, null), 
             x => x.IdentityResources, x => x.Name, "IdentityResources-");
@@ -175,6 +185,8 @@ public class CachingResourceStore<T> : IResourceStore
     /// <inheritdoc/>
     public async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.FindApiScopesByNameAsync");
+        
         return await FindItemsAsync(scopeNames, _apiScopeCache, 
             async names => new Resources(null, null, await _inner.FindApiScopesByNameAsync(names)), 
             x => x.ApiScopes, x => x.Name, "ApiScopes-");

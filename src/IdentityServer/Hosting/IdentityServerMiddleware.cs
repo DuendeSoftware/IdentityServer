@@ -50,8 +50,6 @@ public class IdentityServerMiddleware
         IIssuerNameService issuerNameService,
         IBackChannelLogoutService backChannelLogoutService)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("IdentityServerMiddleware");
-        
         // this will check the authentication session and from it emit the check session
         // cookie needed from JS-based signout clients.
         await session.EnsureSessionIdCookieAsync();
@@ -79,9 +77,14 @@ public class IdentityServerMiddleware
             var endpoint = router.Find(context);
             if (endpoint != null)
             {
+                var endpointType = endpoint.GetType().FullName;
+                
+                using var activity = Tracing.ActivitySource.StartActivity("IdentityServer.ProcessRequest");
+                activity?.SetTag("endpoint", endpointType);
+                
                 LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 
-                _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
+                _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, context.Request.Path.ToString());
 
                 var result = await endpoint.ProcessAsync(context);
 

@@ -51,6 +51,8 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<Resources> GetAllResourcesAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.GetAllResourcesAsync");
+        
         var result = new Resources(_identityResources, _apiResources, _apiScopes);
         return Task.FromResult(result);
     }
@@ -58,6 +60,8 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByNameAsync");
+        
         if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
         var query = from a in _apiResources
@@ -69,6 +73,8 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindIdentityResourcesByScopeNameAsync");
+        
         if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
         var identity = from i in _identityResources
@@ -81,6 +87,8 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByScopeNameAsync");
+        
         if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
         var query = from a in _apiResources
@@ -93,6 +101,8 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindApiScopesByNameAsync");
+        
         if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
         var query =

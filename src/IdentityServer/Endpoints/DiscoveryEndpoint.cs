@@ -38,6 +38,8 @@ internal class DiscoveryEndpoint : IEndpointHandler
 
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
+        using var activity = Tracing.ActivitySource.StartActivity(Constants.EndpointNames.Discovery);
+        
         _logger.LogTrace("Processing discovery request.");
 
         // validate HTTP

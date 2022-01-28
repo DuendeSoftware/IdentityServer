@@ -43,6 +43,8 @@ public class DefaultKeyMaterialService : IKeyMaterialService
     /// <inheritdoc/>
     public async Task<SigningCredentials> GetSigningCredentialsAsync(IEnumerable<string> allowedAlgorithms = null)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultKeyMaterialService.GetSigningCredentialsAsync");
+        
         if (allowedAlgorithms.IsNullOrEmpty())
         {
             var list = _signingCredentialStores.ToList();
@@ -64,6 +66,8 @@ public class DefaultKeyMaterialService : IKeyMaterialService
             throw new InvalidOperationException($"No signing credential registered.");
         }
 
+        activity?.SetTag("allowed_algorithms", allowedAlgorithms.ToSpaceSeparatedString());
+        
         var credential =
             (await GetAllSigningCredentialsAsync()).FirstOrDefault(c => allowedAlgorithms.Contains(c.Algorithm));
         if (credential is null)
@@ -78,6 +82,8 @@ public class DefaultKeyMaterialService : IKeyMaterialService
     /// <inheritdoc/>
     public async Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultKeyMaterialService.GetAllSigningCredentialsAsync");
+        
         var credentials = new List<SigningCredentials>();
 
         foreach (var store in _signingCredentialStores)
@@ -101,6 +107,8 @@ public class DefaultKeyMaterialService : IKeyMaterialService
     /// <inheritdoc/>
     public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultKeyMaterialService.GetValidationKeysAsync");
+        
         var keys = new List<SecurityKeyInfo>();
 
         var automaticSigningKeys = await _keyManagerKeyStore.GetValidationKeysAsync();
