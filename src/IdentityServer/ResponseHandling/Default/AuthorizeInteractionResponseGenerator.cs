@@ -77,6 +77,8 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// <returns></returns>
     public virtual async Task<InteractionResponse> ProcessInteractionAsync(ValidatedAuthorizeRequest request, ConsentResponse consent = null)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessInteraction");
+        
         Logger.LogTrace("ProcessInteractionAsync");
 
         if (consent != null && consent.Granted == false && consent.Error.HasValue)
@@ -130,6 +132,8 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// <returns></returns>
     protected internal virtual async Task<InteractionResponse> ProcessLoginAsync(ValidatedAuthorizeRequest request)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessLogin");
+        
         if (request.PromptModes.Contains(OidcConstants.PromptModes.Login) ||
             request.PromptModes.Contains(OidcConstants.PromptModes.SelectAccount))
         {
@@ -256,6 +260,8 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// <exception cref="ArgumentException">Invalid PromptMode</exception>
     protected internal virtual async Task<InteractionResponse> ProcessConsentAsync(ValidatedAuthorizeRequest request, ConsentResponse consent = null)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessConsent");
+            
         if (request == null) throw new ArgumentNullException(nameof(request));
 
         if (request.PromptModes.Any() &&
