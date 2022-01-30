@@ -50,8 +50,6 @@ public class BasicAuthenticationSecretParser : ISecretParser
     /// </returns>
     public Task<ParsedSecret> ParseAsync(HttpContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("BasicAuthenticationSecretParser");
-        
         _logger.LogDebug("Start parsing Basic Authentication secret");
 
         var notfound = Task.FromResult<ParsedSecret>(null);

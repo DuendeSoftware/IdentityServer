@@ -54,7 +54,7 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     /// <inheritdoc/>
     public virtual async Task StoreAsync(Duende.IdentityServer.Models.PersistedGrant token)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.StoreAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.Store");
         
         var existing = (await Context.PersistedGrants.Where(x => x.Key == token.Key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
@@ -86,7 +86,7 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     /// <inheritdoc/>
     public virtual async Task<Duende.IdentityServer.Models.PersistedGrant> GetAsync(string key)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.GetAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.Get");
         
         var persistedGrant = (await Context.PersistedGrants.AsNoTracking().Where(x => x.Key == key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
@@ -101,7 +101,7 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     /// <inheritdoc/>
     public async Task<IEnumerable<Duende.IdentityServer.Models.PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.GetAllAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.GetAll");
         
         filter.Validate();
 
@@ -119,7 +119,7 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     /// <inheritdoc/>
     public virtual async Task RemoveAsync(string key)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.RemoveAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.Remove");
         
         var persistedGrant = (await Context.PersistedGrants.Where(x => x.Key == key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
@@ -148,7 +148,7 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     /// <inheritdoc/>
     public async Task RemoveAllAsync(PersistedGrantFilter filter)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.RemoveAllAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("PersistedGrantStore.RemoveAll");
         
         filter.Validate();
 

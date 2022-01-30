@@ -43,8 +43,6 @@ public class MutualTlsSecretParser : ISecretParser
     /// <returns></returns>
     public async Task<ParsedSecret> ParseAsync(HttpContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("MutualTlsSecretParser");
-        
         _logger.LogDebug("Start parsing for client id in post body");
 
         if (!context.Request.HasApplicationFormContentType())

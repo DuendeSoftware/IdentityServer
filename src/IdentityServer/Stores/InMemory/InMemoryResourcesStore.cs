@@ -51,7 +51,7 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<Resources> GetAllResourcesAsync()
     {
-        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.GetAllResourcesAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.GetAllResources");
         
         var result = new Resources(_identityResources, _apiResources, _apiScopes);
         return Task.FromResult(result);
@@ -60,7 +60,7 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByNameAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByName");
         
         if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
@@ -73,7 +73,7 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindIdentityResourcesByScopeNameAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindIdentityResourcesByScopeName");
         
         if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
@@ -87,7 +87,7 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByScopeNameAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByScopeName");
         
         if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
@@ -101,7 +101,7 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindApiScopesByNameAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryResourceStore.FindApiScopesByName");
         
         if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 

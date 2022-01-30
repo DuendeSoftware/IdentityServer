@@ -79,8 +79,8 @@ public class IdentityServerMiddleware
             {
                 var endpointType = endpoint.GetType().FullName;
                 
-                using var activity = Tracing.ActivitySource.StartActivity("IdentityServer.ProcessRequest");
-                activity?.SetTag("endpoint", endpointType);
+                using var activity = Tracing.ActivitySource.StartActivity("IdentityServerProtocolRequest");
+                activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
                 
                 LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 
