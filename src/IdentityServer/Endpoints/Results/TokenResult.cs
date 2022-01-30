@@ -25,7 +25,7 @@ internal class TokenResult : IEndpointResult
 
     public async Task ExecuteAsync(HttpContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("ExecuteTokenResult");
+        using var activity = Tracing.ActivitySource.StartActivity("TokenResult.Execute");
             
         context.Response.SetNoCache();
 

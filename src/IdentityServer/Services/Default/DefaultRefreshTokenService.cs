@@ -64,6 +64,8 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// <returns></returns>
     public virtual async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client client)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultRefreshTokenService.ValidateRefreshToken");
+        
         var invalidGrant = new TokenValidationResult
         {
             IsError = true, Error = OidcConstants.TokenErrors.InvalidGrant
@@ -165,6 +167,8 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// </returns>
     public virtual async Task<string> CreateRefreshTokenAsync(RefreshTokenCreationRequest request)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultRefreshTokenService.CreateRefreshToken");
+        
         Logger.LogDebug("Creating refresh token");
 
         int lifetime;
@@ -216,6 +220,8 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// </returns>
     public virtual async Task<string> UpdateRefreshTokenAsync(RefreshTokenUpdateRequest request)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenCreationService.UpdateRefreshToken");
+        
         Logger.LogDebug("Updating refresh token");
 
         var handle = request.Handle;

@@ -47,7 +47,7 @@ internal static class HostingExtensions
                 .AddSource(Tracing.ServiceName)
                 .SetResourceBuilder(
                     ResourceBuilder.CreateDefault()
-                        .AddService(serviceName: Tracing.ServiceName, serviceVersion: Tracing.Version))
+                        .AddService(serviceName: Tracing.ServiceName, serviceVersion: Tracing.ServiceVersion))
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
                 .AddSqlClientInstrumentation()
