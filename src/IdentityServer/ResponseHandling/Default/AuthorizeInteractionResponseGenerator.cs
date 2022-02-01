@@ -78,6 +78,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     public virtual async Task<InteractionResponse> ProcessInteractionAsync(ValidatedAuthorizeRequest request, ConsentResponse consent = null)
     {
         using var activity = Tracing.ActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessInteraction");
+        activity?.SetTag(Tracing.Properties.ClientId, request.Client.ClientId);
         
         Logger.LogTrace("ProcessInteractionAsync");
 
