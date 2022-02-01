@@ -121,6 +121,8 @@ public class ClientRepository
         client.ClientId = model.ClientId.Trim();
         client.ClientName = model.Name?.Trim();
 
+        client.ClientSecrets.Add(new Duende.IdentityServer.Models.Secret(model.Secret.Sha256()));
+        
         if (model.Flow == Flow.ClientCredentials)
         {
             client.AllowedGrantTypes = GrantTypes.ClientCredentials;
@@ -128,6 +130,7 @@ public class ClientRepository
         else
         {
             client.AllowedGrantTypes = GrantTypes.Code;
+            client.AllowOfflineAccess = true;
         }
 
         _context.Clients.Add(client.ToEntity());
