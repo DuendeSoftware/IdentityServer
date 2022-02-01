@@ -44,10 +44,13 @@ internal static class HostingExtensions
         {
             b
                 //.AddConsoleExporter()
-                .AddSource(Tracing.ServiceName)
+                .AddSource(IdentityServerConstants.Tracing.ServiceName)
                 .SetResourceBuilder(
                     ResourceBuilder.CreateDefault()
-                        .AddService(serviceName: Tracing.ServiceName, serviceVersion: Tracing.ServiceVersion))
+                        .AddService(serviceName: 
+                            IdentityServerConstants.Tracing.ServiceName, 
+                            IdentityServerConstants.Tracing.ServiceVersion))
+                .SetSampler(new AlwaysOnSampler())
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
                 .AddSqlClientInstrumentation()

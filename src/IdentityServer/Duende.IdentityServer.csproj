@@ -1,24 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  
-  <PropertyGroup>
-    <PackageId>Duende.IdentityServer</PackageId>
-    <TargetFramework>net6.0</TargetFramework>
-      
-    <Description>OpenID Connect and OAuth 2.0 Framework for ASP.NET Core</Description>
+
+    <PropertyGroup>
+        <PackageId>Duende.IdentityServer</PackageId>
+        <TargetFramework>net6.0</TargetFramework>
+
+        <Description>OpenID Connect and OAuth 2.0 Framework for ASP.NET Core</Description>
+
+        <AssemblyName>Duende.IdentityServer</AssemblyName>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Tracing\Tracing.cs">
+            <Link>Tracing.cs</Link>
+        </Compile>
+    </ItemGroup>
     
-    <AssemblyName>Duende.IdentityServer</AssemblyName>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
-  </ItemGroup>
 </Project>

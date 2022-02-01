@@ -6,7 +6,7 @@ namespace Duende.IdentityServer;
 /// <summary>
 /// Constants for tracing
 /// </summary>
-public static class Tracing
+internal static class Tracing
 {
     private static readonly Version AssemblyVersion = typeof(Tracing).Assembly.GetName().Version;
 
