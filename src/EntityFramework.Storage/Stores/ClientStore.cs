@@ -58,22 +58,22 @@ public class ClientStore : IClientStore
     /// </returns>
     public virtual async Task<Duende.IdentityServer.Models.Client> FindClientByIdAsync(string clientId)
     {
-        var query = Context.Clients
-            .Where(x => x.ClientId == clientId)
-            .Include(x => x.AllowedCorsOrigins)
-            .Include(x => x.AllowedGrantTypes)
-            .Include(x => x.AllowedScopes)
-            .Include(x => x.Claims)
-            .Include(x => x.ClientSecrets)
-            .Include(x => x.IdentityProviderRestrictions)
-            .Include(x => x.PostLogoutRedirectUris)
-            .Include(x => x.Properties)
-            .Include(x => x.RedirectUris)
-            .AsNoTracking();
-            
-        var client = (await query.ToArrayAsync(CancellationTokenProvider.CancellationToken))
+        IQueryable<Entities.Client> baseQuery = Context.Clients
+            .Where(x => x.ClientId == clientId);
+
+        var client = (await baseQuery.ToArrayAsync())
             .SingleOrDefault(x => x.ClientId == clientId);
         if (client == null) return null;
+
+        await baseQuery.Include(x => x.AllowedCorsOrigins).SelectMany(c => c.AllowedCorsOrigins).LoadAsync();
+        await baseQuery.Include(x => x.AllowedGrantTypes).SelectMany(c => c.AllowedGrantTypes).LoadAsync();
+        await baseQuery.Include(x => x.AllowedScopes).SelectMany(c => c.AllowedScopes).LoadAsync();
+        await baseQuery.Include(x => x.Claims).SelectMany(c => c.Claims).LoadAsync();
+        await baseQuery.Include(x => x.ClientSecrets).SelectMany(c => c.ClientSecrets).LoadAsync();
+        await baseQuery.Include(x => x.IdentityProviderRestrictions).SelectMany(c => c.IdentityProviderRestrictions).LoadAsync();
+        await baseQuery.Include(x => x.PostLogoutRedirectUris).SelectMany(c => c.PostLogoutRedirectUris).LoadAsync();
+        await baseQuery.Include(x => x.Properties).SelectMany(c => c.Properties).LoadAsync();
+        await baseQuery.Include(x => x.RedirectUris).SelectMany(c => c.RedirectUris).LoadAsync();
 
         var model = client.ToModel();
 
