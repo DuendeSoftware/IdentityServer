@@ -59,20 +59,21 @@ public class ClientStore : IClientStore
     public virtual async Task<Duende.IdentityServer.Models.Client> FindClientByIdAsync(string clientId)
     {
         var query = Context.Clients
-            .Where(x => x.ClientId == clientId)
-            .Include(x => x.AllowedCorsOrigins)
-            .Include(x => x.AllowedGrantTypes)
-            .Include(x => x.AllowedScopes)
-            .Include(x => x.Claims)
-            .Include(x => x.ClientSecrets)
-            .Include(x => x.IdentityProviderRestrictions)
-            .Include(x => x.PostLogoutRedirectUris)
-            .Include(x => x.Properties)
-            .Include(x => x.RedirectUris)
-            .AsNoTracking();
-            
-        var client = (await query.ToArrayAsync(CancellationTokenProvider.CancellationToken))
-            .SingleOrDefault(x => x.ClientId == clientId);
+          .Where(x => x.ClientId == clientId)
+          .Include(x => x.AllowedCorsOrigins)
+          .Include(x => x.AllowedGrantTypes)
+          .Include(x => x.AllowedScopes)
+          .Include(x => x.Claims)
+          .Include(x => x.ClientSecrets)
+          .Include(x => x.IdentityProviderRestrictions)
+          .Include(x => x.PostLogoutRedirectUris)
+          .Include(x => x.Properties)
+          .Include(x => x.RedirectUris)
+          .AsNoTracking()
+          .AsSplitQuery();
+
+        var client = (await query.ToArrayAsync(CancellationTokenProvider.CancellationToken)).
+            SingleOrDefault(x => x.ClientId == clientId);
         if (client == null) return null;
 
         var model = client.ToModel();
