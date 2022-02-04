@@ -49,6 +49,8 @@ public class CachingIdentityProviderStore<T> : IIdentityProviderStore
     /// <inheritdoc/>
     public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("CachingIdentityProviderStore.GetAllSchemeNames");
+        
         var result = await _allCache.GetOrAddAsync("__all__", 
             _options.Caching.IdentityProviderCacheDuration, 
             async () => await _inner.GetAllSchemeNamesAsync());
@@ -58,6 +60,8 @@ public class CachingIdentityProviderStore<T> : IIdentityProviderStore
     /// <inheritdoc/>
     public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("CachingIdentityProviderStore.GetByScheme");
+        
         var result = await _cache.GetOrAddAsync(scheme,
             _options.Caching.IdentityProviderCacheDuration,
             async () =>
