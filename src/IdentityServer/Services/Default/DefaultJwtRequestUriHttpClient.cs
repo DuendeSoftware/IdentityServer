@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
@@ -29,7 +30,8 @@ public class DefaultJwtRequestUriHttpClient : IJwtRequestUriHttpClient
     /// <param name="options">The options.</param>
     /// <param name="loggerFactory">The logger factory</param>
     /// <param name="cancellationTokenProvider"></param>
-    public DefaultJwtRequestUriHttpClient(HttpClient client, IdentityServerOptions options, ILoggerFactory loggerFactory, ICancellationTokenProvider cancellationTokenProvider)
+    public DefaultJwtRequestUriHttpClient(HttpClient client, IdentityServerOptions options,
+        ILoggerFactory loggerFactory, ICancellationTokenProvider cancellationTokenProvider)
     {
         _client = client;
         _options = options;
@@ -41,14 +43,11 @@ public class DefaultJwtRequestUriHttpClient : IJwtRequestUriHttpClient
     /// <inheritdoc />
     public async Task<string> GetJwtAsync(string url, Client client)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultJwtRequestUriHttpClient.GetJwt");
+        
         var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Options.TryAdd(IdentityServerConstants.JwtRequestClientKey, client);
 
-#if NET5_0
-            req.Options.TryAdd(IdentityServerConstants.JwtRequestClientKey, client);
-#elif NETCOREAPP3_1
-            req.Properties.Add(IdentityServerConstants.JwtRequestClientKey, client);
-#endif
-         
         var response = await _client.SendAsync(req, _cancellationTokenProvider.CancellationToken);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
@@ -57,17 +56,18 @@ public class DefaultJwtRequestUriHttpClient : IJwtRequestUriHttpClient
                 if (!string.Equals(response.Content.Headers.ContentType.MediaType,
                         $"application/{JwtClaimTypes.JwtTypes.AuthorizationRequest}", StringComparison.Ordinal))
                 {
-                    _logger.LogError("Invalid content type {type} from jwt url {url}", response.Content.Headers.ContentType.MediaType, url);
+                    _logger.LogError("Invalid content type {type} from jwt url {url}",
+                        response.Content.Headers.ContentType.MediaType, url);
                     return null;
                 }
             }
 
             _logger.LogDebug("Success http response from jwt url {url}", url);
-                
+
             var json = await response.Content.ReadAsStringAsync();
             return json;
         }
-                
+
         _logger.LogError("Invalid http status code {status} from jwt url {url}", response.StatusCode, url);
         return null;
     }

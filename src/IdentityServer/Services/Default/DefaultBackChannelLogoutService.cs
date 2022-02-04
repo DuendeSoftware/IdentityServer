@@ -74,6 +74,8 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
     /// <inheritdoc/>
     public virtual async Task SendLogoutNotificationsAsync(LogoutNotificationContext context)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultBackChannelLogoutService.SendLogoutNotifications");
+        
         var backChannelRequests = await LogoutNotificationService.GetBackChannelLogoutNotificationsAsync(context);
         if (backChannelRequests.Any())
         {

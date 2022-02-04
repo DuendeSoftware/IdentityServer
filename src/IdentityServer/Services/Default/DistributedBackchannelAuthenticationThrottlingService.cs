@@ -42,6 +42,8 @@ public class DistributedBackchannelAuthenticationThrottlingService : IBackchanne
     /// <inheritdoc/>
     public async Task<bool> ShouldSlowDown(string requestId, BackChannelAuthenticationRequest details)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DistributedBackchannelAuthenticationThrottlingService.ShouldSlowDown");
+        
         if (requestId == null)
         {
             throw new ArgumentNullException(nameof(requestId));

@@ -252,6 +252,8 @@ public class DefaultTokenService : ITokenService
     /// <exception cref="System.InvalidOperationException">Invalid token type.</exception>
     public virtual async Task<string> CreateSecurityTokenAsync(Token token)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenService.CreateSecurityToken");
+        
         string tokenResult;
 
         if (token.Type == OidcConstants.TokenTypes.AccessToken)

@@ -69,6 +69,8 @@ public class DefaultCache<T> : ICache<T>
     /// <inheritdoc/>
     public Task<T> GetAsync(string key)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultCache.Get");
+        
         key = GetKey(key);
         var item = Cache.Get<T>(key);
         return Task.FromResult(item);
@@ -77,6 +79,8 @@ public class DefaultCache<T> : ICache<T>
     /// <inheritdoc/>
     public Task SetAsync(string key, T item, TimeSpan expiration)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultCache.Set");
+        
         key = GetKey(key);
         Cache.Set(key, item, expiration);
         return Task.CompletedTask;
@@ -85,6 +89,8 @@ public class DefaultCache<T> : ICache<T>
     /// <inheritdoc/>
     public Task RemoveAsync(string key)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultCache.Remove");
+        
         key = GetKey(key);
         Cache.Remove(key);
         return Task.CompletedTask;
@@ -93,6 +99,8 @@ public class DefaultCache<T> : ICache<T>
     /// <inheritdoc/>
     public async Task<T> GetOrAddAsync(string key, TimeSpan duration, Func<Task<T>> get)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultCache.GetOrAdd");
+        
         if (get == null) throw new ArgumentNullException(nameof(get));
         if (key == null) return null;
 
