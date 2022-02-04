@@ -40,9 +40,9 @@ internal static class HostingExtensions
         var apiKey = builder.Configuration["HoneyCombApiKey"];
         var dataset = "test";
 
-        builder.Services.AddOpenTelemetryTracing(b =>
+        builder.Services.AddOpenTelemetryTracing(builder =>
         {
-            b
+            builder
                 //.AddConsoleExporter()
                 .AddSource(IdentityServerConstants.Tracing.ServiceName)
                 .SetResourceBuilder(
@@ -50,7 +50,7 @@ internal static class HostingExtensions
                         .AddService(serviceName: 
                             IdentityServerConstants.Tracing.ServiceName, 
                             IdentityServerConstants.Tracing.ServiceVersion))
-                .SetSampler(new AlwaysOnSampler())
+                //.SetSampler(new AlwaysOnSampler())
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
                 .AddSqlClientInstrumentation()

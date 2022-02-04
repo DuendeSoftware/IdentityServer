@@ -182,7 +182,7 @@ public static class IdentityServerConstants
 
     public static class Tracing
     {
-        public static string ServiceName = Duende.IdentityServer.Tracing.ServiceName;
-        public static string ServiceVersion = Duende.IdentityServer.Tracing.ServiceVersion;
+        public static readonly string ServiceName = Duende.IdentityServer.Tracing.ServiceName;
+        public static readonly string ServiceVersion = Duende.IdentityServer.Tracing.ServiceVersion;
     }
 }

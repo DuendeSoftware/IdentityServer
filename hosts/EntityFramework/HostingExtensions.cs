@@ -1,3 +1,4 @@
+using System;
 using Duende.IdentityServer;
 using IdentityServerHost.Pages.Admin.ApiScopes;
 using IdentityServerHost.Pages.Admin.Clients;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
 
@@ -22,6 +25,30 @@ internal static class HostingExtensions
         builder.AddExternalIdentityProviders();
 
         builder.AddAdminFeatures();
+        
+        var apiKey = builder.Configuration["HoneyCombApiKey"];
+        var dataset = "test";
+
+        builder.Services.AddOpenTelemetryTracing(builder =>
+        {
+            builder
+                //.AddConsoleExporter()
+                .AddSource(IdentityServerConstants.Tracing.ServiceName)
+                .SetResourceBuilder(
+                    ResourceBuilder.CreateDefault()
+                        .AddService(serviceName: 
+                            IdentityServerConstants.Tracing.ServiceName, 
+                            IdentityServerConstants.Tracing.ServiceVersion))
+                //.SetSampler(new AlwaysOnSampler())
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation()
+                .AddSqlClientInstrumentation()
+                .AddOtlpExporter(option =>
+                {
+                    option.Endpoint = new Uri("https://api.honeycomb.io");
+                    option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+                });
+        });
 
         return builder.Build();
     }

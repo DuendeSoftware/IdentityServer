@@ -9,6 +9,14 @@
         <PackageReference Include="Serilog.AspNetCore" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
+
+        <PackageReference Include="OpenTelemetry" Version="1.2.0-rc1" />
+        <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.2.0-rc1" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.2.0-rc1" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc8" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc8" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc8" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.0.0-rc8" />
     </ItemGroup>
 
     <ItemGroup>

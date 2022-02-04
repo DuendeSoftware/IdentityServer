@@ -20,6 +20,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="All" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
+        
         <PackageReference Include="OpenTelemetry" Version="1.2.0-rc1" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.2.0-rc1" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.2.0-rc1" />
