@@ -34,6 +34,8 @@ internal class DeviceAuthorizationRequestValidator : IDeviceAuthorizationRequest
 
     public async Task<DeviceAuthorizationRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DeviceAuthorizationRequestValidator.Validate");
+        
         _logger.LogDebug("Start device authorization request validation");
 
         var request = new ValidatedDeviceAuthorizationRequest

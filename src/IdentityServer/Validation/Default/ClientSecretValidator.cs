@@ -48,6 +48,7 @@ public class ClientSecretValidator : IClientSecretValidator
     public async Task<ClientSecretValidationResult> ValidateAsync(HttpContext context)
     {
         using var activity = Tracing.ActivitySource.StartActivity("ClientSecretValidator.Validate");
+        
         _logger.LogDebug("Start client validation");
 
         var fail = new ClientSecretValidationResult

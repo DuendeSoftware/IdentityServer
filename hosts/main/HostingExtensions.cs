@@ -47,9 +47,7 @@ internal static class HostingExtensions
                 .AddSource(IdentityServerConstants.Tracing.ServiceName)
                 .SetResourceBuilder(
                     ResourceBuilder.CreateDefault()
-                        .AddService(serviceName: 
-                            IdentityServerConstants.Tracing.ServiceName, 
-                            IdentityServerConstants.Tracing.ServiceVersion))
+                        .AddService("IdentityServerHost.Main"))
                 //.SetSampler(new AlwaysOnSampler())
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()

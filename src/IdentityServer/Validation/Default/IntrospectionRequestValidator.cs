@@ -37,6 +37,8 @@ internal class IntrospectionRequestValidator : IIntrospectionRequestValidator
     /// <returns></returns>
     public async Task<IntrospectionRequestValidationResult> ValidateAsync(NameValueCollection parameters, ApiResource api)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("IntrospectionRequestValidator.Validate");
+        
         _logger.LogDebug("Introspection request validation started.");
 
         // retrieve required token

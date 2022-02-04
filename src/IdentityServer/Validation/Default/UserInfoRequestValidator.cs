@@ -46,6 +46,8 @@ internal class UserInfoRequestValidator : IUserInfoRequestValidator
     /// <exception cref="System.NotImplementedException"></exception>
     public async Task<UserInfoRequestValidationResult> ValidateRequestAsync(string accessToken)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("UserInfoRequestValidator.ValidateRequest");
+        
         // the access token needs to be valid and have at least the openid scope
         var tokenResult = await _tokenValidator.ValidateAccessTokenAsync(
             accessToken,
