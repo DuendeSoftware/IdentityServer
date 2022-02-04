@@ -30,6 +30,8 @@ public class InMemorySigningCredentialsStore : ISigningCredentialStore
     /// <returns></returns>
     public Task<SigningCredentials> GetSigningCredentialsAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemorySigningCredentialsStore.GetSigningCredentials");
+        
         return Task.FromResult(_credential);
     }
 }

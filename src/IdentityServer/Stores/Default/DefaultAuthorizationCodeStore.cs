@@ -51,7 +51,7 @@ public class DefaultAuthorizationCodeStore : DefaultGrantStore<AuthorizationCode
     /// <returns></returns>
     public Task<AuthorizationCode> GetAuthorizationCodeAsync(string code)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultAuthorizationCodeStore.GetAuthorizationCodeAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultAuthorizationCodeStore.GetAuthorizationCode");
         
         return GetItemAsync(code);
     }
@@ -63,7 +63,7 @@ public class DefaultAuthorizationCodeStore : DefaultGrantStore<AuthorizationCode
     /// <returns></returns>
     public Task RemoveAuthorizationCodeAsync(string code)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultAuthorizationCodeStore.RemoveAuthorizationCodeAsync");
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultAuthorizationCodeStore.RemoveAuthorizationCode");
         
         return RemoveItemAsync(code);
     }

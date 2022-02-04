@@ -38,7 +38,7 @@ public class DefaultReferenceTokenStore : DefaultGrantStore<Token>, IReferenceTo
     /// <returns></returns>
     public Task<string> StoreReferenceTokenAsync(Token token)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultReferenceTokenStore.GetReferenceToken");
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultReferenceTokenStore.StoreReferenceToken");
         
         return CreateItemAsync(token, token.ClientId, token.SubjectId, token.SessionId, token.Description, token.CreationTime, token.Lifetime);
     }

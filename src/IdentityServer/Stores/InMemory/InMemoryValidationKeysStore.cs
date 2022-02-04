@@ -33,6 +33,8 @@ public class InMemoryValidationKeysStore : IValidationKeysStore
     /// <returns></returns>
     public Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryValidationKeysStore.GetValidationKeys");
+        
         return Task.FromResult(_keys);
     }
 }

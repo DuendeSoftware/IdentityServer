@@ -49,6 +49,8 @@ public class ValidatingClientStore<T> : IClientStore
     /// </returns>
     public async Task<Client> FindClientByIdAsync(string clientId)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("ValidatingClientStore.FindClientById");
+        
         var client = await _inner.FindClientByIdAsync(clientId);
 
         if (client != null)

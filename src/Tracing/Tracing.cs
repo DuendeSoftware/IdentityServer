@@ -36,7 +36,7 @@ internal static class Tracing
         public const string Scope = "scope";
         public const string Origin = "origin";
         
-        
+        public const string Id = "id";
         public const string ScopeNames = "scope_names";
         public const string ApiResourceNames = "api_resource_names";
         
