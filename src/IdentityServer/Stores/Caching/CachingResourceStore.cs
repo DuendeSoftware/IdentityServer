@@ -9,6 +9,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
 using System;
 using System.Linq;
+using Duende.IdentityServer.Extensions;
 
 namespace Duende.IdentityServer.Stores;
 
@@ -96,6 +97,7 @@ public class CachingResourceStore<T> : IResourceStore
     public async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
         using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.FindApiResourcesByScopeName");
+        activity?.SetTag(Tracing.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
             
         var apiResourceNames = new HashSet<string>();
         var uncachedScopes = new List<string>();
@@ -166,6 +168,7 @@ public class CachingResourceStore<T> : IResourceStore
     public async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
     {
         using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.FindApiResourcesByName");
+        activity?.SetTag(Tracing.Properties.ApiResourceNames, apiResourceNames.ToSpaceSeparatedString());
         
         return await FindItemsAsync(apiResourceNames, _apiResourceCache, 
             async names => new Resources(null, await _inner.FindApiResourcesByNameAsync(names), null), 
@@ -176,6 +179,7 @@ public class CachingResourceStore<T> : IResourceStore
     public async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
         using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.FindIdentityResourcesByScopeName");
+        activity?.SetTag(Tracing.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
         
         return await FindItemsAsync(scopeNames, _identityCache, 
             async names => new Resources(await _inner.FindIdentityResourcesByScopeNameAsync(names), null, null), 
@@ -186,6 +190,7 @@ public class CachingResourceStore<T> : IResourceStore
     public async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
     {
         using var activity = Tracing.ActivitySource.StartActivity("CachingResourceStore.FindApiScopesByName");
+        activity?.SetTag(Tracing.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
         
         return await FindItemsAsync(scopeNames, _apiScopeCache, 
             async names => new Resources(null, null, await _inner.FindApiScopesByNameAsync(names)), 
