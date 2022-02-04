@@ -2,13 +2,22 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <UserSecretsId>fe28de52-854d-4c0f-a6b5-20f8dea1f70d</UserSecretsId>
     </PropertyGroup>
 
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.0" />
 
-        <ProjectReference Include="..\Constants\Constants.csproj"/>
+        <PackageReference Include="OpenTelemetry" Version="1.2.0-rc1" />
+        <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.2.0-rc1" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.2.0-rc1" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc8" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc8" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc8" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.0.0-rc8" />
+
+        <ProjectReference Include="..\Constants\Constants.csproj" />
     </ItemGroup>
 
 </Project>
