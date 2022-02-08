@@ -88,8 +88,6 @@ namespace MvcCode
             services.AddOpenTelemetryTracing(b =>
             {
                 b
-                    // //.AddConsoleExporter()
-                    // .AddSource(Tracing.ServiceName)
                     .SetResourceBuilder(
                         ResourceBuilder.CreateDefault()
                             .AddService(serviceName: "MVC Client", serviceVersion: "1.0.0"))

@@ -162,8 +162,6 @@ public class DefaultUserSession : IUserSession
     /// </exception>
     public virtual async Task<string> CreateSessionIdAsync(ClaimsPrincipal principal, AuthenticationProperties properties)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultUserSession.CreateSessionId");
-        
         if (principal == null) throw new ArgumentNullException(nameof(principal));
         if (properties == null) throw new ArgumentNullException(nameof(properties));
 
@@ -203,8 +201,6 @@ public class DefaultUserSession : IUserSession
     /// <returns></returns>
     public virtual async Task<ClaimsPrincipal> GetUserAsync()
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultUserSession.GetUser");
-        
         await AuthenticateAsync();
 
         return Principal;
@@ -216,8 +212,6 @@ public class DefaultUserSession : IUserSession
     /// <returns></returns>
     public virtual async Task<string> GetSessionIdAsync()
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultUserSession.GetSessionId");
-        
         await AuthenticateAsync();
 
         return Properties?.GetSessionId();
@@ -229,8 +223,6 @@ public class DefaultUserSession : IUserSession
     /// <returns></returns>
     public virtual async Task EnsureSessionIdCookieAsync()
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultUserSession.EnsureSessionIdCookie");
-        
         var sid = await GetSessionIdAsync();
         if (sid != null)
         {
@@ -248,8 +240,6 @@ public class DefaultUserSession : IUserSession
     /// <returns></returns>
     public virtual Task RemoveSessionIdCookieAsync()
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultUserSession.RemoveSessionIdCookie");
-        
         if (HttpContext.Request.Cookies.ContainsKey(CheckSessionCookieName))
         {
             // only remove it if we have it in the request
@@ -289,8 +279,6 @@ public class DefaultUserSession : IUserSession
     /// <param name="sid"></param>
     public virtual void IssueSessionIdCookie(string sid)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultUserSession.IssueSessionIdCookie");
-        
         if (Options.Endpoints.EnableCheckSessionEndpoint)
         {
             if (HttpContext.Request.Cookies[CheckSessionCookieName] != sid)

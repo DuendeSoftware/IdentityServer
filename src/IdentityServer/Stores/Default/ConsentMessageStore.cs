@@ -19,7 +19,6 @@ internal class ConsentMessageStore : IConsentMessageStore
     public virtual Task DeleteAsync(string id)
     {
         using var activity = Tracing.ActivitySource.StartActivity("ConsentMessageStore.Delete");
-        activity?.SetTag(Tracing.Properties.Id, id);
         
         Cookie.Clear(id);
         return Task.CompletedTask;
@@ -28,7 +27,6 @@ internal class ConsentMessageStore : IConsentMessageStore
     public virtual Task<Message<ConsentResponse>> ReadAsync(string id)
     {
         using var activity = Tracing.ActivitySource.StartActivity("ConsentMessageStore.Read");
-        activity?.SetTag(Tracing.Properties.Id, id);
         
         return Task.FromResult(Cookie.Read(id));
     }
@@ -36,8 +34,7 @@ internal class ConsentMessageStore : IConsentMessageStore
     public virtual Task WriteAsync(string id, Message<ConsentResponse> message)
     {
         using var activity = Tracing.ActivitySource.StartActivity("ConsentMessageStore.Write");
-        activity?.SetTag(Tracing.Properties.Id, id);
-        
+
         Cookie.Write(id, message);
         return Task.CompletedTask;
     }

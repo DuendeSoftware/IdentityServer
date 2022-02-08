@@ -66,8 +66,6 @@ public class DefaultKeyMaterialService : IKeyMaterialService
             throw new InvalidOperationException($"No signing credential registered.");
         }
 
-        activity?.SetTag("allowed_algorithms", allowedAlgorithms.ToSpaceSeparatedString());
-        
         var credential =
             (await GetAllSigningCredentialsAsync()).FirstOrDefault(c => allowedAlgorithms.Contains(c.Algorithm));
         if (credential is null)

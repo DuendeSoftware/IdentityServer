@@ -41,6 +41,7 @@ public class InMemoryClientStore : IClientStore
     public Task<Client> FindClientByIdAsync(string clientId)
     {
         using var activity = Tracing.ActivitySource.StartActivity("InMemoryClientStore.FindClientById");
+        activity?.SetTag(Tracing.Properties.ClientId, clientId);
         
         var query =
             from client in _clients
