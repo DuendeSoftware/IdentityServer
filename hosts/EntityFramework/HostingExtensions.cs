@@ -27,7 +27,7 @@ internal static class HostingExtensions
         builder.AddAdminFeatures();
         
         var apiKey = builder.Configuration["HoneyCombApiKey"];
-        var dataset = "test";
+        var dataset = "IdentityServerDev";
 
         builder.Services.AddOpenTelemetryTracing(builder =>
         {
@@ -36,9 +36,7 @@ internal static class HostingExtensions
                 .AddSource(IdentityServerConstants.Tracing.ServiceName)
                 .SetResourceBuilder(
                     ResourceBuilder.CreateDefault()
-                        .AddService(serviceName: 
-                            IdentityServerConstants.Tracing.ServiceName, 
-                            IdentityServerConstants.Tracing.ServiceVersion))
+                        .AddService("IdentityServerHost.EF"))
                 //.SetSampler(new AlwaysOnSampler())
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()

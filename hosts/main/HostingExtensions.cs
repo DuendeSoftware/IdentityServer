@@ -38,7 +38,7 @@ internal static class HostingExtensions
 
 
         var apiKey = builder.Configuration["HoneyCombApiKey"];
-        var dataset = "test";
+        var dataset = "IdentityServerDev";
 
         builder.Services.AddOpenTelemetryTracing(builder =>
         {
