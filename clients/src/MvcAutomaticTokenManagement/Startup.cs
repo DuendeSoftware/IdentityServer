@@ -84,6 +84,27 @@ namespace MvcCode
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
             });
+            
+            // var apiKey = _configuration["HoneyCombApiKey"];
+            // var dataset = "IdentityServerDev";
+            //
+            // services.AddOpenTelemetryTracing(builder =>
+            // {
+            //     builder
+            //         //.AddConsoleExporter()
+            //         .SetResourceBuilder(
+            //             ResourceBuilder.CreateDefault()
+            //                 .AddService("MVC Code"))
+            //         //.SetSampler(new AlwaysOnSampler())
+            //         .AddHttpClientInstrumentation()
+            //         .AddAspNetCoreInstrumentation()
+            //         .AddSqlClientInstrumentation()
+            //         .AddOtlpExporter(option =>
+            //         {
+            //             option.Endpoint = new Uri("https://api.honeycomb.io");
+            //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+            //         });
+            // });
         }
 
         public void Configure(IApplicationBuilder app)

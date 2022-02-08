@@ -84,14 +84,16 @@ namespace MvcCode
                 });
             
             var apiKey = _configuration["HoneyCombApiKey"];
-            var dataset = "test";
-            services.AddOpenTelemetryTracing(b =>
+            var dataset = "IdentityServerDev";
+            
+            services.AddOpenTelemetryTracing(builder =>
             {
-                b
+                builder
+                    //.AddConsoleExporter()
                     .SetResourceBuilder(
                         ResourceBuilder.CreateDefault()
-                            .AddService(serviceName: "MVC Client", serviceVersion: "1.0.0"))
-                    // .SetSampler(new AlwaysOnSampler())
+                            .AddService("MVC Code"))
+                    //.SetSampler(new AlwaysOnSampler())
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddSqlClientInstrumentation()

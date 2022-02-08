@@ -6,15 +6,22 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using IdentityModel.AspNetCore.AccessTokenManagement;
+using Microsoft.Extensions.Configuration;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace MvcCode
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+
+        public Startup(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
         public void ConfigureServices(IServiceCollection services)
         {
-            JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
-            
             services.AddSingleton<AssertionService>();
             services.AddSingleton<RequestUriService>();
             services.AddTransient<OidcEvents>();
@@ -60,6 +67,7 @@ namespace MvcCode
 
                     // keeps id_token smaller
                     options.GetClaimsFromUserInfoEndpoint = true;
+                    options.MapInboundClaims = false;
                     options.SaveTokens = true;
                     
                     // needed to add JWR / private_key_jwt support
@@ -80,6 +88,27 @@ namespace MvcCode
             services.AddUserAccessTokenHttpClient("client", configureClient: client =>
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
+            });
+            
+            var apiKey = _configuration["HoneyCombApiKey"];
+            var dataset = "IdentityServerDev";
+            
+            services.AddOpenTelemetryTracing(builder =>
+            {
+                builder
+                    //.AddConsoleExporter()
+                    .SetResourceBuilder(
+                        ResourceBuilder.CreateDefault()
+                            .AddService("MVC JAR UriJwt"))
+                    //.SetSampler(new AlwaysOnSampler())
+                    .AddHttpClientInstrumentation()
+                    .AddAspNetCoreInstrumentation()
+                    .AddSqlClientInstrumentation()
+                    .AddOtlpExporter(option =>
+                    {
+                        option.Endpoint = new Uri("https://api.honeycomb.io");
+                        option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+                    });
             });
         }
 

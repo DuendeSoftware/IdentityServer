@@ -6,11 +6,21 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using IdentityModel.AspNetCore.AccessTokenManagement;
+using Microsoft.Extensions.Configuration;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace MvcCode
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+
+        public Startup(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+        
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<AssertionService>();
@@ -78,6 +88,27 @@ namespace MvcCode
             services.AddUserAccessTokenHttpClient("client", configureClient: client =>
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
+            });
+            
+            var apiKey = _configuration["HoneyCombApiKey"];
+            var dataset = "IdentityServerDev";
+            
+            services.AddOpenTelemetryTracing(builder =>
+            {
+                builder
+                    //.AddConsoleExporter()
+                    .SetResourceBuilder(
+                        ResourceBuilder.CreateDefault()
+                            .AddService("MVC JAR JWT"))
+                    //.SetSampler(new AlwaysOnSampler())
+                    .AddHttpClientInstrumentation()
+                    .AddAspNetCoreInstrumentation()
+                    .AddSqlClientInstrumentation()
+                    .AddOtlpExporter(option =>
+                    {
+                        option.Endpoint = new Uri("https://api.honeycomb.io");
+                        option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+                    });
             });
         }
 
