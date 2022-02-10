@@ -23,7 +23,7 @@ public class InMemoryUserSessionStore : IUserSessionStore
     }
 
     /// <inheritdoc />
-    public Task<UserSession> GetUserSessionAsync(string key, CancellationToken cancellationToken = default)
+    public Task<UserSession?> GetUserSessionAsync(string key, CancellationToken cancellationToken = default)
     {
         _store.TryGetValue(key, out var item);
         return Task.FromResult(item?.Clone());
@@ -32,9 +32,7 @@ public class InMemoryUserSessionStore : IUserSessionStore
     /// <inheritdoc />
     public Task UpdateUserSessionAsync(UserSession session, CancellationToken cancellationToken = default)
     {
-        var item = _store[session.Key].Clone();
-        session.CopyTo(item);
-        _store[session.Key] = item;
+        _store[session.Key] = session.Clone();
         return Task.CompletedTask;
     }
 

@@ -24,20 +24,22 @@ public static class AuthenticationTicketExtensions
     /// <summary>
     /// Extracts a subject identifier
     /// </summary>
-    public static string? GetSubjectId(this AuthenticationTicket ticket)
+    public static string GetSubjectId(this AuthenticationTicket ticket)
     {
         return ticket.Principal.FindFirst(JwtClaimTypes.Subject)?.Value ??
                ticket.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
                // for the mfa remember me cookie, ASP.NET Identity uses the 'name' claim for the subject id (for some reason)
-               ticket.Principal.FindFirst(ClaimTypes.Name)?.Value;
+               ticket.Principal.FindFirst(ClaimTypes.Name)?.Value ??
+               throw new InvalidOperationException("Missing subject id for principal in authentication ticket.");
     }
 
     /// <summary>
     /// Extracts the session ID
     /// </summary>
-    public static string? GetSessionId(this AuthenticationTicket ticket)
+    public static string GetSessionId(this AuthenticationTicket ticket)
     {
-        return ticket.Principal.FindFirst(JwtClaimTypes.SessionId)?.Value;
+        return ticket.Principal.FindFirst(JwtClaimTypes.SessionId)?.Value ??
+            throw new InvalidOperationException("Missing session id for principal in authentication ticket.");
     }
 
     /// <summary>
@@ -82,7 +84,7 @@ public static class AuthenticationTicketExtensions
 
         return new ClaimsPrincipalLite
         {
-            AuthenticationType = principal.Identity.AuthenticationType,
+            AuthenticationType = principal.Identity!.AuthenticationType!,
             NameClaimType = principal.Identities.First().NameClaimType,
             RoleClaimType = principal.Identities.First().RoleClaimType,
             Claims = claims
@@ -200,7 +202,7 @@ public static class AuthenticationTicketExtensions
         /// <summary>
         /// The value type
         /// </summary>
-        public string ValueType { get; init; }
+        public string? ValueType { get; init; }
     }
 
     /// <summary>

@@ -12,17 +12,17 @@ public class UserSession
     /// <summary>
     /// The key
     /// </summary>
-    public string Key { get; set; }
+    public string Key { get; set; } = default!;
 
     /// <summary>
     /// The subject ID
     /// </summary>
-    public string SubjectId { get; set; }
+    public string SubjectId { get; set; } = default!;
 
     /// <summary>
     /// The session ID
     /// </summary>
-    public string SessionId { get; set; }
+    public string SessionId { get; set; } = default!;
 
     /// <summary>
     /// The creation time
@@ -42,23 +42,8 @@ public class UserSession
     /// <summary>
     /// The serialized ticket
     /// </summary>
-    public string Ticket { get; set; }
+    public string Ticket { get; set; } = default!;
 
-    /// <summary>
-    /// Copies this instance into another
-    /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    public void CopyTo(UserSession other)
-    {
-        other.Key = other.Key;
-        other.SubjectId = SubjectId;
-        other.SessionId = SessionId;
-        other.Created = Created;
-        other.Renewed = Renewed;
-        other.Expires = Expires;
-        other.Ticket = Ticket;
-    }
 
     /// <summary>
     /// Clones the instance
@@ -66,8 +51,16 @@ public class UserSession
     /// <returns></returns>
     public UserSession Clone()
     {
-        var other = new UserSession();
-        CopyTo(other);
-        return other;
+        var item = new UserSession()
+        {
+            Key = Key,
+            SubjectId = SubjectId,
+            SessionId = SessionId,
+            Created = Created,
+            Renewed = Renewed,
+            Expires = Expires,
+            Ticket = Ticket,
+        };
+        return item;
     }
 }

@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
 
-      <Description>Session Management Library for Duende IdentityServer</Description>
+        <Description>Session Management Library for Duende IdentityServer</Description>
 
-      <AssemblyName>Duende.SessionManagement</AssemblyName>
-      <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+        <AssemblyName>Duende.SessionManagement</AssemblyName>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\IdentityServer\Duende.IdentityServer.csproj" />
+        <ProjectReference Include="..\IdentityServer\Duende.IdentityServer.csproj" />
     </ItemGroup>
 
 

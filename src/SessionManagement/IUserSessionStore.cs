@@ -14,7 +14,7 @@ public interface IUserSessionStore
     /// <param name="key"></param>
     /// <param name="cancellationToken">A token that can be used to request cancellation of the asynchronous operation.</param>
     /// <returns></returns>
-    Task<UserSession> GetUserSessionAsync(string key, CancellationToken cancellationToken = default);
+    Task<UserSession?> GetUserSessionAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a user session
