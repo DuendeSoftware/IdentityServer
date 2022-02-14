@@ -44,6 +44,8 @@ public class ProtectedDataMessageStore<TModel> : IMessageStore<TModel>
     /// <inheritdoc />
     public virtual Task<Message<TModel>> ReadAsync(string value)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("ProtectedDataMessageStore.Read");
+        
         Message<TModel> result = null;
 
         if (!String.IsNullOrWhiteSpace(value))
@@ -67,6 +69,8 @@ public class ProtectedDataMessageStore<TModel> : IMessageStore<TModel>
     /// <inheritdoc />
     public virtual Task<string> WriteAsync(Message<TModel> message)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("ProtectedDataMessageStore.Write");
+        
         string value = null;
 
         try

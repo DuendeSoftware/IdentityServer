@@ -89,9 +89,9 @@ public static class ClientsWeb
                     new Secret("secret".Sha256())
                 },
 
-                RequireConsent = true,
+                RequireConsent = false,
                 AllowedGrantTypes = GrantTypes.Code,
-                // https://localhost:44300/
+
                 RedirectUris = { "https://localhost:44302/signin-oidc" },
                 FrontChannelLogoutUri = "https://localhost:44302/signout-oidc",
                 PostLogoutRedirectUris = { "https://localhost:44302/signout-callback-oidc" },

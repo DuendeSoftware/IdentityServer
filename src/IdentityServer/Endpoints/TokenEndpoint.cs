@@ -58,6 +58,8 @@ internal class TokenEndpoint : IEndpointHandler
     /// <returns></returns>
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
+        using var activity = Tracing.ActivitySource.StartActivity(Constants.EndpointNames.Token + "Endpoint");
+        
         _logger.LogTrace("Processing token request.");
 
         // validate HTTP

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -6,6 +7,8 @@ using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
 
@@ -32,7 +35,30 @@ internal static class HostingExtensions
 
             return Task.FromResult(principal);
         });
-        
+
+
+        // var apiKey = builder.Configuration["HoneyCombApiKey"];
+        // var dataset = "IdentityServerDev";
+        //
+        // builder.Services.AddOpenTelemetryTracing(builder =>
+        // {
+        //     builder
+        //         //.AddConsoleExporter()
+        //         .AddSource(IdentityServerConstants.Tracing.ServiceName)
+        //         .SetResourceBuilder(
+        //             ResourceBuilder.CreateDefault()
+        //                 .AddService("IdentityServerHost.Main"))
+        //         //.SetSampler(new AlwaysOnSampler())
+        //         .AddHttpClientInstrumentation()
+        //         .AddAspNetCoreInstrumentation()
+        //         .AddSqlClientInstrumentation()
+        //         .AddOtlpExporter(option =>
+        //         {
+        //             option.Endpoint = new Uri("https://api.honeycomb.io");
+        //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+        //         });
+        // });
+
         return builder.Build();
     }
 
@@ -112,7 +138,7 @@ internal static class HostingExtensions
         // local API endpoints
         app.MapControllers()
             .RequireAuthorization(IdentityServerConstants.LocalApi.PolicyName);
-        
+
         // UI
         app.MapRazorPages()
             .RequireAuthorization();

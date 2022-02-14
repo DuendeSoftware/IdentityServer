@@ -22,6 +22,8 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task StoreAsync(PersistedGrant grant)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Store");
+        
         _repository[grant.Key] = grant;
 
         return Task.CompletedTask;
@@ -30,6 +32,8 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task<PersistedGrant> GetAsync(string key)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Get");
+        
         if (key != null && _repository.TryGetValue(key, out PersistedGrant token))
         {
             return Task.FromResult(token);
@@ -41,6 +45,8 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.GetAll");
+        
         filter.Validate();
             
         var items = Filter(filter);
@@ -51,6 +57,8 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task RemoveAsync(string key)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Remove");
+        
         _repository.TryRemove(key, out _);
 
         return Task.CompletedTask;
@@ -59,6 +67,8 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task RemoveAllAsync(PersistedGrantFilter filter)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.RemoveAll");
+        
         filter.Validate();
 
         var items = Filter(filter);

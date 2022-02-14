@@ -61,6 +61,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
     public async Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("AuthorizeRequestValidator.Validate");
+        
         _logger.LogDebug("Start authorize request protocol validation");
 
         var request = new ValidatedAuthorizeRequest

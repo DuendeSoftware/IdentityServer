@@ -51,6 +51,8 @@ internal class UserInfoEndpoint : IEndpointHandler
     /// <returns></returns>
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
+        using var activity = Tracing.ActivitySource.StartActivity(Constants.EndpointNames.UserInfo + "Endpoint");
+        
         if (!HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsPost(context.Request.Method))
         {
             _logger.LogWarning("Invalid HTTP method for userinfo endpoint.");

@@ -16,4 +16,10 @@
         <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Compile Include="..\Tracing\Tracing.cs">
+            <Link>Tracing.cs</Link>
+        </Compile>
+    </ItemGroup>
+
 </Project>

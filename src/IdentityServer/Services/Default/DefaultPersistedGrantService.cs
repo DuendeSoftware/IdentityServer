@@ -40,6 +40,8 @@ public class DefaultPersistedGrantService : IPersistedGrantService
     /// <inheritdoc/>
     public async Task<IEnumerable<Grant>> GetAllGrantsAsync(string subjectId)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultPersistedGrantService.GetAllGrants");
+        
         if (String.IsNullOrWhiteSpace(subjectId)) throw new ArgumentNullException(nameof(subjectId));
             
         var grants = (await _store.GetAllAsync(new PersistedGrantFilter { SubjectId = subjectId })).ToArray();
@@ -149,6 +151,8 @@ public class DefaultPersistedGrantService : IPersistedGrantService
     /// <inheritdoc/>
     public Task RemoveAllGrantsAsync(string subjectId, string clientId = null, string sessionId = null)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultPersistedGrantService.RemoveAllGrants");
+        
         if (String.IsNullOrWhiteSpace(subjectId)) throw new ArgumentNullException(nameof(subjectId));
 
         return _store.RemoveAllAsync(new PersistedGrantFilter {

@@ -103,6 +103,8 @@ public class DefaultTokenService : ITokenService
     /// </returns>
     public virtual async Task<Token> CreateIdentityTokenAsync(TokenCreationRequest request)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenService.CreateIdentityToken");
+        
         Logger.LogTrace("Creating identity token");
         request.Validate();
 
@@ -179,6 +181,8 @@ public class DefaultTokenService : ITokenService
     /// </returns>
     public virtual async Task<Token> CreateAccessTokenAsync(TokenCreationRequest request)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenService.CreateAccessToken");
+        
         Logger.LogTrace("Creating access token");
         request.Validate();
 
@@ -248,6 +252,8 @@ public class DefaultTokenService : ITokenService
     /// <exception cref="System.InvalidOperationException">Invalid token type.</exception>
     public virtual async Task<string> CreateSecurityTokenAsync(Token token)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenService.CreateSecurityToken");
+        
         string tokenResult;
 
         if (token.Type == OidcConstants.TokenTypes.AccessToken)

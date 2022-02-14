@@ -20,9 +20,10 @@ public static class HttpResponseExtensions
 {
     public static async Task WriteJsonAsync(this HttpResponse response, object o, string contentType = null)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("WriteJsonObject");
+        
         var json = ObjectSerializer.ToString(o);
         await response.WriteJsonAsync(json, contentType);
-        await response.Body.FlushAsync();
     }
 
     public static async Task WriteJsonAsync(this HttpResponse response, string json, string contentType = null)

@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using Microsoft.AspNetCore.WebUtilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -11,11 +10,10 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 
-namespace Duende.IdentityServer.Extensions;
+namespace Duende.IdentityServer.EntityFramework.Extensions;
 
 internal static class StringExtensions
 {
-    // todo: use string.Join instead!
     [DebuggerStepThrough]
     public static string ToSpaceSeparatedString(this IEnumerable<string> list)
     {
@@ -223,46 +221,6 @@ internal static class StringExtensions
         return url + query;
     }
 
-    [DebuggerStepThrough]
-    public static NameValueCollection ReadQueryStringAsNameValueCollection(this string url)
-    {
-        if (url != null)
-        {
-            var idx = url.IndexOf('?');
-            if (idx >= 0)
-            {
-                url = url.Substring(idx + 1);
-            }
-            var query = QueryHelpers.ParseNullableQuery(url);
-            if (query != null)
-            {
-                return query.AsNameValueCollection();
-            }
-        }
-
-        return new NameValueCollection();           
-    }
-
-    public static string GetOrigin(this string url)
-    {
-        if (url != null)
-        {
-            Uri uri;
-            try
-            {
-                uri = new Uri(url);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-
-            return $"{uri.Scheme}://{uri.Authority}";
-        }
-
-        return null;
-    }
-        
     public static string Obfuscate(this string value)
     {
         var last4Chars = "****";

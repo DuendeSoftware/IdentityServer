@@ -16,8 +16,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders;
 /// </summary>
 public class DynamicAuthenticationSchemeCache
 {
-    private readonly ConcurrentDictionary<string, DynamicAuthenticationScheme> _cache =
-        new ConcurrentDictionary<string, DynamicAuthenticationScheme>();
+    private readonly ConcurrentDictionary<string, DynamicAuthenticationScheme> _cache = new();
 
     /// <summary>
     /// Adds the scheme.

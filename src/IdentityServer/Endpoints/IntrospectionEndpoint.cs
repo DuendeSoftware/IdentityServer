@@ -57,6 +57,8 @@ internal class IntrospectionEndpoint : IEndpointHandler
     /// <returns></returns>
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
+        using var activity = Tracing.ActivitySource.StartActivity(Constants.EndpointNames.Introspection + "Endpoint");
+        
         _logger.LogTrace("Processing introspection request.");
 
         // validate HTTP
