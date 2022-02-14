@@ -22,14 +22,7 @@ internal static class StringExtensions
             return string.Empty;
         }
         
-        var sb = new StringBuilder(100);
-
-        foreach (var element in list)
-        {
-            sb.Append(element + " ");
-        }
-
-        return sb.ToString().Trim();
+        return String.Join(' ', list);
     }
 
     [DebuggerStepThrough]

@@ -15,7 +15,6 @@ namespace Duende.IdentityServer.Extensions;
 
 internal static class StringExtensions
 {
-    // todo: use string.Join instead!
     [DebuggerStepThrough]
     public static string ToSpaceSeparatedString(this IEnumerable<string> list)
     {
@@ -24,14 +23,7 @@ internal static class StringExtensions
             return string.Empty;
         }
         
-        var sb = new StringBuilder(100);
-
-        foreach (var element in list)
-        {
-            sb.Append(element + " ");
-        }
-
-        return sb.ToString().Trim();
+        return String.Join(' ', list);
     }
 
     [DebuggerStepThrough]
