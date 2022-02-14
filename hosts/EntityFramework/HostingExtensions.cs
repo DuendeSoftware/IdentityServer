@@ -26,27 +26,27 @@ internal static class HostingExtensions
 
         builder.AddAdminFeatures();
         
-        var apiKey = builder.Configuration["HoneyCombApiKey"];
-        var dataset = "IdentityServerDev";
-
-        builder.Services.AddOpenTelemetryTracing(builder =>
-        {
-            builder
-                //.AddConsoleExporter()
-                .AddSource(IdentityServerConstants.Tracing.ServiceName)
-                .SetResourceBuilder(
-                    ResourceBuilder.CreateDefault()
-                        .AddService("IdentityServerHost.EF"))
-                //.SetSampler(new AlwaysOnSampler())
-                .AddHttpClientInstrumentation()
-                .AddAspNetCoreInstrumentation()
-                .AddSqlClientInstrumentation()
-                .AddOtlpExporter(option =>
-                {
-                    option.Endpoint = new Uri("https://api.honeycomb.io");
-                    option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
-                });
-        });
+        // var apiKey = builder.Configuration["HoneyCombApiKey"];
+        // var dataset = "IdentityServerDev";
+        //
+        // builder.Services.AddOpenTelemetryTracing(builder =>
+        // {
+        //     builder
+        //         //.AddConsoleExporter()
+        //         .AddSource(IdentityServerConstants.Tracing.ServiceName)
+        //         .SetResourceBuilder(
+        //             ResourceBuilder.CreateDefault()
+        //                 .AddService("IdentityServerHost.EF"))
+        //         //.SetSampler(new AlwaysOnSampler())
+        //         .AddHttpClientInstrumentation()
+        //         .AddAspNetCoreInstrumentation()
+        //         .AddSqlClientInstrumentation()
+        //         .AddOtlpExporter(option =>
+        //         {
+        //             option.Endpoint = new Uri("https://api.honeycomb.io");
+        //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+        //         });
+        // });
 
         return builder.Build();
     }

@@ -94,7 +94,7 @@ namespace MvcCode
             //         //.AddConsoleExporter()
             //         .SetResourceBuilder(
             //             ResourceBuilder.CreateDefault()
-            //                 .AddService("MVC Code"))
+            //                 .AddService("MVC TokenManagement"))
             //         //.SetSampler(new AlwaysOnSampler())
             //         .AddHttpClientInstrumentation()
             //         .AddAspNetCoreInstrumentation()
