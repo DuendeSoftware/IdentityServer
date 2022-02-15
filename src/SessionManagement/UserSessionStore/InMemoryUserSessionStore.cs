@@ -86,4 +86,38 @@ public class InMemoryUserSessionStore : IUserSessionStore
 
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc/>
+    public Task<GetAllUserSessionsResult> GetAllUserSessionsAsync(GetAllUserSessionsFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        filter ??= new();
+        if (filter.Page <= 0) filter.Page = 1;
+        if (filter.Count <= 0) filter.Count = 25;
+
+        var query = _store.Values.AsQueryable();
+        
+        if (!String.IsNullOrWhiteSpace(filter.DisplayName) || 
+            !String.IsNullOrWhiteSpace(filter.SubjectId) ||
+            !String.IsNullOrWhiteSpace(filter.SessionId))
+        {
+            query = query.Where(x => 
+                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true)) ||
+                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) ||
+                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId))
+            );
+        }
+        
+        var count = query.Count();
+        var results = query.Skip(filter.Page - 1).Take(filter.Count).ToArray();
+
+        var result = new GetAllUserSessionsResult
+        { 
+            Page = filter.Page,
+            Count = filter.Count,
+            TotalCount = count,
+            Results = results
+        };
+
+        return Task<GetAllUserSessionsResult>.FromResult(result);
+    }
 }

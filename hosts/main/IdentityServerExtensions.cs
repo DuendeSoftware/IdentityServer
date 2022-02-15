@@ -23,6 +23,7 @@ internal static class IdentityServerExtensions
                 options.EmitScopesAsSpaceDelimitedStringInJwt = true;
                 options.Endpoints.EnableJwtRequestUri = true;
             })
+            .AddServerSideSessions()
             .AddInMemoryClients(Clients.Get())
             .AddInMemoryIdentityResources(Resources.IdentityResources)
             .AddInMemoryApiScopes(Resources.ApiScopes)

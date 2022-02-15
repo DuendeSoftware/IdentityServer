@@ -1,0 +1,67 @@
+@page
+@model IdentityServerHost.Pages.Admin.Users.IndexModel
+@{
+}
+
+
+<div class="users-page">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h2>User Sessions</h2>
+                </div>
+                
+                <div class="card-body">
+                    <form>
+                        <div class="form-inline">
+                            <label asp-for="@Model.Filter">Filter:</label>
+                            <input asp-for="@Model.Filter" class="form-control" autofocus />
+                            <button type="submit" class="form-control btn btn-success">Search</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-body">
+                    @if (Model.UserSessions.Count > 0)
+                    {
+                        <table class="table table-bordered table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Subject Id</th>
+                                    <th>Session Id</th>
+                                    <th>Display Name</th>
+                                    <th>Created</th>
+                                    <th>Expires</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var session in Model.UserSessions.Results)
+                                {
+                                    <tr>
+                                        <td>@session.SubjectId</td>
+                                        <td>@session.SessionId</td>
+                                        <td>@session.DisplayName</td>
+                                        <td>@session.Created</td>
+                                        <td>@session.Expires</td>
+                                        <td>
+                                            <form method="post">
+                                                <input type="hidden" name="key" value="@session.Key" />
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div>No User Sessions</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

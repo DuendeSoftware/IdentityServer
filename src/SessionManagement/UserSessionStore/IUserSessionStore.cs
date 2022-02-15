@@ -9,6 +9,12 @@ namespace Duende.SessionManagement;
 public interface IUserSessionStore
 {
     /// <summary>
+    /// Retrieves all user sessions
+    /// </summary>
+    /// <returns></returns>
+    Task<GetAllUserSessionsResult> GetAllUserSessionsAsync(GetAllUserSessionsFilter? filter = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a user session
     /// </summary>
     /// <param name="key"></param>
