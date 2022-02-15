@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Extensions;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
@@ -16,7 +17,7 @@ namespace Duende.SessionManagement;
 /// </summary>
 public static class AuthenticationTicketExtensions
 {
-    static readonly JsonSerializerOptions _jsonOptions = new()
+    static readonly JsonSerializerOptions JsonOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
@@ -27,9 +28,6 @@ public static class AuthenticationTicketExtensions
     public static string GetSubjectId(this AuthenticationTicket ticket)
     {
         return ticket.Principal.FindFirst(JwtClaimTypes.Subject)?.Value ??
-               ticket.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-               // for the mfa remember me cookie, ASP.NET Identity uses the 'name' claim for the subject id (for some reason)
-               ticket.Principal.FindFirst(ClaimTypes.Name)?.Value ??
                throw new InvalidOperationException("Missing subject id for principal in authentication ticket.");
     }
 
@@ -38,7 +36,7 @@ public static class AuthenticationTicketExtensions
     /// </summary>
     public static string GetSessionId(this AuthenticationTicket ticket)
     {
-        return ticket.Principal.FindFirst(JwtClaimTypes.SessionId)?.Value ??
+        return ticket.Properties.GetSessionId() ??
             throw new InvalidOperationException("Missing session id for principal in authentication ticket.");
     }
 
@@ -103,11 +101,11 @@ public static class AuthenticationTicketExtensions
             Items = ticket.Properties.Items
         };
 
-        var payload = JsonSerializer.Serialize(data, _jsonOptions);
+        var payload = JsonSerializer.Serialize(data, JsonOptions);
         payload = protector.Protect(payload);
 
         var envelope = new Envelope { Version = 1, Payload = payload };
-        var value = JsonSerializer.Serialize(envelope, _jsonOptions);
+        var value = JsonSerializer.Serialize(envelope, JsonOptions);
 
         return value;
     }
@@ -115,11 +113,16 @@ public static class AuthenticationTicketExtensions
     /// <summary>
     /// Deserializes a UserSession's Ticket to an AuthenticationTicket
     /// </summary>
-    public static AuthenticationTicket Deserialize(this UserSession session, IDataProtector protector, ILogger logger)
+    public static AuthenticationTicket? Deserialize(this UserSession session, IDataProtector protector, ILogger logger)
     {
         try
         {
-            var envelope = JsonSerializer.Deserialize<Envelope>(session.Ticket, _jsonOptions);
+            var envelope = JsonSerializer.Deserialize<Envelope>(session.Ticket, JsonOptions);
+            if (envelope == null)
+            {
+                return null;
+            }
+
             if (envelope.Version != 1)
             {
                 logger.LogWarning("Deserializing AuthenticationTicket envelope found incorrect version for key {key}.", session.Key);
@@ -137,7 +140,11 @@ public static class AuthenticationTicketExtensions
                 return null;
             }
 
-            var ticket = JsonSerializer.Deserialize<AuthenticationTicketLite>(payload, _jsonOptions);
+            var ticket = JsonSerializer.Deserialize<AuthenticationTicketLite>(payload, JsonOptions);
+            if (ticket == null)
+            {
+                return null;
+            }
 
             var user = ticket.User.ToClaimsPrincipal();
             var properties = new AuthenticationProperties(ticket.Items);
@@ -171,17 +178,17 @@ public static class AuthenticationTicketExtensions
         /// <summary>
         /// The scheme
         /// </summary>
-        public string Scheme { get; set; }
+        public string Scheme { get; init; } = default!;
 
         /// <summary>
         /// The user
         /// </summary>
-        public ClaimsPrincipalLite User { get; set; }
+        public ClaimsPrincipalLite User { get; init; } = default!;
 
         /// <summary>
         /// The items
         /// </summary>
-        public IDictionary<string, string> Items { get; set; }
+        public IDictionary<string, string?> Items { get; init; } = default!;
     }
 
     /// <summary>
@@ -192,17 +199,17 @@ public static class AuthenticationTicketExtensions
         /// <summary>
         /// The type
         /// </summary>
-        public string Type { get; init; }
+        public string Type { get; init; } = default!;
 
         /// <summary>
         /// The value
         /// </summary>
-        public string Value { get; init; }
+        public string Value { get; init; } = default!;
 
         /// <summary>
         /// The value type
         /// </summary>
-        public string? ValueType { get; init; }
+        public string? ValueType { get; init; } = default!;
     }
 
     /// <summary>
@@ -213,22 +220,22 @@ public static class AuthenticationTicketExtensions
         /// <summary>
         /// The authentication type
         /// </summary>
-        public string AuthenticationType { get; init; }
+        public string AuthenticationType { get; init; } = default!;
 
         /// <summary>
         /// The name claim type
         /// </summary>
-        public string NameClaimType { get; init; }
+        public string NameClaimType { get; init; } = default!;
 
         /// <summary>
         /// The role claim type
         /// </summary>
-        public string RoleClaimType { get; init; }
+        public string RoleClaimType { get; init; } = default!;
 
         /// <summary>
         /// The claims
         /// </summary>
-        public ClaimLite[] Claims { get; init; }
+        public ClaimLite[] Claims { get; init; } = default!;
     }
 
     /// <summary>
@@ -244,145 +251,6 @@ public static class AuthenticationTicketExtensions
         /// <summary>
         /// Payload
         /// </summary>
-        public string Payload { get; set; }
+        public string Payload { get; init; } = default!;
     }
 }
-
-
-// todo
-//public class TicketCleanupService : IHostedService
-//{
-//    private readonly IServiceProvider _serviceProvider;
-//    private readonly SessionManagementOptions _options;
-//    private readonly ILogger<TicketCleanupService> _logger;
-
-//    private CancellationTokenSource _source;
-
-//    public TicketCleanupService(
-//        IServiceProvider serviceProvider,
-//        SessionManagementOptions options,
-//        ILogger<TicketCleanupService> logger)
-//    {
-//        _serviceProvider = serviceProvider;
-//        _options = options;
-//        _logger = logger;
-//    }
-
-//    public Task StartAsync(CancellationToken cancellationToken)
-//    {
-//        if (_options.EnableSessionCleanupInterval)
-//        {
-//            if (_source != null) throw new InvalidOperationException("Already started. Call Stop first.");
-
-//            _logger.LogDebug("Starting ticket cleanup");
-
-//            _source = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-//            Task.Factory.StartNew(() => StartInternalAsync(_source.Token));
-//        }
-
-//        return Task.CompletedTask;
-//    }
-
-//    public Task StopAsync(CancellationToken cancellationToken)
-//    {
-//        if (_options.EnableSessionCleanupInterval)
-//        {
-//            if (_source == null) throw new InvalidOperationException("Not started. Call Start first.");
-
-//            _logger.LogDebug("Stopping ticket cleanup");
-
-//            _source.Cancel();
-//            _source = null;
-//        }
-
-//        return Task.CompletedTask;
-//    }
-
-//    private async Task StartInternalAsync(CancellationToken cancellationToken)
-//    {
-//        while (true)
-//        {
-//            if (cancellationToken.IsCancellationRequested)
-//            {
-//                _logger.LogDebug("CancellationRequested. Exiting.");
-//                break;
-//            }
-
-//            try
-//            {
-//                await Task.Delay(_options.SessionCleanupInterval, cancellationToken);
-//            }
-//            catch (TaskCanceledException)
-//            {
-//                _logger.LogDebug("TaskCanceledException. Exiting.");
-//                break;
-//            }
-//            catch (Exception ex)
-//            {
-//                _logger.LogError("Task.Delay exception: {0}. Exiting.", ex.Message);
-//                break;
-//            }
-
-//            if (cancellationToken.IsCancellationRequested)
-//            {
-//                _logger.LogDebug("CancellationRequested. Exiting.");
-//                break;
-//            }
-
-//            await RemoveExpiredTicketsAsync();
-//        }
-//    }
-
-//    private async Task RemoveExpiredTicketsAsync()
-//    {
-//        try
-//        {
-//            _logger.LogTrace("Querying for expired tickets to remove");
-
-//            using (var serviceScope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
-//            {
-//                using (var context = serviceScope.ServiceProvider.GetService<SessionManagementDbContext>())
-//                {
-//                    await RemoveExpiredTicketsAsync(context);
-//                }
-//            }
-//        }
-//        catch (Exception ex)
-//        {
-//            _logger.LogError("Exception removing expired tickets: {exception}", ex.Message);
-//        }
-//    }
-
-//    private async Task RemoveExpiredTicketsAsync(SessionManagementDbContext context)
-//    {
-//        var found = Int32.MaxValue;
-
-//        while (found >= _options.SessionCleanupBatchSize)
-//        {
-//            var expiredItems = await context.UserSessions
-//                .Where(x => x.Expires < DateTime.UtcNow)
-//                .OrderBy(x => x.Id)
-//                .Take(_options.SessionCleanupBatchSize)
-//                .ToArrayAsync();
-
-//            found = expiredItems.Length;
-//            _logger.LogInformation("Removing {expiredItems} tickets", found);
-
-//            if (found > 0)
-//            {
-//                context.UserSessions.RemoveRange(expiredItems);
-//                try
-//                {
-//                    await context.SaveChangesAsync();
-//                }
-//                catch (DbUpdateConcurrencyException ex)
-//                {
-//                    // we get this if/when someone else already deleted the records
-//                    // we want to essentially ignore this, and keep working
-//                    _logger.LogDebug("Concurrency exception removing expired tickets: {exception}", ex.Message);
-//                }
-//            }
-//        }
-//    }
-//}

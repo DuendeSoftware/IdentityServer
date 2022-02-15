@@ -33,7 +33,7 @@ public static class SessionManagementServiceCollectionExtensions
     public static IServiceCollection AddServerSideSessions(this IServiceCollection services)
     {
         services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureApplicationCookieTicketStore>();
-        services.AddTransient<IServerTicketStore, ServerSideTicketStore>();
+        services.AddTransient<ITicketStore, ServerSideTicketStore>();
 
         // only add if not already in DI
         services.TryAddSingleton<IUserSessionStore, InMemoryUserSessionStore>();

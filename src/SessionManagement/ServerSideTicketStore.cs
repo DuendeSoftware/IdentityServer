@@ -3,6 +3,7 @@
 
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +12,7 @@ namespace Duende.SessionManagement;
 /// <summary>
 /// IUserSession-backed ticket store
 /// </summary>
-public class ServerSideTicketStore : IServerTicketStore
+public class ServerSideTicketStore : ITicketStore
 {
     private readonly IUserSessionStore _store;
     private readonly IDataProtector _protector;
@@ -129,29 +130,5 @@ public class ServerSideTicketStore : IServerTicketStore
         _logger.LogDebug("Removing AuthenticationTicket from store for key {key}", key);
 
         return _store.DeleteUserSessionAsync(key);
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyCollection<AuthenticationTicket>> GetUserTicketsAsync(UserSessionsFilter filter, CancellationToken cancellationToken)
-    {
-        var list = new List<AuthenticationTicket>();
-
-        var sessions = await _store.GetUserSessionsAsync(filter, cancellationToken);
-        foreach (var session in sessions)
-        {
-            var ticket = session.Deserialize(_protector, _logger);
-            if (ticket != null)
-            {
-                list.Add(ticket);
-            }
-            else
-            {
-                // if we failed to get a ticket, then remove DB record 
-                _logger.LogWarning("Failed to deserialize authentication ticket from store, deleting record for key {key}", session.Key);
-                await RemoveAsync(session.Key);
-            }
-        }
-
-        return list;
     }
 }
