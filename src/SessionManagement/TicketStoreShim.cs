@@ -29,7 +29,7 @@ public class TicketStoreShim : ITicketStore
     /// <summary>
     /// The inner
     /// </summary>
-    private ITicketStore Inner => _httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<ITicketStore>();
+    private IServerSideTicketStore Inner => _httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<IServerSideTicketStore>();
 
     /// <inheritdoc />
     public Task RemoveAsync(string key)

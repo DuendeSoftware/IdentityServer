@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Configuration;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,10 +11,17 @@ using Microsoft.Extensions.Logging;
 namespace Duende.SessionManagement;
 
 /// <summary>
+/// Custom type for ITicketStore
+/// </summary>
+// This is here really just to avoid possible confusion of any other ITicketStore already in the DI system.
+public interface IServerSideTicketStore : ITicketStore { }
+
+/// <summary>
 /// IUserSession-backed ticket store
 /// </summary>
-public class ServerSideTicketStore : ITicketStore
+public class ServerSideTicketStore : IServerSideTicketStore
 {
+    private readonly IdentityServerOptions _options;
     private readonly IUserSessionStore _store;
     private readonly IDataProtector _protector;
     private readonly ILogger<ServerSideTicketStore> _logger;
@@ -21,16 +29,19 @@ public class ServerSideTicketStore : ITicketStore
     /// <summary>
     /// ctor
     /// </summary>
+    /// <param name="options"></param>
     /// <param name="store"></param>
     /// <param name="dataProtectionProvider"></param>
     /// <param name="logger"></param>
     public ServerSideTicketStore(
+        IdentityServerOptions options,
         IUserSessionStore store,
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerSideTicketStore> logger)
     {
+        _options = options;
         _store = store;
-        _protector = dataProtectionProvider.CreateProtector("Duende.Bff.ServerSideTicketStore");
+        _protector = dataProtectionProvider.CreateProtector("Duende.SessionManagement.ServerSideTicketStore");
         _logger = logger;
     }
 
@@ -39,16 +50,6 @@ public class ServerSideTicketStore : ITicketStore
     {
         ArgumentNullException.ThrowIfNull(ticket);
 
-        // TODO: do we need this delete?
-        //// it's possible that the user re-triggered OIDC (somehow) prior to
-        //// the session DB records being cleaned up, so we should preemptively remove
-        //// conflicting session records for this sub/sid combination
-        //await _store.DeleteUserSessionsAsync(new UserSessionsFilter
-        //{
-        //    SubjectId = ticket.GetSubjectId(),
-        //    SessionId = ticket.GetSessionId()
-        //});
-
         var key = CryptoRandom.CreateUniqueId(format: CryptoRandom.OutputFormat.Hex);
 
         _logger.LogDebug("Creating entry in store for AuthenticationTicket, key {key}, with expiration: {expiration}", key, ticket.GetExpiration());
@@ -56,11 +57,13 @@ public class ServerSideTicketStore : ITicketStore
         var session = new UserSession
         {
             Key = key,
+            Scheme = ticket.AuthenticationScheme,
             Created = ticket.GetIssued(),
             Renewed = ticket.GetIssued(),
             Expires = ticket.GetExpiration(),
             SubjectId = ticket.GetSubjectId(),
             SessionId = ticket.GetSessionId(),
+            DisplayName = ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value,
             Ticket = ticket.Serialize(_protector)
         };
 
@@ -72,6 +75,8 @@ public class ServerSideTicketStore : ITicketStore
     /// <inheritdoc />
     public async Task<AuthenticationTicket?> RetrieveAsync(string key)
     {
+        ArgumentNullException.ThrowIfNull(key);
+        
         _logger.LogDebug("Retrieve AuthenticationTicket for key {key}", key);
 
         var session = await _store.GetUserSessionAsync(key);
@@ -98,6 +103,8 @@ public class ServerSideTicketStore : ITicketStore
     /// <inheritdoc />
     public async Task RenewAsync(string key, AuthenticationTicket ticket)
     {
+        ArgumentNullException.ThrowIfNull(ticket);
+        
         var session = await _store.GetUserSessionAsync(key);
         if (session == null)
         {
@@ -119,6 +126,7 @@ public class ServerSideTicketStore : ITicketStore
 
         session.Renewed = ticket.GetIssued();
         session.Expires = ticket.GetExpiration();
+        session.DisplayName = ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value;
         session.Ticket = ticket.Serialize(_protector);
 
         await _store.UpdateUserSessionAsync(session);
@@ -127,6 +135,8 @@ public class ServerSideTicketStore : ITicketStore
     /// <inheritdoc />
     public Task RemoveAsync(string key)
     {
+        ArgumentNullException.ThrowIfNull(key);
+        
         _logger.LogDebug("Removing AuthenticationTicket from store for key {key}", key);
 
         return _store.DeleteUserSessionAsync(key);

@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\SessionManagement\Duende.SessionManagement.csproj" />
         <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
     </ItemGroup>
 

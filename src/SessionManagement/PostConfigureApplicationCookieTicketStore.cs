@@ -4,6 +4,8 @@
 using Duende.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Duende.SessionManagement;
@@ -31,11 +33,29 @@ public class PostConfigureApplicationCookieTicketStore : IPostConfigureOptions<C
              options.Value.DefaultScheme;
     }
 
+    /// <summary>
+    /// ctor
+    /// </summary>
+    /// <param name="httpContextAccessor"></param>
+    /// <param name="scheme"></param>
+    public PostConfigureApplicationCookieTicketStore(IHttpContextAccessor httpContextAccessor, string scheme)
+    {
+        _httpContextAccessor = httpContextAccessor;
+        _scheme = scheme;
+    }
+
     /// <inheritdoc />
     public void PostConfigure(string name, CookieAuthenticationOptions options)
     {
         if (name == _scheme)
         {
+            var sessionStore = _httpContextAccessor.HttpContext!.RequestServices.GetService<IUserSessionStore>();
+            if (sessionStore is InMemoryUserSessionStore)
+            {
+                var logger = _httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("Duende.IdentityServer.Startup");
+                logger.LogInformation("You are using the in-memory version of the user session store. This will store user authentication sessions server side, but in memory only. If you are using this feature in production, you want to switch to a different store implementation.");
+            }
+
             options.SessionStore = new TicketStoreShim(_httpContextAccessor);
         }
     }

@@ -15,6 +15,11 @@ public class UserSession
     public string Key { get; set; } = default!;
 
     /// <summary>
+    /// The cookie handler scheme
+    /// </summary>
+    public string Scheme { get; set; } = default!;
+    
+    /// <summary>
     /// The subject ID
     /// </summary>
     public string SubjectId { get; set; } = default!;
@@ -24,6 +29,11 @@ public class UserSession
     /// </summary>
     public string SessionId { get; set; } = default!;
 
+    /// <summary>
+    /// The display name for the user
+    /// </summary>
+    public string? DisplayName { get; set; }
+    
     /// <summary>
     /// The creation time
     /// </summary>
@@ -54,8 +64,10 @@ public class UserSession
         var item = new UserSession()
         {
             Key = Key,
+            Scheme = Scheme,
             SubjectId = SubjectId,
             SessionId = SessionId,
+            DisplayName = DisplayName,
             Created = Created,
             Renewed = Renewed,
             Expires = Expires,
