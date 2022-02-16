@@ -40,6 +40,11 @@ public class UserSessionSummary
     public DateTime Created { get; set; }
 
     /// <summary>
+    /// The renewal time
+    /// </summary>
+    public DateTime Renewed { get; set; }
+
+    /// <summary>
     /// The expiration time
     /// </summary>
     public DateTime? Expires { get; set; }

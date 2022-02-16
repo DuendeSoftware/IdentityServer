@@ -9,21 +9,15 @@ namespace Duende.SessionManagement;
 public class UserSession : UserSessionSummary
 {
     /// <summary>
-    /// The renewal time
-    /// </summary>
-    public DateTime Renewed { get; set; }
-
-    /// <summary>
     /// The serialized ticket
     /// </summary>
     public string Ticket { get; set; } = default!;
-
 
     /// <summary>
     /// Clones the instance
     /// </summary>
     /// <returns></returns>
-    public UserSession Clone()
+    internal UserSession Clone()
     {
         var item = new UserSession()
         {

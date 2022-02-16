@@ -25,7 +25,7 @@ namespace IdentityServerHost.Pages.Admin.Users
             UserSessions = await _userSessionStore.GetAllUserSessionsAsync(new GetAllUserSessionsFilter
             {
                 Page = p,
-                Count = 1,
+                Count = 10,
                 DisplayName = Filter,
                 SessionId = Filter,
                 SubjectId = Filter,
