@@ -4,17 +4,10 @@
 using Duende.IdentityServer.Configuration;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 
 namespace Duende.SessionManagement;
-
-/// <summary>
-/// Custom type for ITicketStore
-/// </summary>
-// This is here really just to avoid possible confusion of any other ITicketStore already in the DI system.
-public interface IServerSideTicketStore : ITicketStore { }
 
 /// <summary>
 /// IUserSession-backed ticket store
