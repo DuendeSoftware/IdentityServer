@@ -52,6 +52,7 @@ public interface IUserSessionStore
     /// <param name="filter"></param>
     /// <param name="cancellationToken">A token that can be used to request cancellation of the asynchronous operation.</param>
     /// <returns></returns>
+    // TODO: reconsider this API. maybe summary only return?
     Task<IReadOnlyCollection<UserSession>> GetUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -40,6 +40,13 @@ public interface IPersistedGrantDbContext : IDisposable
     /// </value>
     DbSet<Key> Keys { get; set; }
 
+    /// <summary>
+    /// Gets or sets the user sessions.
+    /// </summary>
+    /// <value>
+    /// The keys.
+    /// </value>
+    DbSet<UserSession> UserSessions { get; set; }
 
     /// <summary>
     /// Saves the changes.

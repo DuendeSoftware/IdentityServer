@@ -53,6 +53,21 @@ CREATE TABLE [PersistedGrants] (
 );
 GO
 
+CREATE TABLE [UserSessions] (
+    [Id] int NOT NULL IDENTITY,
+    [Key] nvarchar(100) NOT NULL,
+    [Scheme] nvarchar(100) NOT NULL,
+    [SubjectId] nvarchar(100) NOT NULL,
+    [SessionId] nvarchar(100) NULL,
+    [DisplayName] nvarchar(100) NULL,
+    [Created] datetime2 NOT NULL,
+    [Renewed] datetime2 NOT NULL,
+    [Expires] datetime2 NULL,
+    [Ticket] nvarchar(max) NOT NULL,
+    CONSTRAINT [PK_UserSessions] PRIMARY KEY ([Id])
+);
+GO
+
 CREATE UNIQUE INDEX [IX_DeviceCodes_DeviceCode] ON [DeviceCodes] ([DeviceCode]);
 GO
 
@@ -74,8 +89,11 @@ GO
 CREATE INDEX [IX_PersistedGrants_SubjectId_SessionId_Type] ON [PersistedGrants] ([SubjectId], [SessionId], [Type]);
 GO
 
+CREATE UNIQUE INDEX [IX_UserSessions_Key] ON [UserSessions] ([Key]);
+GO
+
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20211221171522_Grants', N'6.0.0');
+VALUES (N'20220216180605_Grants', N'6.0.0');
 GO
 
 COMMIT;

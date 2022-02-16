@@ -104,6 +104,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
         builder.AddSigningKeyStore<SigningKeyStore>();
         builder.AddPersistedGrantStore<PersistedGrantStore>();
         builder.AddDeviceFlowStore<DeviceFlowStore>();
+        builder.AddServerSideSessionStore<UserSessionStore>();
             
         builder.Services.AddSingleton<IHostedService, TokenCleanupHost>();
 

@@ -43,19 +43,20 @@ public static class SessionManagementServiceCollectionExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Adds a server-side sessions for the scheme specified.
-    /// Typically used to add server sessions for additional schemes beyond the default cookie handler.
-    /// This requires AddServerSideSessions to have also been configured on the IdentityServerBuilder.
-    /// </summary>
-    /// <returns></returns>
-    public static IIdentityServerBuilder AddServerSideSessionsForScheme(this IIdentityServerBuilder builder, string scheme)
-    {
-        ArgumentNullException.ThrowIfNull(scheme);
+    ///// <summary>
+    ///// Adds a server-side sessions for the scheme specified.
+    ///// Typically used to add server sessions for additional schemes beyond the default cookie handler.
+    ///// This requires AddServerSideSessions to have also been configured on the IdentityServerBuilder.
+    ///// </summary>
+    ///// <returns></returns>
+    // TODO: do we want to support other schemes?
+    //public static IIdentityServerBuilder AddServerSideSessionsForScheme(this IIdentityServerBuilder builder, string scheme)
+    //{
+    //    ArgumentNullException.ThrowIfNull(scheme);
 
-        builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>>(svcs => new PostConfigureApplicationCookieTicketStore(svcs.GetRequiredService<IHttpContextAccessor>(), scheme));
-        return builder;
-    }
+    //    builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>>(svcs => new PostConfigureApplicationCookieTicketStore(svcs.GetRequiredService<IHttpContextAccessor>(), scheme));
+    //    return builder;
+    //}
 
     /// <summary>
     /// Adds a server-side session store using the supplied session store implementation

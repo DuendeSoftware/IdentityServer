@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
+using Duende.SessionManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -22,6 +23,7 @@ public class TokenCleanupService
     private readonly IPersistedGrantDbContext _persistedGrantDbContext;
     private readonly IOperationalStoreNotification _operationalStoreNotification;
     private readonly ILogger<TokenCleanupService> _logger;
+    private readonly IServerSideTicketStore _serverSideTicketStore;
 
     /// <summary>
     /// Constructor for TokenCleanupService.
@@ -30,10 +32,12 @@ public class TokenCleanupService
     /// <param name="persistedGrantDbContext"></param>
     /// <param name="operationalStoreNotification"></param>
     /// <param name="logger"></param>
+    /// <param name="serverSideTicketStore"></param>
     public TokenCleanupService(
         OperationalStoreOptions options,
         IPersistedGrantDbContext persistedGrantDbContext, 
         ILogger<TokenCleanupService> logger,
+        IServerSideTicketStore serverSideTicketStore = null,
         IOperationalStoreNotification operationalStoreNotification = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -42,6 +46,7 @@ public class TokenCleanupService
         _persistedGrantDbContext = persistedGrantDbContext ?? throw new ArgumentNullException(nameof(persistedGrantDbContext));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+        _serverSideTicketStore = serverSideTicketStore;
         _operationalStoreNotification = operationalStoreNotification;
     }
 
@@ -57,6 +62,7 @@ public class TokenCleanupService
 
             await RemoveGrantsAsync(cancellationToken);
             await RemoveDeviceCodesAsync(cancellationToken);
+            await RemoveUserSessionsAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -169,6 +175,45 @@ public class TokenCleanupService
                 if (_operationalStoreNotification != null)
                 {
                     await _operationalStoreNotification.DeviceCodesRemovedAsync(expiredCodes);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes the expired user sessions.
+    /// </summary>
+    /// <returns></returns>
+    protected virtual async Task RemoveUserSessionsAsync(CancellationToken cancellationToken = default)
+    {
+        if (_serverSideTicketStore == null)
+        {
+            // if there is no _serverSideTicketStore in the DI system, then server side sessions is not enabled
+            // and thus there is no need to try to cleanup expired entries.
+            return;
+        }
+
+        var found = Int32.MaxValue;
+
+        while (found >= _options.TokenCleanupBatchSize)
+        {
+            var expired = await _persistedGrantDbContext.UserSessions
+                .Where(x => x.Expires < DateTime.UtcNow)
+                .OrderBy(x => x.Id)
+                .Take(_options.TokenCleanupBatchSize)
+                .ToArrayAsync(cancellationToken);
+
+            found = expired.Length;
+            _logger.LogInformation("Removing {userSessionCount} user sessions", found);
+
+            if (found > 0)
+            {
+                _persistedGrantDbContext.UserSessions.RemoveRange(expired);
+                await SaveChangesAsync(cancellationToken);
+
+                if (_operationalStoreNotification != null)
+                {
+                    await _operationalStoreNotification.UserSessionsRemovedAsync(expired);
                 }
             }
         }

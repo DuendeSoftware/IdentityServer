@@ -19,12 +19,14 @@ namespace IdentityServerHost.Pages.Admin.Users
 
         [BindProperty(SupportsGet = true)]
         public string Filter { get; set; }
+        [BindProperty(SupportsGet = true)]
+        public int P { get; set; } = 1;
 
-        public async Task OnGet(int p = 1)
+        public async Task OnGet()
         {
             UserSessions = await _userSessionStore.GetAllUserSessionsAsync(new GetAllUserSessionsFilter
             {
-                Page = p,
+                Page = P,
                 Count = 10,
                 DisplayName = Filter,
                 SessionId = Filter,
@@ -38,7 +40,7 @@ namespace IdentityServerHost.Pages.Admin.Users
         public async Task<IActionResult> OnPost()
         {
             await _userSessionStore.DeleteUserSessionAsync(Key);
-            return RedirectToPage("/Admin/Users/Index");
+            return RedirectToPage("/Admin/Users/Index", new { p = P, filter = Filter });
         }
     }
 }

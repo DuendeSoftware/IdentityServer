@@ -35,4 +35,13 @@ public class TestOperationalStoreNotification : IOperationalStoreNotification
         }
         return Task.CompletedTask;
     }
+
+    public Task UserSessionsRemovedAsync(IEnumerable<UserSession> userSessions, CancellationToken cancellationToken = default)
+    {
+        foreach (var session in userSessions)
+        {
+            Console.WriteLine("cleaned user session");
+        }
+        return Task.CompletedTask;
+    }
 }
