@@ -54,6 +54,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
 
         _logger.LogDebug("Creating entry in store for AuthenticationTicket, key {key}, with expiration: {expiration}", key, ticket.GetExpiration());
 
+        var name = String.IsNullOrWhiteSpace(_options.Authentication.UserDisplayNameClaimType) ? null : ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value;
+
         var session = new UserSession
         {
             Key = key,
@@ -63,7 +65,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
             Expires = ticket.GetExpiration(),
             SubjectId = ticket.GetSubjectId(),
             SessionId = ticket.GetSessionId(),
-            DisplayName = ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value,
+            DisplayName = name,
             Ticket = ticket.Serialize(_protector)
         };
 
@@ -115,7 +117,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
 
         var sub = ticket.GetSubjectId();
         var sid = ticket.GetSessionId();
-        
+        var name = String.IsNullOrWhiteSpace(_options.Authentication.UserDisplayNameClaimType) ? null : ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value;
+
         var isNew = session.SubjectId != sub || session.SessionId != sid;
         if (isNew)
         {
@@ -126,7 +129,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
 
         session.Renewed = ticket.GetIssued();
         session.Expires = ticket.GetExpiration();
-        session.DisplayName = ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value;
+        session.DisplayName = name;
         session.Ticket = ticket.Serialize(_protector);
 
         await _store.UpdateUserSessionAsync(session);

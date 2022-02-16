@@ -66,5 +66,5 @@ public class AuthenticationOptions
     /// The claim type used for the user's display name.
     /// This is used when storing user sessions server side.
     /// </summary>
-    public string UserDisplayNameClaimType { get; set; } = JwtClaimTypes.Name;
+    public string UserDisplayNameClaimType { get; set; }
 }
