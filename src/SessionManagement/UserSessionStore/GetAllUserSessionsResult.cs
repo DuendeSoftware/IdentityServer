@@ -10,19 +10,24 @@ namespace Duende.SessionManagement;
 public class GetAllUserSessionsResult
 {
     /// <summary>
-    /// The page number
+    /// The page number requested
     /// </summary>
     public int Page { get; init; }
 
     /// <summary>
     /// The number to return
     /// </summary>
-    public int Count { get; init; }
+    public int CountRequested { get; init; }
     
     /// <summary>
     /// The total count
     /// </summary>
     public int TotalCount { get; init; }
+
+    /// <summary>
+    /// The total pages
+    /// </summary>
+    public int TotalPages { get; init; }
 
     /// <summary>
     /// The results.

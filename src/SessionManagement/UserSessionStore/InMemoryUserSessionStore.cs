@@ -107,14 +107,20 @@ public class InMemoryUserSessionStore : IUserSessionStore
             );
         }
         
-        var count = query.Count();
-        var results = query.Skip(filter.Page - 1).Take(filter.Count).ToArray();
+        var totalCount = query.Count();
+        var countRequested = filter.Count;
+
+        var totalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0)));
+        var currentPage = Math.Min(filter.Page, totalPages);
+        
+        var results = query.Skip(currentPage - 1).Take(countRequested).ToArray();
 
         var result = new GetAllUserSessionsResult
         { 
-            Page = filter.Page,
-            Count = filter.Count,
-            TotalCount = count,
+            Page = currentPage,
+            CountRequested = countRequested,
+            TotalCount = totalCount,
+            TotalPages = totalPages,
             Results = results
         };
 

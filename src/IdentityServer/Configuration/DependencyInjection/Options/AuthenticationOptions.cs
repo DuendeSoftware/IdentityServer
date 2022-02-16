@@ -3,7 +3,6 @@
 
 
 using System;
-using IdentityModel;
 using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.Configuration;

@@ -1,6 +1,7 @@
 using Duende.SessionManagement;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System;
 using System.Threading.Tasks;
 
 namespace IdentityServerHost.Pages.Admin.Users
@@ -19,10 +20,12 @@ namespace IdentityServerHost.Pages.Admin.Users
         [BindProperty(SupportsGet = true)]
         public string Filter { get; set; }
 
-        public async Task OnGet()
+        public async Task OnGet(int p = 1)
         {
             UserSessions = await _userSessionStore.GetAllUserSessionsAsync(new GetAllUserSessionsFilter
-            { 
+            {
+                Page = p,
+                Count = 1,
                 DisplayName = Filter,
                 SessionId = Filter,
                 SubjectId = Filter,
