@@ -6,7 +6,7 @@ namespace Duende.SessionManagement;
 /// <summary>
 /// A user session
 /// </summary>
-public class UserSession
+public class ServerSideSession
 {
     /// <summary>
     /// The key
@@ -57,9 +57,9 @@ public class UserSession
     /// Clones the instance
     /// </summary>
     /// <returns></returns>
-    internal UserSession Clone()
+    internal ServerSideSession Clone()
     {
-        var item = new UserSession()
+        var item = new ServerSideSession()
         {
             Key = Key,
             Scheme = Scheme,

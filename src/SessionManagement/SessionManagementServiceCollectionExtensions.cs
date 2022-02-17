@@ -20,7 +20,7 @@ public static class SessionManagementServiceCollectionExtensions
     /// </summary>
     /// <returns></returns>
     public static IIdentityServerBuilder AddServerSideSessions<T>(this IIdentityServerBuilder builder)
-        where T : class, IUserSessionStore
+        where T : class, IServerSideSessionStore
     {
         // the order of these two calls is important
         return builder
@@ -38,7 +38,7 @@ public static class SessionManagementServiceCollectionExtensions
         builder.Services.TryAddTransient<IServerSideTicketStore, ServerSideTicketStore>();
 
         // only add if not already in DI
-        builder.Services.TryAddSingleton<IUserSessionStore, InMemoryUserSessionStore>();
+        builder.Services.TryAddSingleton<IServerSideSessionStore, InMemoryServerSideSessionStore>();
 
         return builder;
     }
@@ -64,9 +64,9 @@ public static class SessionManagementServiceCollectionExtensions
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     public static IIdentityServerBuilder AddServerSideSessionStore<T>(this IIdentityServerBuilder builder)
-        where T : class, IUserSessionStore
+        where T : class, IServerSideSessionStore
     {
-        builder.Services.AddTransient<IUserSessionStore, T>();
+        builder.Services.AddTransient<IServerSideSessionStore, T>();
         return builder;
     }
 }

@@ -5,20 +5,10 @@
 namespace Duende.SessionManagement;
 
 /// <summary>
-/// Filter to query all user sessions
+/// Filter to query user sessions
 /// </summary>
-public class QueryUserSessionsFilter
+public class SessionFilter
 {
-    /// <summary>
-    /// The page number
-    /// </summary>
-    public int Page { get; set; }
-
-    /// <summary>
-    /// The number to return
-    /// </summary>
-    public int Count { get; set; }
-
     /// <summary>
     /// The subject ID
     /// </summary>
@@ -30,7 +20,13 @@ public class QueryUserSessionsFilter
     public string? SessionId { get; init; }
 
     /// <summary>
-    /// The user display name
+    /// Validates
     /// </summary>
-    public string? DisplayName { get; init; }
+    public void Validate()
+    {
+        if (String.IsNullOrWhiteSpace(SubjectId) && String.IsNullOrWhiteSpace(SessionId))
+        {
+            throw new ArgumentNullException("SubjectId or SessionId is required.");
+        }
+    }
 }

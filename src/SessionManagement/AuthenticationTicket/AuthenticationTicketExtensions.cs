@@ -113,7 +113,7 @@ public static class AuthenticationTicketExtensions
     /// <summary>
     /// Deserializes a UserSession's Ticket to an AuthenticationTicket
     /// </summary>
-    public static AuthenticationTicket? Deserialize(this UserSession session, IDataProtector protector, ILogger logger)
+    public static AuthenticationTicket? Deserialize(this ServerSideSession session, IDataProtector protector, ILogger logger)
     {
         try
         {

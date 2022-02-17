@@ -15,7 +15,7 @@ namespace Duende.SessionManagement;
 public class ServerSideTicketStore : IServerSideTicketStore
 {
     private readonly IdentityServerOptions _options;
-    private readonly IUserSessionStore _store;
+    private readonly IServerSideSessionStore _store;
     private readonly IDataProtector _protector;
     private readonly ILogger<ServerSideTicketStore> _logger;
 
@@ -28,7 +28,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <param name="logger"></param>
     public ServerSideTicketStore(
         IdentityServerOptions options,
-        IUserSessionStore store,
+        IServerSideSessionStore store,
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerSideTicketStore> logger)
     {
@@ -49,7 +49,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
 
         var name = String.IsNullOrWhiteSpace(_options.Authentication.UserDisplayNameClaimType) ? null : ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value;
 
-        var session = new UserSession
+        var session = new ServerSideSession
         {
             Key = key,
             Scheme = ticket.AuthenticationScheme,
@@ -62,7 +62,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
             Ticket = ticket.Serialize(_protector)
         };
 
-        await _store.CreateUserSessionAsync(session);
+        await _store.CreateSessionAsync(session);
 
         return key;
     }
@@ -74,7 +74,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
         
         _logger.LogDebug("Retrieve AuthenticationTicket for key {key}", key);
 
-        var session = await _store.GetUserSessionAsync(key);
+        var session = await _store.GetSessionAsync(key);
         if (session == null)
         {
             _logger.LogDebug("No ticket found in store for {key}", key);
@@ -100,7 +100,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     {
         ArgumentNullException.ThrowIfNull(ticket);
         
-        var session = await _store.GetUserSessionAsync(key);
+        var session = await _store.GetSessionAsync(key);
         if (session == null)
         {
             throw new InvalidOperationException($"No matching item in store for key `{key}`");
@@ -125,7 +125,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
         session.DisplayName = name;
         session.Ticket = ticket.Serialize(_protector);
 
-        await _store.UpdateUserSessionAsync(session);
+        await _store.UpdateSessionAsync(session);
     }
 
     /// <inheritdoc />
@@ -135,6 +135,6 @@ public class ServerSideTicketStore : IServerSideTicketStore
         
         _logger.LogDebug("Removing AuthenticationTicket from store for key {key}", key);
 
-        return _store.DeleteUserSessionAsync(key);
+        return _store.DeleteSessionAsync(key);
     }
 }

@@ -31,10 +31,10 @@ public interface IOperationalStoreNotification
     Task DeviceCodesRemovedAsync(IEnumerable<DeviceFlowCodes> deviceCodes, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Notification for user sessions being removed.
+    /// Notification for server side sessions being removed.
     /// </summary>
     /// <param name="userSessions"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task UserSessionsRemovedAsync(IEnumerable<ServerSideSession> userSessions, CancellationToken cancellationToken = default);
+    Task ServerSideSessionsRemovedAsync(IEnumerable<ServerSideSession> userSessions, CancellationToken cancellationToken = default);
 }

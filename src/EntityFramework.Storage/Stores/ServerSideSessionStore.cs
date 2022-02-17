@@ -18,8 +18,8 @@ namespace Duende.IdentityServer.EntityFramework.Stores;
 /// <summary>
 /// Implementation of IUserSessionStore thats uses EF.
 /// </summary>
-/// <seealso cref="IUserSessionStore" />
-public class UserSessionStore : IUserSessionStore
+/// <seealso cref="IServerSideSessionStore" />
+public class ServerSideSessionStore : IServerSideSessionStore
 {
     /// <summary>
     /// The DbContext.
@@ -34,16 +34,16 @@ public class UserSessionStore : IUserSessionStore
     /// <summary>
     /// The logger.
     /// </summary>
-    protected readonly ILogger<UserSessionStore> Logger;
+    protected readonly ILogger<ServerSideSessionStore> Logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="UserSessionStore"/> class.
+    /// Initializes a new instance of the <see cref="ServerSideSessionStore"/> class.
     /// </summary>
     /// <param name="context">The context.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="cancellationTokenProvider"></param>
     /// <exception cref="ArgumentNullException">context</exception>
-    public UserSessionStore(IPersistedGrantDbContext context, ILogger<UserSessionStore> logger, ICancellationTokenProvider cancellationTokenProvider)
+    public ServerSideSessionStore(IPersistedGrantDbContext context, ILogger<ServerSideSessionStore> logger, ICancellationTokenProvider cancellationTokenProvider)
     {
         Context = context ?? throw new ArgumentNullException(nameof(context));
         Logger = logger;
@@ -53,7 +53,7 @@ public class UserSessionStore : IUserSessionStore
 
 
     /// <inheritdoc/>
-    public virtual async Task CreateUserSessionAsync(UserSession session, CancellationToken cancellationToken = default)
+    public virtual async Task CreateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
         var entity = new Entities.ServerSideSession
         {
@@ -72,25 +72,25 @@ public class UserSessionStore : IUserSessionStore
         try
         {
             await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-            Logger.LogDebug("new user session {userSessionKey} created in database", session.Key);
+            Logger.LogDebug("new server side session {serverSideSessionKey} created in database", session.Key);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogWarning("exception adding new user session in database: {error}", ex.Message);
+            Logger.LogWarning("exception adding new server side session in database: {error}", ex.Message);
         }
     }
 
     /// <inheritdoc/>
-    public virtual async Task<UserSession> GetUserSessionAsync(string key, CancellationToken cancellationToken = default)
+    public virtual async Task<ServerSideSession> GetSessionAsync(string key, CancellationToken cancellationToken = default)
     {
         var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
             .SingleOrDefault(x => x.Key == key);
 
-        var model = default(UserSession);
+        var model = default(ServerSideSession);
         if (entity != null)
         {
-            model = new UserSession
+            model = new ServerSideSession
             {
                 Key = entity.Key,
                 Scheme = entity.Scheme,
@@ -104,13 +104,13 @@ public class UserSessionStore : IUserSessionStore
             };
         }
 
-        Logger.LogDebug("user session {userSessionKey} found in database: {userSessionKeyFound}", key, model != null);
+        Logger.LogDebug("server side session {serverSideSessionKey} found in database: {serverSideSessionKeyFound}", key, model != null);
 
         return model;
     }
 
     /// <inheritdoc/>
-    public virtual async Task UpdateUserSessionAsync(UserSession session, CancellationToken cancellationToken = default)
+    public virtual async Task UpdateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
         var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == session.Key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
@@ -118,7 +118,7 @@ public class UserSessionStore : IUserSessionStore
 
         if (entity == null)
         {
-            Logger.LogDebug("no user session {userSessionKey} found in database. update failed", session.Key);
+            Logger.LogDebug("no server side session {serverSideSessionKey} found in database. update failed", session.Key);
             return;
         }
 
@@ -134,16 +134,16 @@ public class UserSessionStore : IUserSessionStore
         try
         {
             await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-            Logger.LogDebug("user session {userSessionKey} updated in database", session.Key);
+            Logger.LogDebug("server side session {serverSideSessionKey} updated in database", session.Key);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogWarning("exception updating existing user session {userSessionKey} in database: {error}", session.Key, ex.Message);
+            Logger.LogWarning("exception updating existing server side session {serverSideSessionKey} in database: {error}", session.Key, ex.Message);
         }
     }
 
     /// <inheritdoc/>
-    public virtual async Task DeleteUserSessionAsync(string key, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteSessionAsync(string key, CancellationToken cancellationToken = default)
     {
         var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == key)
                         .ToArrayAsync(CancellationTokenProvider.CancellationToken))
@@ -151,7 +151,7 @@ public class UserSessionStore : IUserSessionStore
 
         if (entity == null)
         {
-            Logger.LogDebug("no user session {userSessionKey} found in database. delete failed", key);
+            Logger.LogDebug("no server side session {serverSideSessionKey} found in database. delete failed", key);
             return;
         }
 
@@ -160,18 +160,18 @@ public class UserSessionStore : IUserSessionStore
         try
         {
             await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-            Logger.LogDebug("user session {userSessionKey} deleted in database", key);
+            Logger.LogDebug("server side session {serverSideSessionKey} deleted in database", key);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogWarning("exception deleting existing user session {userSessionKey} in database: {error}", key, ex.Message);
+            Logger.LogWarning("exception deleting existing server side session {serverSideSessionKey} in database: {error}", key, ex.Message);
         }
     }
 
 
 
     /// <inheritdoc/>
-    public virtual async Task<IReadOnlyCollection<UserSession>> GetUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default)
+    public virtual async Task<IReadOnlyCollection<ServerSideSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
         filter.Validate();
 
@@ -179,7 +179,7 @@ public class UserSessionStore : IUserSessionStore
             .ToArrayAsync(CancellationTokenProvider.CancellationToken);
         entities = Filter(entities.AsQueryable(), filter).ToArray();
 
-        var results = entities.Select(entity => new UserSession
+        var results = entities.Select(entity => new ServerSideSession
         {
             Key = entity.Key,
             Scheme = entity.Scheme,
@@ -192,13 +192,13 @@ public class UserSessionStore : IUserSessionStore
             Ticket = entity.Data,
         }).ToArray();
 
-        Logger.LogDebug("{userSessionCount} user sessions found for {@filter}", results.Length, filter);
+        Logger.LogDebug("{serverSideSessionCount} server side sessions found for {@filter}", results.Length, filter);
 
         return results;
     }
 
     /// <inheritdoc/>
-    public virtual async Task DeleteUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
         filter.Validate();
 
@@ -211,15 +211,15 @@ public class UserSessionStore : IUserSessionStore
         try
         {
             await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-            Logger.LogDebug("removed {userSessionCount} user sessions from database for {@filter}", entities.Length, filter);
+            Logger.LogDebug("removed {serverSideSessionCount} server side sessions from database for {@filter}", entities.Length, filter);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogInformation("error removing {userSessionCount} user sessions from database for {@filter}: {error}", entities.Length, filter, ex.Message);
+            Logger.LogInformation("error removing {serverSideSessionCount} server side sessions from database for {@filter}: {error}", entities.Length, filter, ex.Message);
         }
     }
 
-    private IQueryable<Entities.ServerSideSession> Filter(IQueryable<Entities.ServerSideSession> query, UserSessionsFilter filter)
+    private IQueryable<Entities.ServerSideSession> Filter(IQueryable<Entities.ServerSideSession> query, SessionFilter filter)
     {
         if (!String.IsNullOrWhiteSpace(filter.SubjectId))
         {
@@ -236,7 +236,7 @@ public class UserSessionStore : IUserSessionStore
 
 
     /// <inheritdoc/>
-    public virtual async Task<QueryUserSessionsResult> QueryUserSessionsAsync(QueryUserSessionsFilter filter = null, CancellationToken cancellationToken = default)
+    public virtual async Task<QuerySessionsResult> QuerySessionsAsync(QueryFilter filter = null, CancellationToken cancellationToken = default)
     {
         filter ??= new();
         if (filter.Page <= 0) filter.Page = 1;
@@ -262,7 +262,7 @@ public class UserSessionStore : IUserSessionStore
         var currentPage = Math.Min(filter.Page, totalPages);
 
         var results = await query.Skip(currentPage - 1).Take(countRequested)
-            .Select(entity => new UserSession
+            .Select(entity => new ServerSideSession
             {
                 Key = entity.Key,
                 Scheme = entity.Scheme,
@@ -276,7 +276,7 @@ public class UserSessionStore : IUserSessionStore
             })
             .ToArrayAsync();
 
-        var result = new QueryUserSessionsResult
+        var result = new QuerySessionsResult
         {
             Page = currentPage,
             CountRequested = countRequested,
@@ -285,7 +285,7 @@ public class UserSessionStore : IUserSessionStore
             Results = results
         };
 
-        Logger.LogDebug("user sessions found in the db {userSessionCount}", results.Length);
+        Logger.LogDebug("server side sessions found in the db {serverSideSessionCount}", results.Length);
 
         return result;
     }

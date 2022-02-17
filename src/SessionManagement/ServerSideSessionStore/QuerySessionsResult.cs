@@ -7,7 +7,7 @@ namespace Duende.SessionManagement;
 /// <summary>
 /// Query result for all user sessions
 /// </summary>
-public class QueryUserSessionsResult
+public class QuerySessionsResult
 {
     /// <summary>
     /// The page number requested
@@ -32,5 +32,5 @@ public class QueryUserSessionsResult
     /// <summary>
     /// The results.
     /// </summary>
-    public IReadOnlyCollection<UserSession> Results { get; init; } = default!;
+    public IReadOnlyCollection<ServerSideSession> Results { get; init; } = default!;
 }

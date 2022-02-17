@@ -62,7 +62,7 @@ public class TokenCleanupService
 
             await RemoveGrantsAsync(cancellationToken);
             await RemoveDeviceCodesAsync(cancellationToken);
-            await RemoveUserSessionsAsync(cancellationToken);
+            await RemoveServerSideSessionsAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -181,15 +181,15 @@ public class TokenCleanupService
     }
 
     /// <summary>
-    /// Removes the expired user sessions.
+    /// Removes the expired server side sessions.
     /// </summary>
     /// <returns></returns>
-    protected virtual async Task RemoveUserSessionsAsync(CancellationToken cancellationToken = default)
+    protected virtual async Task RemoveServerSideSessionsAsync(CancellationToken cancellationToken = default)
     {
-        if (_serverSideTicketStore == null)
+        if (_serverSideTicketStore == null || !_options.RemoveExpiredServerSideSessions)
         {
             // if there is no _serverSideTicketStore in the DI system, then server side sessions is not enabled
-            // and thus there is no need to try to cleanup expired entries.
+            // or they have disabled the cleanup, so there is no need to try to cleanup expired entries.
             return;
         }
 
@@ -204,7 +204,7 @@ public class TokenCleanupService
                 .ToArrayAsync(cancellationToken);
 
             found = expired.Length;
-            _logger.LogInformation("Removing {userSessionCount} user sessions", found);
+            _logger.LogInformation("Removing {serverSideSessionCount} server side sessions", found);
 
             if (found > 0)
             {
@@ -213,7 +213,7 @@ public class TokenCleanupService
 
                 if (_operationalStoreNotification != null)
                 {
-                    await _operationalStoreNotification.UserSessionsRemovedAsync(expired);
+                    await _operationalStoreNotification.ServerSideSessionsRemovedAsync(expired);
                 }
             }
         }

@@ -36,7 +36,7 @@ public class TestOperationalStoreNotification : IOperationalStoreNotification
         return Task.CompletedTask;
     }
 
-    public Task UserSessionsRemovedAsync(IEnumerable<ServerSideSession> userSessions, CancellationToken cancellationToken = default)
+    public Task ServerSideSessionsRemovedAsync(IEnumerable<ServerSideSession> userSessions, CancellationToken cancellationToken = default)
     {
         foreach (var session in userSessions)
         {

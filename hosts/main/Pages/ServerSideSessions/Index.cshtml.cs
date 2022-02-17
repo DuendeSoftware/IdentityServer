@@ -8,14 +8,14 @@ namespace IdentityServerHost.Pages.ServerSideSessions
 {
     public class IndexModel : PageModel
     {
-        private readonly IUserSessionStore _userSessionStore;
+        private readonly IServerSideSessionStore _userSessionStore;
 
-        public IndexModel(IUserSessionStore userSessionStore)
+        public IndexModel(IServerSideSessionStore userSessionStore)
         {
             _userSessionStore = userSessionStore;
         }
 
-        public QueryUserSessionsResult UserSessions { get; set; }
+        public QuerySessionsResult UserSessions { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public string Filter { get; set; }
@@ -24,7 +24,7 @@ namespace IdentityServerHost.Pages.ServerSideSessions
 
         public async Task OnGet()
         {
-            UserSessions = await _userSessionStore.QueryUserSessionsAsync(new QueryUserSessionsFilter
+            UserSessions = await _userSessionStore.QuerySessionsAsync(new QueryFilter
             {
                 Page = P,
                 Count = 10,
@@ -39,7 +39,7 @@ namespace IdentityServerHost.Pages.ServerSideSessions
 
         public async Task<IActionResult> OnPost()
         {
-            await _userSessionStore.DeleteUserSessionAsync(Key);
+            await _userSessionStore.DeleteSessionAsync(Key);
             return RedirectToPage("/ServerSideSessions/Index", new { p = P, filter = Filter });
         }
     }

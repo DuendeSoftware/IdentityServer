@@ -8,14 +8,14 @@ namespace Duende.SessionManagement;
 /// <summary>
 /// In-memory user session store
 /// </summary>
-public class InMemoryUserSessionStore : IUserSessionStore
+public class InMemoryServerSideSessionStore : IServerSideSessionStore
 {
-    private readonly ConcurrentDictionary<string, UserSession> _store = new();
+    private readonly ConcurrentDictionary<string, ServerSideSession> _store = new();
 
 
 
     /// <inheritdoc />
-    public Task CreateUserSessionAsync(UserSession session, CancellationToken cancellationToken = default)
+    public Task CreateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
         if (!_store.TryAdd(session.Key, session.Clone()))
         {
@@ -25,21 +25,21 @@ public class InMemoryUserSessionStore : IUserSessionStore
     }
 
     /// <inheritdoc />
-    public Task<UserSession?> GetUserSessionAsync(string key, CancellationToken cancellationToken = default)
+    public Task<ServerSideSession?> GetSessionAsync(string key, CancellationToken cancellationToken = default)
     {
         _store.TryGetValue(key, out var item);
         return Task.FromResult(item?.Clone());
     }
 
     /// <inheritdoc />
-    public Task UpdateUserSessionAsync(UserSession session, CancellationToken cancellationToken = default)
+    public Task UpdateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
         _store[session.Key] = session.Clone();
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task DeleteUserSessionAsync(string key, CancellationToken cancellationToken = default)
+    public Task DeleteSessionAsync(string key, CancellationToken cancellationToken = default)
     {
         _store.TryRemove(key, out _);
         return Task.CompletedTask;
@@ -48,7 +48,7 @@ public class InMemoryUserSessionStore : IUserSessionStore
 
 
     /// <inheritdoc />
-    public Task<IReadOnlyCollection<UserSession>> GetUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyCollection<ServerSideSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
         filter.Validate();
 
@@ -63,11 +63,11 @@ public class InMemoryUserSessionStore : IUserSessionStore
         }
 
         var results = query.Select(x => x.Clone()).ToArray();
-        return Task.FromResult((IReadOnlyCollection<UserSession>) results);
+        return Task.FromResult((IReadOnlyCollection<ServerSideSession>) results);
     }
 
     /// <inheritdoc />
-    public Task DeleteUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default)
+    public Task DeleteSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
         filter.Validate();
 
@@ -94,7 +94,7 @@ public class InMemoryUserSessionStore : IUserSessionStore
 
 
     /// <inheritdoc/>
-    public Task<QueryUserSessionsResult> QueryUserSessionsAsync(QueryUserSessionsFilter? filter = null, CancellationToken cancellationToken = default)
+    public Task<QuerySessionsResult> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default)
     {
         filter ??= new();
         if (filter.Page <= 0) filter.Page = 1;
@@ -122,7 +122,7 @@ public class InMemoryUserSessionStore : IUserSessionStore
         var results = query.Skip(currentPage - 1).Take(countRequested)
             .Select(x => x.Clone()).ToArray();
 
-        var result = new QueryUserSessionsResult
+        var result = new QuerySessionsResult
         { 
             Page = currentPage,
             CountRequested = countRequested,
@@ -131,6 +131,6 @@ public class InMemoryUserSessionStore : IUserSessionStore
             Results = results
         };
 
-        return Task<QueryUserSessionsResult>.FromResult(result);
+        return Task<QuerySessionsResult>.FromResult(result);
     }
 }

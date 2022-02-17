@@ -27,11 +27,11 @@ internal static class IdentityServerExtensions
             {
                 options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
 
-                    // this enables automatic token cleanup. this is optional.
-                    options.EnableTokenCleanup = false;
+                // this enables automatic token cleanup. this is optional.
+                options.EnableTokenCleanup = false;
                 options.RemoveConsumedTokens = true;
                 options.TokenCleanupInterval = 10; // interval in seconds
-                options.RemoveExpiredUserSessions = false;
+                options.RemoveExpiredServerSideSessions = false;
             })
             .AddServerSideSessions()
             // this is something you will want in production to reduce load on and requests to the DB

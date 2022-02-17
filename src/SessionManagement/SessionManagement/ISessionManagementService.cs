@@ -8,4 +8,5 @@ namespace Duende.SessionManagement;
 /// </summary>
 public interface ISessionManagementService
 {
+
 }
