@@ -1,5 +1,5 @@
 @page
-@model IdentityServerHost.Pages.Admin.Users.IndexModel
+@model IdentityServerHost.Pages.ServerSideSessions.IndexModel
 @{
 }
 
@@ -26,10 +26,10 @@
                     @if (Model.UserSessions.CountRequested > 0)
                     {
                         <div>
-                            <a class="btn btn-link" asp-page="/Admin/Users/Index" asp-route-filter="@Model.Filter" asp-route-p="@(Model.UserSessions.Page-1)">Prev</a>
+                            <a class="btn btn-link" asp-page="/ServerSideSessions/Index" asp-route-filter="@Model.Filter" asp-route-p="@(Model.UserSessions.Page-1)">Prev</a>
                             Total Results: @Model.UserSessions.TotalCount, 
                             Page @Model.UserSessions.Page of @Model.UserSessions.TotalPages
-                            <a class="btn btn-link" asp-page="/Admin/Users/Index" asp-route-filter="@Model.Filter" asp-route-p="@(Model.UserSessions.Page+1)">Next</a>
+                            <a class="btn btn-link" asp-page="/ServerSideSessions/Index" asp-route-filter="@Model.Filter" asp-route-p="@(Model.UserSessions.Page+1)">Next</a>
                         </div>
 
                         <div>

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Threading.Tasks;
 
-namespace IdentityServerHost.Pages.Admin.Users
+namespace IdentityServerHost.Pages.ServerSideSessions
 {
     public class IndexModel : PageModel
     {
@@ -15,7 +15,7 @@ namespace IdentityServerHost.Pages.Admin.Users
             _userSessionStore = userSessionStore;
         }
 
-        public GetAllUserSessionsResult UserSessions { get; set; }
+        public QueryUserSessionsResult UserSessions { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public string Filter { get; set; }
@@ -24,7 +24,7 @@ namespace IdentityServerHost.Pages.Admin.Users
 
         public async Task OnGet()
         {
-            UserSessions = await _userSessionStore.GetAllUserSessionsAsync(new GetAllUserSessionsFilter
+            UserSessions = await _userSessionStore.QueryUserSessionsAsync(new QueryUserSessionsFilter
             {
                 Page = P,
                 Count = 10,
@@ -40,7 +40,7 @@ namespace IdentityServerHost.Pages.Admin.Users
         public async Task<IActionResult> OnPost()
         {
             await _userSessionStore.DeleteUserSessionAsync(Key);
-            return RedirectToPage("/Admin/Users/Index", new { p = P, filter = Filter });
+            return RedirectToPage("/ServerSideSessions/Index", new { p = P, filter = Filter });
         }
     }
 }

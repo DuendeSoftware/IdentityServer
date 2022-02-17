@@ -8,7 +8,7 @@ using System;
 
 namespace Duende.IdentityServer.EntityFramework.Entities;
 
-public class UserSession
+public class ServerSideSession
 {
     public int Id { get; set; }
     public string Key { get; set; }
@@ -19,5 +19,5 @@ public class UserSession
     public DateTime Created { get; set; }
     public DateTime Renewed { get; set; }
     public DateTime? Expires { get; set; }
-    public string Ticket { get; set; }
+    public string Data { get; set; }
 }

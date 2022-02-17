@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServerDb.Migrations.PersistedGrantDb
 {
     [DbContext(typeof(PersistedGrantDbContext))]
-    [Migration("20220216180605_Grants")]
+    [Migration("20220217183126_Grants")]
     partial class Grants
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -165,7 +165,7 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                     b.ToTable("PersistedGrants", (string)null);
                 });
 
-            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.UserSession", b =>
+            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.ServerSideSession", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -175,6 +175,10 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DisplayName")
                         .HasMaxLength(100)
@@ -205,16 +209,12 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Ticket")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("UserSessions", (string)null);
+                    b.ToTable("ServerSideSessions", (string)null);
                 });
 #pragma warning restore 612, 618
         }

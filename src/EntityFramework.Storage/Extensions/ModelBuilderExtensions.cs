@@ -200,9 +200,9 @@ public static class ModelBuilderExtensions
         });
 
 
-        modelBuilder.Entity<UserSession>(entity =>
+        modelBuilder.Entity<ServerSideSession>(entity =>
         {
-            entity.ToTable(storeOptions.UserSessions);
+            entity.ToTable(storeOptions.ServerSideSessions);
 
             entity.HasKey(x => x.Id);
             entity.HasIndex(x => x.Key).IsUnique();
@@ -211,7 +211,7 @@ public static class ModelBuilderExtensions
             entity.Property(x => x.SubjectId).HasMaxLength(100).IsRequired();
             entity.Property(x => x.SessionId).HasMaxLength(100);
             entity.Property(x => x.DisplayName).HasMaxLength(100);
-            entity.Property(x => x.Ticket).IsRequired();
+            entity.Property(x => x.Data).IsRequired();
         });
     }
 

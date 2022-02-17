@@ -197,7 +197,7 @@ public class TokenCleanupService
 
         while (found >= _options.TokenCleanupBatchSize)
         {
-            var expired = await _persistedGrantDbContext.UserSessions
+            var expired = await _persistedGrantDbContext.ServerSideSessions
                 .Where(x => x.Expires < DateTime.UtcNow)
                 .OrderBy(x => x.Id)
                 .Take(_options.TokenCleanupBatchSize)
@@ -208,7 +208,7 @@ public class TokenCleanupService
 
             if (found > 0)
             {
-                _persistedGrantDbContext.UserSessions.RemoveRange(expired);
+                _persistedGrantDbContext.ServerSideSessions.RemoveRange(expired);
                 await SaveChangesAsync(cancellationToken);
 
                 if (_operationalStoreNotification != null)

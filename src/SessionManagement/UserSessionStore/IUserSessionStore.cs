@@ -9,12 +9,6 @@ namespace Duende.SessionManagement;
 public interface IUserSessionStore
 {
     /// <summary>
-    /// Retrieves all user sessions
-    /// </summary>
-    /// <returns></returns>
-    Task<GetAllUserSessionsResult> GetAllUserSessionsAsync(GetAllUserSessionsFilter? filter = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Retrieves a user session
     /// </summary>
     /// <param name="key"></param>
@@ -46,20 +40,29 @@ public interface IUserSessionStore
     /// <returns></returns>
     Task DeleteUserSessionAsync(string key, CancellationToken cancellationToken = default);
 
+
+
     /// <summary>
-    /// Queries user sessions
+    /// Gets user sessions for a specific subject id and/or session id
     /// </summary>
     /// <param name="filter"></param>
     /// <param name="cancellationToken">A token that can be used to request cancellation of the asynchronous operation.</param>
     /// <returns></returns>
-    // TODO: reconsider this API. maybe summary only return?
     Task<IReadOnlyCollection<UserSession>> GetUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes a user session
+    /// Deletes user sessions for a specific subject id and/or session id
     /// </summary>
     /// <param name="filter"></param>
     /// <param name="cancellationToken">A token that can be used to request cancellation of the asynchronous operation.</param>
     /// <returns></returns>
     Task DeleteUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default);
+
+
+
+    /// <summary>
+    /// Queries user sessions based on filter
+    /// </summary>
+    /// <returns></returns>
+    Task<QueryUserSessionsResult> QueryUserSessionsAsync(QueryUserSessionsFilter? filter = null, CancellationToken cancellationToken = default);
 }

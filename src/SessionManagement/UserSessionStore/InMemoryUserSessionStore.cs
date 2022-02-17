@@ -12,6 +12,8 @@ public class InMemoryUserSessionStore : IUserSessionStore
 {
     private readonly ConcurrentDictionary<string, UserSession> _store = new();
 
+
+
     /// <inheritdoc />
     public Task CreateUserSessionAsync(UserSession session, CancellationToken cancellationToken = default)
     {
@@ -42,6 +44,8 @@ public class InMemoryUserSessionStore : IUserSessionStore
         _store.TryRemove(key, out _);
         return Task.CompletedTask;
     }
+
+
 
     /// <inheritdoc />
     public Task<IReadOnlyCollection<UserSession>> GetUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default)
@@ -87,8 +91,10 @@ public class InMemoryUserSessionStore : IUserSessionStore
         return Task.CompletedTask;
     }
 
+
+
     /// <inheritdoc/>
-    public Task<GetAllUserSessionsResult> GetAllUserSessionsAsync(GetAllUserSessionsFilter? filter = null, CancellationToken cancellationToken = default)
+    public Task<QueryUserSessionsResult> QueryUserSessionsAsync(QueryUserSessionsFilter? filter = null, CancellationToken cancellationToken = default)
     {
         filter ??= new();
         if (filter.Page <= 0) filter.Page = 1;
@@ -112,10 +118,11 @@ public class InMemoryUserSessionStore : IUserSessionStore
 
         var totalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0)));
         var currentPage = Math.Min(filter.Page, totalPages);
-        
-        var results = query.Skip(currentPage - 1).Take(countRequested).ToArray();
 
-        var result = new GetAllUserSessionsResult
+        var results = query.Skip(currentPage - 1).Take(countRequested)
+            .Select(x => x.Clone()).ToArray();
+
+        var result = new QueryUserSessionsResult
         { 
             Page = currentPage,
             CountRequested = countRequested,
@@ -124,6 +131,6 @@ public class InMemoryUserSessionStore : IUserSessionStore
             Results = results
         };
 
-        return Task<GetAllUserSessionsResult>.FromResult(result);
+        return Task<QueryUserSessionsResult>.FromResult(result);
     }
 }

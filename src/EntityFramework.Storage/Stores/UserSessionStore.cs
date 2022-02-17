@@ -50,10 +50,12 @@ public class UserSessionStore : IUserSessionStore
         CancellationTokenProvider = cancellationTokenProvider;
     }
 
+
+
     /// <inheritdoc/>
     public virtual async Task CreateUserSessionAsync(UserSession session, CancellationToken cancellationToken = default)
     {
-        var entity = new Entities.UserSession
+        var entity = new Entities.ServerSideSession
         {
             Key = session.Key,
             Scheme = session.Scheme,
@@ -63,9 +65,9 @@ public class UserSessionStore : IUserSessionStore
             Created = session.Created,
             Renewed = session.Renewed,
             Expires = session.Expires,
-            Ticket = session.Ticket,
+            Data = session.Ticket,
         };
-        Context.UserSessions.Add(entity);
+        Context.ServerSideSessions.Add(entity);
 
         try
         {
@@ -81,7 +83,7 @@ public class UserSessionStore : IUserSessionStore
     /// <inheritdoc/>
     public virtual async Task<UserSession> GetUserSessionAsync(string key, CancellationToken cancellationToken = default)
     {
-        var entity = (await Context.UserSessions.AsNoTracking().Where(x => x.Key == key)
+        var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
             .SingleOrDefault(x => x.Key == key);
 
@@ -98,7 +100,7 @@ public class UserSessionStore : IUserSessionStore
                 Created = entity.Created,
                 Renewed = entity.Renewed,
                 Expires = entity.Expires,
-                Ticket = entity.Ticket,
+                Ticket = entity.Data,
             };
         }
 
@@ -110,7 +112,7 @@ public class UserSessionStore : IUserSessionStore
     /// <inheritdoc/>
     public virtual async Task UpdateUserSessionAsync(UserSession session, CancellationToken cancellationToken = default)
     {
-        var entity = (await Context.UserSessions.AsNoTracking().Where(x => x.Key == session.Key)
+        var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == session.Key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
             .SingleOrDefault(x => x.Key == session.Key);
 
@@ -127,7 +129,7 @@ public class UserSessionStore : IUserSessionStore
         entity.Created = session.Created;
         entity.Renewed = session.Renewed;
         entity.Expires = session.Expires;
-        entity.Ticket = session.Ticket;
+        entity.Data = session.Ticket;
 
         try
         {
@@ -143,7 +145,7 @@ public class UserSessionStore : IUserSessionStore
     /// <inheritdoc/>
     public virtual async Task DeleteUserSessionAsync(string key, CancellationToken cancellationToken = default)
     {
-        var entity = (await Context.UserSessions.AsNoTracking().Where(x => x.Key == key)
+        var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == key)
                         .ToArrayAsync(CancellationTokenProvider.CancellationToken))
                     .SingleOrDefault(x => x.Key == key);
 
@@ -153,7 +155,7 @@ public class UserSessionStore : IUserSessionStore
             return;
         }
 
-        Context.UserSessions.Remove(entity);
+        Context.ServerSideSessions.Remove(entity);
 
         try
         {
@@ -166,14 +168,81 @@ public class UserSessionStore : IUserSessionStore
         }
     }
 
+
+
     /// <inheritdoc/>
-    public virtual async Task<GetAllUserSessionsResult> GetAllUserSessionsAsync(GetAllUserSessionsFilter filter = null, CancellationToken cancellationToken = default)
+    public virtual async Task<IReadOnlyCollection<UserSession>> GetUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default)
+    {
+        filter.Validate();
+
+        var entities = await Filter(Context.ServerSideSessions.AsQueryable(), filter)
+            .ToArrayAsync(CancellationTokenProvider.CancellationToken);
+        entities = Filter(entities.AsQueryable(), filter).ToArray();
+
+        var results = entities.Select(entity => new UserSession
+        {
+            Key = entity.Key,
+            Scheme = entity.Scheme,
+            SubjectId = entity.SubjectId,
+            SessionId = entity.SessionId,
+            DisplayName = entity.DisplayName,
+            Created = entity.Created,
+            Renewed = entity.Renewed,
+            Expires = entity.Expires,
+            Ticket = entity.Data,
+        }).ToArray();
+
+        Logger.LogDebug("{userSessionCount} user sessions found for {@filter}", results.Length, filter);
+
+        return results;
+    }
+
+    /// <inheritdoc/>
+    public virtual async Task DeleteUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default)
+    {
+        filter.Validate();
+
+        var entities = await Filter(Context.ServerSideSessions.AsQueryable(), filter)
+            .ToArrayAsync(CancellationTokenProvider.CancellationToken);
+        entities = Filter(entities.AsQueryable(), filter).ToArray();
+
+        Context.ServerSideSessions.RemoveRange(entities);
+
+        try
+        {
+            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+            Logger.LogDebug("removed {userSessionCount} user sessions from database for {@filter}", entities.Length, filter);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            Logger.LogInformation("error removing {userSessionCount} user sessions from database for {@filter}: {error}", entities.Length, filter, ex.Message);
+        }
+    }
+
+    private IQueryable<Entities.ServerSideSession> Filter(IQueryable<Entities.ServerSideSession> query, UserSessionsFilter filter)
+    {
+        if (!String.IsNullOrWhiteSpace(filter.SubjectId))
+        {
+            query = query.Where(x => x.SubjectId == filter.SubjectId);
+        }
+        if (!String.IsNullOrWhiteSpace(filter.SessionId))
+        {
+            query = query.Where(x => x.SessionId == filter.SessionId);
+        }
+
+        return query;
+    }
+
+
+
+    /// <inheritdoc/>
+    public virtual async Task<QueryUserSessionsResult> QueryUserSessionsAsync(QueryUserSessionsFilter filter = null, CancellationToken cancellationToken = default)
     {
         filter ??= new();
         if (filter.Page <= 0) filter.Page = 1;
         if (filter.Count <= 0) filter.Count = 25;
 
-        var query = Context.UserSessions.AsQueryable();
+        var query = Context.ServerSideSessions.AsQueryable();
 
         if (!String.IsNullOrWhiteSpace(filter.DisplayName) ||
             !String.IsNullOrWhiteSpace(filter.SubjectId) ||
@@ -193,7 +262,7 @@ public class UserSessionStore : IUserSessionStore
         var currentPage = Math.Min(filter.Page, totalPages);
 
         var results = await query.Skip(currentPage - 1).Take(countRequested)
-            .Select(entity => new UserSessionSummary
+            .Select(entity => new UserSession
             {
                 Key = entity.Key,
                 Scheme = entity.Scheme,
@@ -203,10 +272,11 @@ public class UserSessionStore : IUserSessionStore
                 Created = entity.Created,
                 Renewed = entity.Renewed,
                 Expires = entity.Expires,
+                Ticket = entity.Data,
             })
             .ToArrayAsync();
 
-        var result = new GetAllUserSessionsResult
+        var result = new QueryUserSessionsResult
         {
             Page = currentPage,
             CountRequested = countRequested,
@@ -220,66 +290,4 @@ public class UserSessionStore : IUserSessionStore
         return result;
     }
 
-    /// <inheritdoc/>
-    public virtual async Task<IReadOnlyCollection<UserSession>> GetUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default)
-    {
-        filter.Validate();
-
-        var entities = await Filter(Context.UserSessions.AsQueryable(), filter)
-            .ToArrayAsync(CancellationTokenProvider.CancellationToken);
-        entities = Filter(entities.AsQueryable(), filter).ToArray();
-
-        var results = entities.Select(entity => new UserSession
-        {
-            Key = entity.Key,
-            Scheme = entity.Scheme,
-            SubjectId = entity.SubjectId,
-            SessionId = entity.SessionId,
-            DisplayName = entity.DisplayName,
-            Created = entity.Created,
-            Renewed = entity.Renewed,
-            Expires = entity.Expires,
-            Ticket = entity.Ticket,
-        }).ToArray();
-
-        Logger.LogDebug("{userSessionCount} user sessions found for {@filter}", results.Length, filter);
-
-        return results;
-    }
-
-    /// <inheritdoc/>
-    public virtual async Task DeleteUserSessionsAsync(UserSessionsFilter filter, CancellationToken cancellationToken = default)
-    {
-        filter.Validate();
-
-        var entities = await Filter(Context.UserSessions.AsQueryable(), filter)
-            .ToArrayAsync(CancellationTokenProvider.CancellationToken);
-        entities = Filter(entities.AsQueryable(), filter).ToArray();
-
-        Context.UserSessions.RemoveRange(entities);
-
-        try
-        {
-            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-            Logger.LogDebug("removed {userSessionCount} user sessions from database for {@filter}", entities.Length, filter);
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            Logger.LogInformation("error removing {userSessionCount} user sessions from database for {@filter}: {error}", entities.Length, filter, ex.Message);
-        }
-    }
-
-    private IQueryable<Entities.UserSession> Filter(IQueryable<Entities.UserSession> query, UserSessionsFilter filter)
-    {
-        if (!String.IsNullOrWhiteSpace(filter.SubjectId))
-        {
-            query = query.Where(x => x.SubjectId == filter.SubjectId);
-        }
-        if (!String.IsNullOrWhiteSpace(filter.SessionId))
-        {
-            query = query.Where(x => x.SessionId == filter.SessionId);
-        }
-
-        return query;
-    }
 }

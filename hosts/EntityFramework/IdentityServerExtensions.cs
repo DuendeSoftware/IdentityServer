@@ -12,7 +12,8 @@ internal static class IdentityServerExtensions
     {
         var connectionString = builder.Configuration.GetConnectionString("db");
 
-        builder.Services.AddIdentityServer(options => {
+        builder.Services.AddIdentityServer(options =>
+        {
             options.Authentication.UserDisplayNameClaimType = JwtClaimTypes.Name;
         })
             .AddTestUsers(TestUsers.Users)

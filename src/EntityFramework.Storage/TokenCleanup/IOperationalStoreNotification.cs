@@ -36,5 +36,5 @@ public interface IOperationalStoreNotification
     /// <param name="userSessions"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task UserSessionsRemovedAsync(IEnumerable<UserSession> userSessions, CancellationToken cancellationToken = default);
+    Task UserSessionsRemovedAsync(IEnumerable<ServerSideSession> userSessions, CancellationToken cancellationToken = default);
 }

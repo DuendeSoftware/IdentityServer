@@ -67,7 +67,7 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserSessions",
+                name: "ServerSideSessions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -80,11 +80,11 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Renewed = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Expires = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Ticket = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Data = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserSessions", x => x.Id);
+                    table.PrimaryKey("PK_ServerSideSessions", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(
@@ -124,8 +124,8 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 columns: new[] { "SubjectId", "SessionId", "Type" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserSessions_Key",
-                table: "UserSessions",
+                name: "IX_ServerSideSessions_Key",
+                table: "ServerSideSessions",
                 column: "Key",
                 unique: true);
         }
@@ -142,7 +142,7 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 name: "PersistedGrants");
 
             migrationBuilder.DropTable(
-                name: "UserSessions");
+                name: "ServerSideSessions");
         }
     }
 }

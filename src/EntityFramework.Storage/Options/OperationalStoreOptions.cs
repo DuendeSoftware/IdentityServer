@@ -66,7 +66,7 @@ public class OperationalStoreOptions
     /// <value>
     /// The keys.
     /// </value>
-    public TableConfiguration UserSessions { get; set; } = new TableConfiguration("UserSessions");
+    public TableConfiguration ServerSideSessions { get; set; } = new TableConfiguration("ServerSideSessions");
 
     /// <summary>
     /// Gets or sets a value indicating whether stale entries will be automatically cleaned up from the database.

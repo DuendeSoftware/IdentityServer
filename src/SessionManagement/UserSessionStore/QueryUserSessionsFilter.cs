@@ -7,13 +7,13 @@ namespace Duende.SessionManagement;
 /// <summary>
 /// Filter to query all user sessions
 /// </summary>
-public class GetAllUserSessionsFilter
+public class QueryUserSessionsFilter
 {
     /// <summary>
     /// The page number
     /// </summary>
     public int Page { get; set; }
-    
+
     /// <summary>
     /// The number to return
     /// </summary>
@@ -28,7 +28,7 @@ public class GetAllUserSessionsFilter
     /// The sesion ID
     /// </summary>
     public string? SessionId { get; init; }
-    
+
     /// <summary>
     /// The user display name
     /// </summary>
