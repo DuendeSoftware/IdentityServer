@@ -41,7 +41,8 @@ public interface IServerSideSessionStore
     Task DeleteSessionAsync(string key, CancellationToken cancellationToken = default);
 
 
-
+    // todo: do we need these 2 methods?
+    // BFF needed them, IIRC, for backchannel SLO
     /// <summary>
     /// Gets sessions for a specific subject id and/or session id
     /// </summary>
@@ -64,5 +65,5 @@ public interface IServerSideSessionStore
     /// Queries sessions based on filter
     /// </summary>
     /// <returns></returns>
-    Task<QuerySessionsResult> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default);
+    Task<QueryResult<ServerSideSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default);
 }

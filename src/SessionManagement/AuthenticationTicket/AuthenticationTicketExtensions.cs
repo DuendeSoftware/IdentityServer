@@ -39,6 +39,15 @@ public static class AuthenticationTicketExtensions
         return ticket.Properties.GetSessionId() ??
             throw new InvalidOperationException("Missing session id for principal in authentication ticket.");
     }
+    
+    /// <summary>
+    /// Extracts the display name
+    /// </summary>
+    public static string? GetDisplayName(this AuthenticationTicket ticket, string displayNameClaimType)
+    {
+        return String.IsNullOrWhiteSpace(displayNameClaimType) ? 
+            null : ticket.Principal.FindFirst(displayNameClaimType)?.Value;
+    }
 
     /// <summary>
     /// Extracts the issuance time

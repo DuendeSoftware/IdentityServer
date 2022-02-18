@@ -112,7 +112,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public virtual async Task UpdateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
-        var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == session.Key)
+        var entity = (await Context.ServerSideSessions.Where(x => x.Key == session.Key)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
             .SingleOrDefault(x => x.Key == session.Key);
 
@@ -175,7 +175,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
     {
         filter.Validate();
 
-        var entities = await Filter(Context.ServerSideSessions.AsQueryable(), filter)
+        var entities = await Filter(Context.ServerSideSessions.AsNoTracking().AsQueryable(), filter)
             .ToArrayAsync(CancellationTokenProvider.CancellationToken);
         entities = Filter(entities.AsQueryable(), filter).ToArray();
 
@@ -236,22 +236,22 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
 
     /// <inheritdoc/>
-    public virtual async Task<QuerySessionsResult> QuerySessionsAsync(QueryFilter filter = null, CancellationToken cancellationToken = default)
+    public virtual async Task<QueryResult<ServerSideSession>> QuerySessionsAsync(QueryFilter filter = null, CancellationToken cancellationToken = default)
     {
         filter ??= new();
         if (filter.Page <= 0) filter.Page = 1;
         if (filter.Count <= 0) filter.Count = 25;
 
-        var query = Context.ServerSideSessions.AsQueryable();
+        var query = Context.ServerSideSessions.AsNoTracking().AsQueryable();
 
         if (!String.IsNullOrWhiteSpace(filter.DisplayName) ||
             !String.IsNullOrWhiteSpace(filter.SubjectId) ||
             !String.IsNullOrWhiteSpace(filter.SessionId))
         {
             query = query.Where(x =>
-                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true)) ||
-                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) ||
-                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId))
+                (filter.SubjectId == null || x.SubjectId == filter.SubjectId) &&
+                (filter.SessionId == null || x.SessionId == filter.SessionId) &&
+                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
             );
         }
 
@@ -276,7 +276,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             })
             .ToArrayAsync();
 
-        var result = new QuerySessionsResult
+        var result = new QueryResult<ServerSideSession>
         {
             Page = currentPage,
             CountRequested = countRequested,

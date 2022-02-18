@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Extensions;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
@@ -47,8 +48,6 @@ public class ServerSideTicketStore : IServerSideTicketStore
 
         _logger.LogDebug("Creating entry in store for AuthenticationTicket, key {key}, with expiration: {expiration}", key, ticket.GetExpiration());
 
-        var name = String.IsNullOrWhiteSpace(_options.Authentication.UserDisplayNameClaimType) ? null : ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value;
-
         var session = new ServerSideSession
         {
             Key = key,
@@ -58,7 +57,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
             Expires = ticket.GetExpiration(),
             SubjectId = ticket.GetSubjectId(),
             SessionId = ticket.GetSessionId(),
-            DisplayName = name,
+            DisplayName = ticket.GetDisplayName(_options.Authentication.UserDisplayNameClaimType),
             Ticket = ticket.Serialize(_protector)
         };
 
@@ -136,5 +135,38 @@ public class ServerSideTicketStore : IServerSideTicketStore
         _logger.LogDebug("Removing AuthenticationTicket from store for key {key}", key);
 
         return _store.DeleteSessionAsync(key);
+    }
+
+    /// <inheritdoc />
+    public async Task<QueryResult<UserSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        var results = await _store.QuerySessionsAsync(filter, cancellationToken);
+
+        var tickets = results.Results
+            .Select(x => new { x.Renewed, Ticket = x.Deserialize(_protector, _logger)! })
+            .Where(x => x != null && x.Ticket != null)
+            .Select(item => new UserSession
+            {
+                SubjectId = item.Ticket.GetSubjectId(),
+                SessionId = item.Ticket.GetSessionId(),
+                DisplayName = item.Ticket.GetDisplayName(_options.Authentication.UserDisplayNameClaimType),
+                Created = item.Ticket.GetIssued(),
+                Renewed = item.Renewed,
+                Expires = item.Ticket.GetExpiration(),
+                ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
+                AuthenticationTicket = item.Ticket
+            })
+            .ToArray();
+
+        var result = new QueryResult<UserSession>
+        {
+            CountRequested = results.CountRequested,
+            Page = results.Page,
+            TotalCount = results.TotalCount,
+            TotalPages = results.TotalPages,
+            Results = tickets.ToArray(),
+        };
+
+        return result;
     }
 }

@@ -1,5 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
+
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Stores;
 
@@ -24,9 +26,19 @@ public class PersistedGrantFilter
     /// Client id the grant was issued to.
     /// </summary>
     public string ClientId { get; set; }
-        
+
+    /// <summary>
+    /// Client ids the grant was issued to.
+    /// </summary>
+    public IEnumerable<string> ClientIds { get; set; }
+
     /// <summary>
     /// The type of grant.
     /// </summary>
     public string Type { get; set; }
+    
+    /// <summary>
+    /// The types of grants.
+    /// </summary>
+    public IEnumerable<string> Types { get; set; }
 }

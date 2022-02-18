@@ -94,7 +94,7 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
 
 
     /// <inheritdoc/>
-    public Task<QuerySessionsResult> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default)
+    public Task<QueryResult<ServerSideSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default)
     {
         filter ??= new();
         if (filter.Page <= 0) filter.Page = 1;
@@ -106,10 +106,10 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
             !String.IsNullOrWhiteSpace(filter.SubjectId) ||
             !String.IsNullOrWhiteSpace(filter.SessionId))
         {
-            query = query.Where(x => 
-                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true)) ||
-                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) ||
-                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId))
+            query = query.Where(x =>
+                (filter.SubjectId == null || x.SubjectId == filter.SubjectId) &&
+                (filter.SessionId == null || x.SessionId == filter.SessionId) &&
+                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
             );
         }
         
@@ -122,7 +122,7 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
         var results = query.Skip(currentPage - 1).Take(countRequested)
             .Select(x => x.Clone()).ToArray();
 
-        var result = new QuerySessionsResult
+        var result = new QueryResult<ServerSideSession>
         { 
             Page = currentPage,
             CountRequested = countRequested,
@@ -131,6 +131,6 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
             Results = results
         };
 
-        return Task<QuerySessionsResult>.FromResult(result);
+        return Task<QueryResult<ServerSideSession>>.FromResult(result);
     }
 }

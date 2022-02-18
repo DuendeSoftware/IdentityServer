@@ -157,16 +157,24 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
         {
             throw new ArgumentException("Client requires SessionId", nameof(request.SessionId));
         }
+        if (request.SubjectId == null && request.SessionId == null)
+        {
+            throw new ArgumentException("Either a SubjectId or SessionId is required.");
+        }
 
         var json = "{\"" + OidcConstants.Events.BackChannelLogout + "\":{} }";
 
         var claims = new List<Claim>
         {
-            new Claim(JwtClaimTypes.Subject, request.SubjectId),
             new Claim(JwtClaimTypes.Audience, request.ClientId),
             new Claim(JwtClaimTypes.JwtId, CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)),
             new Claim(JwtClaimTypes.Events, json, IdentityServerConstants.ClaimValueTypes.Json)
         };
+
+        if (request.SubjectId != null)
+        {
+            claims.Add(new Claim(JwtClaimTypes.Subject, request.SubjectId));
+        }
 
         if (request.SessionId != null)
         {

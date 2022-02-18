@@ -35,6 +35,7 @@ public static class SessionManagementServiceCollectionExtensions
     public static IIdentityServerBuilder AddServerSideSessions(this IIdentityServerBuilder builder)
     {
         builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureApplicationCookieTicketStore>();
+        builder.Services.TryAddTransient<ISessionManagementService, DefaultSessionManagementService>();
         builder.Services.TryAddTransient<IServerSideTicketStore, ServerSideTicketStore>();
 
         // only add if not already in DI
