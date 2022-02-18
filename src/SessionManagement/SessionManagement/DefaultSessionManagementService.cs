@@ -46,10 +46,10 @@ public class DefaultSessionManagementService : ISessionManagementService
     public async Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default)
     {
         // build list of clients (if needed)
-        List<string>? clientIds = null;
+        HashSet<string>? clientIds = null;
         if (context.ClientIds != null || context.SendBackchannelLogoutNotification)
         {
-            clientIds = new List<string>();
+            clientIds = new HashSet<string>();
 
             var filter = new QueryFilter
             {
@@ -70,8 +70,11 @@ public class DefaultSessionManagementService : ISessionManagementService
                 {
                     ids = ids.Where(x => context.ClientIds.Contains(x));
                 }
-                
-                clientIds.AddRange(ids);
+
+                foreach (var id in ids)
+                {
+                    clientIds.Add(id);
+                }
 
                 if(i < total)
                 {
