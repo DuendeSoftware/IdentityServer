@@ -107,9 +107,9 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
             !String.IsNullOrWhiteSpace(filter.SessionId))
         {
             query = query.Where(x =>
-                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) ||
-                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId)) ||
-                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
+                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId, StringComparison.OrdinalIgnoreCase)) ||
+                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId, StringComparison.OrdinalIgnoreCase)) ||
+                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName, StringComparison.OrdinalIgnoreCase) == true))
             );
         }
         
