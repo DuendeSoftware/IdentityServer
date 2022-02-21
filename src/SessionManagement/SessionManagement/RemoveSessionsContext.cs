@@ -25,9 +25,9 @@ public class RemoveSessionsContext
     public IEnumerable<string> ClientIds { get; set; } = default!;
 
     /// <summary>
-    /// Removes the server side session cookie for the user's session.
+    /// Removes the server side session for the user's session.
     /// </summary>
-    public bool RemoveServerSideSessionCookie { get; set; } = true;
+    public bool RemoveServerSideSession { get; set; } = true;
 
     /// <summary>
     /// Sends a back channel logout notification (if clients are registered for one).
@@ -35,7 +35,7 @@ public class RemoveSessionsContext
     public bool SendBackchannelLogoutNotification { get; set; } = true;
     
     /// <summary>
-    /// Revokes all tokens (refresh and reference) for the clients.
+    /// Revokes all tokens (e.g. refresh and reference) for the clients.
     /// </summary>
     public bool RevokeTokens { get; set; } = true;
 

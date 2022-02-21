@@ -9,7 +9,7 @@ namespace Duende.SessionManagement;
 public interface ISessionManagementService
 {
     /// <summary>
-    /// Removes all the session related data for a user.
+    /// Queries all the session related data for a user.
     /// </summary>
     Task<QueryResult<UserSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default);
     

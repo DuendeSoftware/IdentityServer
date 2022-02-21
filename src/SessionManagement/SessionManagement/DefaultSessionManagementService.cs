@@ -84,7 +84,7 @@ public class DefaultSessionManagementService : ISessionManagementService
             }
         }
 
-        if (context.RemoveServerSideSessionCookie)
+        if (context.RemoveServerSideSession)
         {
             // delete the cookies
             await _serverSideSessionStore.DeleteSessionsAsync(new SessionFilter
