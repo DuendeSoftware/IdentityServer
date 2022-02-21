@@ -60,6 +60,18 @@
                                                 </form>
                                             </td>
                                         </tr>
+                                        <tr><td colspan="6">
+                                            <strong>Clients:</strong>
+                                            @if (session.ClientIds?.Any() == true)
+                                            {
+                                                @(session.ClientIds.Aggregate((x, y) => $"{x}, {y}"))
+                                            }
+                                            else
+                                            {
+                                                @("None")
+                                            }
+                                        </td></tr>
+                                        }
                                     }
                                 </tbody>
                             </table>

@@ -46,43 +46,31 @@ public class DefaultSessionManagementService : ISessionManagementService
     public async Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default)
     {
         // build list of clients (if needed)
-        HashSet<string>? clientIds = null;
+        List<string>? clientIds = null;
         if (context.ClientIds != null || context.SendBackchannelLogoutNotification)
         {
-            clientIds = new HashSet<string>();
-
-            var filter = new QueryFilter
-            {
-                SubjectId = context.SubjectId,
-                SessionId = context.SessionId,
-                Count = 100,
-            };
-            var sessions = await _serverSideTicketStore.QuerySessionsAsync(filter, cancellationToken);
+            clientIds = new List<string>();
             
-            var total = sessions.TotalPages;
-            for(var i = 1; i <= total; i++)
+            var sessions = await _serverSideTicketStore.GetSessionsAsync(
+                new SessionFilter
+                {
+                    SubjectId = context.SubjectId,
+                    SessionId = context.SessionId,
+                }, 
+                cancellationToken);
+
+            var ids = sessions.Where(x => x.ClientIds != null)
+                    .SelectMany(x => x.ClientIds)
+                    .Distinct();
+
+            if (context.ClientIds != null)
             {
-                var ids = sessions.Results
-                    .Where(x=>x.ClientIds != null)
-                    .SelectMany(x => x.ClientIds);
-
-                if (context.ClientIds != null)
-                {
-                    ids = ids.Where(x => context.ClientIds.Contains(x));
-                }
-
-                foreach (var id in ids)
-                {
-                    clientIds.Add(id);
-                }
-
-                if(i < total)
-                {
-                    filter.Page = i + 1;
-                    sessions = await _serverSideTicketStore.QuerySessionsAsync(filter, cancellationToken);
-                }
+                ids = ids.Where(x => context.ClientIds.Contains(x));
             }
+
+            clientIds.AddRange(ids);
         }
+
 
         if (context.RemoveServerSideSession)
         {
@@ -94,6 +82,7 @@ public class DefaultSessionManagementService : ISessionManagementService
             });
         }
 
+
         if (context.RevokeTokens || context.RevokeConsents)
         {
             // delete the tokens
@@ -103,7 +92,7 @@ public class DefaultSessionManagementService : ISessionManagementService
                 SessionId = context.SessionId,
             };
 
-            if (context.ClientIds != null)
+            if (clientIds != null && clientIds.Any())
             {
                 grantFilter.ClientIds = clientIds;
             }
@@ -125,7 +114,7 @@ public class DefaultSessionManagementService : ISessionManagementService
 
 
         // send back channel SLO
-        if (context.SendBackchannelLogoutNotification && clientIds != null)
+        if (context.SendBackchannelLogoutNotification && clientIds != null && clientIds.Any())
         {
             await _backChannelLogoutService.SendLogoutNotificationsAsync(new LogoutNotificationContext { 
                 SubjectId = context.SubjectId,

@@ -137,6 +137,30 @@ public class ServerSideTicketStore : IServerSideTicketStore
         return _store.DeleteSessionAsync(key);
     }
 
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<UserSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
+    {
+        var sessions = await _store.GetSessionsAsync(filter, cancellationToken);
+
+        var results = sessions
+            .Select(x => new { x.Renewed, Ticket = x.Deserialize(_protector, _logger)! })
+            .Where(x => x != null && x.Ticket != null)
+            .Select(item => new UserSession
+            {
+                SubjectId = item.Ticket.GetSubjectId(),
+                SessionId = item.Ticket.GetSessionId(),
+                DisplayName = item.Ticket.GetDisplayName(_options.Authentication.UserDisplayNameClaimType),
+                Created = item.Ticket.GetIssued(),
+                Renewed = item.Renewed,
+                Expires = item.Ticket.GetExpiration(),
+                ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
+                AuthenticationTicket = item.Ticket
+            })
+            .ToArray();
+
+        return results;
+    }
+
     /// <inheritdoc />
     public async Task<QueryResult<UserSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default)
     {

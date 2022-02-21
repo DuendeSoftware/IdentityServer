@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Duende.SessionManagement;
@@ -12,8 +13,13 @@ namespace Duende.SessionManagement;
 public interface IServerSideTicketStore : ITicketStore 
 {
     /// <summary>
+    /// Gets sessions for a specific subject id and/or session id
+    /// </summary>
+    Task<IReadOnlyCollection<UserSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default);
+
+
+    /// <summary>
     /// Queries user sessions based on filter
     /// </summary>
-    /// <returns></returns>
     Task<QueryResult<UserSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default);
 }

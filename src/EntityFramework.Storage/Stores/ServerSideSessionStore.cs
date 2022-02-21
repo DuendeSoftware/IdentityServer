@@ -249,8 +249,8 @@ public class ServerSideSessionStore : IServerSideSessionStore
             !String.IsNullOrWhiteSpace(filter.SessionId))
         {
             query = query.Where(x =>
-                (filter.SubjectId == null || x.SubjectId == filter.SubjectId) &&
-                (filter.SessionId == null || x.SessionId == filter.SessionId) &&
+                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) ||
+                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId)) ||
                 (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
             );
         }
