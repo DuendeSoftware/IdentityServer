@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
-namespace Duende.SessionManagement;
+namespace Duende.IdentityServer.Hosting.TicketStore;
 
 /// <summary>
 /// this shim class is needed since ITicketStore is not configured in DI, rather it's a property 
@@ -44,7 +45,7 @@ public class TicketStoreShim : ITicketStore
     }
 
     /// <inheritdoc />
-    public Task<AuthenticationTicket?> RetrieveAsync(string key)
+    public Task<AuthenticationTicket> RetrieveAsync(string key)
     {
         return Inner.RetrieveAsync(key);
     }

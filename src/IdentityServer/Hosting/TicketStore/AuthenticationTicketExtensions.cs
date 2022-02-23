@@ -2,15 +2,20 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Hosting.TicketStore;
+using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Duende.SessionManagement;
+namespace Duende.IdentityServer.Hosting.TicketStore;
 
 /// <summary>
 ///  Extension methods for AuthenticationTicket
@@ -39,13 +44,13 @@ public static class AuthenticationTicketExtensions
         return ticket.Properties.GetSessionId() ??
             throw new InvalidOperationException("Missing session id for principal in authentication ticket.");
     }
-    
+
     /// <summary>
     /// Extracts the display name
     /// </summary>
-    public static string? GetDisplayName(this AuthenticationTicket ticket, string displayNameClaimType)
+    public static string GetDisplayName(this AuthenticationTicket ticket, string displayNameClaimType)
     {
-        return String.IsNullOrWhiteSpace(displayNameClaimType) ? 
+        return String.IsNullOrWhiteSpace(displayNameClaimType) ?
             null : ticket.Principal.FindFirst(displayNameClaimType)?.Value;
     }
 
@@ -122,7 +127,7 @@ public static class AuthenticationTicketExtensions
     /// <summary>
     /// Deserializes a UserSession's Ticket to an AuthenticationTicket
     /// </summary>
-    public static AuthenticationTicket? Deserialize(this ServerSideSession session, IDataProtector protector, ILogger logger)
+    public static AuthenticationTicket Deserialize(this ServerSideSession session, IDataProtector protector, ILogger logger)
     {
         try
         {
@@ -197,7 +202,7 @@ public static class AuthenticationTicketExtensions
         /// <summary>
         /// The items
         /// </summary>
-        public IDictionary<string, string?> Items { get; init; } = default!;
+        public IDictionary<string, string> Items { get; init; } = default!;
     }
 
     /// <summary>
@@ -218,7 +223,7 @@ public static class AuthenticationTicketExtensions
         /// <summary>
         /// The value type
         /// </summary>
-        public string? ValueType { get; init; } = default!;
+        public string ValueType { get; init; } = default!;
     }
 
     /// <summary>

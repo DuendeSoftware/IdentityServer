@@ -2,13 +2,14 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Duende.SessionManagement;
+namespace Duende.IdentityServer.Hosting.TicketStore;
 
 /// <summary>
 /// Cookie configuration for the user session plumbing
@@ -16,7 +17,7 @@ namespace Duende.SessionManagement;
 public class PostConfigureApplicationCookieTicketStore : IPostConfigureOptions<CookieAuthenticationOptions>
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly string? _scheme;
+    private readonly string _scheme;
 
     /// <summary>
     /// ctor

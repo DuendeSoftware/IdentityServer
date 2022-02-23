@@ -25,7 +25,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\IdentityServer\Duende.IdentityServer.csproj" />
-        <ProjectReference Include="..\..\src\SessionManagement\Duende.SessionManagement.csproj" />
     </ItemGroup>
 
     <ItemGroup>

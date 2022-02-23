@@ -1,12 +1,15 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Duende.IdentityServer;
+using Duende.IdentityServer.Hosting.TicketStore;
 using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Duende.SessionManagement;
+namespace Duende.IdentityServer.Services;
 
 /// <summary>
 /// Default session management service
@@ -30,7 +33,7 @@ public class DefaultSessionManagementService : ISessionManagementService
     }
 
     /// <inheritdoc/>
-    public Task<QueryResult<UserSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default)
+    public Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
         return _serverSideTicketStore.QuerySessionsAsync(filter, cancellationToken);
     }
@@ -46,7 +49,7 @@ public class DefaultSessionManagementService : ISessionManagementService
     public async Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default)
     {
         // build list of clients (if needed)
-        List<string>? clientIds = null;
+        List<string> clientIds = null;
         if (context.ClientIds != null || context.SendBackchannelLogoutNotification)
         {
             clientIds = new List<string>();

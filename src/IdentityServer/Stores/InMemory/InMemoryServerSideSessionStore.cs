@@ -1,9 +1,16 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Models;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Duende.SessionManagement;
+namespace Duende.IdentityServer.Stores;
 
 /// <summary>
 /// In-memory user session store
@@ -25,7 +32,7 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     }
 
     /// <inheritdoc />
-    public Task<ServerSideSession?> GetSessionAsync(string key, CancellationToken cancellationToken = default)
+    public Task<ServerSideSession> GetSessionAsync(string key, CancellationToken cancellationToken = default)
     {
         _store.TryGetValue(key, out var item);
         return Task.FromResult(item?.Clone());
@@ -94,7 +101,7 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
 
 
     /// <inheritdoc/>
-    public Task<QueryResult<ServerSideSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default)
+    public Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
         filter ??= new();
         if (filter.Page <= 0) filter.Page = 1;

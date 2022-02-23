@@ -1,4 +1,6 @@
-using Duende.SessionManagement;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
@@ -23,7 +25,7 @@ namespace IdentityServerHost.Pages.ServerSideSessions
 
         public async Task OnGet()
         {
-            UserSessions = await _sessionManagementService.QuerySessionsAsync(new QueryFilter
+            UserSessions = await _sessionManagementService.QuerySessionsAsync(new SessionQuery
             {
                 Page = P,
                 Count = 10,

@@ -2,7 +2,9 @@
 // See LICENSE in the project root for license information.
 
 
-namespace Duende.SessionManagement;
+using System.Collections.Generic;
+
+namespace Duende.IdentityServer.Models;
 
 /// <summary>
 /// Query result for all user sessions

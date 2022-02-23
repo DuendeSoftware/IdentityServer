@@ -1,7 +1,9 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-namespace Duende.SessionManagement;
+using System;
+
+namespace Duende.IdentityServer.Models;
 
 /// <summary>
 /// A user session
@@ -31,7 +33,7 @@ public class ServerSideSession
     /// <summary>
     /// The display name for the user
     /// </summary>
-    public string? DisplayName { get; set; }
+    public string DisplayName { get; set; }
 
     /// <summary>
     /// The creation time
@@ -52,25 +54,4 @@ public class ServerSideSession
     /// The serialized ticket
     /// </summary>
     public string Ticket { get; set; } = default!;
-
-    /// <summary>
-    /// Clones the instance
-    /// </summary>
-    /// <returns></returns>
-    internal ServerSideSession Clone()
-    {
-        var item = new ServerSideSession()
-        {
-            Key = Key,
-            Scheme = Scheme,
-            SubjectId = SubjectId,
-            SessionId = SessionId,
-            DisplayName = DisplayName,
-            Created = Created,
-            Renewed = Renewed,
-            Expires = Expires,
-            Ticket = Ticket,
-        };
-        return item;
-    }
 }

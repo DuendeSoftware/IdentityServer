@@ -3,12 +3,21 @@
 
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Hosting.TicketStore;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Duende.SessionManagement;
+namespace Duende.IdentityServer.Hosting.TicketStore;
 
 /// <summary>
 /// IUserSession-backed ticket store
@@ -67,10 +76,10 @@ public class ServerSideTicketStore : IServerSideTicketStore
     }
 
     /// <inheritdoc />
-    public async Task<AuthenticationTicket?> RetrieveAsync(string key)
+    public async Task<AuthenticationTicket> RetrieveAsync(string key)
     {
         ArgumentNullException.ThrowIfNull(key);
-        
+
         _logger.LogDebug("Retrieve AuthenticationTicket for key {key}", key);
 
         var session = await _store.GetSessionAsync(key);
@@ -98,7 +107,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     public async Task RenewAsync(string key, AuthenticationTicket ticket)
     {
         ArgumentNullException.ThrowIfNull(ticket);
-        
+
         var session = await _store.GetSessionAsync(key);
         if (session == null)
         {
@@ -131,7 +140,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     public Task RemoveAsync(string key)
     {
         ArgumentNullException.ThrowIfNull(key);
-        
+
         _logger.LogDebug("Removing AuthenticationTicket from store for key {key}", key);
 
         return _store.DeleteSessionAsync(key);
@@ -162,7 +171,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     }
 
     /// <inheritdoc />
-    public async Task<QueryResult<UserSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default)
+    public async Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
         var results = await _store.QuerySessionsAsync(filter, cancellationToken);
 

@@ -1,16 +1,21 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Microsoft.AspNetCore.Authentication;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Duende.SessionManagement;
+namespace Duende.IdentityServer.Hosting.TicketStore;
 
 /// <summary>
 /// Custom type for ITicketStore
 /// </summary>
 // This is here really just to avoid possible confusion of any other ITicketStore already in the DI system.
-public interface IServerSideTicketStore : ITicketStore 
+public interface IServerSideTicketStore : ITicketStore
 {
     /// <summary>
     /// Gets sessions for a specific subject id and/or session id
@@ -21,5 +26,5 @@ public interface IServerSideTicketStore : ITicketStore
     /// <summary>
     /// Queries user sessions based on filter
     /// </summary>
-    Task<QueryResult<UserSession>> QuerySessionsAsync(QueryFilter? filter = null, CancellationToken cancellationToken = default);
+    Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter, CancellationToken cancellationToken = default);
 }
