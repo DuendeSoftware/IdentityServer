@@ -3,10 +3,8 @@
 
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer.Hosting.TicketStore;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
@@ -17,7 +15,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Hosting.TicketStore;
+namespace Duende.IdentityServer.Stores;
 
 /// <summary>
 /// IUserSession-backed ticket store

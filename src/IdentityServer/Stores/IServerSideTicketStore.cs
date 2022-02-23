@@ -3,25 +3,24 @@
 
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Hosting.TicketStore;
+namespace Duende.IdentityServer.Stores;
 
 /// <summary>
 /// Custom type for ITicketStore
 /// </summary>
-// This is here really just to avoid possible confusion of any other ITicketStore already in the DI system.
+// This is here really just to avoid possible confusion of any other ITicketStore already in
+// the DI system, and add a new higher level helper APIs.
 public interface IServerSideTicketStore : ITicketStore
 {
     /// <summary>
     /// Gets sessions for a specific subject id and/or session id
     /// </summary>
     Task<IReadOnlyCollection<UserSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Queries user sessions based on filter

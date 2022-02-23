@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
+using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -21,6 +22,7 @@ public class TokenCleanupService
     private readonly OperationalStoreOptions _options;
     private readonly IPersistedGrantDbContext _persistedGrantDbContext;
     private readonly IOperationalStoreNotification _operationalStoreNotification;
+    private readonly IServerSideSessionsMarker _sideSessionsMarker;
     private readonly ILogger<TokenCleanupService> _logger;
 
     /// <summary>
@@ -30,10 +32,12 @@ public class TokenCleanupService
     /// <param name="persistedGrantDbContext"></param>
     /// <param name="operationalStoreNotification"></param>
     /// <param name="logger"></param>
+    /// <param name="serverSideSessionsMarker"></param>
     public TokenCleanupService(
         OperationalStoreOptions options,
         IPersistedGrantDbContext persistedGrantDbContext, 
         ILogger<TokenCleanupService> logger,
+        IServerSideSessionsMarker serverSideSessionsMarker = null,
         IOperationalStoreNotification operationalStoreNotification = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -43,6 +47,7 @@ public class TokenCleanupService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _operationalStoreNotification = operationalStoreNotification;
+        _sideSessionsMarker = serverSideSessionsMarker;
     }
 
     /// <summary>
@@ -181,9 +186,8 @@ public class TokenCleanupService
     /// <returns></returns>
     protected virtual async Task RemoveServerSideSessionsAsync(CancellationToken cancellationToken = default)
     {
-        if (!_options.RemoveExpiredServerSideSessions)
+        if (_sideSessionsMarker == null || !_options.RemoveExpiredServerSideSessions)
         {
-            // TODO: handle this?
             // if there is no _serverSideTicketStore in the DI system, then server side sessions is not enabled
             // or they have disabled the cleanup, so there is no need to try to cleanup expired entries.
             return;

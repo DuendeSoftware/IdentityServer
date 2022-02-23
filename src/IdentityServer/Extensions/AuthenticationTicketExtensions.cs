@@ -1,21 +1,18 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer.Hosting.TicketStore;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores.Serialization;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Duende.IdentityServer.Hosting.TicketStore;
+namespace Duende.IdentityServer.Extensions;
 
 /// <summary>
 ///  Extension methods for AuthenticationTicket
@@ -70,39 +67,7 @@ public static class AuthenticationTicketExtensions
         return ticket.Properties.ExpiresUtc?.UtcDateTime;
     }
 
-    /// <summary>
-    /// Converts a ClaimsPrincipalLite to ClaimsPrincipal
-    /// </summary>
-    private static ClaimsPrincipal ToClaimsPrincipal(this ClaimsPrincipalLite principal)
-    {
-        var claims = principal.Claims.Select(x => new Claim(x.Type, x.Value, x.ValueType ?? ClaimValueTypes.String)).ToArray();
-        var id = new ClaimsIdentity(claims, principal.AuthenticationType, principal.NameClaimType, principal.RoleClaimType);
-
-        return new ClaimsPrincipal(id);
-    }
-
-    /// <summary>
-    /// Converts a ClaimsPrincipal to ClaimsPrincipalLite
-    /// </summary>
-    private static ClaimsPrincipalLite ToClaimsPrincipalLite(this ClaimsPrincipal principal)
-    {
-        var claims = principal.Claims.Select(
-                x => new ClaimLite
-                {
-                    Type = x.Type,
-                    Value = x.Value,
-                    ValueType = x.ValueType == ClaimValueTypes.String ? null : x.ValueType
-                }).ToArray();
-
-        return new ClaimsPrincipalLite
-        {
-            AuthenticationType = principal.Identity!.AuthenticationType!,
-            NameClaimType = principal.Identities.First().NameClaimType,
-            RoleClaimType = principal.Identities.First().RoleClaimType,
-            Claims = claims
-        };
-    }
-
+    
     /// <summary>
     /// Serializes and AuthenticationTicket to a string
     /// </summary>
@@ -118,7 +83,7 @@ public static class AuthenticationTicketExtensions
         var payload = JsonSerializer.Serialize(data, JsonOptions);
         payload = protector.Protect(payload);
 
-        var envelope = new Envelope { Version = 1, Payload = payload };
+        var envelope = new AuthenticationTicketEnvelope { Version = 1, Payload = payload };
         var value = JsonSerializer.Serialize(envelope, JsonOptions);
 
         return value;
@@ -131,7 +96,7 @@ public static class AuthenticationTicketExtensions
     {
         try
         {
-            var envelope = JsonSerializer.Deserialize<Envelope>(session.Ticket, JsonOptions);
+            var envelope = JsonSerializer.Deserialize<AuthenticationTicketEnvelope>(session.Ticket, JsonOptions);
             if (envelope == null)
             {
                 return null;
@@ -206,56 +171,9 @@ public static class AuthenticationTicketExtensions
     }
 
     /// <summary>
-    /// Serialization friendly claim
-    /// </summary>
-    public class ClaimLite
-    {
-        /// <summary>
-        /// The type
-        /// </summary>
-        public string Type { get; init; } = default!;
-
-        /// <summary>
-        /// The value
-        /// </summary>
-        public string Value { get; init; } = default!;
-
-        /// <summary>
-        /// The value type
-        /// </summary>
-        public string ValueType { get; init; } = default!;
-    }
-
-    /// <summary>
-    /// Serialization friendly ClaimsPrincipal
-    /// </summary>
-    public class ClaimsPrincipalLite
-    {
-        /// <summary>
-        /// The authentication type
-        /// </summary>
-        public string AuthenticationType { get; init; } = default!;
-
-        /// <summary>
-        /// The name claim type
-        /// </summary>
-        public string NameClaimType { get; init; } = default!;
-
-        /// <summary>
-        /// The role claim type
-        /// </summary>
-        public string RoleClaimType { get; init; } = default!;
-
-        /// <summary>
-        /// The claims
-        /// </summary>
-        public ClaimLite[] Claims { get; init; } = default!;
-    }
-
-    /// <summary>
     /// Envelope for serialized data
     /// </summary>
-    public class Envelope
+    public class AuthenticationTicketEnvelope
     {
         /// <summary>
         /// Version

@@ -2,7 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
-using Duende.IdentityServer.Hosting.TicketStore;
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -35,6 +35,7 @@ public static class SessionManagementServiceCollectionExtensions
     /// <returns></returns>
     public static IIdentityServerBuilder AddServerSideSessions(this IIdentityServerBuilder builder)
     {
+        builder.Services.AddSingleton<IServerSideSessionsMarker, NopIServerSideSessionsMarker>();
         builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureApplicationCookieTicketStore>();
         builder.Services.TryAddTransient<ISessionManagementService, DefaultSessionManagementService>();
         builder.Services.TryAddTransient<IServerSideTicketStore, ServerSideTicketStore>();
