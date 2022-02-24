@@ -239,9 +239,30 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public virtual async Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
+        // it's possible that this implementation could have been done differently (e.g. use the page number for the token)
+        // but it was done deliberatly in such a way to allow document databases to mimic the logic
+        // and omit features not supported (such as total count, total pages, and current page)
+        // given that this is intended to be used as an administrative UI feature, performance was less of a concern
+
         filter ??= new();
-        if (filter.Page <= 0) filter.Page = 1;
-        if (filter.Count <= 0) filter.Count = 25;
+
+        // these are the ids of first and last items in the prior results
+        // stored as "x,y" in the filter.ResultsToken.
+        var first = 0;
+        var last = 0;
+
+        if (filter.ResultsToken != null)
+        {
+            var parts = filter.ResultsToken.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            if (parts != null && parts.Length == 2)
+            {
+                Int32.TryParse(parts[0], out first);
+                Int32.TryParse(parts[1], out last);
+            }
+        }
+
+        var countRequested = filter.CountRequested;
+        if (countRequested <= 0) countRequested = 25;
 
         var query = Context.ServerSideSessions.AsNoTracking().AsQueryable();
 
@@ -257,32 +278,99 @@ public class ServerSideSessionStore : IServerSideSessionStore
         }
 
         var totalCount = query.Count();
-        var countRequested = filter.Count;
-
         var totalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0)));
-        var currentPage = Math.Min(filter.Page, totalPages);
+        
+        var currPage = 1;
 
-        var results = await query.Skip(currentPage - 1).Take(countRequested)
-            .Select(entity => new ServerSideSession
+        var hasNext = false;
+        var hasPrev = false;
+        Entities.ServerSideSession[] items = null;
+
+        if (filter.RequestPriorResults)
+        {
+            // sets query at the prior record from the last results, but in reverse order
+            items = await query.OrderByDescending(x => x.Id)
+                .Where(x => x.Id < first)
+                // and we +1 to see if there's a prev page
+                .Take(countRequested + 1)
+                .ToArrayAsync();
+
+            // put them back into ID order
+            items = items.OrderBy(x => x.Id).ToArray(); 
+
+            // if we had a prev results, then assume we have a next
+            hasNext = first > 0;
+            // if we have the one extra, we have a prev page
+            hasPrev = items.Length > countRequested;
+
+            if (hasPrev)
             {
-                Key = entity.Key,
-                Scheme = entity.Scheme,
-                SubjectId = entity.SubjectId,
-                SessionId = entity.SessionId,
-                DisplayName = entity.DisplayName,
-                Created = entity.Created,
-                Renewed = entity.Renewed,
-                Expires = entity.Expires,
-                Ticket = entity.Data,
-            })
-            .ToArrayAsync();
+                // omit prev results entry
+                items = items.Skip(1).ToArray();
+            }
+
+            var priorCount = query.Where(x => x.Id <= first).Count();
+            currPage = (int) Math.Ceiling((1.0 * priorCount) / countRequested) - 1;
+        }
+        else
+        {
+            items = await query.OrderBy(x => x.Id)
+                // if lastResultsId is zero, then this will just start at begining
+                .Where(x => x.Id > last)
+                // and we +1 to see if there's a next page
+                .Take(countRequested + 1)
+                .ToArrayAsync();
+
+            // if we had a lastResults, then assume we have a prev.
+            hasPrev = last > 0;
+            // if we have the one extra, we have a next page
+            hasNext = items.Length > countRequested;
+
+            if (hasNext)
+            {
+                // omit next results entry
+                items = items.SkipLast(1).ToArray();
+            }
+
+            var priorCount = query.Where(x => x.Id <= last).Count();
+            currPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / countRequested);
+        }
+
+        string resultsToken = null;
+        if (items.Length > 0)
+        {
+            resultsToken = $"{items[0].Id},{items[items.Length - 1].Id}";
+        }
+        else
+        {
+            hasPrev = false;
+            hasNext = false;
+            totalCount = 0;
+            totalPages = 0;
+            currPage = 0;
+        }
+
+        var results = items.Select(entity => new ServerSideSession
+        {
+            Key = entity.Key,
+            Scheme = entity.Scheme,
+            SubjectId = entity.SubjectId,
+            SessionId = entity.SessionId,
+            DisplayName = entity.DisplayName,
+            Created = entity.Created,
+            Renewed = entity.Renewed,
+            Expires = entity.Expires,
+            Ticket = entity.Data,
+        }).ToArray();
 
         var result = new QueryResult<ServerSideSession>
         {
-            Page = currentPage,
-            CountRequested = countRequested,
+            ResultsToken = resultsToken,
+            HasNextResults = hasNext,
+            HasPrevResults = hasPrev,
             TotalCount = totalCount,
             TotalPages = totalPages,
+            CurrentPage = currPage,
             Results = results
         };
 
@@ -290,5 +378,72 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         return result;
     }
-
 }
+
+/*
+
+
+        filter ??= new();
+
+        Int32.TryParse(filter.ResultsToken, out var lastPageNumber);
+        if (lastPageNumber < 0) lastPageNumber = 0;
+
+        var countRequested = filter.CountRequested;
+        if (countRequested <= 0) countRequested = 25;
+
+        var query = _store.Values.AsQueryable();
+        
+        if (!String.IsNullOrWhiteSpace(filter.DisplayName) || 
+            !String.IsNullOrWhiteSpace(filter.SubjectId) ||
+            !String.IsNullOrWhiteSpace(filter.SessionId))
+        {
+            query = query.Where(x =>
+                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId, StringComparison.OrdinalIgnoreCase)) ||
+                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId, StringComparison.OrdinalIgnoreCase)) ||
+                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName, StringComparison.OrdinalIgnoreCase) == true))
+            );
+        }
+        
+        var totalCount = query.Count();
+        var totalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0)));
+
+        var ordered = query = query.OrderBy(x => x.Key);
+        if (filter.RequestPriorResults)
+        {
+            // sets query at the prior block from the last page
+            if (lastPageNumber > 1)
+            {
+                query = ordered.Skip((lastPageNumber - 1) * countRequested);
+                lastPageNumber--;
+            }
+            else
+            {
+                // nothing if you ask for stuff before page 1
+                query = Enumerable.Empty<ServerSideSession>().AsQueryable();
+            }
+        }
+        else
+        {
+            // this skips the last results
+            query = ordered.Skip(lastPageNumber * countRequested);
+            lastPageNumber++;
+        }
+
+        var results = query.Take(countRequested)
+            .Select(x => x.Clone())
+            .ToArray();
+
+        var token = lastPageNumber.ToString();
+        if (lastPageNumber < 1) token = null;
+        if (lastPageNumber > totalPages) token = null;
+        
+        var result = new QueryResult<ServerSideSession>
+        {
+            ResultsToken = token,
+            TotalCount = totalCount,
+            TotalPages = totalPages,
+            Results = results
+        };
+
+
+*/

@@ -13,25 +13,51 @@
                 </div>
                 
                 <div class="card-body">
-                    <form class="col">
-                        <div class="form-inline">
-                            <label asp-for="@Model.Filter">Filter:</label>
-                            <input type="search" asp-for="@Model.Filter" class="form-control" autofocus />
-                            <button type="submit" class="form-control btn btn-success">Search</button>
+                    <div class="row">
+                        <div class="col text-center">
+                            @if (Model.UserSessions.HasPrevResults)
+                            {
+                                <a class="btn btn-primary" asp-page="/ServerSideSessions/Index" asp-route-prev="true" asp-route-filter="@Model.Filter" asp-route-token="@Model.UserSessions.ResultsToken">Prev</a>
+                            }
                         </div>
-                    </form>
-                </div>
+                        <form class="col">
+                            <div class="form-inline">
+                                <label asp-for="@Model.Filter">Filter:</label>
+                                <input type="search" asp-for="@Model.Filter" class="form-control" autofocus />
+                                <button type="submit" class="form-control btn btn-success">Search</button>
+                            </div>
+                        </form>
+                        <div class="col text-center">
+                            @if (Model.UserSessions.HasNextResults)
+                            {
+                                <a class="btn btn-primary" asp-page="/ServerSideSessions/Index" asp-route-filter="@Model.Filter" asp-route-token="@Model.UserSessions.ResultsToken">Next</a>
+                            }
+                        </div>
+                    </div>
 
-                <div class="card-body">
-                    @if (Model.UserSessions.CountRequested > 0)
+                    @if(Model.UserSessions.TotalCount.HasValue)
                     {
-                        <div>
-                            <a class="btn btn-link" asp-page="/ServerSideSessions/Index" asp-route-filter="@Model.Filter" asp-route-p="@(Model.UserSessions.Page-1)">Prev</a>
-                            Total Results: @Model.UserSessions.TotalCount, 
-                            Page @Model.UserSessions.Page of @Model.UserSessions.TotalPages
-                            <a class="btn btn-link" asp-page="/ServerSideSessions/Index" asp-route-filter="@Model.Filter" asp-route-p="@(Model.UserSessions.Page+1)">Next</a>
+                        <div class="text-center">
+                            @if(Model.UserSessions.CurrentPage.HasValue && Model.UserSessions.TotalPages.HasValue)
+                            {
+                                <text>
+                                    Total Results: @Model.UserSessions.TotalCount,
+                                    Page @Model.UserSessions.CurrentPage of @Model.UserSessions.TotalPages
+                                </text>
+                            }
+                            else
+                            {
+                                <text>
+                                    Total Results: @Model.UserSessions.TotalCount
+                                </text>
+                            }
                         </div>
+                    }
 
+                    <br />
+                    
+                    @if (Model.UserSessions.Results.Any())
+                    {
                         <div>
                             <table class="table table-bordered table-striped table-sm">
                                 <thead>
@@ -71,7 +97,6 @@
                                                 @("None")
                                             }
                                         </td></tr>
-                                        }
                                     }
                                 </tbody>
                             </table>
@@ -79,7 +104,7 @@
                     }
                     else
                     {
-                        <div>No User Sessions</div>
+                        <div class="text-center">No User Sessions</div>
                     }
                 </div>
             </div>

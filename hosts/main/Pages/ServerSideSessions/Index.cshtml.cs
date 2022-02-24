@@ -20,15 +20,19 @@ namespace IdentityServerHost.Pages.ServerSideSessions
 
         [BindProperty(SupportsGet = true)]
         public string Filter { get; set; }
+
         [BindProperty(SupportsGet = true)]
-        public int P { get; set; } = 1;
+        public string Token { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string Prev { get; set; }
 
         public async Task OnGet()
         {
             UserSessions = await _sessionManagementService.QuerySessionsAsync(new SessionQuery
             {
-                Page = P,
-                Count = 10,
+                ResultsToken = Token,
+                RequestPriorResults = Prev == "true",
                 DisplayName = Filter,
                 SessionId = Filter,
                 SubjectId = Filter,
@@ -43,7 +47,7 @@ namespace IdentityServerHost.Pages.ServerSideSessions
             await _sessionManagementService.RemoveSessionsAsync(new RemoveSessionsContext { 
                 SessionId = SessionId,
             });
-            return RedirectToPage("/ServerSideSessions/Index", new { p = P, filter = Filter });
+            return RedirectToPage("/ServerSideSessions/Index", new { Token, Filter, Prev });
         }
     }
 }

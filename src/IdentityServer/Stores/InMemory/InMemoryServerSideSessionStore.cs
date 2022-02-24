@@ -103,38 +103,127 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
+        // it's possible that this implementation could have been done differently (e.g. use the page number for the token)
+        // but it was done deliberatly in such a way to allow document databases to mimic the logic
+        // and omit features not supported (such as total count, total pages, and current page)
+        // given that this is intended to be used as an administrative UI feature, performance was less of a concern
+
         filter ??= new();
-        if (filter.Page <= 0) filter.Page = 1;
-        if (filter.Count <= 0) filter.Count = 25;
+
+        // these are the keys of first and last items in the prior results
+        // stored as "x,y" in the filter.ResultsToken.
+        var first = String.Empty;
+        var last = String.Empty;
+
+        if (filter.ResultsToken != null)
+        {
+            var parts = filter.ResultsToken.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            if (parts != null && parts.Length == 2)
+            {
+                first = parts[0];
+                last = parts[1];
+            }
+        }
+
+        var countRequested = filter.CountRequested;
+        if (countRequested <= 0) countRequested = 25;
 
         var query = _store.Values.AsQueryable();
-        
-        if (!String.IsNullOrWhiteSpace(filter.DisplayName) || 
+
+        if (!String.IsNullOrWhiteSpace(filter.DisplayName) ||
             !String.IsNullOrWhiteSpace(filter.SubjectId) ||
             !String.IsNullOrWhiteSpace(filter.SessionId))
         {
             query = query.Where(x =>
-                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId, StringComparison.OrdinalIgnoreCase)) ||
-                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId, StringComparison.OrdinalIgnoreCase)) ||
-                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName, StringComparison.OrdinalIgnoreCase) == true))
+                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) ||
+                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId)) ||
+                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
             );
         }
-        
+
         var totalCount = query.Count();
-        var countRequested = filter.Count;
-
         var totalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0)));
-        var currentPage = Math.Min(filter.Page, totalPages);
 
-        var results = query.Skip(currentPage - 1).Take(countRequested)
-            .Select(x => x.Clone()).ToArray();
+        var currPage = 1;
+
+        var hasNext = false;
+        var hasPrev = false;
+        ServerSideSession[] items = null;
+
+        if (filter.RequestPriorResults)
+        {
+            // sets query at the prior record from the last results, but in reverse order
+            items = query.OrderByDescending(x => x.Key)
+                .Where(x => String.Compare(x.Key, first) < 0)
+                // and we +1 to see if there's a prev page
+                .Take(countRequested + 1)
+                .ToArray();
+
+            // put them back into ID order
+            items = items.OrderBy(x => x.Key).ToArray();
+
+            // if we had a prev results, then assume we have a next
+            hasNext = first != String.Empty;
+            // if we have the one extra, we have a prev page
+            hasPrev = items.Length > countRequested;
+
+            if (hasPrev)
+            {
+                // omit prev results entry
+                items = items.Skip(1).ToArray();
+            }
+
+            var priorCount = query.Where(x => String.Compare(x.Key, first) <= 0).Count();
+            currPage = (int) Math.Ceiling((1.0 * priorCount) / countRequested) - 1;
+        }
+        else
+        {
+            items = query.OrderBy(x => x.Key)
+                // if last is "", then this will just start at begining
+                .Where(x => String.Compare(x.Key, last) > 0)
+                // and we +1 to see if there's a next page
+                .Take(countRequested + 1)
+                .ToArray();
+
+            // if we had a lastResults, then assume we have a prev.
+            hasPrev = last != String.Empty;
+            // if we have the one extra, we have a next page
+            hasNext = items.Length > countRequested;
+
+            if (hasNext)
+            {
+                // omit next results entry
+                items = items.SkipLast(1).ToArray();
+            }
+
+            var priorCount = query.Where(x => String.Compare(x.Key, last) <= 0).Count();
+            currPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / countRequested);
+        }
+
+        string resultsToken = null;
+        if (items.Length > 0)
+        {
+            resultsToken = $"{items[0].Key},{items[items.Length - 1].Key}";
+        }
+        else
+        {
+            hasPrev = false;
+            hasNext = false;
+            totalCount = 0;
+            totalPages = 0;
+            currPage = 0;
+        }
+
+        var results = items.Select(entity => entity.Clone()).ToArray();
 
         var result = new QueryResult<ServerSideSession>
-        { 
-            Page = currentPage,
-            CountRequested = countRequested,
+        {
+            ResultsToken = resultsToken,
+            HasNextResults = hasNext,
+            HasPrevResults = hasPrev,
             TotalCount = totalCount,
             TotalPages = totalPages,
+            CurrentPage = currPage,
             Results = results
         };
 

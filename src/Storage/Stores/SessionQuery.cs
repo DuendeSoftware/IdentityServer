@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 namespace Duende.IdentityServer.Stores;
@@ -9,27 +9,32 @@ namespace Duende.IdentityServer.Stores;
 public class SessionQuery
 {
     /// <summary>
-    /// The page number
+    /// The token indicating the prior results.
     /// </summary>
-    public int Page { get; set; }
+    public string ResultsToken { get; set; }
 
     /// <summary>
-    /// The number to return
+    /// If true, requests the previous set of results relative to the ResultsToken, otherwise requests the next set of results relative to the ResultsToken.
     /// </summary>
-    public int Count { get; set; }
+    public bool RequestPriorResults { get; set; }
 
     /// <summary>
-    /// The subject ID
+    /// The number requested to return
+    /// </summary>
+    public int CountRequested { get; set; }
+
+    /// <summary>
+    /// The subject ID used to filter the results.
     /// </summary>
     public string SubjectId { get; init; }
 
     /// <summary>
-    /// The sesion ID
+    /// The sesion ID used to filter the results.
     /// </summary>
     public string SessionId { get; init; }
 
     /// <summary>
-    /// The user display name
+    /// The user display name used to filter the results.
     /// </summary>
     public string DisplayName { get; init; }
 }

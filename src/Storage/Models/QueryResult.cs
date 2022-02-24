@@ -12,24 +12,35 @@ namespace Duende.IdentityServer.Models;
 public class QueryResult<T>
 {
     /// <summary>
-    /// The page number requested
+    /// The token that indicates these results. This is used for more results in subsequent queries.
+    /// If null, then there were no more results.
     /// </summary>
-    public int Page { get; init; }
+    public string ResultsToken { get; init; }
 
     /// <summary>
-    /// The number to return
+    /// True if there is a previous set of results.
     /// </summary>
-    public int CountRequested { get; init; }
+    public bool HasPrevResults { get; set; }
 
     /// <summary>
-    /// The total count
+    /// True if there is another set of results.
     /// </summary>
-    public int TotalCount { get; init; }
+    public bool HasNextResults { get; set; }
 
     /// <summary>
-    /// The total pages
+    /// The total count (if available).
     /// </summary>
-    public int TotalPages { get; init; }
+    public int? TotalCount { get; init; }
+
+    /// <summary>
+    /// The total pages (if available).
+    /// </summary>
+    public int? TotalPages { get; init; }
+    
+    /// <summary>
+    /// The current (if available).
+    /// </summary>
+    public int? CurrentPage { get; init; }
 
     /// <summary>
     /// The results.

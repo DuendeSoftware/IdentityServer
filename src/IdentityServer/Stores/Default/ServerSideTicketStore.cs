@@ -191,10 +191,12 @@ public class ServerSideTicketStore : IServerSideTicketStore
 
         var result = new QueryResult<UserSession>
         {
-            CountRequested = results.CountRequested,
-            Page = results.Page,
+            ResultsToken = results.ResultsToken,
+            HasPrevResults = results.HasPrevResults,
+            HasNextResults = results.HasNextResults,
             TotalCount = results.TotalCount,
             TotalPages = results.TotalPages,
+            CurrentPage = results.CurrentPage,
             Results = tickets.ToArray(),
         };
 
