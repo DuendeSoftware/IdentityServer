@@ -298,8 +298,6 @@ public class ServerSideSessionStore : IServerSideSessionStore
             // put them back into ID order
             items = items.OrderBy(x => x.Id).ToArray(); 
 
-            // if we had a prev results, then assume we have a next
-            hasNext = first > 0;
             // if we have the one extra, we have a prev page
             hasPrev = items.Length > countRequested;
 
@@ -309,8 +307,23 @@ public class ServerSideSessionStore : IServerSideSessionStore
                 items = items.Skip(1).ToArray();
             }
 
-            var priorCount = query.Where(x => x.Id <= first).Count();
-            currPage = (int) Math.Ceiling((1.0 * priorCount) / countRequested) - 1;
+            // how many are to the right of these results?
+            if (items.Any())
+            {
+                var postCountId = items[items.Length - 1].Id;
+                var postCount = query.Where(x => x.Id > postCountId).Count();
+                hasNext = postCount > 0;
+                currPage = totalPages - (int) Math.Ceiling((1.0 * postCount) / countRequested);
+            }
+
+            if (currPage == 1 && hasNext && items.Length < countRequested)
+            {
+                // this handles when we went back and are now at the begining but items were deleted.
+                // we need to start over and re-query from the beginning.
+                filter.ResultsToken = null;
+                filter.RequestPriorResults = false;
+                return await QuerySessionsAsync(filter);
+            }
         }
         else
         {
@@ -321,8 +334,6 @@ public class ServerSideSessionStore : IServerSideSessionStore
                 .Take(countRequested + 1)
                 .ToArrayAsync();
 
-            // if we had a lastResults, then assume we have a prev.
-            hasPrev = last > 0;
             // if we have the one extra, we have a next page
             hasNext = items.Length > countRequested;
 
@@ -332,8 +343,21 @@ public class ServerSideSessionStore : IServerSideSessionStore
                 items = items.SkipLast(1).ToArray();
             }
 
-            var priorCount = query.Where(x => x.Id <= last).Count();
-            currPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / countRequested);
+            // how many are to the left of these results?
+            if (items.Any())
+            {
+                var priorCountId = items[0].Id;
+                var priorCount = query.Where(x => x.Id < last).Count();
+                hasPrev = priorCount > 0;
+                currPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / countRequested);
+            }
+        }
+
+        // this handles prior entries being deleted since paging begun
+        if (currPage <= 1)
+        {
+            currPage = 1;
+            hasPrev = false;
         }
 
         string resultsToken = null;
@@ -343,6 +367,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
         }
         else
         {
+            // no results, so we're out of bounds
             hasPrev = false;
             hasNext = false;
             totalCount = 0;

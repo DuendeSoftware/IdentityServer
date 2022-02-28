@@ -162,8 +162,6 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
             // put them back into ID order
             items = items.OrderBy(x => x.Key).ToArray();
 
-            // if we had a prev results, then assume we have a next
-            hasNext = first != String.Empty;
             // if we have the one extra, we have a prev page
             hasPrev = items.Length > countRequested;
 
@@ -173,8 +171,23 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
                 items = items.Skip(1).ToArray();
             }
 
-            var priorCount = query.Where(x => String.Compare(x.Key, first) <= 0).Count();
-            currPage = (int) Math.Ceiling((1.0 * priorCount) / countRequested) - 1;
+            // how many are to the right of these results?
+            if (items.Any())
+            {
+                var postCountId = items[items.Length - 1].Key;
+                var postCount = query.Where(x => String.Compare(x.Key, postCountId) > 0).Count();
+                hasNext = postCount > 0;
+                currPage = totalPages - (int) Math.Ceiling((1.0 * postCount) / countRequested);
+            }
+
+            if (currPage == 1 && hasNext && items.Length < countRequested)
+            {
+                // this handles when we went back and are now at the begining but items were deleted.
+                // we need to start over and re-query from the beginning.
+                filter.ResultsToken = null;
+                filter.RequestPriorResults = false;
+                return QuerySessionsAsync(filter);
+            }
         }
         else
         {
@@ -185,8 +198,6 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
                 .Take(countRequested + 1)
                 .ToArray();
 
-            // if we had a lastResults, then assume we have a prev.
-            hasPrev = last != String.Empty;
             // if we have the one extra, we have a next page
             hasNext = items.Length > countRequested;
 
@@ -196,8 +207,21 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
                 items = items.SkipLast(1).ToArray();
             }
 
-            var priorCount = query.Where(x => String.Compare(x.Key, last) <= 0).Count();
-            currPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / countRequested);
+            // how many are to the left of these results?
+            if (items.Any())
+            {
+                var priorCountId = items[0].Key;
+                var priorCount = query.Where(x => String.Compare(x.Key, priorCountId) < 0).Count();
+                hasPrev = priorCount > 0;
+                currPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / countRequested);
+            }
+        }
+
+        // this handles prior entries being deleted since paging begun
+        if (currPage <= 1)
+        {
+            currPage = 1;
+            hasPrev = false;
         }
 
         string resultsToken = null;
