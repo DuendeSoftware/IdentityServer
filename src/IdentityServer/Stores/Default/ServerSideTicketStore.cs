@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Stores;
 
 /// <summary>
-/// IUserSession-backed ticket store
+/// IServerSideSessionStore backed ticket store
 /// </summary>
 public class ServerSideTicketStore : IServerSideTicketStore
 {
