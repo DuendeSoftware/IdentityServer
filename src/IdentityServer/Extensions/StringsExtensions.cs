@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.Encodings.Web;
 
 namespace Duende.IdentityServer.Extensions;
@@ -18,17 +17,22 @@ internal static class StringExtensions
     [DebuggerStepThrough]
     public static string ToSpaceSeparatedString(this IEnumerable<string> list)
     {
-        if (list == null)
+        if (list is null)
         {
             return string.Empty;
         }
-        
-        return String.Join(' ', list);
+
+        return string.Join(' ', list);
     }
 
     [DebuggerStepThrough]
     public static IEnumerable<string> FromSpaceSeparatedString(this string input)
     {
+        if (string.IsNullOrEmpty(input))
+        {
+            return Enumerable.Empty<string>();
+        }
+
         input = input.Trim();
         return input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
     }
@@ -126,7 +130,7 @@ internal static class StringExtensions
     [DebuggerStepThrough]
     public static string CleanUrlPath(this string url)
     {
-        if (String.IsNullOrWhiteSpace(url)) url = "/";
+        if (string.IsNullOrWhiteSpace(url)) url = "/";
 
         if (url != "/" && url.EndsWith("/"))
         {
@@ -186,13 +190,13 @@ internal static class StringExtensions
     [DebuggerStepThrough]
     public static string AddQueryString(this string url, string query)
     {
-        if (!url.Contains("?"))
+        if (!url.Contains('?'))
         {
-            url += "?";
+            url += '?';
         }
-        else if (!url.EndsWith("&"))
+        else if (!url.EndsWith('&'))
         {
-            url += "&";
+            url += '&';
         }
 
         return url + query;
@@ -207,9 +211,9 @@ internal static class StringExtensions
     [DebuggerStepThrough]
     public static string AddHashFragment(this string url, string query)
     {
-        if (!url.Contains("#"))
+        if (!url.Contains('#'))
         {
-            url += "#";
+            url += '#';
         }
 
         return url + query;
@@ -232,7 +236,7 @@ internal static class StringExtensions
             }
         }
 
-        return new NameValueCollection();           
+        return new NameValueCollection();
     }
 
     public static string GetOrigin(this string url)
@@ -254,7 +258,7 @@ internal static class StringExtensions
 
         return null;
     }
-        
+
     public static string Obfuscate(this string value)
     {
         var last4Chars = "****";

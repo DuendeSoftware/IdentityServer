@@ -121,7 +121,7 @@ internal class TokenEndpoint : IEndpointHandler
 
     private void LogTokens(TokenResponse response, TokenRequestValidationResult requestResult)
     {
-        var clientId = $"{requestResult.ValidatedRequest.Client.ClientId} ({requestResult.ValidatedRequest.Client?.ClientName ?? "no name set"})";
+        var clientId = $"{requestResult.ValidatedRequest.Client?.ClientId} ({requestResult.ValidatedRequest.Client?.ClientName ?? "no name set"})";
         var subjectId = requestResult.ValidatedRequest.Subject?.GetSubjectId() ?? "no subject";
 
         if (response.IdentityToken != null)

@@ -435,7 +435,7 @@ public class KeyManager : IKeyManager
                         var key = _protector.Unprotect(x);
                         if (key == null)
                         {
-                            _logger.LogWarning("Key with kid {kid} failed to unprotect.", x.Id);
+                            _logger.LogWarning("Key with kid {kid} failed to unprotect.", x?.Id);
                         }
                         return key;
                     }

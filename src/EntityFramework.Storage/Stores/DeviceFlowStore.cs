@@ -139,7 +139,7 @@ public class DeviceFlowStore : IDeviceFlowStore
         Logger.LogDebug("{userCode} found in database", userCode);
 
         existing.SubjectId = data.Subject?.FindFirst(JwtClaimTypes.Subject).Value;
-        existing.Data = entity.Data;
+        existing.Data = entity?.Data;
 
         try
         {

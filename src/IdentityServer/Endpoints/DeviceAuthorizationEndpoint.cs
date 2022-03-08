@@ -113,7 +113,7 @@ internal class DeviceAuthorizationEndpoint : IEndpointHandler
 
     private void LogResponse(DeviceAuthorizationResponse response, DeviceAuthorizationRequestValidationResult requestResult)
     {
-        var clientId = $"{requestResult.ValidatedRequest.Client.ClientId} ({requestResult.ValidatedRequest.Client?.ClientName ?? "no name set"})";
+        var clientId = $"{requestResult.ValidatedRequest.Client?.ClientId} ({requestResult.ValidatedRequest.Client?.ClientName ?? "no name set"})";
 
         if (response.DeviceCode != null)
         {

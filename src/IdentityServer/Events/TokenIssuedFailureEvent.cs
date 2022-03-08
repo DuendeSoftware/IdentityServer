@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -32,7 +32,7 @@ public class TokenIssuedFailureEvent : Event
 
             if (request.Subject != null && request.Subject.Identity.IsAuthenticated)
             {
-                SubjectId = request.Subject?.GetSubjectId();
+                SubjectId = request.Subject.GetSubjectId();
             }
         }
 

@@ -23,6 +23,20 @@ internal class OidcReturnUrlParser : IReturnUrlParser
     private readonly ILogger _logger;
     private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OidcReturnUrlParser"/> class.
+    /// </summary>
+    /// <param name="options">Identity Server options.</param>
+    /// <param name="validator">The authorized request validator instance.</param>
+    /// <param name="userSession">The user session instance.</param>
+    /// <param name="urls">The URLs helper.</param>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="authorizationParametersMessageStore">The authorization parameters message store.</param>
+    /// <exception cref="System.ArgumentNullException"><paramref name="options"/> is null.</exception>
+    /// <exception cref="System.ArgumentNullException"><paramref name="validator"/> is null.</exception>
+    /// <exception cref="System.ArgumentNullException"><paramref name="userSession"/> is null.</exception>
+    /// <exception cref="System.ArgumentNullException"><paramref name="urls"/> is null.</exception>
+    /// <exception cref="System.ArgumentNullException"><paramref name="logger"/> is null.</exception>
     public OidcReturnUrlParser(
         IdentityServerOptions options,
         IAuthorizeRequestValidator validator,
@@ -31,18 +45,18 @@ internal class OidcReturnUrlParser : IReturnUrlParser
         ILogger<OidcReturnUrlParser> logger,
         IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
     {
-        _options = options;
-        _validator = validator;
-        _userSession = userSession;
-        _urls = urls;
-        _logger = logger;
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+        _userSession = userSession ?? throw new ArgumentNullException(nameof(userSession));
+        _urls = urls ?? throw new ArgumentNullException(nameof(urls));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _authorizationParametersMessageStore = authorizationParametersMessageStore;
     }
 
     public async Task<AuthorizationRequest> ParseAsync(string returnUrl)
     {
         using var activity = Tracing.ActivitySource.StartActivity("OidcReturnUrlParser.Parse");
-        
+
         if (IsValidReturnUrl(returnUrl))
         {
             var parameters = returnUrl.ReadQueryStringAsNameValueCollection();
@@ -69,8 +83,8 @@ internal class OidcReturnUrlParser : IReturnUrlParser
     public bool IsValidReturnUrl(string returnUrl)
     {
         using var activity = Tracing.ActivitySource.StartActivity("OidcReturnUrlParser.IsValidReturnUrl");
-        
-        if (_options.UserInteraction.AllowOriginInReturnUrl && returnUrl != null)
+
+        if (_options.UserInteraction.AllowOriginInReturnUrl && returnUrl is not null)
         {
             if (!Uri.IsWellFormedUriString(returnUrl, UriKind.RelativeOrAbsolute))
             {
@@ -79,28 +93,17 @@ internal class OidcReturnUrlParser : IReturnUrlParser
             }
 
             var host = _urls.Origin;
-            if (returnUrl.StartsWith(host, StringComparison.OrdinalIgnoreCase) == true)
+            if (returnUrl.StartsWith(host, StringComparison.OrdinalIgnoreCase))
             {
                 returnUrl = returnUrl.Substring(host.Length);
             }
         }
-            
+
         if (returnUrl.IsLocalUrl())
         {
-            {
-                var index = returnUrl.IndexOf('?');
-                if (index >= 0)
-                {
-                    returnUrl = returnUrl.Substring(0, index);
-                }
-            }
-            {
-                var index = returnUrl.IndexOf('#');
-                if (index >= 0)
-                {
-                    returnUrl = returnUrl.Substring(0, index);
-                }
-            }
+            returnUrl = TruncateReturnUrl(
+                TruncateReturnUrl(returnUrl, '?'),
+                '#');
 
             if (returnUrl.EndsWith(Constants.ProtocolRoutePaths.Authorize, StringComparison.Ordinal) ||
                 returnUrl.EndsWith(Constants.ProtocolRoutePaths.AuthorizeCallback, StringComparison.Ordinal))
@@ -112,5 +115,13 @@ internal class OidcReturnUrlParser : IReturnUrlParser
 
         _logger.LogTrace("returnUrl is not valid");
         return false;
+
+        static string TruncateReturnUrl(string url, char truncateCharacter)
+        {
+            var index = url.IndexOf(truncateCharacter);
+            return index >= 0 ?
+                url.Substring(0, index) :
+                url;
+        }
     }
 }

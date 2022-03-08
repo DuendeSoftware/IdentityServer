@@ -46,12 +46,14 @@ public static class PrincipalExtensions
     [DebuggerStepThrough]
     public static long GetAuthenticationTimeEpoch(this IIdentity identity)
     {
-        var id = identity as ClaimsIdentity;
-        var claim = id.FindFirst(JwtClaimTypes.AuthenticationTime);
+        if (identity is ClaimsIdentity id)
+        {
+            var claim = id.FindFirst(JwtClaimTypes.AuthenticationTime);
+            if (claim is null) throw new InvalidOperationException("auth_time is missing.");
+            return long.Parse(claim.Value);
+        }
 
-        if (claim == null) throw new InvalidOperationException("auth_time is missing.");
-           
-        return long.Parse(claim.Value);
+        throw new InvalidOperationException("auth_time is missing.");
     }
 
     /// <summary>
@@ -74,11 +76,34 @@ public static class PrincipalExtensions
     [DebuggerStepThrough]
     public static string GetSubjectId(this IIdentity identity)
     {
-        var id = identity as ClaimsIdentity;
-        var claim = id.FindFirst(JwtClaimTypes.Subject);
+        if (identity is ClaimsIdentity id)
+        {
+            var claim = id.FindFirst(JwtClaimTypes.Subject);
+            if (claim is null) throw new InvalidOperationException("sub claim is missing");
+            return claim.Value;
+        }
 
-        if (claim == null) throw new InvalidOperationException("sub claim is missing");
-        return claim.Value;
+        throw new InvalidOperationException("sub claim is missing");
+    }
+
+    /// <summary>
+    /// Gets the name.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <returns></returns>
+    /// <exception cref="System.InvalidOperationException">name claim is missing</exception>
+    [DebuggerStepThrough]
+    [Obsolete("This method will be removed in a future version. Use GetDisplayName instead.")]
+    public static string GetName(this IIdentity identity)
+    {
+        if (identity is ClaimsIdentity id)
+        {
+            var claim = id.FindFirst(JwtClaimTypes.Name);
+            if (claim is null) throw new InvalidOperationException("name claim is missing");
+            return claim.Value;
+        }
+
+        throw new InvalidOperationException("name claim is missing");
     }
 
     /// <summary>
@@ -111,23 +136,6 @@ public static class PrincipalExtensions
     }
 
     /// <summary>
-    /// Gets the name.
-    /// </summary>
-    /// <param name="identity">The identity.</param>
-    /// <returns></returns>
-    /// <exception cref="System.InvalidOperationException">name claim is missing</exception>
-    [DebuggerStepThrough]
-    [Obsolete("This method will be removed in a future version. Use GetDisplayName instead.")]
-    public static string GetName(this IIdentity identity)
-    {
-        var id = identity as ClaimsIdentity;
-        var claim = id.FindFirst(JwtClaimTypes.Name);
-
-        if (claim == null) throw new InvalidOperationException("name claim is missing");
-        return claim.Value;
-    }
-
-    /// <summary>
     /// Gets the authentication method.
     /// </summary>
     /// <param name="principal">The principal.</param>
@@ -139,17 +147,6 @@ public static class PrincipalExtensions
     }
 
     /// <summary>
-    /// Gets the authentication method claims.
-    /// </summary>
-    /// <param name="principal">The principal.</param>
-    /// <returns></returns>
-    [DebuggerStepThrough]
-    public static IEnumerable<Claim> GetAuthenticationMethods(this IPrincipal principal)
-    {
-        return principal.Identity.GetAuthenticationMethods();
-    }
-
-    /// <summary>
     /// Gets the authentication method.
     /// </summary>
     /// <param name="identity">The identity.</param>
@@ -158,11 +155,25 @@ public static class PrincipalExtensions
     [DebuggerStepThrough]
     public static string GetAuthenticationMethod(this IIdentity identity)
     {
-        var id = identity as ClaimsIdentity;
-        var claim = id.FindFirst(JwtClaimTypes.AuthenticationMethod);
+        if (identity is ClaimsIdentity id)
+        {
+            var claim = id.FindFirst(JwtClaimTypes.AuthenticationMethod);
+            if (claim is null) throw new InvalidOperationException("amr claim is missing");
+            return claim.Value;
+        }
 
-        if (claim == null) throw new InvalidOperationException("amr claim is missing");
-        return claim.Value;
+        throw new InvalidOperationException("amr claim is missing");
+    }
+
+    /// <summary>
+    /// Gets the authentication method claims.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <returns></returns>
+    [DebuggerStepThrough]
+    public static IEnumerable<Claim> GetAuthenticationMethods(this IPrincipal principal)
+    {
+        return principal.Identity.GetAuthenticationMethods();
     }
 
     /// <summary>
@@ -197,11 +208,14 @@ public static class PrincipalExtensions
     [DebuggerStepThrough]
     public static string GetIdentityProvider(this IIdentity identity)
     {
-        var id = identity as ClaimsIdentity;
-        var claim = id.FindFirst(JwtClaimTypes.IdentityProvider);
+        if (identity is ClaimsIdentity id)
+        {
+            var claim = id.FindFirst(JwtClaimTypes.IdentityProvider);
+            if (claim is null) throw new InvalidOperationException("idp claim is missing");
+            return claim.Value;
+        }
 
-        if (claim == null) throw new InvalidOperationException("idp claim is missing");
-        return claim.Value;
+        throw new InvalidOperationException("idp claim is missing");
     }
 
     /// <summary>

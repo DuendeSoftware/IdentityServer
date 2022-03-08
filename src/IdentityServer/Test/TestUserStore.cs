@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -44,7 +44,7 @@ public class TestUserStore
                 return true;
             }
                 
-            return user.Password.Equals(password);
+            return string.Equals(user.Password, password);
         }
             
         return false;

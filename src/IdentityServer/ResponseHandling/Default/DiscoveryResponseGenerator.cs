@@ -509,7 +509,7 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
                     x5t = jsonWebKey.X5t,
                     e = jsonWebKey.E,
                     n = jsonWebKey.N,
-                    x5c = jsonWebKey.X5c?.Count == 0 ? null : jsonWebKey.X5c.ToArray(),
+                    x5c = jsonWebKey.X5c is null || jsonWebKey.X5c.Count == 0 ? null : jsonWebKey.X5c.ToArray(),
                     alg = jsonWebKey.Alg,
                     crv = jsonWebKey.Crv,
                     x = jsonWebKey.X,
