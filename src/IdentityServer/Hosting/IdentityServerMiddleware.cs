@@ -77,9 +77,14 @@ public class IdentityServerMiddleware
             var endpoint = router.Find(context);
             if (endpoint != null)
             {
+                var endpointType = endpoint.GetType().FullName;
+                
+                using var activity = Tracing.ActivitySource.StartActivity("IdentityServerProtocolRequest");
+                activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
+                
                 LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 
-                _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpoint.GetType().FullName, context.Request.Path.ToString());
+                _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, context.Request.Path.ToString());
 
                 var result = await endpoint.ProcessAsync(context);
 

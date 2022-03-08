@@ -9,13 +9,19 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using IdentityModel.Client;
 using System.Net.Http;
+using Microsoft.Extensions.Configuration;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace MvcHybrid
 {
     public class Startup
     {
-        public Startup()
+        private readonly IConfiguration _configuration;
+
+        public Startup(IConfiguration configuration)
         {
+            _configuration = configuration;
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         }
 
@@ -73,6 +79,27 @@ namespace MvcHybrid
                         RoleClaimType = JwtClaimTypes.Role,
                     };
                 });
+            
+            // var apiKey = _configuration["HoneyCombApiKey"];
+            // var dataset = "IdentityServerDev";
+            
+            // services.AddOpenTelemetryTracing(builder =>
+            // {
+            //     builder
+            //         //.AddConsoleExporter()
+            //         .SetResourceBuilder(
+            //             ResourceBuilder.CreateDefault()
+            //                 .AddService("MVC Hybrid Backchannnel"))
+            //         //.SetSampler(new AlwaysOnSampler())
+            //         .AddHttpClientInstrumentation()
+            //         .AddAspNetCoreInstrumentation()
+            //         .AddSqlClientInstrumentation()
+            //         .AddOtlpExporter(option =>
+            //         {
+            //             option.Endpoint = new Uri("https://api.honeycomb.io");
+            //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+            //         });
+            // });
         }
 
         public void Configure(IApplicationBuilder app)

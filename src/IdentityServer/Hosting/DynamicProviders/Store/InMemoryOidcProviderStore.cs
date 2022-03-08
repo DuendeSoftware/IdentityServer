@@ -20,16 +20,21 @@ class InMemoryOidcProviderStore : IIdentityProviderStore
 
     public Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryOidcProviderStore.GetAllSchemeNames");
+        
         var items = _providers.Select(x => new IdentityProviderName { 
             Enabled = x.Enabled,
             DisplayName = x.DisplayName,
             Scheme = x.Scheme
         });
+        
         return Task.FromResult(items);
     }
 
     public Task<IdentityProvider> GetBySchemeAsync(string scheme)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("InMemoryOidcProviderStore.GetByScheme");
+        
         var item = _providers.FirstOrDefault(x => x.Scheme == scheme);
         return Task.FromResult<IdentityProvider>(item);
     }

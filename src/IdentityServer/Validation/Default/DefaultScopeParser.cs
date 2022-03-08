@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using Duende.IdentityServer.Extensions;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -27,6 +28,9 @@ public class DefaultScopeParser : IScopeParser
     /// <inheritdoc/>
     public ParsedScopesResult ParseScopeValues(IEnumerable<string> scopeValues)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultScopeParser.ParseScopeValues");
+        activity?.SetTag(Tracing.Properties.Scope, scopeValues.ToSpaceSeparatedString());
+        
         if (scopeValues == null) throw new ArgumentNullException(nameof(scopeValues));
 
         var result = new ParsedScopesResult();

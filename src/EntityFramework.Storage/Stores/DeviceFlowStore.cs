@@ -71,6 +71,8 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.StoreDeviceAuthorization");
+        
         Context.DeviceFlowCodes.Add(ToEntity(data, deviceCode, userCode));
 
         await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
@@ -83,6 +85,8 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.FindByUserCode");
+        
         var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.UserCode == userCode)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
             .SingleOrDefault(x => x.UserCode == userCode);
@@ -100,6 +104,8 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.FindByDeviceCode");
+        
         var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.DeviceCode == deviceCode)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
             .SingleOrDefault(x => x.DeviceCode == deviceCode);
@@ -118,6 +124,8 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.UpdateByUserCode");
+        
         var existing = (await Context.DeviceFlowCodes.Where(x => x.UserCode == userCode)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
             .SingleOrDefault(x => x.UserCode == userCode);
@@ -150,6 +158,8 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task RemoveByDeviceCodeAsync(string deviceCode)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.RemoveByDeviceCode");
+        
         var deviceFlowCodes = (await Context.DeviceFlowCodes.Where(x => x.DeviceCode == deviceCode)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
             .SingleOrDefault(x => x.DeviceCode == deviceCode);

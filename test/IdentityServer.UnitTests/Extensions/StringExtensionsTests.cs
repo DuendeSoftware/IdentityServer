@@ -5,6 +5,7 @@
 using Xunit;
 using Duende.IdentityServer.Extensions;
 using FluentAssertions;
+using System.Linq;
 
 namespace UnitTests.Extensions;
 
@@ -74,6 +75,40 @@ public class StringExtensionsTests
         CheckOrigin("test://127.0.0.1:8080/test/resource", "test://127.0.0.1:8080");
         CheckOrigin("test://localhost/test/resource", "test://localhost");
         CheckOrigin("test://localhost:8080/test/resource", "test://localhost:8080");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public void ToSpaceSeparatedString_should_return_correct_value()
+    {
+        var value = new[] { "foo", "bar", "baz", "baz", "foo", "bar" }.ToSpaceSeparatedString();
+        value.Should().Be("foo bar baz baz foo bar");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public void FromSpaceSeparatedString_should_return_correct_values()
+    {
+        var values = "foo bar   baz baz     foo bar".FromSpaceSeparatedString().ToArray();
+        values.Length.Should().Be(6);
+        values[0].Should().Be("foo");
+        values[1].Should().Be("bar");
+        values[2].Should().Be("baz");
+        values[3].Should().Be("baz");
+        values[4].Should().Be("foo");
+        values[5].Should().Be("bar");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public void FromSpaceSeparatedString_should_only_process_spaces()
+    {
+        var values = "foo bar\tbaz baz\rfoo bar\r\nbar".FromSpaceSeparatedString().ToArray();
+        values.Length.Should().Be(4);
+        values[0].Should().Be("foo");
+        values[1].Should().Be("bar\tbaz");
+        values[2].Should().Be("baz\rfoo");
+        values[3].Should().Be("bar\r\nbar");
     }
 
 

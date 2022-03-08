@@ -86,6 +86,10 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     /// <returns></returns>
     public virtual async Task<TokenResponse> ProcessAsync(TokenRequestValidationResult request)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("TokenResponseGenerator.Process");
+        activity?.SetTag(Tracing.Properties.GrantType, request.ValidatedRequest.GrantType);
+        activity?.SetTag(Tracing.Properties.ClientId, request.ValidatedRequest.Client.ClientId);
+        
         switch (request.ValidatedRequest.GrantType)
         {
             case OidcConstants.GrantTypes.ClientCredentials:

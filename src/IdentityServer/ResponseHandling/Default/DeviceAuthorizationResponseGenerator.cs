@@ -72,6 +72,8 @@ public class DeviceAuthorizationResponseGenerator : IDeviceAuthorizationResponse
     /// <exception cref="ArgumentException">Value cannot be null or whitespace. - baseUrl</exception>
     public virtual async Task<DeviceAuthorizationResponse> ProcessAsync(DeviceAuthorizationRequestValidationResult validationResult, string baseUrl)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DeviceAuthorizationResponseGenerator.Process");
+        
         if (validationResult == null) throw new ArgumentNullException(nameof(validationResult));
         if (validationResult.ValidatedRequest.Client == null) throw new ArgumentNullException(nameof(validationResult.ValidatedRequest.Client));
         if (string.IsNullOrWhiteSpace(baseUrl)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(baseUrl));

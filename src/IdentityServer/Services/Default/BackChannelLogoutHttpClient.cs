@@ -40,6 +40,8 @@ public class DefaultBackChannelLogoutHttpClient : IBackChannelLogoutHttpClient
     /// <returns></returns>
     public async Task PostAsync(string url, Dictionary<string, string> payload)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultBackChannelLogoutHttpClient.Post");
+        
         try
         {
             var response = await _client.PostAsync(url, new FormUrlEncodedContent(payload), _cancellationTokenProvider.CancellationToken);

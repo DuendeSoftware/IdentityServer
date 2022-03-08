@@ -1,3 +1,4 @@
+using System;
 using Clients;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
@@ -8,11 +9,21 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using IdentityModel.Client;
+using Microsoft.Extensions.Configuration;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace MvcCode
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+
+        public Startup(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+        
         public void ConfigureServices(IServiceCollection services)
         {
             JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
@@ -71,6 +82,27 @@ namespace MvcCode
                         RoleClaimType = JwtClaimTypes.Role,
                     };
                 });
+            
+            // var apiKey = _configuration["HoneyCombApiKey"];
+            // var dataset = "IdentityServerDev";
+            //
+            // services.AddOpenTelemetryTracing(builder =>
+            // {
+            //     builder
+            //         //.AddConsoleExporter()
+            //         .SetResourceBuilder(
+            //             ResourceBuilder.CreateDefault()
+            //                 .AddService("MVC Code"))
+            //         //.SetSampler(new AlwaysOnSampler())
+            //         .AddHttpClientInstrumentation()
+            //         .AddAspNetCoreInstrumentation()
+            //         .AddSqlClientInstrumentation()
+            //         .AddOtlpExporter(option =>
+            //         {
+            //             option.Endpoint = new Uri("https://api.honeycomb.io");
+            //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+            //         });
+            // });
         }
 
         public void Configure(IApplicationBuilder app)

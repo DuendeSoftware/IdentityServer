@@ -84,6 +84,8 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
     /// <inheritdoc/>
     public async Task<BackchannelUserLoginRequest> GetLoginRequestByInternalIdAsync(string id)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.GetLoginRequestByInternalId");
+        
         var request = await _requestStore.GetByInternalIdAsync(id);
         return await CreateAsync(request);
     }
@@ -91,6 +93,8 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
     /// <inheritdoc/>
     public async Task<IEnumerable<BackchannelUserLoginRequest>> GetPendingLoginRequestsForCurrentUserAsync()
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.GetPendingLoginRequestsForCurrentUser");
+        
         var list = new List<BackchannelUserLoginRequest>();
 
         var user = await _session.GetUserAsync();
@@ -118,6 +122,8 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
     /// <inheritdoc/>
     public async Task CompleteLoginRequestAsync(CompleteBackchannelLoginRequest competionRequest)
     {
+        using var activity = Tracing.ActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.CompleteLoginRequest");
+        
         if (competionRequest == null) throw new ArgumentNullException(nameof(competionRequest));
 
         var request = await _requestStore.GetByInternalIdAsync(competionRequest.InternalId);
