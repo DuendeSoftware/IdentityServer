@@ -94,7 +94,7 @@ public class DefaultSessionManagementService : ISessionManagementService
                 SessionId = context.SessionId,
             };
 
-            if (clientIds != null && clientIds.Any())
+            if (clientIds != null)
             {
                 grantFilter.ClientIds = clientIds;
             }
