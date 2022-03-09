@@ -39,7 +39,8 @@ CREATE TABLE [Keys] (
 GO
 
 CREATE TABLE [PersistedGrants] (
-    [Key] nvarchar(200) NOT NULL,
+    [Id] int NOT NULL IDENTITY,
+    [Key] nvarchar(200) NULL,
     [Type] nvarchar(50) NOT NULL,
     [SubjectId] nvarchar(200) NULL,
     [SessionId] nvarchar(100) NULL,
@@ -49,7 +50,7 @@ CREATE TABLE [PersistedGrants] (
     [Expiration] datetime2 NULL,
     [ConsumedTime] datetime2 NULL,
     [Data] nvarchar(max) NOT NULL,
-    CONSTRAINT [PK_PersistedGrants] PRIMARY KEY ([Key])
+    CONSTRAINT [PK_PersistedGrants] PRIMARY KEY ([Id])
 );
 GO
 
@@ -83,6 +84,9 @@ GO
 CREATE INDEX [IX_PersistedGrants_Expiration] ON [PersistedGrants] ([Expiration]);
 GO
 
+CREATE UNIQUE INDEX [IX_PersistedGrants_Key] ON [PersistedGrants] ([Key]) WHERE [Key] IS NOT NULL;
+GO
+
 CREATE INDEX [IX_PersistedGrants_SubjectId_ClientId_Type] ON [PersistedGrants] ([SubjectId], [ClientId], [Type]);
 GO
 
@@ -93,7 +97,7 @@ CREATE UNIQUE INDEX [IX_ServerSideSessions_Key] ON [ServerSideSessions] ([Key]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20220217183126_Grants', N'6.0.0');
+VALUES (N'20220309202509_Grants', N'6.0.0');
 GO
 
 COMMIT;
