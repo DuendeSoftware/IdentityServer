@@ -83,7 +83,6 @@ public class ServerSideSessionTests
             RequireClientSecret = false,
             RequireConsent = false,
             RequirePkce = false,
-            BackChannelLogoutSessionRequired = false,
             AllowedScopes = { "openid", "api" },
             AllowOfflineAccess = true,
             RedirectUris = { "https://client/callback" },

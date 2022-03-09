@@ -47,33 +47,6 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public async Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default)
     {
-        // build list of clients (if needed)
-        List<string> clientIds = null;
-        if (context.ClientIds != null || context.SendBackchannelLogoutNotification)
-        {
-            clientIds = new List<string>();
-            
-            var sessions = await _serverSideTicketStore.GetSessionsAsync(
-                new SessionFilter
-                {
-                    SubjectId = context.SubjectId,
-                    SessionId = context.SessionId,
-                }, 
-                cancellationToken);
-
-            var ids = sessions.Where(x => x.ClientIds != null)
-                    .SelectMany(x => x.ClientIds)
-                    .Distinct();
-
-            if (context.ClientIds != null)
-            {
-                ids = ids.Where(x => context.ClientIds.Contains(x));
-            }
-
-            clientIds.AddRange(ids);
-        }
-
-
         if (context.RemoveServerSideSession)
         {
             // delete the cookies
@@ -81,7 +54,7 @@ public class DefaultSessionManagementService : ISessionManagementService
             {
                 SubjectId = context.SubjectId,
                 SessionId = context.SessionId,
-            });
+            }, cancellationToken);
         }
 
 
@@ -94,9 +67,9 @@ public class DefaultSessionManagementService : ISessionManagementService
                 SessionId = context.SessionId,
             };
 
-            if (clientIds != null)
+            if (context.ClientIds != null)
             {
-                grantFilter.ClientIds = clientIds;
+                grantFilter.ClientIds = context.ClientIds;
             }
             
             if (!context.RevokeTokens || !context.RevokeConsents)
@@ -116,13 +89,26 @@ public class DefaultSessionManagementService : ISessionManagementService
 
 
         // send back channel SLO
-        if (context.SendBackchannelLogoutNotification && clientIds != null && clientIds.Any())
+        if (context.SendBackchannelLogoutNotification)
         {
-            await _backChannelLogoutService.SendLogoutNotificationsAsync(new LogoutNotificationContext { 
-                SubjectId = context.SubjectId,
-                SessionId = context.SessionId,
-                ClientIds = clientIds
-            });
+            // we might have more than one, so load them all
+            var sessions = await _serverSideTicketStore.GetSessionsAsync(
+                new SessionFilter
+                {
+                    SubjectId = context.SubjectId,
+                    SessionId = context.SessionId,
+                },
+                cancellationToken);
+
+            foreach (var session in sessions)
+            {
+                await _backChannelLogoutService.SendLogoutNotificationsAsync(new LogoutNotificationContext
+                {
+                    SubjectId = session.SubjectId,
+                    SessionId = session.SessionId,
+                    ClientIds = session.ClientIds.Where(x => context.ClientIds == null || context.ClientIds.Contains(x))
+                });
+            }
         }
     }
 }
