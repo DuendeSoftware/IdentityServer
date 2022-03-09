@@ -157,6 +157,15 @@ internal class LicenseValidator
             }
         }
     }
+    
+    public static void ValidateServerSideSessions()
+    {
+        if (_license != null && !_license.ServerSideSessionsFeature)
+        {
+            _logger.LogError(
+                "You have configured server-side sessions. Your license for Duende IdentityServer does not include that feature.");
+        }
+    }
 
     public static void ValidateResourceIndicators(string resourceIndicator)
     {

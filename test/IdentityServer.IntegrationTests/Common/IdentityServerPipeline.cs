@@ -32,6 +32,7 @@ public class IdentityServerPipeline
 {
     public const string BaseUrl = "https://server";
     public const string LoginPage = BaseUrl + "/account/login";
+    public const string LogoutPage = BaseUrl + "/account/logout";
     public const string ConsentPage = BaseUrl + "/account/consent";
     public const string ErrorPage = BaseUrl + "/home/error";
 
@@ -309,6 +310,15 @@ public class IdentityServerPipeline
     public async Task LoginAsync(string subject)
     {
         await LoginAsync(new IdentityServerUser(subject).CreatePrincipal());
+    }
+    public async Task LogoutAsync()
+    {
+        var old = BrowserClient.AllowAutoRedirect;
+        BrowserClient.AllowAutoRedirect = false;
+
+        await BrowserClient.GetAsync(LogoutPage);
+
+        BrowserClient.AllowAutoRedirect = old;
     }
 
     public void RemoveLoginCookie()

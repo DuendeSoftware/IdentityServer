@@ -60,4 +60,10 @@ public class AuthenticationOptions
     /// If set, will require frame-src CSP headers being emitting on the end session callback endpoint which renders iframes to clients for front-channel signout notification.
     /// </summary>
     public bool RequireCspFrameSrcForSignout { get; set; } = true;
+
+    /// <summary>
+    /// The claim type used for the user's display name.
+    /// This is used when storing user sessions server side.
+    /// </summary>
+    public string UserDisplayNameClaimType { get; set; }
 }

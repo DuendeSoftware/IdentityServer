@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer;
 using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Resources;
@@ -28,6 +29,8 @@ internal static class HostingExtensions
 
         builder.ConfigureIdentityServer();
         builder.AddExternalIdentityProviders();
+
+        builder.AddAdminFeatures();
 
         builder.Services.AddLocalApiAuthentication(principal =>
         {
@@ -60,6 +63,17 @@ internal static class HostingExtensions
         // });
 
         return builder.Build();
+    }
+
+    private static void AddAdminFeatures(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddAuthorization(options =>
+            options.AddPolicy("admin",
+                policy => policy.RequireClaim("sub", "1"))
+        );
+
+        builder.Services.Configure<RazorPagesOptions>(options =>
+            options.Conventions.AuthorizeFolder("/Admin", "admin"));
     }
 
     private static void AddExternalIdentityProviders(this WebApplicationBuilder builder)

@@ -1,3 +1,4 @@
+using IdentityModel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +12,10 @@ internal static class IdentityServerExtensions
     {
         var connectionString = builder.Configuration.GetConnectionString("db");
 
-        builder.Services.AddIdentityServer()
+        builder.Services.AddIdentityServer(options =>
+        {
+            options.Authentication.UserDisplayNameClaimType = JwtClaimTypes.Name;
+        })
             .AddTestUsers(TestUsers.Users)
             // this adds the config data from DB (clients, resources, CORS)
             .AddConfigurationStore(options =>
@@ -23,11 +27,13 @@ internal static class IdentityServerExtensions
             {
                 options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
 
-                    // this enables automatic token cleanup. this is optional.
-                    options.EnableTokenCleanup = false;
+                // this enables automatic token cleanup. this is optional.
+                options.EnableTokenCleanup = false;
                 options.RemoveConsumedTokens = true;
                 options.TokenCleanupInterval = 10; // interval in seconds
-                })
+                options.RemoveExpiredServerSideSessions = false;
+            })
+            .AddServerSideSessions()
             // this is something you will want in production to reduce load on and requests to the DB
             //.AddConfigurationStoreCache()
             ;

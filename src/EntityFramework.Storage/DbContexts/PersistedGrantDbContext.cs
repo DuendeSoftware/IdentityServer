@@ -60,6 +60,9 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
     public DbSet<Key> Keys { get; set; }
 
     /// <inheritdoc/>
+    public DbSet<ServerSideSession> ServerSideSessions { get; set; }
+
+    /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var storeOptions = this.GetService<OperationalStoreOptions>();

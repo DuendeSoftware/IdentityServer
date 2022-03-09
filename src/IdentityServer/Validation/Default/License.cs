@@ -91,6 +91,16 @@ internal class License
                 break;
         }
 
+        ServerSideSessionsFeature = claims.HasClaim("feature", "server_side_sessions");
+        switch (Edition)
+        {
+            case LicenseEdition.Enterprise:
+            case LicenseEdition.Business:
+            case LicenseEdition.Community:
+                ServerSideSessionsFeature = true;
+                break;
+        }
+
         BffFeature = claims.HasClaim("feature", "bff");
         switch (Edition)
         {
@@ -188,6 +198,7 @@ internal class License
     public bool ISVFeature { get; set; }
     public bool BffFeature { get; set; }
     public bool CibaFeature { get; set; }
+    public bool ServerSideSessionsFeature { get; set; }
 
     public enum LicenseEdition
     {

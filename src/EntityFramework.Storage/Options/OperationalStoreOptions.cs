@@ -51,7 +51,7 @@ public class OperationalStoreOptions
     /// The device flow codes.
     /// </value>
     public TableConfiguration DeviceFlowCodes { get; set; } = new TableConfiguration("DeviceCodes");
-        
+
     /// <summary>
     /// Gets or sets the keys table configuration.
     /// </summary>
@@ -59,6 +59,14 @@ public class OperationalStoreOptions
     /// The keys.
     /// </value>
     public TableConfiguration Keys { get; set; } = new TableConfiguration("Keys");
+    
+    /// <summary>
+    /// Gets or sets the user sessions table configuration.
+    /// </summary>
+    /// <value>
+    /// The keys.
+    /// </value>
+    public TableConfiguration ServerSideSessions { get; set; } = new TableConfiguration("ServerSideSessions");
 
     /// <summary>
     /// Gets or sets a value indicating whether stale entries will be automatically cleaned up from the database.
@@ -69,7 +77,7 @@ public class OperationalStoreOptions
     ///   <c>true</c> if [enable token cleanup]; otherwise, <c>false</c>.
     /// </value>
     public bool EnableTokenCleanup { get; set; } = false;
-        
+
     /// <summary>
     /// Gets or sets a value indicating whether consumed tokens will included in the automatic clean up.
     /// </summary>
@@ -77,6 +85,14 @@ public class OperationalStoreOptions
     ///   <c>true</c> if consumed tokens are to be included in cleanup; otherwise, <c>false</c>.
     /// </value>
     public bool RemoveConsumedTokens { get; set; } = false;
+    
+    /// <summary>
+    /// Gets or sets a value indicating whether expired server side sessions will be included in the automatic clean up.
+    /// </summary>
+    /// <value>
+    ///   <c>true</c> if expired user sessions are to be included in cleanup; otherwise, <c>false</c>.
+    /// </value>
+    public bool RemoveExpiredServerSideSessions { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the token cleanup interval (in seconds). The default is 3600 (1 hour).

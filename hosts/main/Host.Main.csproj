@@ -51,4 +51,11 @@
             <Link>Configuration\Resources.cs</Link>
         </Compile>
     </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="Pages\ServerSideSessions\Index.cshtml">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
 </Project>

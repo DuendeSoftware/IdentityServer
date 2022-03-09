@@ -173,10 +173,20 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
 
     private IQueryable<PersistedGrant> Filter(IQueryable<PersistedGrant> query, PersistedGrantFilter filter)
     {
-        if (!String.IsNullOrWhiteSpace(filter.ClientId))
+        if (filter.ClientIds != null)
+        {
+            var ids = filter.ClientIds.ToList();
+            if (!String.IsNullOrWhiteSpace(filter.ClientId))
+            {
+                ids.Add(filter.ClientId);
+            }
+            query = query.Where(x => ids.Contains(x.ClientId));
+        }
+        else if (!String.IsNullOrWhiteSpace(filter.ClientId))
         {
             query = query.Where(x => x.ClientId == filter.ClientId);
         }
+
         if (!String.IsNullOrWhiteSpace(filter.SessionId))
         {
             query = query.Where(x => x.SessionId == filter.SessionId);
@@ -185,7 +195,17 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
         {
             query = query.Where(x => x.SubjectId == filter.SubjectId);
         }
-        if (!String.IsNullOrWhiteSpace(filter.Type))
+
+        if (filter.Types != null)
+        {
+            var types = filter.Types.ToList();
+            if (!String.IsNullOrWhiteSpace(filter.Type))
+            {
+                types.Add(filter.Type);
+            }
+            query = query.Where(x => types.Contains(x.Type));
+        }
+        else if (!String.IsNullOrWhiteSpace(filter.Type))
         {
             query = query.Where(x => x.Type == filter.Type);
         }

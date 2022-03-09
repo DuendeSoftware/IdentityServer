@@ -22,7 +22,10 @@ internal static class IdentityServerExtensions
 
                 options.EmitScopesAsSpaceDelimitedStringInJwt = true;
                 options.Endpoints.EnableJwtRequestUri = true;
+
+                options.Authentication.UserDisplayNameClaimType = JwtClaimTypes.Name;
             })
+            .AddServerSideSessions()
             .AddInMemoryClients(Clients.Get())
             .AddInMemoryIdentityResources(Resources.IdentityResources)
             .AddInMemoryApiScopes(Resources.ApiScopes)
