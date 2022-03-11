@@ -233,14 +233,14 @@ public class KeyManager : IKeyManager
             }
 
             // rotation is needed if: 1) if there are no other keys next in line (meaning younger).
-            // and 2) the current activiation key is near expiration (using the delay timeout)
+            // and 2) the current activation key is near expiration (using the delay timeout)
 
             // get younger keys (which will also filter active key)
             keys = keys.Where(x => x.Created > activeKey.Created).ToArray();
 
             if (keys.Any())
             {
-                // there are younger keys, then they might also be within the window of the key activiation delay
+                // there are younger keys, then they might also be within the window of the key activation delay
                 // so find the youngest one and treat that one as if it's the active key.
                 activeKey = keys.OrderByDescending(x => x.Created).First();
             }

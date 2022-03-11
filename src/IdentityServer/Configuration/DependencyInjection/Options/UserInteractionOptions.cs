@@ -100,7 +100,7 @@ public class UserInteractionOptions
     public string DeviceVerificationUrl { get; set; } = Constants.UIConstants.DefaultRoutePaths.DeviceVerification;
 
     /// <summary>
-    /// Gets or sets the device verification user code paramater.
+    /// Gets or sets the device verification user code parameter.
     /// </summary>
     /// <value>
     /// The device verification user code parameter.

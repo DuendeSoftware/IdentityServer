@@ -52,7 +52,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The requested scopes.
     /// </value>
-    // todo: consider replacing with extension method to access Raw collection; would neeed to be done wholesale for all props.
+    // todo: consider replacing with extension method to access Raw collection; would need to be done wholesale for all props.
     public List<string> RequestedScopes { get; set; }
 
     // TODO: typo

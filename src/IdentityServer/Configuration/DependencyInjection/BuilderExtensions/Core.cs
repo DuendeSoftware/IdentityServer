@@ -173,7 +173,7 @@ public static class IdentityServerBuilderExtensionsCore
     }
 
     /// <summary>
-    /// Adds the pluggable services.
+    /// Adds the plug gable services.
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <returns></returns>

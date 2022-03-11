@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 namespace Duende.IdentityServer.Hosting.DynamicProviders;
 
 /// <summary>
-/// Context for configuring an authenitcaiton handler from a dynamic identity provider.
+/// Context for configuring an authentication handler from a dynamic identity provider.
 /// </summary>
 /// <typeparam name="TAuthenticationOptions"></typeparam>
 /// <typeparam name="TIdentityProvider"></typeparam>
@@ -18,7 +18,7 @@ public class ConfigureAuthenticationContext<TAuthenticationOptions, TIdentityPro
     where TIdentityProvider : IdentityProvider
 {
     /// <summary>
-    /// The authentcation options.
+    /// The authentication options.
     /// </summary>
     public TAuthenticationOptions AuthenticationOptions { get; set; }
 

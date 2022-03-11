@@ -84,7 +84,7 @@ public class RemoveSessionsContext
     public string SubjectId { get; init; }
 
     /// <summary>
-    /// The sesion ID
+    /// The session ID
     /// </summary>
     public string SessionId { get; init; }
 

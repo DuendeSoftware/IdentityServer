@@ -29,7 +29,7 @@ internal class License
         var edition = claims.FindFirst("edition")?.Value;
         if (!Enum.TryParse<License.LicenseEdition>(edition, true, out var editionValue))
         {
-            throw new Exception($"Invalid edition in licence: '{edition}'");
+            throw new Exception($"Invalid edition in license: '{edition}'");
         }
 
         Edition = editionValue;

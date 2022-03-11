@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -37,7 +37,7 @@ public class HashedSharedSecretValidator : ISecretValidator
     /// <returns>
     /// A validation result
     /// </returns>
-    /// <exception cref="System.ArgumentNullException">Id or cedential</exception>
+    /// <exception cref="System.ArgumentNullException">Id or credential</exception>
     public Task<SecretValidationResult> ValidateAsync(IEnumerable<Secret> secrets, ParsedSecret parsedSecret)
     {
         var fail = Task.FromResult(new SecretValidationResult { Success = false });

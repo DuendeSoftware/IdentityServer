@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace Duende.IdentityServer.ResponseHandling;
 
 /// <summary>
-/// The device authorizaiton response generator
+/// The device authorization response generator
 /// </summary>
 /// <seealso cref="IDeviceAuthorizationResponseGenerator" />
 public class DeviceAuthorizationResponseGenerator : IDeviceAuthorizationResponseGenerator
