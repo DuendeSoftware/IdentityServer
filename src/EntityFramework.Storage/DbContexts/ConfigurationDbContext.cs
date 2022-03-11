@@ -30,6 +30,17 @@ public class ConfigurationDbContext : ConfigurationDbContext<ConfigurationDbCont
         : base(options)
     {
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConfigurationDbContext"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="storeOptions"></param>
+    /// <exception cref="ArgumentNullException">storeOptions</exception>
+    public ConfigurationDbContext(DbContextOptions<ConfigurationDbContext> options, ConfigurationStoreOptions storeOptions)
+        : base(options, storeOptions)
+    {
+    }
 }
 
 /// <summary>
