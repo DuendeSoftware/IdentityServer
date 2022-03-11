@@ -41,6 +41,11 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
     where TContext : DbContext, IPersistedGrantDbContext
 {
     /// <summary>
+    /// The options for this store.
+    /// </summary>
+    protected OperationalStoreOptions StoreOptions { get; private set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="PersistedGrantDbContext"/> class.
     /// </summary>
     /// <param name="options">The options.</param>
@@ -48,6 +53,18 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
     public PersistedGrantDbContext(DbContextOptions options)
         : base(options)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PersistedGrantDbContext"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="operationalStoreOptions"></param>
+    /// <exception cref="ArgumentNullException">storeOptions</exception>
+    public PersistedGrantDbContext(DbContextOptions options, OperationalStoreOptions operationalStoreOptions)
+        : base(options)
+    {
+        StoreOptions = operationalStoreOptions;
     }
 
     /// <inheritdoc/>
@@ -65,13 +82,17 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var storeOptions = this.GetService<OperationalStoreOptions>();
-
-        if (storeOptions is null)
+        if (StoreOptions is null)
         {
-            throw new ArgumentNullException(nameof(storeOptions));
+            StoreOptions = this.GetService<OperationalStoreOptions>();
+
+            if (StoreOptions is null)
+            {
+                throw new ArgumentNullException(nameof(StoreOptions));
+            }
         }
-        modelBuilder.ConfigurePersistedGrantContext(storeOptions);
+        
+        modelBuilder.ConfigurePersistedGrantContext(StoreOptions);
 
         base.OnModelCreating(modelBuilder);
     }
