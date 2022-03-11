@@ -147,7 +147,7 @@ public class ConfigurationDbContext<TContext> : DbContext, IConfigurationDbConte
 
             if (StoreOptions is null)
             {
-                throw new ArgumentNullException(nameof(StoreOptions));
+                throw new ArgumentNullException(nameof(StoreOptions), "ConfigurationStoreOptions must be configured in the DI system.");
             }
         }
 

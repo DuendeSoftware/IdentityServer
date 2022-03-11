@@ -99,7 +99,7 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
 
             if (StoreOptions is null)
             {
-                throw new ArgumentNullException(nameof(StoreOptions));
+                throw new ArgumentNullException(nameof(StoreOptions), "OperationalStoreOptions must be configured in the DI system.");
             }
         }
         
