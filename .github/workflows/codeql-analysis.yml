@@ -11,7 +11,10 @@
 #
 name: "CodeQL"
 
-paths-ignore: 
+paths:
+  - src
+
+paths-ignore:
   - migrations
   - hosts
   - test
