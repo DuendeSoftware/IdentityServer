@@ -11,6 +11,11 @@
 #
 name: "CodeQL"
 
+paths-ignore: 
+  - migrations
+  - hosts
+  - test
+
 on:
   push:
     branches: [ main ]
