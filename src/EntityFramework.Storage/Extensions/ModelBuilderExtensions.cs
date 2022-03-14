@@ -213,6 +213,11 @@ public static class ModelBuilderExtensions
             entity.Property(x => x.SessionId).HasMaxLength(100);
             entity.Property(x => x.DisplayName).HasMaxLength(100);
             entity.Property(x => x.Data).IsRequired();
+
+            entity.HasIndex(x => x.Expires);
+            entity.HasIndex(x => x.SubjectId);
+            entity.HasIndex(x => x.SessionId);
+            entity.HasIndex(x => x.DisplayName);
         });
     }
 
