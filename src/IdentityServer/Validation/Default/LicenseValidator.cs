@@ -74,7 +74,7 @@ internal class LicenseValidator
         else
         {
             Action<string, object[]> func = _license.ISVFeature ? _logger.LogTrace : _logger.LogDebug;
-            func.Invoke("The validated licence key details: {@license}", new[] { _license });
+            func.Invoke("The validated license key details: {@license}", new[] { _license });
 
             if (_license.Expiration.HasValue)
             {

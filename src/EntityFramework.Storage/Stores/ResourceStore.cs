@@ -106,7 +106,7 @@ public class ResourceStore : IResourceStore
 
         var query =
             from api in Context.ApiResources
-            where api.Scopes.Where(x => names.Contains(x.Scope)).Any()
+            where api.Scopes.Any(x => names.Contains(x.Scope))
             select api;
 
         var apis = query

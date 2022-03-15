@@ -99,7 +99,7 @@ class DynamicAuthenticationSchemeProvider : IAuthenticationSchemeProvider
             return null;
         }
 
-        // these have to be here because the regular authenticaiton middleware accepts IAuthenticationSchemeProvider
+        // these have to be here because the regular authentication middleware accepts IAuthenticationSchemeProvider
         // as a ctor param, not an Invoke param, which makes it a singleton. Our DynamicAuthenticationSchemeCache
         // and possibly the store is scoped in DI.
         var cache = _httpContextAccessor.HttpContext.RequestServices.GetRequiredService<DynamicAuthenticationSchemeCache>();

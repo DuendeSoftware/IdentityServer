@@ -1,11 +1,11 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
 namespace Duende.IdentityServer.Validation;
 
 /// <summary>
-/// Minimal validation result class (base-class for more complext validation results)
+/// Minimal validation result class (base-class for more complex validation results)
 /// </summary>
 public class ValidationResult
 {

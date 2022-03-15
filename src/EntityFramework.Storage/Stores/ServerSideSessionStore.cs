@@ -240,7 +240,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
     public virtual async Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
         // it's possible that this implementation could have been done differently (e.g. use the page number for the token)
-        // but it was done deliberatly in such a way to allow document databases to mimic the logic
+        // but it was done deliberately in such a way to allow document databases to mimic the logic
         // and omit features not supported (such as total count, total pages, and current page)
         // given that this is intended to be used as an administrative UI feature, performance was less of a concern
 
@@ -311,14 +311,14 @@ public class ServerSideSessionStore : IServerSideSessionStore
             if (items.Any())
             {
                 var postCountId = items[items.Length - 1].Id;
-                var postCount = query.Where(x => x.Id > postCountId).Count();
+                var postCount = query.Count(x => x.Id > postCountId);
                 hasNext = postCount > 0;
                 currPage = totalPages - (int) Math.Ceiling((1.0 * postCount) / countRequested);
             }
 
             if (currPage == 1 && hasNext && items.Length < countRequested)
             {
-                // this handles when we went back and are now at the begining but items were deleted.
+                // this handles when we went back and are now at the beginning but items were deleted.
                 // we need to start over and re-query from the beginning.
                 filter.ResultsToken = null;
                 filter.RequestPriorResults = false;
@@ -328,7 +328,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
         else
         {
             items = await query.OrderBy(x => x.Id)
-                // if lastResultsId is zero, then this will just start at begining
+                // if lastResultsId is zero, then this will just start at beginning
                 .Where(x => x.Id > last)
                 // and we +1 to see if there's a next page
                 .Take(countRequested + 1)
@@ -347,7 +347,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             if (items.Any())
             {
                 var priorCountId = items[0].Id;
-                var priorCount = query.Where(x => x.Id < last).Count();
+                var priorCount = query.Count(x => x.Id < last);
                 hasPrev = priorCount > 0;
                 currPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / countRequested);
             }

@@ -29,7 +29,7 @@ public class SessionQuery
     public string SubjectId { get; init; }
 
     /// <summary>
-    /// The sesion ID used to filter the results.
+    /// The session ID used to filter the results.
     /// </summary>
     public string SessionId { get; init; }
 

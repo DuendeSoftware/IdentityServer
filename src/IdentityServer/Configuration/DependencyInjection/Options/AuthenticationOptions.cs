@@ -57,7 +57,7 @@ public class AuthenticationOptions
     public SameSiteMode CheckSessionCookieSameSiteMode { get; set; } = SameSiteMode.None;
 
     /// <summary>
-    /// If set, will require frame-src CSP headers being emitting on the end session callback endpoint which renders iframes to clients for front-channel signout notification.
+    /// If set, will require frame-src CSP headers being emitting on the end session callback endpoint which renders iframes to clients for front-channel sign out notification.
     /// </summary>
     public bool RequireCspFrameSrcForSignout { get; set; } = true;
 

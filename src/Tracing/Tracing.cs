@@ -23,7 +23,7 @@ internal static class Tracing
     public static string ServiceName => "Duende.IdentityServer";
 
     /// <summary>
-    /// Serivce version
+    /// Service version
     /// </summary>
     public static string ServiceVersion => $"{AssemblyVersion.Major}.{AssemblyVersion.Minor}.{AssemblyVersion.Build}";
 

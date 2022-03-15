@@ -93,7 +93,7 @@ public class DefaultGrantStore<T>
 
         if (value.EndsWith(HexEncodingFormatSuffix))
         {
-            // newer format >= v6; uses hex encoding to avoid colation issues
+            // newer format >= v6; uses hex encoding to avoid collation issues
             using (var sha = SHA256.Create())
             {
                 var bytes = Encoding.UTF8.GetBytes(key);
@@ -249,7 +249,7 @@ public class DefaultGrantStore<T>
     }
 
     /// <summary>
-    /// Removes all items for a subject id / cliend id combination.
+    /// Removes all items for a subject id / client id combination.
     /// </summary>
     /// <param name="subjectId">The subject identifier.</param>
     /// <param name="clientId">The client identifier.</param>

@@ -182,7 +182,7 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
 
             if (currPage == 1 && hasNext && items.Length < countRequested)
             {
-                // this handles when we went back and are now at the begining but items were deleted.
+                // this handles when we went back and are now at the beginning but items were deleted.
                 // we need to start over and re-query from the beginning.
                 filter.ResultsToken = null;
                 filter.RequestPriorResults = false;
@@ -192,7 +192,7 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
         else
         {
             items = query.OrderBy(x => x.Key)
-                // if last is "", then this will just start at begining
+                // if last is "", then this will just start at beginning
                 .Where(x => String.Compare(x.Key, last) > 0)
                 // and we +1 to see if there's a next page
                 .Take(countRequested + 1)
