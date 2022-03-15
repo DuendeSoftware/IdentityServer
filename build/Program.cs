@@ -42,8 +42,9 @@ namespace build
                 Run("dotnet", $"build {solution} -c Release --nologo");
             });
             
-            Target(Targets.CodeQL, DependsOn(Targets.CleanBuildOutput), () =>
+            Target(Targets.CodeQL, () =>
             {
+                Run("dotnet", $"clean {solutionCodeQL} -c Release -v m --nologo");
                 Run("dotnet", $"build {solutionCodeQL} -c Release --nologo");
             });
 
