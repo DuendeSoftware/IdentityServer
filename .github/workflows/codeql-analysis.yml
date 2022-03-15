@@ -36,9 +36,11 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-    
-    - name: Setup dotnet (main)
+
+    - name: Setup dotnet
       uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '6.0.x'
       
     - run: dotnet --info
 
@@ -52,7 +54,7 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    - run: ./build.sh build
+    - run: ./build.sh codeql
     
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
