@@ -10,6 +10,7 @@ namespace build
     internal static class Program
     {
         private const string solution = "Duende.IdentityServer.sln";
+        private const string solutionCodeQL = "Duende.IdentityServer.CodeQL.sln";
         private const string packOutput = "./artifacts";
         private const string envVarMissing = " environment variable is missing. Aborting.";
 
@@ -19,6 +20,7 @@ namespace build
             public const string CleanBuildOutput = "clean-build-output";
             public const string CleanPackOutput = "clean-pack-output";
             public const string Build = "build";
+            public const string CodeQL = "codeql";
             public const string Test = "test";
             public const string Pack = "pack";
             public const string SignBinary = "sign-binary";
@@ -40,6 +42,12 @@ namespace build
             Target(Targets.Build, DependsOn(Targets.CleanBuildOutput), () =>
             {
                 Run("dotnet", $"build {solution} -c Release --nologo");
+            });
+            
+            Target(Targets.CodeQL, () =>
+            {
+                //Run("dotnet", $"clean {solutionCodeQL} -c Release -v m --nologo");
+                Run("dotnet", $"build {solutionCodeQL} -c Release --nologo");
             });
 
             Target(Targets.SignBinary, DependsOn(Targets.Build, Targets.RestoreTools), () =>
