@@ -8,6 +8,7 @@ using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -49,7 +50,9 @@ public class IdentityServerTools
     {
         if (claims == null) throw new ArgumentNullException(nameof(claims));
 
-        var issuer = await IssuerNameService.GetCurrentAsync();
+        // we look in the claims collection for the iss in case this is being called outside of a HTTP
+        // request where the IssuerNameService might not be able to get the HttpContext
+        var issuer = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Issuer)?.Value ?? await IssuerNameService.GetCurrentAsync();
 
         var token = new Token
         {

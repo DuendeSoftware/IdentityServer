@@ -235,6 +235,38 @@ public class ServerSideSessionStore : IServerSideSessionStore
     }
 
 
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<ServerSideSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default)
+    {
+        var entities = await Context.ServerSideSessions
+                            .Where(x => x.Expires < DateTime.UtcNow)
+                            .OrderBy(x => x.Id)
+                            .Take(count)
+                            .ToArrayAsync(cancellationToken);
+
+        if (entities.Length > 0)
+        {
+            Logger.LogDebug("Removing {serverSideSessionCount} server side sessions", entities.Length);
+            
+            Context.ServerSideSessions.RemoveRange(entities);
+            await Context.SaveChangesAsync(cancellationToken);
+        }
+
+        var results = entities.Select(entity => new ServerSideSession
+        {
+            Key = entity.Key,
+            Scheme = entity.Scheme,
+            SubjectId = entity.SubjectId,
+            SessionId = entity.SessionId,
+            DisplayName = entity.DisplayName,
+            Created = entity.Created,
+            Renewed = entity.Renewed,
+            Expires = entity.Expires,
+            Ticket = entity.Data,
+        }).ToArray();
+
+        return results;
+    }
 
     /// <inheritdoc/>
     public virtual async Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)

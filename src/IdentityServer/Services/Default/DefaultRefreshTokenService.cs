@@ -24,6 +24,11 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     protected readonly ILogger Logger;
 
     /// <summary>
+    /// The server-side ticket store, if configured.
+    /// </summary>
+    protected readonly IServerSideTicketStore ServerSideTicketStore;
+
+    /// <summary>
     /// The refresh token store
     /// </summary>
     protected IRefreshTokenStore RefreshTokenStore { get; }
@@ -45,15 +50,20 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// <param name="profile"></param>
     /// <param name="clock">The clock</param>
     /// <param name="logger">The logger</param>
-    public DefaultRefreshTokenService(IRefreshTokenStore refreshTokenStore, IProfileService profile,
+    /// <param name="serverSideTicketStore"></param>
+    public DefaultRefreshTokenService(
+        IRefreshTokenStore refreshTokenStore, 
+        IProfileService profile,
         ISystemClock clock,
-        ILogger<DefaultRefreshTokenService> logger)
+        ILogger<DefaultRefreshTokenService> logger, 
+        IServerSideTicketStore serverSideTicketStore = null)
     {
         RefreshTokenStore = refreshTokenStore;
         Profile = profile;
         Clock = clock;
 
         Logger = logger;
+        ServerSideTicketStore = serverSideTicketStore;
     }
 
     /// <summary>
@@ -283,6 +293,11 @@ public class DefaultRefreshTokenService : IRefreshTokenService
         else
         {
             Logger.LogDebug("No updates to refresh token done");
+        }
+
+        if (ServerSideTicketStore != null)
+        {
+            //ServerSideTicketStore
         }
 
         return handle;

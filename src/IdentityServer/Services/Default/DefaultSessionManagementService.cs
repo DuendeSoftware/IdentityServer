@@ -1,8 +1,10 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,6 +17,7 @@ namespace Duende.IdentityServer.Services;
 /// </summary>
 public class DefaultSessionManagementService : ISessionManagementService
 {
+    private readonly IdentityServerOptions _options;
     private readonly IServerSideTicketStore _serverSideTicketStore;
     private readonly IServerSideSessionStore _serverSideSessionStore;
     private readonly IPersistedGrantStore _persistedGrantStore;
@@ -23,8 +26,14 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <summary>
     /// Ctor.
     /// </summary>
-    public DefaultSessionManagementService(IServerSideTicketStore serverSideTicketStore, IServerSideSessionStore serverSideSessionStore, IPersistedGrantStore persistedGrantStore, IBackChannelLogoutService backChannelLogoutService)
+    public DefaultSessionManagementService(
+        IdentityServerOptions options,
+        IServerSideTicketStore serverSideTicketStore, 
+        IServerSideSessionStore serverSideSessionStore, 
+        IPersistedGrantStore persistedGrantStore, 
+        IBackChannelLogoutService backChannelLogoutService)
     {
+        _options = options;
         _serverSideTicketStore = serverSideTicketStore;
         _serverSideSessionStore = serverSideSessionStore;
         _persistedGrantStore = persistedGrantStore;
@@ -47,17 +56,6 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public async Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default)
     {
-        if (context.RemoveServerSideSession)
-        {
-            // delete the cookies
-            await _serverSideSessionStore.DeleteSessionsAsync(new SessionFilter
-            {
-                SubjectId = context.SubjectId,
-                SessionId = context.SessionId,
-            }, cancellationToken);
-        }
-
-
         if (context.RevokeTokens || context.RevokeConsents)
         {
             // delete the tokens
@@ -87,7 +85,6 @@ public class DefaultSessionManagementService : ISessionManagementService
             await _persistedGrantStore.RemoveAllAsync(grantFilter);
         }
 
-
         // send back channel SLO
         if (context.SendBackchannelLogoutNotification)
         {
@@ -106,8 +103,45 @@ public class DefaultSessionManagementService : ISessionManagementService
                 {
                     SubjectId = session.SubjectId,
                     SessionId = session.SessionId,
+                    Issuer = session.Issuer,
                     ClientIds = session.ClientIds.Where(x => context.ClientIds == null || context.ClientIds.Contains(x))
                 });
+            }
+        }
+
+        if (context.RemoveServerSideSession)
+        {
+            // delete the cookies
+            await _serverSideSessionStore.DeleteSessionsAsync(new SessionFilter
+            {
+                SubjectId = context.SubjectId,
+                SessionId = context.SessionId,
+            }, cancellationToken);
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task RemoveExpiredSessionsAsync(CancellationToken cancellationToken = default)
+    {
+        var found = Int32.MaxValue;
+
+        while (found > 0)
+        {
+            var sessions = await _serverSideTicketStore.GetAndRemoveExpiredSessionsAsync(_options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
+            found = sessions.Count;
+
+            if (_options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout)
+            {
+                foreach (var session in sessions)
+                {
+                    await _backChannelLogoutService.SendLogoutNotificationsAsync(new LogoutNotificationContext
+                    {
+                        SubjectId = session.SubjectId,
+                        SessionId = session.SessionId,
+                        Issuer = session.Issuer,
+                        ClientIds = session.ClientIds,
+                    });
+                }
             }
         }
     }

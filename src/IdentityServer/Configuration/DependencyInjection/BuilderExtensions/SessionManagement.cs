@@ -7,6 +7,7 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,8 @@ public static class SessionManagementServiceCollectionExtensions
         builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureApplicationCookieTicketStore>();
         builder.Services.TryAddTransient<ISessionManagementService, DefaultSessionManagementService>();
         builder.Services.TryAddTransient<IServerSideTicketStore, ServerSideTicketStore>();
+
+        builder.Services.AddSingleton<IHostedService, ServerSideSessionCleanupHost>();
 
         // only add if not already in DI
         builder.Services.TryAddSingleton<IServerSideSessionStore, InMemoryServerSideSessionStore>();

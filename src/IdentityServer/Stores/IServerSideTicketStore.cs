@@ -26,4 +26,9 @@ public interface IServerSideTicketStore : ITicketStore
     /// Queries user sessions based on filter
     /// </summary>
     Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes and returns expired sessions
+    /// </summary>
+    Task<IReadOnlyCollection<UserSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default);
 }

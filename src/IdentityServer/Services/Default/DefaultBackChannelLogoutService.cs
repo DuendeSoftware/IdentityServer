@@ -183,6 +183,11 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
             claims.Add(new Claim(JwtClaimTypes.SessionId, request.SessionId));
         }
 
+        if (request.Issuer != null)
+        {
+            claims.Add(new Claim(JwtClaimTypes.Issuer, request.Issuer));
+        }
+        
         return Task.FromResult(claims.AsEnumerable());
     }
 }
