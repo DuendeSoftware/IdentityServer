@@ -46,15 +46,21 @@ internal static class HostingExtensions
         builder.Services.AddOpenTelemetryTracing(builder =>
         {
             builder
-                //.AddConsoleExporter()
-                .AddSource(IdentityServerConstants.Tracing.BaseServiceName)
+                .AddSource(IdentityServerConstants.Tracing.Base)
+                .AddSource(IdentityServerConstants.Tracing.Cache)
+                .AddSource(IdentityServerConstants.Tracing.Services)
+                .AddSource(IdentityServerConstants.Tracing.Stores)
+                .AddSource(IdentityServerConstants.Tracing.Validation)
+                
                 .SetResourceBuilder(
                     ResourceBuilder.CreateDefault()
                         .AddService("IdentityServerHost.Main"))
+                
                 //.SetSampler(new AlwaysOnSampler())
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
                 .AddSqlClientInstrumentation()
+                //.AddConsoleExporter()
                 .AddOtlpExporter(option =>
                 {
                     option.Endpoint = new Uri("https://api.honeycomb.io");
