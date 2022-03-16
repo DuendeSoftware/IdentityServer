@@ -64,7 +64,7 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// <returns></returns>
     public virtual async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client client)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultRefreshTokenService.ValidateRefreshToken");
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultRefreshTokenService.ValidateRefreshToken");
         
         var invalidGrant = new TokenValidationResult
         {
@@ -167,7 +167,7 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// </returns>
     public virtual async Task<string> CreateRefreshTokenAsync(RefreshTokenCreationRequest request)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultRefreshTokenService.CreateRefreshToken");
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultRefreshTokenService.CreateRefreshToken");
         
         Logger.LogDebug("Creating refresh token");
 
@@ -220,7 +220,7 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// </returns>
     public virtual async Task<string> UpdateRefreshTokenAsync(RefreshTokenUpdateRequest request)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenCreationService.UpdateRefreshToken");
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultTokenCreationService.UpdateRefreshToken");
         
         Logger.LogDebug("Updating refresh token");
 

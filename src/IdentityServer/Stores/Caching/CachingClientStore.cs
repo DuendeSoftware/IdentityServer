@@ -43,7 +43,7 @@ public class CachingClientStore<T> : IClientStore
     /// </returns>
     public async Task<Client> FindClientByIdAsync(string clientId)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("CachingClientStore.FindClientById");
+        using var activity = Tracing.StoreActivitySource.StartActivity("CachingClientStore.FindClientById");
         activity?.SetTag(Tracing.Properties.ClientId, clientId);
         
         var client = await _cache.GetOrAddAsync(clientId,

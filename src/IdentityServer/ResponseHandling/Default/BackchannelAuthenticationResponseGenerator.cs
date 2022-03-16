@@ -69,7 +69,7 @@ public class BackchannelAuthenticationResponseGenerator : IBackchannelAuthentica
     /// <inheritdoc/>
     public virtual async Task<BackchannelAuthenticationResponse> ProcessAsync(BackchannelAuthenticationRequestValidationResult validationResult)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("BackchannelAuthenticationResponseGenerator.Process");
+        using var activity = Tracing.BaseActivitySource.StartActivity("BackchannelAuthenticationResponseGenerator.Process");
         
         if (validationResult == null) throw new ArgumentNullException(nameof(validationResult));
         if (validationResult.ValidatedRequest == null) throw new ArgumentNullException(nameof(validationResult.ValidatedRequest));

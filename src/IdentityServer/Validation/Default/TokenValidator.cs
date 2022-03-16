@@ -62,7 +62,7 @@ internal class TokenValidator : ITokenValidator
     public async Task<TokenValidationResult> ValidateIdentityTokenAsync(string token, string clientId = null,
         bool validateLifetime = true)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("TokenValidator.ValidateIdentityToken");
+        using var activity = Tracing.BaseActivitySource.StartActivity("TokenValidator.ValidateIdentityToken");
         
         _logger.LogDebug("Start identity token validation");
 
@@ -124,7 +124,7 @@ internal class TokenValidator : ITokenValidator
 
     public async Task<TokenValidationResult> ValidateAccessTokenAsync(string token, string expectedScope = null)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("TokenValidator.ValidateAccessToken");
+        using var activity = Tracing.BaseActivitySource.StartActivity("TokenValidator.ValidateAccessToken");
         
         _logger.LogTrace("Start access token validation");
 
@@ -253,7 +253,7 @@ internal class TokenValidator : ITokenValidator
     private async Task<TokenValidationResult> ValidateJwtAsync(string jwtString,
         IEnumerable<SecurityKeyInfo> validationKeys, bool validateLifetime = true, string audience = null)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("TokenValidator.ValidateJwt");
+        using var activity = Tracing.BaseActivitySource.StartActivity("TokenValidator.ValidateJwt");
         
         var handler = new JsonWebTokenHandler();
 
@@ -350,7 +350,7 @@ internal class TokenValidator : ITokenValidator
 
     private async Task<TokenValidationResult> ValidateReferenceAccessTokenAsync(string tokenHandle)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("TokenValidator.ValidateReferenceAccessToken");
+        using var activity = Tracing.BaseActivitySource.StartActivity("TokenValidator.ValidateReferenceAccessToken");
         
         _log.TokenHandle = tokenHandle;
         var token = await _referenceTokenStore.GetReferenceTokenAsync(tokenHandle);

@@ -42,7 +42,7 @@ internal class TokenRevocationRequestValidator : ITokenRevocationRequestValidato
     /// </exception>
     public Task<TokenRevocationRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, Client client)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("TokenRevocationRequestValidator.ValidateRequest");
+        using var activity = Tracing.BaseActivitySource.StartActivity("TokenRevocationRequestValidator.ValidateRequest");
         
         _logger.LogTrace("ValidateRequestAsync called");
 

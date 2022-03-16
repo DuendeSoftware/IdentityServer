@@ -34,7 +34,7 @@ internal class AuthorizeCallbackEndpoint : AuthorizeEndpointBase
 
     public override async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity(Constants.EndpointNames.Authorize + "CallbackEndpoint");
+        using var activity = Tracing.BaseActivitySource.StartActivity(Constants.EndpointNames.Authorize + "CallbackEndpoint");
         
         if (!HttpMethods.IsGet(context.Request.Method))
         {

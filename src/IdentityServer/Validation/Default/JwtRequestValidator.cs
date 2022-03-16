@@ -88,7 +88,7 @@ public class JwtRequestValidator : IJwtRequestValidator
     /// <inheritdoc/>
     public virtual async Task<JwtRequestValidationResult> ValidateAsync(JwtRequestValidationContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("JwtRequestValidator.Validate");
+        using var activity = Tracing.BaseActivitySource.StartActivity("JwtRequestValidator.Validate");
         
         if (context == null) throw new ArgumentNullException(nameof(context));
         if (context.Client == null) throw new ArgumentNullException(nameof(context.Client));
