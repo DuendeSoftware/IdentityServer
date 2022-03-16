@@ -5,7 +5,6 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -125,7 +124,7 @@ public class DefaultSessionManagementService : ISessionManagementService
     {
         var found = Int32.MaxValue;
 
-        while (found > 0)
+        while (found >= _options.ServerSideSessions.RemoveExpiredSessionsBatchSize)
         {
             var sessions = await _serverSideTicketStore.GetAndRemoveExpiredSessionsAsync(_options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
             found = sessions.Count;

@@ -20,12 +20,12 @@ public class ServerSideSessionOptions
     /// Controls if server-side session expiration is extended when refresh tokens are used.
     /// </summary>
     public bool ExtendSessionExpirationOnRefreshTokenUse { get; set; }
-    
+
     /// <summary>
     /// Controls if when server-side sessions expire if back-channel logout notifications are sent.
     /// </summary>
     public bool ExpiredSessionsTriggerBackchannelLogout { get; set; }
-
+    
     /// <summary>
     /// If enabled will perodically cleanup expired sessions.
     /// </summary>
