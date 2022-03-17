@@ -100,10 +100,11 @@ public class TokenCleanupService
                 .ToArrayAsync(cancellationToken);
 
             found = expiredGrants.Length;
-            _logger.LogInformation("Removing {grantCount} expired grants", found);
 
             if (found > 0)
             {
+                _logger.LogInformation("Removing {grantCount} expired grants", found);
+
                 _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
 
                 var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.PersistedGrant>(_logger, cancellationToken);
@@ -134,10 +135,11 @@ public class TokenCleanupService
                 .ToArrayAsync(cancellationToken);
 
             found = expiredGrants.Length;
-            _logger.LogInformation("Removing {grantCount} consumed grants", found);
 
             if (found > 0)
             {
+                _logger.LogInformation("Removing {grantCount} consumed grants", found);
+
                 _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
 
                 var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.PersistedGrant>(_logger, cancellationToken);
@@ -169,10 +171,11 @@ public class TokenCleanupService
                 .ToArrayAsync(cancellationToken);
 
             found = expiredCodes.Length;
-            _logger.LogInformation("Removing {deviceCodeCount} device flow codes", found);
 
             if (found > 0)
             {
+                _logger.LogInformation("Removing {deviceCodeCount} device flow codes", found);
+
                 _persistedGrantDbContext.DeviceFlowCodes.RemoveRange(expiredCodes);
                 
                 var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.DeviceFlowCodes>(_logger, cancellationToken);
