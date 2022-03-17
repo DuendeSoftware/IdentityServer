@@ -135,6 +135,7 @@ internal static class Factory
     private static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store, IProfileService profile)
     {
         var service = new DefaultRefreshTokenService(
+            new IdentityServerOptions(),
             store,
             profile,
             new StubClock(),

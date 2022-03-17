@@ -314,6 +314,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                     b.Property<int>("AccessTokenType")
                         .HasColumnType("int");
 
+                    b.Property<bool?>("ActivityExtendsServerSideSession")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("AllowAccessTokensViaBrowser")
                         .HasColumnType("bit");
 

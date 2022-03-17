@@ -306,6 +306,11 @@ public class Client
     public int? PollingInterval { get; set; }
 
     /// <summary>
+    /// When using server-side sessions, should this client's activity extend the user's session.
+    /// </summary>
+    public bool? ActivityExtendsServerSideSession { get; set; }
+
+    /// <summary>
     /// Gets or sets the allowed CORS origins for JavaScript clients.
     /// </summary>
     /// <value>

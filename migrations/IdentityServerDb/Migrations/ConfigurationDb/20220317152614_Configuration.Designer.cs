@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServerDb.Migrations.ConfigurationDb
 {
     [DbContext(typeof(ConfigurationDbContext))]
-    [Migration("20220309202515_Configuration")]
+    [Migration("20220317152614_Configuration")]
     partial class Configuration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -315,6 +315,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
 
                     b.Property<int>("AccessTokenType")
                         .HasColumnType("int");
+
+                    b.Property<bool?>("ActivityExtendsServerSideSession")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("AllowAccessTokensViaBrowser")
                         .HasColumnType("bit");

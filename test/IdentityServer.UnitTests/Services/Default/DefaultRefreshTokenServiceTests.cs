@@ -34,6 +34,7 @@ public class DefaultRefreshTokenServiceTests
             TestLogger.Create<DefaultRefreshTokenStore>());
 
         _subject = new DefaultRefreshTokenService(
+            new Duende.IdentityServer.Configuration.IdentityServerOptions(),
             _store, 
             new TestProfileService(),
             _clock, 

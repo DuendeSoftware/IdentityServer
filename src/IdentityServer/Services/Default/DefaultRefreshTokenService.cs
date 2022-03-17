@@ -10,6 +10,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using Duende.IdentityServer.Configuration;
 
 namespace Duende.IdentityServer.Services;
 
@@ -27,6 +28,11 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// The server-side ticket store, if configured.
     /// </summary>
     protected readonly IServerSideTicketStore ServerSideTicketStore;
+    
+    /// <summary>
+    /// The IdentityServer options.
+    /// </summary>
+    protected readonly IdentityServerOptions IdentityServerOptions;
 
     /// <summary>
     /// The refresh token store
@@ -46,18 +52,21 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultRefreshTokenService" /> class.
     /// </summary>
+    /// <param name="identityServerOptions"></param>
     /// <param name="refreshTokenStore">The refresh token store</param>
     /// <param name="profile"></param>
     /// <param name="clock">The clock</param>
     /// <param name="logger">The logger</param>
     /// <param name="serverSideTicketStore"></param>
     public DefaultRefreshTokenService(
+        IdentityServerOptions identityServerOptions,
         IRefreshTokenStore refreshTokenStore, 
         IProfileService profile,
         ISystemClock clock,
         ILogger<DefaultRefreshTokenService> logger, 
         IServerSideTicketStore serverSideTicketStore = null)
     {
+        IdentityServerOptions = identityServerOptions;
         RefreshTokenStore = refreshTokenStore;
         Profile = profile;
         Clock = clock;
@@ -297,7 +306,20 @@ public class DefaultRefreshTokenService : IRefreshTokenService
 
         if (ServerSideTicketStore != null)
         {
-            //ServerSideTicketStore
+            // extend the session is the client is explicitly configured for it,
+            // or if the global setting is enabled and the client isn't explicitly opted out (it's a bool? value)
+            var extendSession =
+                request.Client.ActivityExtendsServerSideSession == true ||
+                (IdentityServerOptions.ServerSideSessions.ClientActivityExtendsServerSideSession && request.Client.ActivityExtendsServerSideSession != false);
+
+            if (extendSession)
+            {
+                await ServerSideTicketStore.ExtendSessionAsync(new SessionFilter
+                {
+                    SubjectId = request.RefreshToken.SubjectId,
+                    SessionId = request.RefreshToken.SessionId
+                });
+            }
         }
 
         return handle;

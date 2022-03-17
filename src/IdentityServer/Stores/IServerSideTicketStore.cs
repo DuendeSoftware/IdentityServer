@@ -31,4 +31,9 @@ public interface IServerSideTicketStore : ITicketStore
     /// Removes and returns expired sessions
     /// </summary>
     Task<IReadOnlyCollection<UserSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Extends a session's expiration
+    /// </summary>
+    Task ExtendSessionAsync(SessionFilter context, CancellationToken cancellationToken = default);
 }

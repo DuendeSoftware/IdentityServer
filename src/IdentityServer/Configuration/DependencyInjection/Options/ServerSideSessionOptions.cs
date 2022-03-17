@@ -17,9 +17,9 @@ public class ServerSideSessionOptions
     public string UserDisplayNameClaimType { get; set; }
 
     /// <summary>
-    /// Controls if server-side session expiration is extended when refresh tokens are used.
+    /// Controls if server-side session expiration is extended when clients are active (e.g. use refresh tokens).
     /// </summary>
-    public bool ExtendSessionExpirationOnRefreshTokenUse { get; set; }
+    public bool ClientActivityExtendsServerSideSession { get; set; }
 
     /// <summary>
     /// Controls if when server-side sessions expire if back-channel logout notifications are sent.

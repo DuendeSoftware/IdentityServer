@@ -65,6 +65,8 @@ public class Client
     public int? CibaLifetime { get; set; }
     public int? PollingInterval { get; set; }
 
+    public bool? ActivityExtendsServerSideSession { get; set; }
+
     public DateTime Created { get; set; } = DateTime.UtcNow;
     public DateTime? Updated { get; set; }
     public DateTime? LastAccessed { get; set; }
