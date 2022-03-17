@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using IdentityModel.Client;
 using System.Collections.Generic;
+using System;
 
 namespace IntegrationTests.Hosting;
 
@@ -24,7 +25,7 @@ public class ServerSideSessionTests
 
     private IdentityServerPipeline _pipeline = new IdentityServerPipeline();
     private IServerSideSessionStore _sessionStore;
-    private IServerSideTicketStore _ticketStore;
+    private IServerSideTicketService _ticketService;
     private ISessionManagementService _sessionMgmt;
     private IPersistedGrantStore _grantStore;
     private IRefreshTokenStore _refreshTokenStore;
@@ -48,6 +49,8 @@ public class ServerSideSessionTests
         };
         _pipeline.OnPostConfigure += app =>
         {
+            _pipeline.Options.ServerSideSessions.RemoveExpiredSessionsFrequency = TimeSpan.FromMilliseconds(100);
+
             app.Map("/user", ep => {
                 ep.Run(ctx => 
                 { 
@@ -85,6 +88,8 @@ public class ServerSideSessionTests
             RequirePkce = false,
             AllowedScopes = { "openid", "api" },
             AllowOfflineAccess = true,
+            ActivityExtendsServerSideSession = true,
+            RevokeTokensAtUserLogout = true,
             RedirectUris = { "https://client/callback" },
             BackChannelLogoutUri = "https://client/bc-logout"
         });
@@ -94,7 +99,7 @@ public class ServerSideSessionTests
         _pipeline.Initialize();
 
         _sessionStore = _pipeline.Resolve<IServerSideSessionStore>();
-        _ticketStore = _pipeline.Resolve<IServerSideTicketStore>();
+        _ticketService = _pipeline.Resolve<IServerSideTicketService>();
         _sessionMgmt = _pipeline.Resolve<ISessionManagementService>();
         _grantStore = _pipeline.Resolve<IPersistedGrantStore>();
         _refreshTokenStore = _pipeline.Resolve<IRefreshTokenStore>();
@@ -200,7 +205,7 @@ public class ServerSideSessionTests
         await _pipeline.LoginAsync("alice");
         _pipeline.RemoveLoginCookie();
 
-        var tickets = await _ticketStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" });
+        var tickets = await _ticketService.GetSessionsAsync(new SessionFilter { SubjectId = "alice" });
         var sessions = await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" });
 
         tickets.Select(x => x.SessionId).Should().BeEquivalentTo(sessions.Select(x => x.SessionId));
@@ -217,7 +222,7 @@ public class ServerSideSessionTests
         await _pipeline.LoginAsync("alice");
         _pipeline.RemoveLoginCookie();
 
-        var tickets = await _ticketStore.QuerySessionsAsync(new SessionQuery { SubjectId = "alice" });
+        var tickets = await _ticketService.QuerySessionsAsync(new SessionQuery { SubjectId = "alice" });
         var sessions = await _sessionStore.QuerySessionsAsync(new SessionQuery { SubjectId = "alice" });
 
         tickets.ResultsToken.Should().Be(sessions.ResultsToken);
@@ -242,7 +247,7 @@ public class ServerSideSessionTests
         _pipeline.RemoveLoginCookie();
 
         var sessions = await _sessionMgmt.QuerySessionsAsync(new SessionQuery { SubjectId = "alice" });
-        var tickets = await _ticketStore.QuerySessionsAsync(new SessionQuery { SubjectId = "alice" });
+        var tickets = await _ticketService.QuerySessionsAsync(new SessionQuery { SubjectId = "alice" });
 
         tickets.ResultsToken.Should().Be(sessions.ResultsToken);
         tickets.HasPrevResults.Should().Be(sessions.HasPrevResults);
@@ -342,6 +347,7 @@ public class ServerSideSessionTests
         _pipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
     }
 
+
     [Fact]
     [Trait("Category", Category)]
     public async Task remove_sessions_with_clientid_filter_should_filter_backchannel_logout()
@@ -401,5 +407,109 @@ public class ServerSideSessionTests
         });
 
         (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Should().BeEmpty();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task expired_sessions_should_invoke_backchannel_logout()
+    {
+        _pipeline.Options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout = true;
+
+        await _pipeline.LoginAsync("alice");
+
+        var authzResponse = await _pipeline.RequestAuthorizationEndpointAsync("client", "code", "openid api offline_access", "https://client/callback");
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client",
+            Code = authzResponse.Code,
+            RedirectUri = "https://client/callback"
+        });
+
+        _pipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeFalse();
+
+        var session = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single();
+        session.Expires = System.DateTime.UtcNow.AddMinutes(-1);
+        await _sessionStore.UpdateSessionAsync(session);
+
+        await Task.Delay(1000);
+
+        _pipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task expired_sessions_should_revoke_refresh_token()
+    {
+        await _pipeline.LoginAsync("alice");
+
+        var authzResponse = await _pipeline.RequestAuthorizationEndpointAsync("client", "code", "openid api offline_access", "https://client/callback");
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client",
+            Code = authzResponse.Code,
+            RedirectUri = "https://client/callback"
+        });
+
+        (await _grantStore.GetAllAsync(new PersistedGrantFilter { SubjectId = "alice" })).Should().NotBeEmpty();
+
+        var session = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single();
+        session.Expires = System.DateTime.UtcNow.AddMinutes(-1);
+        await _sessionStore.UpdateSessionAsync(session);
+
+        await Task.Delay(1000);
+
+        (await _grantStore.GetAllAsync(new PersistedGrantFilter { SubjectId = "alice" })).Should().BeEmpty();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task logout_should_revoke_refresh_token()
+    {
+        await _pipeline.LoginAsync("alice");
+
+        var authzResponse = await _pipeline.RequestAuthorizationEndpointAsync("client", "code", "openid api offline_access", "https://client/callback");
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client",
+            Code = authzResponse.Code,
+            RedirectUri = "https://client/callback"
+        });
+
+        (await _grantStore.GetAllAsync(new PersistedGrantFilter { SubjectId = "alice" })).Should().NotBeEmpty();
+
+        await _pipeline.LogoutAsync();
+
+        (await _grantStore.GetAllAsync(new PersistedGrantFilter { SubjectId = "alice" })).Should().BeEmpty();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task using_refresh_token_should_extend_session()
+    {
+        await _pipeline.LoginAsync("alice");
+
+        var authzResponse = await _pipeline.RequestAuthorizationEndpointAsync("client", "code", "openid api offline_access", "https://client/callback");
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client",
+            Code = authzResponse.Code,
+            RedirectUri = "https://client/callback"
+        });
+
+        var expiration1 = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single().Expires.Value;
+
+        await _pipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client",
+            RefreshToken = tokenResponse.RefreshToken
+        });
+        
+        var expiration2 = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single().Expires.Value;
+
+        expiration2.Should().BeAfter(expiration1);
     }
 }

@@ -27,7 +27,7 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// <summary>
     /// The server-side ticket store, if configured.
     /// </summary>
-    protected readonly IServerSideTicketStore ServerSideTicketStore;
+    protected readonly IServerSideTicketService ServerSideTicketStore;
     
     /// <summary>
     /// The IdentityServer options.
@@ -64,7 +64,7 @@ public class DefaultRefreshTokenService : IRefreshTokenService
         IProfileService profile,
         ISystemClock clock,
         ILogger<DefaultRefreshTokenService> logger, 
-        IServerSideTicketStore serverSideTicketStore = null)
+        IServerSideTicketService serverSideTicketStore = null)
     {
         IdentityServerOptions = identityServerOptions;
         RefreshTokenStore = refreshTokenStore;

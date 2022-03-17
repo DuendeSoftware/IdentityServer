@@ -5,6 +5,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
@@ -15,18 +16,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Stores;
+namespace Duende.IdentityServer.Services;
 
 /// <summary>
-/// IServerSideSessionStore backed ticket store
+/// IServerSideSessionService backed by server side session store
 /// </summary>
-public class ServerSideTicketStore : IServerSideTicketStore
+public class ServerSideTicketService : IServerSideTicketService
 {
     private readonly IdentityServerOptions _options;
     private readonly IIssuerNameService _issuerNameService;
     private readonly IServerSideSessionStore _store;
     private readonly IDataProtector _protector;
-    private readonly ILogger<ServerSideTicketStore> _logger;
+    private readonly ILogger<ServerSideTicketService> _logger;
 
     /// <summary>
     /// ctor
@@ -36,12 +37,12 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <param name="store"></param>
     /// <param name="dataProtectionProvider"></param>
     /// <param name="logger"></param>
-    public ServerSideTicketStore(
+    public ServerSideTicketService(
         IdentityServerOptions options,
         IIssuerNameService issuerNameService,
         IServerSideSessionStore store,
         IDataProtectionProvider dataProtectionProvider,
-        ILogger<ServerSideTicketStore> logger)
+        ILogger<ServerSideTicketService> logger)
     {
         _options = options;
         _issuerNameService = issuerNameService;

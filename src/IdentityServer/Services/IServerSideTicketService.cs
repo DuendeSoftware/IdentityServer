@@ -2,20 +2,20 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Stores;
+namespace Duende.IdentityServer.Services;
 
 /// <summary>
 /// Custom type for ITicketStore
 /// </summary>
 // This is here really just to avoid possible confusion of any other ITicketStore already in
 // the DI system, and add a new higher level helper APIs.
-public interface IServerSideTicketStore : ITicketStore
+public interface IServerSideTicketService : ITicketStore
 {
     /// <summary>
     /// Gets sessions for a specific subject id and/or session id

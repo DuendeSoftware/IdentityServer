@@ -18,7 +18,7 @@ namespace Duende.IdentityServer.Services;
 public class DefaultSessionManagementService : ISessionManagementService
 {
     private readonly IdentityServerOptions _options;
-    private readonly IServerSideTicketStore _serverSideTicketStore;
+    private readonly IServerSideTicketService _serverSideTicketService;
     private readonly IServerSideSessionStore _serverSideSessionStore;
     private readonly IPersistedGrantStore _persistedGrantStore;
     private readonly IClientStore _clientStore;
@@ -29,14 +29,14 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// </summary>
     public DefaultSessionManagementService(
         IdentityServerOptions options,
-        IServerSideTicketStore serverSideTicketStore, 
+        IServerSideTicketService serverSideTicketService, 
         IServerSideSessionStore serverSideSessionStore, 
         IPersistedGrantStore persistedGrantStore, 
         IClientStore clientStore,
         IBackChannelLogoutService backChannelLogoutService)
     {
         _options = options;
-        _serverSideTicketStore = serverSideTicketStore;
+        _serverSideTicketService = serverSideTicketService;
         _serverSideSessionStore = serverSideSessionStore;
         _persistedGrantStore = persistedGrantStore;
         _clientStore = clientStore;
@@ -46,7 +46,7 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
-        return _serverSideTicketStore.QuerySessionsAsync(filter, cancellationToken);
+        return _serverSideTicketService.QuerySessionsAsync(filter, cancellationToken);
     }
 
     static readonly string[] OnlyTokenTypes = new[] {
@@ -92,7 +92,7 @@ public class DefaultSessionManagementService : ISessionManagementService
         if (context.SendBackchannelLogoutNotification)
         {
             // we might have more than one, so load them all
-            var sessions = await _serverSideTicketStore.GetSessionsAsync(
+            var sessions = await _serverSideTicketService.GetSessionsAsync(
                 new SessionFilter
                 {
                     SubjectId = context.SubjectId,
@@ -130,7 +130,7 @@ public class DefaultSessionManagementService : ISessionManagementService
 
         while (found >= 0)
         {
-            var sessions = await _serverSideTicketStore.GetAndRemoveExpiredSessionsAsync(_options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
+            var sessions = await _serverSideTicketService.GetAndRemoveExpiredSessionsAsync(_options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
             found = sessions.Count;
 
             foreach (var session in sessions)
