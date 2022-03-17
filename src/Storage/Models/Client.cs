@@ -305,10 +305,17 @@ public class Client
     /// </summary>
     public int? PollingInterval { get; set; }
 
+
     /// <summary>
     /// When using server-side sessions, should this client's activity extend the user's session.
     /// </summary>
     public bool? ActivityExtendsServerSideSession { get; set; }
+    
+    /// <summary>
+    /// When the user's session ends, should the grants for the user's session be revoked (e.g. refresh token).
+    /// </summary>
+    public bool? RevokeTokensAtUserLogout { get; set; }
+
 
     /// <summary>
     /// Gets or sets the allowed CORS origins for JavaScript clients.

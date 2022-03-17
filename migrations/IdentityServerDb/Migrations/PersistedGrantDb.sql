@@ -97,7 +97,7 @@ CREATE UNIQUE INDEX [IX_ServerSideSessions_Key] ON [ServerSideSessions] ([Key]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20220317152608_Grants', N'6.0.0');
+VALUES (N'20220317171635_Grants', N'6.0.0');
 GO
 
 COMMIT;

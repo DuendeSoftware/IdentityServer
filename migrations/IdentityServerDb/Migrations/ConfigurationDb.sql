@@ -89,6 +89,7 @@ CREATE TABLE [Clients] (
     [CibaLifetime] int NULL,
     [PollingInterval] int NULL,
     [ActivityExtendsServerSideSession] bit NULL,
+    [RevokeTokensAtUserLogout] bit NULL,
     [Created] datetime2 NOT NULL,
     [Updated] datetime2 NULL,
     [LastAccessed] datetime2 NULL,
@@ -361,7 +362,7 @@ CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20220317152614_Configuration', N'6.0.0');
+VALUES (N'20220317171641_Configuration', N'6.0.0');
 GO
 
 COMMIT;

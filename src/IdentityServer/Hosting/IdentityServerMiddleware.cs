@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
+using Microsoft.Extensions.DependencyInjection;
+using Duende.IdentityServer.Stores;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Hosting;
 
@@ -63,6 +66,8 @@ public class IdentityServerMiddleware
                 // this clears our session id cookie so JS clients can detect the user has signed out
                 await session.RemoveSessionIdCookieAsync();
 
+                await RevokeTokensAsync(context);
+
                 // back channel logout
                 var logoutContext = await session.GetLogoutNotificationContext();
                 if (logoutContext != null)
@@ -105,5 +110,44 @@ public class IdentityServerMiddleware
         }
 
         await _next(context);
+    }
+
+    static readonly string[] OnlyTokenTypes = new[] {
+        IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+        IdentityServerConstants.PersistedGrantTypes.ReferenceToken,
+        IdentityServerConstants.PersistedGrantTypes.AuthorizationCode,
+        IdentityServerConstants.PersistedGrantTypes.BackChannelAuthenticationRequest,
+    };
+    
+    private static async Task RevokeTokensAsync(HttpContext context)
+    {
+        var session = context.RequestServices.GetRequiredService<IUserSession>();
+        var clientStore = context.RequestServices.GetRequiredService<IClientStore>();
+        var persistedGrantStore = context.RequestServices.GetRequiredService<IPersistedGrantStore>();
+
+        var sub = (await session.GetUserAsync()).GetSubjectId();
+        var sid = await session.GetSessionIdAsync();
+        var clientIds = await session.GetClientListAsync();
+
+        var clients = new List<string>();
+        foreach (var clientId in clientIds)
+        {
+            var client = await clientStore.FindEnabledClientByIdAsync(clientId);
+            if (client?.RevokeTokensAtUserLogout == true)
+            {
+                clients.Add(clientId);
+            }
+        }
+
+        if (clients.Count > 0)
+        {
+            await persistedGrantStore.RemoveAllAsync(new PersistedGrantFilter
+            {
+                SubjectId = sub,
+                SessionId = sid,
+                ClientIds = clients,
+                Types = OnlyTokenTypes
+            });
+        }
     }
 }

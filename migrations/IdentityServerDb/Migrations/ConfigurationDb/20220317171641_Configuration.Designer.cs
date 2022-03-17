@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServerDb.Migrations.ConfigurationDb
 {
     [DbContext(typeof(ConfigurationDbContext))]
-    [Migration("20220317152614_Configuration")]
+    [Migration("20220317171641_Configuration")]
     partial class Configuration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -441,6 +441,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                         .HasColumnType("bit");
 
                     b.Property<bool>("RequireRequestObject")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("RevokeTokensAtUserLogout")
                         .HasColumnType("bit");
 
                     b.Property<int>("SlidingRefreshTokenLifetime")

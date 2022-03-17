@@ -5,6 +5,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ public class DefaultSessionManagementService : ISessionManagementService
     private readonly IServerSideTicketStore _serverSideTicketStore;
     private readonly IServerSideSessionStore _serverSideSessionStore;
     private readonly IPersistedGrantStore _persistedGrantStore;
+    private readonly IClientStore _clientStore;
     private readonly IBackChannelLogoutService _backChannelLogoutService;
 
     /// <summary>
@@ -30,12 +32,14 @@ public class DefaultSessionManagementService : ISessionManagementService
         IServerSideTicketStore serverSideTicketStore, 
         IServerSideSessionStore serverSideSessionStore, 
         IPersistedGrantStore persistedGrantStore, 
+        IClientStore clientStore,
         IBackChannelLogoutService backChannelLogoutService)
     {
         _options = options;
         _serverSideTicketStore = serverSideTicketStore;
         _serverSideSessionStore = serverSideSessionStore;
         _persistedGrantStore = persistedGrantStore;
+        _clientStore = clientStore;
         _backChannelLogoutService = backChannelLogoutService;
     }
 
@@ -124,10 +128,32 @@ public class DefaultSessionManagementService : ISessionManagementService
     {
         var found = Int32.MaxValue;
 
-        while (found >= _options.ServerSideSessions.RemoveExpiredSessionsBatchSize)
+        while (found >= 0)
         {
             var sessions = await _serverSideTicketStore.GetAndRemoveExpiredSessionsAsync(_options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
             found = sessions.Count;
+
+            foreach (var session in sessions)
+            {
+                var clients = new List<string>();
+                foreach(var clientId in session.ClientIds)
+                {
+                    var client = await _clientStore.FindEnabledClientByIdAsync(clientId);
+                    if (client?.RevokeTokensAtUserLogout == true)
+                    {
+                        clients.Add(clientId);
+                    }
+                }
+
+                if (clients.Count > 0)
+                {
+                    await _persistedGrantStore.RemoveAllAsync(new PersistedGrantFilter { 
+                        SubjectId = session.SubjectId,
+                        SessionId = session.SessionId,
+                        ClientIds = clients
+                    });
+                }
+            }
 
             if (_options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout)
             {

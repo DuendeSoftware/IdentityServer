@@ -66,6 +66,7 @@ public class Client
     public int? PollingInterval { get; set; }
 
     public bool? ActivityExtendsServerSideSession { get; set; }
+    public bool? RevokeTokensAtUserLogout { get; set; }
 
     public DateTime Created { get; set; } = DateTime.UtcNow;
     public DateTime? Updated { get; set; }

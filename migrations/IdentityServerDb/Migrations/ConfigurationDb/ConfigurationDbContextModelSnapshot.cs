@@ -441,6 +441,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                     b.Property<bool>("RequireRequestObject")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("RevokeTokensAtUserLogout")
+                        .HasColumnType("bit");
+
                     b.Property<int>("SlidingRefreshTokenLifetime")
                         .HasColumnType("int");
 
