@@ -57,6 +57,8 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public virtual async Task CreateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
+        cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
+
         var entity = new Entities.ServerSideSession
         {
             Key = session.Key,
@@ -73,7 +75,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         try
         {
-            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
             Logger.LogDebug("new server side session {serverSideSessionKey} created in database", session.Key);
         }
         catch (DbUpdateConcurrencyException ex)
@@ -85,8 +87,10 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public virtual async Task<ServerSideSession> GetSessionAsync(string key, CancellationToken cancellationToken = default)
     {
+        cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
+
         var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == key)
-                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
+                .ToArrayAsync(cancellationToken))
             .SingleOrDefault(x => x.Key == key);
 
         var model = default(ServerSideSession);
@@ -114,8 +118,10 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public virtual async Task UpdateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
+        cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
+
         var entity = (await Context.ServerSideSessions.Where(x => x.Key == session.Key)
-                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
+                .ToArrayAsync(cancellationToken))
             .SingleOrDefault(x => x.Key == session.Key);
 
         if (entity == null)
@@ -135,7 +141,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         try
         {
-            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
             Logger.LogDebug("server side session {serverSideSessionKey} updated in database", session.Key);
         }
         catch (DbUpdateConcurrencyException ex)
@@ -147,8 +153,10 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public virtual async Task DeleteSessionAsync(string key, CancellationToken cancellationToken = default)
     {
+        cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
+        
         var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == key)
-                        .ToArrayAsync(CancellationTokenProvider.CancellationToken))
+                        .ToArrayAsync(cancellationToken))
                     .SingleOrDefault(x => x.Key == key);
 
         if (entity == null)
@@ -161,7 +169,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         try
         {
-            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
             Logger.LogDebug("server side session {serverSideSessionKey} deleted in database", key);
         }
         catch (DbUpdateConcurrencyException ex)
@@ -175,10 +183,12 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public virtual async Task<IReadOnlyCollection<ServerSideSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
+        cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
+        
         filter.Validate();
 
         var entities = await Filter(Context.ServerSideSessions.AsNoTracking().AsQueryable(), filter)
-            .ToArrayAsync(CancellationTokenProvider.CancellationToken);
+            .ToArrayAsync(cancellationToken);
         entities = Filter(entities.AsQueryable(), filter).ToArray();
 
         var results = entities.Select(entity => new ServerSideSession
@@ -202,17 +212,19 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public virtual async Task DeleteSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
+        cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
+        
         filter.Validate();
 
         var entities = await Filter(Context.ServerSideSessions.AsQueryable(), filter)
-            .ToArrayAsync(CancellationTokenProvider.CancellationToken);
+            .ToArrayAsync(cancellationToken);
         entities = Filter(entities.AsQueryable(), filter).ToArray();
 
         Context.ServerSideSessions.RemoveRange(entities);
 
         try
         {
-            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
             Logger.LogDebug("removed {serverSideSessionCount} server side sessions from database for {@filter}", entities.Length, filter);
         }
         catch (DbUpdateConcurrencyException ex)
@@ -239,6 +251,8 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<ServerSideSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default)
     {
+        cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
+        
         var entities = await Context.ServerSideSessions
                             .Where(x => x.Expires < DateTime.UtcNow)
                             .OrderBy(x => x.Id)
@@ -274,6 +288,8 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public virtual async Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
+        cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
+        
         // it's possible that this implementation could have been done differently (e.g. use the page number for the token)
         // but it was done deliberately in such a way to allow document databases to mimic the logic
         // and omit features not supported (such as total count, total pages, and current page)
@@ -312,7 +328,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             );
         }
 
-        var totalCount = query.Count();
+        var totalCount = await query.CountAsync(cancellationToken);
         var totalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0)));
         
         var currPage = 1;
@@ -328,7 +344,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
                 .Where(x => x.Id < first)
                 // and we +1 to see if there's a prev page
                 .Take(countRequested + 1)
-                .ToArrayAsync();
+                .ToArrayAsync(cancellationToken);
 
             // put them back into ID order
             items = items.OrderBy(x => x.Id).ToArray(); 
@@ -346,7 +362,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             if (items.Any())
             {
                 var postCountId = items[items.Length - 1].Id;
-                var postCount = query.Count(x => x.Id > postCountId);
+                var postCount = await query.CountAsync(x => x.Id > postCountId, cancellationToken);
                 hasNext = postCount > 0;
                 currPage = totalPages - (int) Math.Ceiling((1.0 * postCount) / countRequested);
             }
@@ -357,7 +373,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
                 // we need to start over and re-query from the beginning.
                 filter.ResultsToken = null;
                 filter.RequestPriorResults = false;
-                return await QuerySessionsAsync(filter);
+                return await QuerySessionsAsync(filter, cancellationToken);
             }
         }
         else
@@ -367,7 +383,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
                 .Where(x => x.Id > last)
                 // and we +1 to see if there's a next page
                 .Take(countRequested + 1)
-                .ToArrayAsync();
+                .ToArrayAsync(cancellationToken);
 
             // if we have the one extra, we have a next page
             hasNext = items.Length > countRequested;
@@ -382,7 +398,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             if (items.Any())
             {
                 var priorCountId = items[0].Id;
-                var priorCount = query.Count(x => x.Id < last);
+                var priorCount = await query.CountAsync(x => x.Id < last, cancellationToken);
                 hasPrev = priorCount > 0;
                 currPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / countRequested);
             }
