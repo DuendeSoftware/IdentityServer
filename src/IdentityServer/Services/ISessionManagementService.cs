@@ -25,7 +25,7 @@ public interface ISessionManagementService
     /// Removes all the session related data for a user.
     /// </summary>
     Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Removes expired session.
     /// </summary>

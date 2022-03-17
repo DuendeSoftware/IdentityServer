@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
@@ -246,10 +247,12 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         if (entities.Length > 0)
         {
-            Logger.LogDebug("Removing {serverSideSessionCount} server side sessions", entities.Length);
-            
             Context.ServerSideSessions.RemoveRange(entities);
-            await Context.SaveChangesAsync(cancellationToken);
+            
+            var list = await Context.SaveChangesWithConcurrencyCheckAsync<Entities.ServerSideSession>(Logger, cancellationToken);
+            entities = entities.Except(list).ToArray();
+            
+            Logger.LogDebug("Removing {serverSideSessionCount} server side sessions", entities.Length);
         }
 
         var results = entities.Select(entity => new ServerSideSession

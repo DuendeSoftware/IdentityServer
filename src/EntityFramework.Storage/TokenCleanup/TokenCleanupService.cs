@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.Stores;
@@ -104,7 +105,9 @@ public class TokenCleanupService
             if (found > 0)
             {
                 _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
-                await SaveChangesAsync();
+
+                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.PersistedGrant>(_logger, cancellationToken);
+                expiredGrants = expiredGrants.Except(list).ToArray();
 
                 if (_operationalStoreNotification != null)
                 {
@@ -136,7 +139,9 @@ public class TokenCleanupService
             if (found > 0)
             {
                 _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
-                await SaveChangesAsync(cancellationToken);
+
+                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.PersistedGrant>(_logger, cancellationToken);
+                expiredGrants = expiredGrants.Except(list).ToArray();
 
                 if (_operationalStoreNotification != null)
                 {
@@ -169,7 +174,9 @@ public class TokenCleanupService
             if (found > 0)
             {
                 _persistedGrantDbContext.DeviceFlowCodes.RemoveRange(expiredCodes);
-                await SaveChangesAsync(cancellationToken);
+                
+                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.DeviceFlowCodes>(_logger, cancellationToken);
+                expiredCodes = expiredCodes.Except(list).ToArray();
 
                 if (_operationalStoreNotification != null)
                 {
@@ -177,36 +184,5 @@ public class TokenCleanupService
                 }
             }
         }
-    }
-
-
-    private async Task SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        var count = 3;
-
-        while (count > 0)
-        {
-            try
-            {
-                await _persistedGrantDbContext.SaveChangesAsync(cancellationToken);
-                return;
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                count--;
-
-                // we get this if/when someone else already deleted the records
-                // we want to essentially ignore this, and keep working
-                _logger.LogDebug("Concurrency exception removing expired grants: {exception}", ex.Message);
-
-                foreach (var entry in ex.Entries)
-                {
-                    // mark this entry as not attached anymore so we don't try to re-delete
-                    entry.State = EntityState.Detached;
-                }
-            }
-        }
-
-        _logger.LogDebug("Too many concurrency exceptions. Exiting.");
     }
 }
