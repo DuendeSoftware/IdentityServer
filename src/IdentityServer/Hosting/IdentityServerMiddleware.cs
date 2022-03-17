@@ -122,32 +122,37 @@ public class IdentityServerMiddleware
     private static async Task RevokeTokensAsync(HttpContext context)
     {
         var session = context.RequestServices.GetRequiredService<IUserSession>();
-        var clientStore = context.RequestServices.GetRequiredService<IClientStore>();
-        var persistedGrantStore = context.RequestServices.GetRequiredService<IPersistedGrantStore>();
 
-        var sub = (await session.GetUserAsync()).GetSubjectId();
-        var sid = await session.GetSessionIdAsync();
-        var clientIds = await session.GetClientListAsync();
-
-        var clients = new List<string>();
-        foreach (var clientId in clientIds)
+        var user = await session.GetUserAsync();
+        if (user != null)
         {
-            var client = await clientStore.FindEnabledClientByIdAsync(clientId);
-            if (client?.RevokeTokensAtUserLogout == true)
+            var clientStore = context.RequestServices.GetRequiredService<IClientStore>();
+            var persistedGrantStore = context.RequestServices.GetRequiredService<IPersistedGrantStore>();
+
+            var sub = user.GetSubjectId();
+            var sid = await session.GetSessionIdAsync();
+            var clientIds = await session.GetClientListAsync();
+
+            var clients = new List<string>();
+            foreach (var clientId in clientIds)
             {
-                clients.Add(clientId);
+                var client = await clientStore.FindEnabledClientByIdAsync(clientId);
+                if (client?.RevokeTokensAtUserLogout == true)
+                {
+                    clients.Add(clientId);
+                }
             }
-        }
 
-        if (clients.Count > 0)
-        {
-            await persistedGrantStore.RemoveAllAsync(new PersistedGrantFilter
+            if (clients.Count > 0)
             {
-                SubjectId = sub,
-                SessionId = sid,
-                ClientIds = clients,
-                Types = OnlyTokenTypes
-            });
+                await persistedGrantStore.RemoveAllAsync(new PersistedGrantFilter
+                {
+                    SubjectId = sub,
+                    SessionId = sid,
+                    ClientIds = clients,
+                    Types = OnlyTokenTypes
+                });
+            }
         }
     }
 }
