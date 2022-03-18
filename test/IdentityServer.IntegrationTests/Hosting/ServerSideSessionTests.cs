@@ -16,6 +16,8 @@ using Xunit;
 using IdentityModel.Client;
 using System.Collections.Generic;
 using System;
+using System.Net.Http;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace IntegrationTests.Hosting;
 
@@ -426,6 +428,15 @@ public class ServerSideSessionTests
             RedirectUri = "https://client/callback"
         });
 
+        _pipeline.BackChannelMessageHandler.OnInvoke = async msg => 
+        {
+            var form = await msg.Content.ReadAsStringAsync();
+            var jwt = form.Substring("login_token=".Length + 1);
+            var handler = new JsonWebTokenHandler();
+            var token = handler.ReadJsonWebToken(jwt);
+            token.Issuer.Should().Be(IdentityServerPipeline.BaseUrl);
+            token.GetClaim("sub").Value.Should().Be("alice");
+        };
         _pipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeFalse();
 
         var session = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single();

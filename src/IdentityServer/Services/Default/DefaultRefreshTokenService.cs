@@ -240,7 +240,7 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     public virtual async Task<string> UpdateRefreshTokenAsync(RefreshTokenUpdateRequest request)
     {
         using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenCreationService.UpdateRefreshToken");
-        
+
         Logger.LogDebug("Updating refresh token");
 
         var handle = request.Handle;
@@ -304,6 +304,16 @@ public class DefaultRefreshTokenService : IRefreshTokenService
             Logger.LogDebug("No updates to refresh token done");
         }
 
+        await ExtendServerSideSessionAsync(request);
+
+        return handle;
+    }
+
+    /// <summary>
+    /// Contains the logic to extend the server-side session for the request.
+    /// </summary>
+    protected async Task ExtendServerSideSessionAsync(RefreshTokenUpdateRequest request)
+    {
         if (ServerSideTicketStore != null)
         {
             // extend the session is the client is explicitly configured for it,
@@ -321,7 +331,5 @@ public class DefaultRefreshTokenService : IRefreshTokenService
                 });
             }
         }
-
-        return handle;
     }
 }
