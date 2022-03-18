@@ -133,10 +133,30 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 columns: new[] { "SubjectId", "SessionId", "Type" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ServerSideSessions_DisplayName",
+                table: "ServerSideSessions",
+                column: "DisplayName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServerSideSessions_Expires",
+                table: "ServerSideSessions",
+                column: "Expires");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ServerSideSessions_Key",
                 table: "ServerSideSessions",
                 column: "Key",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServerSideSessions_SessionId",
+                table: "ServerSideSessions",
+                column: "SessionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServerSideSessions_SubjectId",
+                table: "ServerSideSessions",
+                column: "SubjectId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

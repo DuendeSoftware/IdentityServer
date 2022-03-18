@@ -219,8 +219,16 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DisplayName");
+
+                    b.HasIndex("Expires");
+
                     b.HasIndex("Key")
                         .IsUnique();
+
+                    b.HasIndex("SessionId");
+
+                    b.HasIndex("SubjectId");
 
                     b.ToTable("ServerSideSessions", (string)null);
                 });
