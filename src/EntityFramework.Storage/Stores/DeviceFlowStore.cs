@@ -140,6 +140,8 @@ public class DeviceFlowStore : IDeviceFlowStore
 
         existing.SubjectId = data.Subject?.FindFirst(JwtClaimTypes.Subject).Value;
         existing.Data = entity.Data;
+        existing.SessionId = data.SessionId;
+        existing.Description = data.Description;
 
         try
         {
@@ -194,6 +196,8 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     protected DeviceFlowCodes ToEntity(DeviceCode model, string deviceCode, string userCode)
     {
+        // TODO: consider removing this in v7.0 since it's not properly/fully used
+
         if (model == null || deviceCode == null || userCode == null) return null;
 
         return new DeviceFlowCodes
@@ -202,6 +206,8 @@ public class DeviceFlowStore : IDeviceFlowStore
             UserCode = userCode,
             ClientId = model.ClientId,
             SubjectId = model.Subject?.FindFirst(JwtClaimTypes.Subject).Value,
+            SessionId = model.SessionId,
+            Description = model.Description,
             CreationTime = model.CreationTime,
             Expiration = model.CreationTime.AddSeconds(model.Lifetime),
             Data = Serializer.Serialize(model)
