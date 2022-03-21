@@ -30,6 +30,17 @@ public class ConfigurationDbContext : ConfigurationDbContext<ConfigurationDbCont
         : base(options)
     {
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConfigurationDbContext"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="storeOptions"></param>
+    /// <exception cref="ArgumentNullException">storeOptions</exception>
+    public ConfigurationDbContext(DbContextOptions<ConfigurationDbContext> options, ConfigurationStoreOptions storeOptions)
+        : base(options, storeOptions)
+    {
+    }
 }
 
 /// <summary>
@@ -41,6 +52,11 @@ public class ConfigurationDbContext<TContext> : DbContext, IConfigurationDbConte
     where TContext : DbContext, IConfigurationDbContext
 {
     /// <summary>
+    /// The store options.
+    /// </summary>
+    public ConfigurationStoreOptions StoreOptions { get; private set; }
+    
+    /// <summary>
     /// Initializes a new instance of the <see cref="ConfigurationDbContext"/> class.
     /// </summary>
     /// <param name="options">The options.</param>
@@ -48,6 +64,18 @@ public class ConfigurationDbContext<TContext> : DbContext, IConfigurationDbConte
     public ConfigurationDbContext(DbContextOptions<TContext> options)
         : base(options)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConfigurationDbContext"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="storeOptions"></param>
+    /// <exception cref="ArgumentNullException">storeOptions</exception>
+    public ConfigurationDbContext(DbContextOptions<TContext> options, ConfigurationStoreOptions storeOptions)
+        : base(options)
+    {
+        StoreOptions = storeOptions;
     }
 
     /// <summary>
@@ -97,7 +125,7 @@ public class ConfigurationDbContext<TContext> : DbContext, IConfigurationDbConte
     /// The identity providers.
     /// </value>
     public DbSet<IdentityProvider> IdentityProviders { get; set; }
-
+    
     /// <summary>
     /// Override this method to further configure the model that was discovered by convention from the entity types
     /// exposed in <see cref="T:Microsoft.EntityFrameworkCore.DbSet`1" /> properties on your derived context. The resulting model may be cached
@@ -113,16 +141,19 @@ public class ConfigurationDbContext<TContext> : DbContext, IConfigurationDbConte
     /// </remarks>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var storeOptions = this.GetService<ConfigurationStoreOptions>();
-
-        if (storeOptions is null)
+        if (StoreOptions is null)
         {
-            throw new ArgumentNullException(nameof(storeOptions));
+            StoreOptions = this.GetService<ConfigurationStoreOptions>();
+
+            if (StoreOptions is null)
+            {
+                throw new ArgumentNullException(nameof(StoreOptions), "ConfigurationStoreOptions must be configured in the DI system.");
+            }
         }
-            
-        modelBuilder.ConfigureClientContext(storeOptions);
-        modelBuilder.ConfigureResourcesContext(storeOptions);
-        modelBuilder.ConfigureIdentityProviderContext(storeOptions);
+
+        modelBuilder.ConfigureClientContext(StoreOptions);
+        modelBuilder.ConfigureResourcesContext(StoreOptions);
+        modelBuilder.ConfigureIdentityProviderContext(StoreOptions);
 
         base.OnModelCreating(modelBuilder);
     }
