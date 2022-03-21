@@ -41,6 +41,9 @@ public static class SessionManagementServiceCollectionExtensions
         builder.Services.TryAddTransient<ISessionManagementService, DefaultSessionManagementService>();
         builder.Services.TryAddTransient<IServerSideTicketService, ServerSideTicketService>();
 
+        // wraps IRefreshTokenService to extend sessions
+        builder.Services.AddTransientDecorator<IRefreshTokenService, ServerSideSessionRefreshTokenService>();
+
         builder.Services.AddSingleton<IHostedService, ServerSideSessionCleanupHost>();
 
         // only add if not already in DI

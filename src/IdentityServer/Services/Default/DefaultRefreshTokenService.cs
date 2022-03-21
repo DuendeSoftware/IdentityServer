@@ -25,16 +25,6 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     protected readonly ILogger Logger;
 
     /// <summary>
-    /// The server-side ticket store, if configured.
-    /// </summary>
-    protected readonly IServerSideTicketService ServerSideTicketStore;
-    
-    /// <summary>
-    /// The IdentityServer options.
-    /// </summary>
-    protected readonly IdentityServerOptions IdentityServerOptions;
-
-    /// <summary>
     /// The refresh token store
     /// </summary>
     protected IRefreshTokenStore RefreshTokenStore { get; }
@@ -52,27 +42,21 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultRefreshTokenService" /> class.
     /// </summary>
-    /// <param name="identityServerOptions"></param>
     /// <param name="refreshTokenStore">The refresh token store</param>
     /// <param name="profile"></param>
     /// <param name="clock">The clock</param>
     /// <param name="logger">The logger</param>
-    /// <param name="serverSideTicketStore"></param>
     public DefaultRefreshTokenService(
-        IdentityServerOptions identityServerOptions,
         IRefreshTokenStore refreshTokenStore, 
         IProfileService profile,
         ISystemClock clock,
-        ILogger<DefaultRefreshTokenService> logger, 
-        IServerSideTicketService serverSideTicketStore = null)
+        ILogger<DefaultRefreshTokenService> logger)
     {
-        IdentityServerOptions = identityServerOptions;
         RefreshTokenStore = refreshTokenStore;
         Profile = profile;
         Clock = clock;
 
         Logger = logger;
-        ServerSideTicketStore = serverSideTicketStore;
     }
 
     /// <summary>
@@ -304,32 +288,6 @@ public class DefaultRefreshTokenService : IRefreshTokenService
             Logger.LogDebug("No updates to refresh token done");
         }
 
-        await ExtendServerSideSessionAsync(request);
-
         return handle;
-    }
-
-    /// <summary>
-    /// Contains the logic to extend the server-side session for the request.
-    /// </summary>
-    protected async Task ExtendServerSideSessionAsync(RefreshTokenUpdateRequest request)
-    {
-        if (ServerSideTicketStore != null)
-        {
-            // extend the session is the client is explicitly configured for it,
-            // or if the global setting is enabled and the client isn't explicitly opted out (it's a bool? value)
-            var extendSession =
-                request.Client.ActivityExtendsServerSideSession == true ||
-                (IdentityServerOptions.ServerSideSessions.ClientActivityExtendsServerSideSession && request.Client.ActivityExtendsServerSideSession != false);
-
-            if (extendSession)
-            {
-                await ServerSideTicketStore.ExtendSessionAsync(new SessionFilter
-                {
-                    SubjectId = request.RefreshToken.SubjectId,
-                    SessionId = request.RefreshToken.SessionId
-                });
-            }
-        }
     }
 }
