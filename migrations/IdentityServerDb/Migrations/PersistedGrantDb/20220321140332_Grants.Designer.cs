@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServerDb.Migrations.PersistedGrantDb
 {
     [DbContext(typeof(PersistedGrantDbContext))]
-    [Migration("20220317171635_Grants")]
+    [Migration("20220321140332_Grants")]
     partial class Grants
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -221,8 +221,16 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DisplayName");
+
+                    b.HasIndex("Expires");
+
                     b.HasIndex("Key")
                         .IsUnique();
+
+                    b.HasIndex("SessionId");
+
+                    b.HasIndex("SubjectId");
 
                     b.ToTable("ServerSideSessions", (string)null);
                 });
