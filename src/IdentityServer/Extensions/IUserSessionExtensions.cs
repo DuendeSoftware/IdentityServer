@@ -6,6 +6,7 @@ using Duende.IdentityServer.Extensions;
 using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
+using System;
 
 namespace Duende.IdentityServer.Services;
 
@@ -14,10 +15,13 @@ namespace Duende.IdentityServer.Services;
 /// </summary>
 public static class IUserSessionExtensions
 {
+    // TODO: remove in 7.0
+
     /// <summary>
     /// Creates a LogoutNotificationContext for the current user session.
     /// </summary>
     /// <returns></returns>
+    [Obsolete("Unused and will be removed in a future version. Use the APIs on the IUserSession directly instead.")]
     public static async Task<LogoutNotificationContext> GetLogoutNotificationContext(this IUserSession session)
     {
         var clientIds = await session.GetClientListAsync();

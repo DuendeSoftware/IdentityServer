@@ -42,22 +42,22 @@ public class IdentityServerMiddleware
     /// </summary>
     /// <param name="context">The context.</param>
     /// <param name="router">The router.</param>
-    /// <param name="session">The user session.</param>
+    /// <param name="userSession">The user session.</param>
     /// <param name="events">The event service.</param>
     /// <param name="issuerNameService">The issuer name service</param>
-    /// <param name="backChannelLogoutService"></param>
+    /// <param name="sessionCoordinationService"></param>
     /// <returns></returns>
     public async Task Invoke(
         HttpContext context, 
         IEndpointRouter router, 
-        IUserSession session, 
+        IUserSession userSession, 
         IEventService events,
         IIssuerNameService issuerNameService,
-        IBackChannelLogoutService backChannelLogoutService)
+        ISessionCoordinationService sessionCoordinationService)
     {
         // this will check the authentication session and from it emit the check session
         // cookie needed from JS-based signout clients.
-        await session.EnsureSessionIdCookieAsync();
+        await userSession.EnsureSessionIdCookieAsync();
 
         context.Response.OnStarting(async () =>
         {
@@ -66,15 +66,20 @@ public class IdentityServerMiddleware
                 _logger.LogDebug("SignOutCalled set; processing post-signout session cleanup.");
 
                 // this clears our session id cookie so JS clients can detect the user has signed out
-                await session.RemoveSessionIdCookieAsync();
+                await userSession.RemoveSessionIdCookieAsync();
 
-                await RevokeTokensAsync(context);
-
-                // back channel logout
-                var logoutContext = await session.GetLogoutNotificationContext();
-                if (logoutContext != null)
+                var user = await userSession.GetUserAsync();
+                if (user != null)
                 {
-                    await backChannelLogoutService.SendLogoutNotificationsAsync(logoutContext);
+                    var session = new UserSession
+                    {
+                        SubjectId = user.GetSubjectId(),
+                        SessionId = await userSession.GetSessionIdAsync(),
+                        DisplayName = user.GetDisplayName(),
+                        ClientIds = (await userSession.GetClientListAsync()).ToList(),
+                        Issuer = await issuerNameService.GetCurrentAsync()
+                    };
+                    await sessionCoordinationService.ProcessLogoutAsync(session);
                 }
             }
         });
@@ -112,61 +117,5 @@ public class IdentityServerMiddleware
         }
 
         await _next(context);
-    }
-
-    static readonly string[] OnlyTokenTypes = new[] {
-        IdentityServerConstants.PersistedGrantTypes.RefreshToken,
-        IdentityServerConstants.PersistedGrantTypes.ReferenceToken,
-        IdentityServerConstants.PersistedGrantTypes.AuthorizationCode,
-        IdentityServerConstants.PersistedGrantTypes.BackChannelAuthenticationRequest,
-    };
-    
-    private static async Task RevokeTokensAsync(HttpContext context)
-    {
-        var session = context.RequestServices.GetRequiredService<IUserSession>();
-
-        var user = await session.GetUserAsync();
-        if (user != null)
-        {
-            var clientIds = await session.GetClientListAsync();
-            if (clientIds.Any())
-            {
-                var clientStore = context.RequestServices.GetRequiredService<IClientStore>();
-                var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
-
-                var clientsToCoordinate = new List<string>();
-                foreach (var clientId in clientIds)
-                {
-                    var client = await clientStore.FindClientByIdAsync(clientId); // i don't think we care if it's an enabled client at this point
-                    if (client != null)
-                    {
-                        var shouldCoordinate =
-                            client.CoordinateLifetimeWithUserSession == true ||
-                            (options.Authentication.CoordinateClientLifetimesWithUserSession && client.CoordinateLifetimeWithUserSession != false);
-
-                        if (shouldCoordinate)
-                        {
-                            clientsToCoordinate.Add(clientId);
-                        }
-                    }
-                }
-
-                if (clientsToCoordinate.Count > 0)
-                {
-                    var persistedGrantStore = context.RequestServices.GetRequiredService<IPersistedGrantStore>();
-
-                    var sub = user.GetSubjectId();
-                    var sid = await session.GetSessionIdAsync();
-
-                    await persistedGrantStore.RemoveAllAsync(new PersistedGrantFilter
-                    {
-                        SubjectId = sub,
-                        SessionId = sid,
-                        ClientIds = clientsToCoordinate,
-                        Types = OnlyTokenTypes
-                    });
-                }
-            }
-        }
     }
 }

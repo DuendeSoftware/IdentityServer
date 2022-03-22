@@ -117,8 +117,22 @@ public class ServerSideSessionCleanupHost : IHostedService
         {
             using (var serviceScope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                var svc = serviceScope.ServiceProvider.GetRequiredService<ISessionManagementService>();
-                await svc.RemoveExpiredSessionsAsync(cancellationToken);
+                var options = serviceScope.ServiceProvider.GetRequiredService<IdentityServerOptions>();
+                var serverSideTicketService = serviceScope.ServiceProvider.GetRequiredService<IServerSideTicketService>();
+                var sessionCoordinationService = serviceScope.ServiceProvider.GetRequiredService<ISessionCoordinationService>();
+
+                var found = Int32.MaxValue;
+
+                while (found > 0)
+                {
+                    var sessions = await serverSideTicketService.GetAndRemoveExpiredSessionsAsync(options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
+                    found = sessions.Count;
+
+                    foreach(var session in sessions)
+                    {
+                        await sessionCoordinationService.ProcessExpirationAsync(session);
+                    }
+                }
             }
         }
         catch (Exception ex)

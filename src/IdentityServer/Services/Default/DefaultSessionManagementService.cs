@@ -1,11 +1,9 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,29 +15,23 @@ namespace Duende.IdentityServer.Services;
 /// </summary>
 public class DefaultSessionManagementService : ISessionManagementService
 {
-    private readonly IdentityServerOptions _options;
     private readonly IServerSideTicketService _serverSideTicketService;
     private readonly IServerSideSessionStore _serverSideSessionStore;
     private readonly IPersistedGrantStore _persistedGrantStore;
-    private readonly IClientStore _clientStore;
     private readonly IBackChannelLogoutService _backChannelLogoutService;
 
     /// <summary>
     /// Ctor.
     /// </summary>
     public DefaultSessionManagementService(
-        IdentityServerOptions options,
         IServerSideTicketService serverSideTicketService,
         IServerSideSessionStore serverSideSessionStore,
         IPersistedGrantStore persistedGrantStore,
-        IClientStore clientStore,
         IBackChannelLogoutService backChannelLogoutService)
     {
-        _options = options;
         _serverSideTicketService = serverSideTicketService;
         _serverSideSessionStore = serverSideSessionStore;
         _persistedGrantStore = persistedGrantStore;
-        _clientStore = clientStore;
         _backChannelLogoutService = backChannelLogoutService;
     }
 
@@ -120,69 +112,6 @@ public class DefaultSessionManagementService : ISessionManagementService
                 SubjectId = context.SubjectId,
                 SessionId = context.SessionId,
             }, cancellationToken);
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task RemoveExpiredSessionsAsync(CancellationToken cancellationToken = default)
-    {
-        var found = Int32.MaxValue;
-
-        while (found > 0)
-        {
-            var sessions = await _serverSideTicketService.GetAndRemoveExpiredSessionsAsync(_options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
-            found = sessions.Count;
-
-            foreach (var session in sessions)
-            {
-                var clientsToCoordinate = new List<string>();
-
-                foreach (var clientId in session.ClientIds)
-                {
-                    var client = await _clientStore.FindClientByIdAsync(clientId); // i don't think we care if it's an enabled client at this point
-
-                    var shouldCoordinate =
-                        client.CoordinateLifetimeWithUserSession == true ||
-                        (_options.Authentication.CoordinateClientLifetimesWithUserSession && client.CoordinateLifetimeWithUserSession != false);
-
-                    if (shouldCoordinate)
-                    {
-                        // this implies they should also be contacted for backchannel logout below
-                        clientsToCoordinate.Add(clientId);
-                    }
-                }
-
-                if (clientsToCoordinate.Count > 0)
-                {
-                    await _persistedGrantStore.RemoveAllAsync(new PersistedGrantFilter
-                    {
-                        SubjectId = session.SubjectId,
-                        SessionId = session.SessionId,
-                        ClientIds = clientsToCoordinate
-                    });
-                }
-
-                if (_options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout || clientsToCoordinate.Count > 0)
-                {
-                    var clientsToContact = session.ClientIds;
-                    if (_options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout == false)
-                    {
-                        // the global setting is not enabled, so filter on those specific clients configured
-                        clientsToContact = clientsToContact.Intersect(clientsToCoordinate).ToList();
-                    }
-
-                    if (clientsToContact.Count > 0)
-                    {
-                        await _backChannelLogoutService.SendLogoutNotificationsAsync(new LogoutNotificationContext
-                        {
-                            SubjectId = session.SubjectId,
-                            SessionId = session.SessionId,
-                            Issuer = session.Issuer,
-                            ClientIds = clientsToContact,
-                        });
-                    }
-                }
-            }
         }
     }
 }
