@@ -90,8 +90,8 @@ public class ServerSideSessionTests
             RequirePkce = false,
             AllowedScopes = { "openid", "api" },
             AllowOfflineAccess = true,
-            ActivityExtendsServerSideSession = true,
-            RevokeTokensAtUserLogout = true,
+            CoordinateLifetimeWithUserSession = true,
+            RefreshTokenUsage = TokenUsage.ReUse,
             RedirectUris = { "https://client/callback" },
             BackChannelLogoutUri = "https://client/bc-logout"
         });
@@ -522,5 +522,77 @@ public class ServerSideSessionTests
         var expiration2 = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single().Expires.Value;
 
         expiration2.Should().BeAfter(expiration1);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task using_refresh_token_for_expired_session_should_fail()
+    {
+        _pipeline.Options.ServerSideSessions.RemoveExpiredSessions = false;
+
+        await _pipeline.LoginAsync("alice");
+
+        var authzResponse = await _pipeline.RequestAuthorizationEndpointAsync("client", "code", "openid api offline_access", "https://client/callback");
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client",
+            Code = authzResponse.Code,
+            RedirectUri = "https://client/callback"
+        });
+
+
+        {
+            var refreshResponse = await _pipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client",
+                RefreshToken = tokenResponse.RefreshToken
+            });
+            refreshResponse.IsError.Should().BeFalse();
+        }
+
+
+        {
+            var session = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single();
+            session.Expires = null;
+            await _sessionStore.UpdateSessionAsync(session);
+
+            var refreshResponse = await _pipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client",
+                RefreshToken = tokenResponse.RefreshToken
+            });
+            refreshResponse.IsError.Should().BeFalse();
+        }
+
+
+        {
+            var session = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single();
+            session.Expires = DateTime.UtcNow.AddMinutes(-1);
+            await _sessionStore.UpdateSessionAsync(session);
+
+            var refreshResponse = await _pipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client",
+                RefreshToken = tokenResponse.RefreshToken
+            });
+            refreshResponse.IsError.Should().BeTrue();
+        }
+
+
+        {
+            await _sessionStore.DeleteSessionsAsync(new SessionFilter { SubjectId = "alice" });
+
+            var refreshResponse = await _pipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client",
+                RefreshToken = tokenResponse.RefreshToken
+            });
+            refreshResponse.IsError.Should().BeTrue();
+        }
     }
 }

@@ -307,14 +307,12 @@ public class Client
 
 
     /// <summary>
-    /// When using server-side sessions, should this client's activity extend the user's session.
+    /// When enabled, the client's token lifetimes (e.g. refresh tokens) will be tied to the user's session lifetime.
+    /// This means when the user logs out, any revokable tokens will be removed.
+    /// If using server-side sessions, expired sessions will also remove any revokable tokens, and backchannel logout will be triggered.
+    /// This client's setting overrides the global CoordinateTokensWithUserSession configuration setting.
     /// </summary>
-    public bool? ActivityExtendsServerSideSession { get; set; }
-    
-    /// <summary>
-    /// When the user's session ends, should the grants for the user's session be revoked (e.g. refresh token).
-    /// </summary>
-    public bool? RevokeTokensAtUserLogout { get; set; }
+    public bool? CoordinateLifetimeWithUserSession { get; set; }
 
 
     /// <summary>

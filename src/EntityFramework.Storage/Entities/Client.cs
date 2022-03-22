@@ -65,8 +65,7 @@ public class Client
     public int? CibaLifetime { get; set; }
     public int? PollingInterval { get; set; }
 
-    public bool? ActivityExtendsServerSideSession { get; set; }
-    public bool? RevokeTokensAtUserLogout { get; set; }
+    public bool? CoordinateLifetimeWithUserSession { get; set; }
 
     public DateTime Created { get; set; } = DateTime.UtcNow;
     public DateTime? Updated { get; set; }

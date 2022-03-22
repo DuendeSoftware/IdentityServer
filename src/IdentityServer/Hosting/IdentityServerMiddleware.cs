@@ -13,6 +13,8 @@ using Duende.IdentityServer.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Duende.IdentityServer.Stores;
 using System.Collections.Generic;
+using Duende.IdentityServer.Configuration;
+using System.Linq;
 
 namespace Duende.IdentityServer.Hosting;
 
@@ -126,32 +128,44 @@ public class IdentityServerMiddleware
         var user = await session.GetUserAsync();
         if (user != null)
         {
-            var clientStore = context.RequestServices.GetRequiredService<IClientStore>();
-            var persistedGrantStore = context.RequestServices.GetRequiredService<IPersistedGrantStore>();
-
-            var sub = user.GetSubjectId();
-            var sid = await session.GetSessionIdAsync();
             var clientIds = await session.GetClientListAsync();
-
-            var clients = new List<string>();
-            foreach (var clientId in clientIds)
+            if (clientIds.Any())
             {
-                var client = await clientStore.FindEnabledClientByIdAsync(clientId);
-                if (client?.RevokeTokensAtUserLogout == true)
+                var clientStore = context.RequestServices.GetRequiredService<IClientStore>();
+                var options = context.RequestServices.GetRequiredService<IdentityServerOptions>();
+
+                var clientsToCoordinate = new List<string>();
+                foreach (var clientId in clientIds)
                 {
-                    clients.Add(clientId);
+                    var client = await clientStore.FindClientByIdAsync(clientId); // i don't think we care if it's an enabled client at this point
+                    if (client != null)
+                    {
+                        var shouldCoordinate =
+                            client.CoordinateLifetimeWithUserSession == true ||
+                            (options.Authentication.CoordinateClientLifetimesWithUserSession && client.CoordinateLifetimeWithUserSession != false);
+
+                        if (shouldCoordinate)
+                        {
+                            clientsToCoordinate.Add(clientId);
+                        }
+                    }
                 }
-            }
 
-            if (clients.Count > 0)
-            {
-                await persistedGrantStore.RemoveAllAsync(new PersistedGrantFilter
+                if (clientsToCoordinate.Count > 0)
                 {
-                    SubjectId = sub,
-                    SessionId = sid,
-                    ClientIds = clients,
-                    Types = OnlyTokenTypes
-                });
+                    var persistedGrantStore = context.RequestServices.GetRequiredService<IPersistedGrantStore>();
+
+                    var sub = user.GetSubjectId();
+                    var sid = await session.GetSessionIdAsync();
+
+                    await persistedGrantStore.RemoveAllAsync(new PersistedGrantFilter
+                    {
+                        SubjectId = sub,
+                        SessionId = sid,
+                        ClientIds = clientsToCoordinate,
+                        Types = OnlyTokenTypes
+                    });
+                }
             }
         }
     }

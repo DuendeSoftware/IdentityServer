@@ -110,6 +110,9 @@ public class ServerSideSessionCleanupHost : IHostedService
 
     async Task RunAsync(CancellationToken cancellationToken = default)
     {
+        // this is here for testing
+        if (!_options.ServerSideSessions.RemoveExpiredSessions) return;
+
         try
         {
             using (var serviceScope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())

@@ -17,19 +17,15 @@ public class ServerSideSessionOptions
     public string UserDisplayNameClaimType { get; set; }
 
     /// <summary>
-    /// Controls if server-side session expiration is extended when clients are active (e.g. use refresh tokens).
-    /// </summary>
-    public bool ClientActivityExtendsServerSideSession { get; set; }
-
-    /// <summary>
-    /// Controls if when server-side sessions expire if back-channel logout notifications are sent.
-    /// </summary>
-    public bool ExpiredSessionsTriggerBackchannelLogout { get; set; }
-    
-    /// <summary>
-    /// If enabled will perodically cleanup expired sessions.
+    /// If enabled, will perodically cleanup expired sessions.
     /// </summary>
     public bool RemoveExpiredSessions { get; set; } = true;
+
+    /// <summary>
+    /// If enabled, when server-side sessions are removed due to expiration, will back-channel logout notifications be sent.
+    /// This will, in effect, tie a user's session lifetime at a client to their session lifetime at IdentityServer.
+    /// </summary>
+    public bool ExpiredSessionsTriggerBackchannelLogout { get; set; }
 
     /// <summary>
     /// Frequency expired sessions will be removed.

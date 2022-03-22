@@ -60,4 +60,12 @@ public class AuthenticationOptions
     /// If set, will require frame-src CSP headers being emitting on the end session callback endpoint which renders iframes to clients for front-channel sign out notification.
     /// </summary>
     public bool RequireCspFrameSrcForSignout { get; set; } = true;
+
+    /// <summary>
+    /// When enabled, all clients' token lifetimes (e.g. refresh tokens) will be tied to the user's session lifetime.
+    /// This means when the user logs out, any revokable tokens will be removed.
+    /// If using server-side sessions, expired sessions will also remove any revokable tokens, and backchannel logout will be triggered.
+    /// An individual client can override this setting with its own CoordinateLifetimeWithUserSession configuration setting.
+    /// </summary>
+    public bool CoordinateClientLifetimesWithUserSession { get; set; }
 }

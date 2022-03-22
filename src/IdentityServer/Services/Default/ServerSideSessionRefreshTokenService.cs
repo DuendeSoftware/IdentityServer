@@ -9,11 +9,14 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.DependencyInjection;
+using IdentityModel;
+using System.Linq;
+using System;
 
 namespace Duende.IdentityServer.Services;
 
 /// <summary>
-/// Decorator on the refresh token service to extend server side sessions when refresh tokens are used.
+/// Decorator on the refresh token service to coordinate refresh token lifetimes and server-side sessions.
 /// </summary>
 class ServerSideSessionRefreshTokenService : IRefreshTokenService
 {
@@ -35,28 +38,69 @@ class ServerSideSessionRefreshTokenService : IRefreshTokenService
     /// <summary>
     /// The IdentityServer options.
     /// </summary>
-    protected readonly IdentityServerOptions IdentityServerOptions;
+    protected readonly IdentityServerOptions Options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultRefreshTokenService" /> class.
     /// </summary>
     public ServerSideSessionRefreshTokenService(
         Decorator<IRefreshTokenService> inner,
-        IdentityServerOptions identityServerOptions,
+        IdentityServerOptions options,
         ILogger<DefaultRefreshTokenService> logger, 
         IServerSideTicketService serverSideTicketStore)
     {
         Inner = inner.Instance;
-        IdentityServerOptions = identityServerOptions;
+        Options = options;
 
         Logger = logger;
         ServerSideTicketStore = serverSideTicketStore;
     }
 
     /// <inheritdoc/>
-    public Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client client)
+    public async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client client)
     {
-        return Inner.ValidateRefreshTokenAsync(tokenHandle, client);
+        var result = await Inner.ValidateRefreshTokenAsync(tokenHandle, client);
+
+        result = await ValidateServerSideSessionAsync(result);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Contains the logic to extend the server-side session for the request.
+    /// </summary>
+    protected virtual async Task<TokenValidationResult> ValidateServerSideSessionAsync(TokenValidationResult result)
+    {
+        if (!result.IsError)
+        {
+            var shouldCoordinate =
+                result.Client.CoordinateLifetimeWithUserSession == true ||
+                (Options.Authentication.CoordinateClientLifetimesWithUserSession && result.Client.CoordinateLifetimeWithUserSession != false);
+
+            if (shouldCoordinate)
+            {
+                var sessions = await ServerSideTicketStore.GetSessionsAsync(new SessionFilter
+                {
+                    SubjectId = result.RefreshToken.SubjectId,
+                    SessionId = result.RefreshToken.SessionId
+                });
+
+                var valid = sessions.Count > 0 &&
+                    sessions.Any(x => x.Expires == null || DateTime.UtcNow < x.Expires.Value);
+
+                if (!valid)
+                {
+                    Logger.LogDebug("Failing refresh token validation due to missing/expired server-side session for subject id {subjectId} and session id {sessionId}", result.RefreshToken.SubjectId, result.RefreshToken.SessionId);
+
+                    result = new TokenValidationResult
+                    {
+                        IsError = true, Error = OidcConstants.TokenErrors.InvalidGrant
+                    };
+                }
+            }
+        }
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -82,11 +126,11 @@ class ServerSideSessionRefreshTokenService : IRefreshTokenService
     {
         // extend the session is the client is explicitly configured for it,
         // or if the global setting is enabled and the client isn't explicitly opted out (it's a bool? value)
-        var extendSession =
-            request.Client.ActivityExtendsServerSideSession == true ||
-            (IdentityServerOptions.ServerSideSessions.ClientActivityExtendsServerSideSession && request.Client.ActivityExtendsServerSideSession != false);
+        var shouldCoordinate =
+            request.Client.CoordinateLifetimeWithUserSession == true ||
+            (Options.Authentication.CoordinateClientLifetimesWithUserSession && request.Client.CoordinateLifetimeWithUserSession != false);
 
-        if (extendSession)
+        if (shouldCoordinate)
         {
             Logger.LogDebug("Attempting to extend server-side session for subject id {subjectId} and session id {sessionId}", request.RefreshToken.SubjectId, request.RefreshToken.SessionId);
 
