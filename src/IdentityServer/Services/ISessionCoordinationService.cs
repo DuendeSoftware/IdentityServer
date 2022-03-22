@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Validation;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Services;
@@ -23,12 +22,49 @@ public interface ISessionCoordinationService
     Task ProcessExpirationAsync(UserSession session);
 
     /// <summary>
-    /// Validates refresh token request against server-side session.
+    /// Validates client request, and if valid extends server-side session.
+    /// Returns false if the session is invalid, true otherwise.
     /// </summary>
-    Task<TokenValidationResult> ValidateRefreshTokenAsync(TokenValidationResult result);
-    
+    Task<bool> ValidateSessionAsync(SessionValidationRequest request);
+}
+
+/// <summary>
+/// Models request to validation a session from a client.
+/// </summary>
+public class SessionValidationRequest
+{
     /// <summary>
-    /// Extends the server-side session for the refresh token being updated.
+    /// The subject ID
     /// </summary>
-    Task ProcessRefreshTokenUpdateAsync(RefreshTokenUpdateRequest request);
+    public string SubjectId { get; set; } = default!;
+
+    /// <summary>
+    /// The session ID
+    /// </summary>
+    public string SessionId { get; set; } = default!;
+
+    /// <summary>
+    /// The client making the request.
+    /// </summary>
+    public Client Client { get; set; }
+
+    /// <summary>
+    /// Indicates the type of request.
+    /// </summary>
+    public SessionValidationType Type { get; set; }
+}
+
+/// <summary>
+/// Represent the type of session validation request
+/// </summary>
+public enum SessionValidationType
+{
+    /// <summary>
+    /// Refresh token use
+    /// </summary>
+    RefreshToken,
+    /// <summary>
+    /// Access token use by client at userinfo endpoint or at an API that uses introspection
+    /// </summary>
+    AccessToken,
 }

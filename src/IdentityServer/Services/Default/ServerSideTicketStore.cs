@@ -236,27 +236,4 @@ public class ServerSideTicketService : IServerSideTicketService
 
         return results;
     }
-
-    /// <inheritdoc/>
-    public async Task ExtendSessionAsync(SessionFilter filter, CancellationToken cancellationToken = default)
-    {
-        var sessions = await _store.GetSessionsAsync(filter, cancellationToken);
-
-        foreach (var session in sessions)
-        {
-            if (session.Expires.HasValue)
-            {
-                _logger.LogDebug("Extending user session for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
-
-                // setting the Expires flag on the entity (and not in the AuthenticationTicket)
-                // since we know that when loading from the DB that column will overwrite the 
-                // expires in the AuthenticationTicket.
-                var diff = session.Expires.Value.Subtract(session.Renewed);
-                session.Renewed = DateTime.UtcNow;
-                session.Expires = session.Renewed.Add(diff);
-
-                await _store.UpdateSessionAsync(session, cancellationToken);
-            }
-        }
-    }
 }

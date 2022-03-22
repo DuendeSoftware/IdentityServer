@@ -526,6 +526,36 @@ public class ServerSideSessionTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task using_access_token_should_extend_session()
+    {
+        await _pipeline.LoginAsync("alice");
+
+        var authzResponse = await _pipeline.RequestAuthorizationEndpointAsync("client", "code", "openid api offline_access", "https://client/callback");
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client",
+            Code = authzResponse.Code,
+            RedirectUri = "https://client/callback"
+        });
+
+        var expiration1 = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single().Expires.Value;
+
+        await _pipeline.BackChannelClient.GetUserInfoAsync(new UserInfoRequest
+        {
+            Address = IdentityServerPipeline.UserInfoEndpoint,
+            ClientId = "client",
+            ClientCredentialStyle = ClientCredentialStyle.PostBody,
+            Token = tokenResponse.AccessToken
+        });
+
+        var expiration2 = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single().Expires.Value;
+
+        expiration2.Should().BeAfter(expiration1);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task using_refresh_token_for_expired_session_should_fail()
     {
         _pipeline.Options.ServerSideSessions.RemoveExpiredSessions = false;
@@ -593,6 +623,82 @@ public class ServerSideSessionTests
                 RefreshToken = tokenResponse.RefreshToken
             });
             refreshResponse.IsError.Should().BeTrue();
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task using_access_token_for_expired_session_should_fail()
+    {
+        _pipeline.Options.ServerSideSessions.RemoveExpiredSessions = false;
+
+        await _pipeline.LoginAsync("alice");
+
+        var authzResponse = await _pipeline.RequestAuthorizationEndpointAsync("client", "code", "openid api offline_access", "https://client/callback");
+        var tokenResponse = await _pipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client",
+            Code = authzResponse.Code,
+            RedirectUri = "https://client/callback"
+        });
+
+
+        {
+            var response = await _pipeline.BackChannelClient.GetUserInfoAsync(new UserInfoRequest
+            {
+                Address = IdentityServerPipeline.UserInfoEndpoint,
+                ClientId = "client",
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
+                Token = tokenResponse.AccessToken
+            });
+            response.IsError.Should().BeFalse();
+        }
+
+
+        {
+            var session = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single();
+            session.Expires = null;
+            await _sessionStore.UpdateSessionAsync(session);
+
+            var response = await _pipeline.BackChannelClient.GetUserInfoAsync(new UserInfoRequest
+            {
+                Address = IdentityServerPipeline.UserInfoEndpoint,
+                ClientId = "client",
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
+                Token = tokenResponse.AccessToken
+            });
+            response.IsError.Should().BeFalse();
+        }
+
+
+        {
+            var session = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single();
+            session.Expires = DateTime.UtcNow.AddMinutes(-1);
+            await _sessionStore.UpdateSessionAsync(session);
+
+            var response = await _pipeline.BackChannelClient.GetUserInfoAsync(new UserInfoRequest
+            {
+                Address = IdentityServerPipeline.UserInfoEndpoint,
+                ClientId = "client",
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
+                Token = tokenResponse.AccessToken
+            });
+            response.IsError.Should().BeTrue();
+        }
+
+
+        {
+            await _sessionStore.DeleteSessionsAsync(new SessionFilter { SubjectId = "alice" });
+
+            var response = await _pipeline.BackChannelClient.GetUserInfoAsync(new UserInfoRequest
+            {
+                Address = IdentityServerPipeline.UserInfoEndpoint,
+                ClientId = "client",
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
+                Token = tokenResponse.AccessToken
+            });
+            response.IsError.Should().BeTrue();
         }
     }
 }

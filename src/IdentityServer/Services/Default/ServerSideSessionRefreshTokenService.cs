@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Configuration.DependencyInjection;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Services;
 
@@ -35,6 +36,12 @@ class ServerSideSessionRefreshTokenService : IRefreshTokenService
         SessionCoordinationService = sessionCoordinationService;
     }
 
+    static readonly TokenValidationResult TokenValidationError = new TokenValidationResult
+    {
+        IsError = true, Error = OidcConstants.TokenErrors.InvalidGrant
+    };
+
+
     /// <inheritdoc/>
     public async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client client)
     {
@@ -42,7 +49,18 @@ class ServerSideSessionRefreshTokenService : IRefreshTokenService
 
         if (!result.IsError)
         {
-            result = await SessionCoordinationService.ValidateRefreshTokenAsync(result);
+            var valid = await SessionCoordinationService.ValidateSessionAsync(new SessionValidationRequest
+            {
+                SubjectId = result.RefreshToken.SubjectId,
+                SessionId = result.RefreshToken.SessionId,
+                Client = result.Client,
+                Type = SessionValidationType.RefreshToken
+            });
+
+            if (!valid)
+            {
+                result = TokenValidationError;
+            }
         }
 
         return result;
@@ -55,12 +73,8 @@ class ServerSideSessionRefreshTokenService : IRefreshTokenService
     }
 
     /// <inheritdoc/>
-    public async Task<string> UpdateRefreshTokenAsync(RefreshTokenUpdateRequest request)
+    public Task<string> UpdateRefreshTokenAsync(RefreshTokenUpdateRequest request)
     {
-        var result = await Inner.UpdateRefreshTokenAsync(request);
-
-        await SessionCoordinationService.ProcessRefreshTokenUpdateAsync(request);
-
-        return result;
+        return Inner.UpdateRefreshTokenAsync(request);
     }
 }

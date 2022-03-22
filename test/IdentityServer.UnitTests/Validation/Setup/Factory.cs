@@ -298,6 +298,7 @@ internal static class Factory
                 Enumerable.Empty<ISigningCredentialStore>(),
                 new NopAutomaticKeyManagerKeyStore()
             ),
+            sessionCoordinationService: new StubSessionCoordinationService(),
             logger: logger,
             options: options,
             issuerNameService: issuerNameService);

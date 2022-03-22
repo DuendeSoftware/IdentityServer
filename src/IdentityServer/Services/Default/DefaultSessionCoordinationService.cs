@@ -4,8 +4,6 @@
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
-using Duende.IdentityServer.Validation;
-using IdentityModel;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -45,11 +43,6 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
     protected readonly ILogger Logger;
 
     /// <summary>
-    /// The server-side ticket service (if configured).
-    /// </summary>
-    protected readonly IServerSideTicketService ServerSideTicketService;
-
-    /// <summary>
     /// The server-side session store (if configured).
     /// </summary>
     protected readonly IServerSideSessionStore ServerSideSessionStore;
@@ -63,7 +56,6 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
         IClientStore clientStore,
         IBackChannelLogoutService backChannelLogoutService,
         ILogger<DefaultSessionCoordinationService> logger,
-        IServerSideTicketService serverSideTicketService = null,
         IServerSideSessionStore serverSideSessionStore = null)
     {
         Options = options;
@@ -71,7 +63,6 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
         ClientStore = clientStore;
         BackChannelLogoutService = backChannelLogoutService;
         Logger = logger;
-        ServerSideTicketService = serverSideTicketService;
         ServerSideSessionStore = serverSideSessionStore;
     }
 
@@ -84,15 +75,6 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
         IdentityServerConstants.PersistedGrantTypes.AuthorizationCode,
         IdentityServerConstants.PersistedGrantTypes.BackChannelAuthenticationRequest,
     };
-
-    /// <summary>
-    /// Invalid grant TokenValidationResult.
-    /// </summary>
-    protected static TokenValidationResult TokenValidationError = new TokenValidationResult
-    {
-        IsError = true, Error = OidcConstants.TokenErrors.InvalidGrant
-    };
-
 
     /// <inheritdoc/>
     public virtual async Task ProcessLogoutAsync(UserSession session)
@@ -202,52 +184,50 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
 
 
     /// <inheritdoc/>
-    public virtual async Task<TokenValidationResult> ValidateRefreshTokenAsync(TokenValidationResult result)
+    public virtual async Task<bool> ValidateSessionAsync(SessionValidationRequest request)
     {
-        var shouldCoordinate =
-            result.Client.CoordinateLifetimeWithUserSession == true ||
-            (Options.Authentication.CoordinateClientLifetimesWithUserSession && result.Client.CoordinateLifetimeWithUserSession != false);
-
-        if (shouldCoordinate)
+        if (ServerSideSessionStore != null)
         {
-            var sessions = await ServerSideTicketService.GetSessionsAsync(new SessionFilter
+            var shouldCoordinate =
+                request.Client.CoordinateLifetimeWithUserSession == true ||
+                (Options.Authentication.CoordinateClientLifetimesWithUserSession && request.Client.CoordinateLifetimeWithUserSession != false);
+
+            if (shouldCoordinate)
             {
-                SubjectId = result.RefreshToken.SubjectId,
-                SessionId = result.RefreshToken.SessionId
-            });
+                var sessions = await ServerSideSessionStore.GetSessionsAsync(new SessionFilter
+                {
+                    SubjectId = request.SubjectId,
+                    SessionId = request.SessionId
+                });
 
-            var valid = sessions.Count > 0 &&
-                sessions.Any(x => x.Expires == null || DateTime.UtcNow < x.Expires.Value);
+                var valid = sessions.Count > 0 &&
+                    sessions.Any(x => x.Expires == null || DateTime.UtcNow < x.Expires.Value);
 
-            if (!valid)
-            {
-                Logger.LogDebug("Failing refresh token validation due to missing/expired server-side session for subject id {subjectId} and session id {sessionId}", result.RefreshToken.SubjectId, result.RefreshToken.SessionId);
+                if (!valid)
+                {
+                    Logger.LogDebug("Failing refresh token validation due to missing/expired server-side session for subject id {subjectId} and session id {sessionId}", request.SubjectId, request.SessionId);
+                    return false;
+                }
 
-                result = TokenValidationError;
+                Logger.LogDebug("Extending server-side session for subject id {subjectId} and session id {sessionId}", request.SubjectId, request.SessionId);
+
+                foreach (var session in sessions)
+                {
+                    if (session.Expires.HasValue)
+                    {
+                        // setting the Expires flag on the entity (and not in the AuthenticationTicket)
+                        // since we know that when loading from the DB that column will overwrite the 
+                        // expires in the AuthenticationTicket.
+                        var diff = session.Expires.Value.Subtract(session.Renewed);
+                        session.Renewed = DateTime.UtcNow;
+                        session.Expires = session.Renewed.Add(diff);
+
+                        await ServerSideSessionStore.UpdateSessionAsync(session);
+                    }
+                }
             }
         }
 
-        return result;
-    }
-
-    /// <inheritdoc/>
-    public virtual async Task ProcessRefreshTokenUpdateAsync(RefreshTokenUpdateRequest request)
-    {
-        // extend the session is the client is explicitly configured for it,
-        // or if the global setting is enabled and the client isn't explicitly opted out (it's a bool? value)
-        var shouldCoordinate =
-            request.Client.CoordinateLifetimeWithUserSession == true ||
-            (Options.Authentication.CoordinateClientLifetimesWithUserSession && request.Client.CoordinateLifetimeWithUserSession != false);
-
-        if (shouldCoordinate)
-        {
-            Logger.LogDebug("Attempting to extend server-side session for subject id {subjectId} and session id {sessionId}", request.RefreshToken.SubjectId, request.RefreshToken.SessionId);
-
-            await ServerSideTicketService.ExtendSessionAsync(new SessionFilter
-            {
-                SubjectId = request.RefreshToken.SubjectId,
-                SessionId = request.RefreshToken.SessionId
-            });
-        }
+        return true;
     }
 }
