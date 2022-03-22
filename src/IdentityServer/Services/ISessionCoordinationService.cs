@@ -60,7 +60,7 @@ public class SessionValidationRequest
 public enum SessionValidationType
 {
     /// <summary>
-    /// Refresh token use
+    /// Refresh token use at token endpoint
     /// </summary>
     RefreshToken,
     /// <summary>
