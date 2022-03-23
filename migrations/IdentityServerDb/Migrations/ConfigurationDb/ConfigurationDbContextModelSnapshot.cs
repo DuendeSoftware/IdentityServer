@@ -314,9 +314,6 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                     b.Property<int>("AccessTokenType")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("ActivityExtendsServerSideSession")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("AllowAccessTokensViaBrowser")
                         .HasColumnType("bit");
 
@@ -371,6 +368,9 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
 
                     b.Property<int?>("ConsentLifetime")
                         .HasColumnType("int");
+
+                    b.Property<bool?>("CoordinateLifetimeWithUserSession")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
@@ -439,9 +439,6 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                         .HasColumnType("bit");
 
                     b.Property<bool>("RequireRequestObject")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("RevokeTokensAtUserLogout")
                         .HasColumnType("bit");
 
                     b.Property<int>("SlidingRefreshTokenLifetime")
