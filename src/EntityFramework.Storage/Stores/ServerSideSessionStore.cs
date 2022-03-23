@@ -76,11 +76,11 @@ public class ServerSideSessionStore : IServerSideSessionStore
         try
         {
             await Context.SaveChangesAsync(cancellationToken);
-            Logger.LogDebug("new server side session {serverSideSessionKey} created in database", session.Key);
+            Logger.LogDebug("Created new server-side session {serverSideSessionKey} in database", session.Key);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogWarning("exception adding new server side session in database: {error}", ex.Message);
+            Logger.LogWarning("Exception creating new server-side session in database: {error}", ex.Message);
         }
     }
 
@@ -110,7 +110,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             };
         }
 
-        Logger.LogDebug("server side session {serverSideSessionKey} found in database: {serverSideSessionKeyFound}", key, model != null);
+        Logger.LogDebug("Found server-side session {serverSideSessionKey} in database: {serverSideSessionKeyFound}", key, model != null);
 
         return model;
     }
@@ -126,7 +126,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         if (entity == null)
         {
-            Logger.LogDebug("no server side session {serverSideSessionKey} found in database. update failed", session.Key);
+            Logger.LogDebug("No server-side session {serverSideSessionKey} found in database. Update failed.", session.Key);
             return;
         }
 
@@ -142,11 +142,11 @@ public class ServerSideSessionStore : IServerSideSessionStore
         try
         {
             await Context.SaveChangesAsync(cancellationToken);
-            Logger.LogDebug("server side session {serverSideSessionKey} updated in database", session.Key);
+            Logger.LogDebug("Updated server-side session {serverSideSessionKey} in database", session.Key);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogWarning("exception updating existing server side session {serverSideSessionKey} in database: {error}", session.Key, ex.Message);
+            Logger.LogWarning("Exception updating existing server side session {serverSideSessionKey} in database: {error}", session.Key, ex.Message);
         }
     }
 
@@ -161,7 +161,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         if (entity == null)
         {
-            Logger.LogDebug("no server side session {serverSideSessionKey} found in database. delete failed", key);
+            Logger.LogDebug("No server side session {serverSideSessionKey} found in database. Delete failed.", key);
             return;
         }
 
@@ -170,11 +170,11 @@ public class ServerSideSessionStore : IServerSideSessionStore
         try
         {
             await Context.SaveChangesAsync(cancellationToken);
-            Logger.LogDebug("server side session {serverSideSessionKey} deleted in database", key);
+            Logger.LogDebug("Deleted server-side session {serverSideSessionKey} in database", key);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogWarning("exception deleting existing server side session {serverSideSessionKey} in database: {error}", key, ex.Message);
+            Logger.LogWarning("Exception deleting server-side session {serverSideSessionKey} in database: {error}", key, ex.Message);
         }
     }
 
@@ -204,7 +204,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             Ticket = entity.Data,
         }).ToArray();
 
-        Logger.LogDebug("{serverSideSessionCount} server side sessions found for {@filter}", results.Length, filter);
+        Logger.LogDebug("Found {serverSideSessionCount} server-side sessions for {@filter}", results.Length, filter);
 
         return results;
     }
@@ -225,11 +225,11 @@ public class ServerSideSessionStore : IServerSideSessionStore
         try
         {
             await Context.SaveChangesAsync(cancellationToken);
-            Logger.LogDebug("removed {serverSideSessionCount} server side sessions from database for {@filter}", entities.Length, filter);
+            Logger.LogDebug("Removed {serverSideSessionCount} server-side sessions from database for {@filter}", entities.Length, filter);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogInformation("error removing {serverSideSessionCount} server side sessions from database for {@filter}: {error}", entities.Length, filter, ex.Message);
+            Logger.LogInformation("Error removing {serverSideSessionCount} server-side sessions from database for {@filter}: {error}", entities.Length, filter, ex.Message);
         }
     }
 
@@ -266,7 +266,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             var list = await Context.SaveChangesWithConcurrencyCheckAsync<Entities.ServerSideSession>(Logger, cancellationToken);
             entities = entities.Except(list).ToArray();
             
-            Logger.LogDebug("Removing {serverSideSessionCount} server side sessions", entities.Length);
+            Logger.LogDebug("Found and removed {serverSideSessionCount} expired server-side sessions", entities.Length);
         }
 
         var results = entities.Select(entity => new ServerSideSession
@@ -450,7 +450,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             Results = results
         };
 
-        Logger.LogDebug("server side sessions found in the db {serverSideSessionCount}", results.Length);
+        Logger.LogDebug("Found {serverSideSessionCount} server-side sessions in database", results.Length);
 
         return result;
     }

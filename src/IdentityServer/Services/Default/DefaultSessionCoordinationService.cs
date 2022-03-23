@@ -100,7 +100,7 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
 
             if (clientsToCoordinate.Count > 0)
             {
-                Logger.LogDebug("Removing tokens for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
+                Logger.LogDebug("Due to user logout, removing tokens for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
                 
                 await PersistedGrantStore.RemoveAllAsync(new PersistedGrantFilter
                 {
@@ -111,7 +111,7 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
                 });
             }
 
-            Logger.LogDebug("Invoking backchannel logout for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
+            Logger.LogDebug("Due to user logout, invoking backchannel logout for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
             
             // this uses all the clientIds since that's how logout worked before session coorindation existed
             // IOW, we know we're not using the clientsToCoordinate list here, also because it's active logout
@@ -147,7 +147,7 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
 
         if (clientsToCoordinate.Count > 0)
         {
-            Logger.LogDebug("Removing tokens for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
+            Logger.LogDebug("Due to expired session, removing tokens for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
             
             await PersistedGrantStore.RemoveAllAsync(new PersistedGrantFilter
             {
@@ -169,7 +169,7 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
 
             if (clientsToContact.Count > 0)
             {
-                Logger.LogDebug("Invoking backchannel logout for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
+                Logger.LogDebug("Due to expired session, invoking backchannel logout for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
 
                 await BackChannelLogoutService.SendLogoutNotificationsAsync(new LogoutNotificationContext
                 {
@@ -205,11 +205,11 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
 
                 if (!valid)
                 {
-                    Logger.LogDebug("Failing refresh token validation due to missing/expired server-side session for subject id {subjectId} and session id {sessionId}", request.SubjectId, request.SessionId);
+                    Logger.LogDebug("Due to missing/expired server-side session, failing token validation for subject id {subjectId} and session id {sessionId}", request.SubjectId, request.SessionId);
                     return false;
                 }
 
-                Logger.LogDebug("Extending server-side session for subject id {subjectId} and session id {sessionId}", request.SubjectId, request.SessionId);
+                Logger.LogDebug("Due to client token use, extending server-side session for subject id {subjectId} and session id {sessionId}", request.SubjectId, request.SessionId);
 
                 foreach (var session in sessions)
                 {

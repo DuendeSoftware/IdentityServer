@@ -117,6 +117,7 @@ public class ServerSideSessionCleanupHost : IHostedService
         {
             using (var serviceScope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
+                var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ServerSideSessionCleanupHost>>();
                 var options = serviceScope.ServiceProvider.GetRequiredService<IdentityServerOptions>();
                 var serverSideTicketService = serviceScope.ServiceProvider.GetRequiredService<IServerSideTicketService>();
                 var sessionCoordinationService = serviceScope.ServiceProvider.GetRequiredService<ISessionCoordinationService>();
@@ -128,9 +129,14 @@ public class ServerSideSessionCleanupHost : IHostedService
                     var sessions = await serverSideTicketService.GetAndRemoveExpiredSessionsAsync(options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
                     found = sessions.Count;
 
-                    foreach(var session in sessions)
+                    if (found > 0)
                     {
-                        await sessionCoordinationService.ProcessExpirationAsync(session);
+                        logger.LogDebug("Processing expiration for {count} expired server-side sessions.", found);
+
+                        foreach (var session in sessions)
+                        {
+                            await sessionCoordinationService.ProcessExpirationAsync(session);
+                        }
                     }
                 }
             }
