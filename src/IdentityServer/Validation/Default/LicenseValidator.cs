@@ -37,7 +37,7 @@ internal class LicenseValidator
 
     public static void Initalize(ILoggerFactory loggerFactory, IdentityServerOptions options, bool isDevelopment = false)
     {
-        _logger = loggerFactory.CreateLogger("Duende");
+        _logger = loggerFactory.CreateLogger("Duende.License");
         _options = options;
 
         var key = options.LicenseKey ?? LoadFromFile();
@@ -114,12 +114,9 @@ internal class LicenseValidator
                 _errorLog.Invoke(err, Array.Empty<object>());
             }
 
-            if (_license != null)
-            {
-                _errorLog.Invoke(
-                    "Please contact {licenceContact} from {licenseCompany} to obtain a valid license for the Duende software.",
-                    new[] { _license.ContactInfo, _license.CompanyName });
-            }
+            _errorLog.Invoke(
+                "Please contact {licenceContact} from {licenseCompany} to obtain a valid license for the Duende software.",
+                new[] { _license.ContactInfo, _license.CompanyName });
         }
         else
         {
