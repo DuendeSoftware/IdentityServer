@@ -40,33 +40,33 @@ internal static class HostingExtensions
         });
 
 
-        var apiKey = builder.Configuration["HoneyCombApiKey"];
-        var dataset = "IdentityServerDev";
-        
-        builder.Services.AddOpenTelemetryTracing(builder =>
-        {
-            builder
-                .AddSource(IdentityServerConstants.Tracing.Base)
-                .AddSource(IdentityServerConstants.Tracing.Cache)
-                .AddSource(IdentityServerConstants.Tracing.Services)
-                .AddSource(IdentityServerConstants.Tracing.Stores)
-                .AddSource(IdentityServerConstants.Tracing.Validation)
-                
-                .SetResourceBuilder(
-                    ResourceBuilder.CreateDefault()
-                        .AddService("IdentityServerHost.Main"))
-                
-                //.SetSampler(new AlwaysOnSampler())
-                .AddHttpClientInstrumentation()
-                .AddAspNetCoreInstrumentation()
-                .AddSqlClientInstrumentation()
-                //.AddConsoleExporter()
-                .AddOtlpExporter(option =>
-                {
-                    option.Endpoint = new Uri("https://api.honeycomb.io");
-                    option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
-                });
-        });
+        // var apiKey = builder.Configuration["HoneyCombApiKey"];
+        // var dataset = "IdentityServerDev";
+        //
+        // builder.Services.AddOpenTelemetryTracing(builder =>
+        // {
+        //     builder
+        //         .AddSource(IdentityServerConstants.Tracing.Basic)
+        //         .AddSource(IdentityServerConstants.Tracing.Cache)
+        //         .AddSource(IdentityServerConstants.Tracing.Services)
+        //         .AddSource(IdentityServerConstants.Tracing.Stores)
+        //         .AddSource(IdentityServerConstants.Tracing.Validation)
+        //         
+        //         .SetResourceBuilder(
+        //             ResourceBuilder.CreateDefault()
+        //                 .AddService("IdentityServerHost.Main"))
+        //         
+        //         //.SetSampler(new AlwaysOnSampler())
+        //         .AddHttpClientInstrumentation()
+        //         .AddAspNetCoreInstrumentation()
+        //         .AddSqlClientInstrumentation()
+        //         //.AddConsoleExporter()
+        //         .AddOtlpExporter(option =>
+        //         {
+        //             option.Endpoint = new Uri("https://api.honeycomb.io");
+        //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+        //         });
+        // });
 
         return builder.Build();
     }
