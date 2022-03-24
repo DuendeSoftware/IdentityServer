@@ -5,6 +5,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
@@ -15,32 +16,36 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Stores;
+namespace Duende.IdentityServer.Services;
 
 /// <summary>
-/// IServerSideSessionStore backed ticket store
+/// IServerSideSessionService backed by server side session store
 /// </summary>
-public class ServerSideTicketStore : IServerSideTicketStore
+public class ServerSideTicketService : IServerSideTicketService
 {
     private readonly IdentityServerOptions _options;
+    private readonly IIssuerNameService _issuerNameService;
     private readonly IServerSideSessionStore _store;
     private readonly IDataProtector _protector;
-    private readonly ILogger<ServerSideTicketStore> _logger;
+    private readonly ILogger<ServerSideTicketService> _logger;
 
     /// <summary>
     /// ctor
     /// </summary>
     /// <param name="options"></param>
+    /// <param name="issuerNameService"></param>
     /// <param name="store"></param>
     /// <param name="dataProtectionProvider"></param>
     /// <param name="logger"></param>
-    public ServerSideTicketStore(
+    public ServerSideTicketService(
         IdentityServerOptions options,
+        IIssuerNameService issuerNameService,
         IServerSideSessionStore store,
         IDataProtectionProvider dataProtectionProvider,
-        ILogger<ServerSideTicketStore> logger)
+        ILogger<ServerSideTicketService> logger)
     {
         _options = options;
+        _issuerNameService = issuerNameService;
         _store = store;
         _protector = dataProtectionProvider.CreateProtector("Duende.SessionManagement.ServerSideTicketStore");
         _logger = logger;
@@ -50,6 +55,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
     public async Task<string> StoreAsync(AuthenticationTicket ticket)
     {
         ArgumentNullException.ThrowIfNull(ticket);
+
+        ticket.SetIssuer(await _issuerNameService.GetCurrentAsync());
 
         var key = CryptoRandom.CreateUniqueId(format: CryptoRandom.OutputFormat.Hex);
 
@@ -64,7 +71,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
             Expires = ticket.GetExpiration(),
             SubjectId = ticket.GetSubjectId(),
             SessionId = ticket.GetSessionId(),
-            DisplayName = ticket.GetDisplayName(_options.Authentication.UserDisplayNameClaimType),
+            DisplayName = ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
             Ticket = ticket.Serialize(_protector)
         };
 
@@ -116,7 +123,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
 
         var sub = ticket.GetSubjectId();
         var sid = ticket.GetSessionId();
-        var name = String.IsNullOrWhiteSpace(_options.Authentication.UserDisplayNameClaimType) ? null : ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value;
+        var name = String.IsNullOrWhiteSpace(_options.ServerSideSessions.UserDisplayNameClaimType) ? null : ticket.Principal.FindFirst(_options.ServerSideSessions.UserDisplayNameClaimType)?.Value;
 
         var isNew = session.SubjectId != sub || session.SessionId != sid;
         if (isNew)
@@ -156,10 +163,11 @@ public class ServerSideTicketStore : IServerSideTicketStore
             {
                 SubjectId = item.Ticket.GetSubjectId(),
                 SessionId = item.Ticket.GetSessionId(),
-                DisplayName = item.Ticket.GetDisplayName(_options.Authentication.UserDisplayNameClaimType),
+                DisplayName = item.Ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
                 Created = item.Ticket.GetIssued(),
                 Renewed = item.Renewed,
                 Expires = item.Ticket.GetExpiration(),
+                Issuer = item.Ticket.GetIssuer(),
                 ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
                 AuthenticationTicket = item.Ticket
             })
@@ -180,10 +188,11 @@ public class ServerSideTicketStore : IServerSideTicketStore
             {
                 SubjectId = item.Ticket.GetSubjectId(),
                 SessionId = item.Ticket.GetSessionId(),
-                DisplayName = item.Ticket.GetDisplayName(_options.Authentication.UserDisplayNameClaimType),
+                DisplayName = item.Ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
                 Created = item.Ticket.GetIssued(),
                 Renewed = item.Renewed,
                 Expires = item.Ticket.GetExpiration(),
+                Issuer = item.Ticket.GetIssuer(),
                 ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
                 AuthenticationTicket = item.Ticket
             })
@@ -201,5 +210,30 @@ public class ServerSideTicketStore : IServerSideTicketStore
         };
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<UserSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default)
+    {
+        var sessions = await _store.GetAndRemoveExpiredSessionsAsync(count, cancellationToken);
+
+        var results = sessions
+            .Select(x => new { x.Renewed, Ticket = x.Deserialize(_protector, _logger)! })
+            .Where(x => x != null && x.Ticket != null)
+            .Select(item => new UserSession
+            {
+                SubjectId = item.Ticket.GetSubjectId(),
+                SessionId = item.Ticket.GetSessionId(),
+                DisplayName = item.Ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
+                Created = item.Ticket.GetIssued(),
+                Renewed = item.Renewed,
+                Expires = item.Ticket.GetExpiration(),
+                Issuer = item.Ticket.GetIssuer(),
+                ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
+                AuthenticationTicket = item.Ticket
+            })
+            .ToArray();
+
+        return results;
     }
 }

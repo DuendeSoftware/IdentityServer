@@ -98,6 +98,7 @@ public static class IdentityServerConstants
             "BackchannelAuthenticationRequestIdValidation";
     }
 
+
     public readonly static IEnumerable<string> SupportedSigningAlgorithms = new List<string>
     {
         SecurityAlgorithms.RsaSha256,

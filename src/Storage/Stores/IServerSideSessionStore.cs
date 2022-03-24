@@ -45,6 +45,11 @@ public interface IServerSideSessionStore
     Task DeleteSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default);
 
 
+    /// <summary>
+    /// Removes and returns expired sessions
+    /// </summary>
+    Task<IReadOnlyCollection<ServerSideSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Queries sessions based on filter

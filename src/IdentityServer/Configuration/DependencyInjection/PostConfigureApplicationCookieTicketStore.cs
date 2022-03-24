@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
@@ -87,7 +88,7 @@ internal class TicketStoreShim : ITicketStore
     /// <summary>
     /// The inner
     /// </summary>
-    private IServerSideTicketStore Inner => _httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<IServerSideTicketStore>();
+    private IServerSideTicketService Inner => _httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<IServerSideTicketService>();
 
     /// <inheritdoc />
     public Task RemoveAsync(string key)

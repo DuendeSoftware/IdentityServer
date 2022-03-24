@@ -20,7 +20,7 @@ public interface ISessionManagementService
     /// Queries all the session related data for a user.
     /// </summary>
     Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Removes all the session related data for a user.
     /// </summary>
@@ -61,6 +61,11 @@ public class UserSession
     /// The expiration time
     /// </summary>
     public DateTime? Expires { get; set; }
+
+    /// <summary>
+    /// The issuer of the token service at login time.
+    /// </summary>
+    public string Issuer { get; set; }
 
     /// <summary>
     /// The client ids for the session

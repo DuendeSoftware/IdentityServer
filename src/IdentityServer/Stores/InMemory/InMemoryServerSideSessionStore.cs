@@ -99,6 +99,24 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     }
 
 
+    /// <inheritdoc/>
+    public Task<IReadOnlyCollection<ServerSideSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default)
+    {
+        var results = _store.Values
+            .Where(x => x.Expires < DateTime.UtcNow)
+            .OrderBy(x => x.Key)
+            .Take(count)
+            .ToArray();
+
+        foreach (var item in results)
+        {
+            _store.Remove(item.Key, out _);
+        }
+
+        return Task.FromResult((IReadOnlyCollection<ServerSideSession>) results);
+    }
+
+
 
     /// <inheritdoc/>
     public Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)

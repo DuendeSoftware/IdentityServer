@@ -32,6 +32,7 @@ internal class TokenValidator : ITokenValidator
     private readonly IClientStore _clients;
     private readonly IProfileService _profile;
     private readonly IKeyMaterialService _keys;
+    private readonly ISessionCoordinationService _sessionCoordinationService;
     private readonly ISystemClock _clock;
     private readonly TokenValidationLog _log;
 
@@ -43,6 +44,7 @@ internal class TokenValidator : ITokenValidator
         IReferenceTokenStore referenceTokenStore,
         ICustomTokenValidator customValidator,
         IKeyMaterialService keys,
+        ISessionCoordinationService sessionCoordinationService,
         ISystemClock clock,
         ILogger<TokenValidator> logger)
     {
@@ -53,6 +55,7 @@ internal class TokenValidator : ITokenValidator
         _referenceTokenStore = referenceTokenStore;
         _customValidator = customValidator;
         _keys = keys;
+        _sessionCoordinationService = sessionCoordinationService;
         _clock = clock;
         _logger = logger;
 
@@ -219,6 +222,25 @@ internal class TokenValidator : ITokenValidator
                 result.Claims = null;
 
                 return result;
+            }
+
+            var sub = subClaim.Value;
+            var sid = principal.FindFirstValue("sid");
+            if (sid != null)
+            {
+                var sessionResult = await _sessionCoordinationService.ValidateSessionAsync(new SessionValidationRequest
+                {
+                    SubjectId = sub,
+                    SessionId = sid,
+                    Client = result.Client,
+                    Type = SessionValidationType.AccessToken
+                });
+
+                if (!sessionResult)
+                {
+                    _logger.LogError("Server-side session invalid for subject Id {subjectId} and session Id {sessionId}.", sub, sid);
+                    return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
+                }
             }
         }
 

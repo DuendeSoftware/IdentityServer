@@ -19,6 +19,11 @@ public class LogoutNotificationContext
     /// The session Id of the user's authentication session.
     /// </summary>
     public string SessionId { get; set; }
+    
+    /// <summary>
+    /// The issuer for the back-channel logout
+    /// </summary>
+    public string Issuer { get; set; }
 
     /// <summary>
     /// The list of client Ids that the user has authenticated to.

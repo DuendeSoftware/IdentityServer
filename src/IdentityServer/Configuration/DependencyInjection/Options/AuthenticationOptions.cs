@@ -62,8 +62,10 @@ public class AuthenticationOptions
     public bool RequireCspFrameSrcForSignout { get; set; } = true;
 
     /// <summary>
-    /// The claim type used for the user's display name.
-    /// This is used when storing user sessions server side.
+    /// When enabled, all clients' token lifetimes (e.g. refresh tokens) will be tied to the user's session lifetime.
+    /// This means when the user logs out, any revokable tokens will be removed.
+    /// If using server-side sessions, expired sessions will also remove any revokable tokens, and backchannel logout will be triggered.
+    /// An individual client can override this setting with its own CoordinateLifetimeWithUserSession configuration setting.
     /// </summary>
-    public string UserDisplayNameClaimType { get; set; }
+    public bool CoordinateClientLifetimesWithUserSession { get; set; }
 }

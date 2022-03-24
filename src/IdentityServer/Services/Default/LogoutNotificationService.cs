@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 using IdentityModel;
@@ -101,7 +101,8 @@ public class LogoutNotificationService : ILogoutNotificationService
                         LogoutUri = client.BackChannelLogoutUri,
                         SubjectId = context.SubjectId,
                         SessionId = context.SessionId,
-                        SessionIdRequired = client.BackChannelLogoutSessionRequired
+                        SessionIdRequired = client.BackChannelLogoutSessionRequired,
+                        Issuer = context.Issuer,
                     };
 
                     backChannelLogouts.Add(back);

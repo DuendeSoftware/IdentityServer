@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.Stores;
@@ -62,7 +63,6 @@ public class TokenCleanupService
 
             await RemoveGrantsAsync(cancellationToken);
             await RemoveDeviceCodesAsync(cancellationToken);
-            await RemoveServerSideSessionsAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -100,12 +100,15 @@ public class TokenCleanupService
                 .ToArrayAsync(cancellationToken);
 
             found = expiredGrants.Length;
-            _logger.LogInformation("Removing {grantCount} expired grants", found);
 
             if (found > 0)
             {
+                _logger.LogInformation("Removing {grantCount} expired grants", found);
+
                 _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
-                await SaveChangesAsync();
+
+                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.PersistedGrant>(_logger, cancellationToken);
+                expiredGrants = expiredGrants.Except(list).ToArray();
 
                 if (_operationalStoreNotification != null)
                 {
@@ -132,12 +135,15 @@ public class TokenCleanupService
                 .ToArrayAsync(cancellationToken);
 
             found = expiredGrants.Length;
-            _logger.LogInformation("Removing {grantCount} consumed grants", found);
 
             if (found > 0)
             {
+                _logger.LogInformation("Removing {grantCount} consumed grants", found);
+
                 _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
-                await SaveChangesAsync(cancellationToken);
+
+                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.PersistedGrant>(_logger, cancellationToken);
+                expiredGrants = expiredGrants.Except(list).ToArray();
 
                 if (_operationalStoreNotification != null)
                 {
@@ -165,12 +171,15 @@ public class TokenCleanupService
                 .ToArrayAsync(cancellationToken);
 
             found = expiredCodes.Length;
-            _logger.LogInformation("Removing {deviceCodeCount} device flow codes", found);
 
             if (found > 0)
             {
+                _logger.LogInformation("Removing {deviceCodeCount} device flow codes", found);
+
                 _persistedGrantDbContext.DeviceFlowCodes.RemoveRange(expiredCodes);
-                await SaveChangesAsync(cancellationToken);
+                
+                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.DeviceFlowCodes>(_logger, cancellationToken);
+                expiredCodes = expiredCodes.Except(list).ToArray();
 
                 if (_operationalStoreNotification != null)
                 {
@@ -178,74 +187,5 @@ public class TokenCleanupService
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// Removes the expired server side sessions.
-    /// </summary>
-    /// <returns></returns>
-    protected virtual async Task RemoveServerSideSessionsAsync(CancellationToken cancellationToken = default)
-    {
-        if (_sideSessionsMarker == null || !_options.RemoveExpiredServerSideSessions)
-        {
-            // if there is no _serverSideTicketStore in the DI system, then server side sessions is not enabled
-            // or they have disabled the cleanup, so there is no need to try to cleanup expired entries.
-            return;
-        }
-
-        var found = Int32.MaxValue;
-
-        while (found >= _options.TokenCleanupBatchSize)
-        {
-            var expired = await _persistedGrantDbContext.ServerSideSessions
-                .Where(x => x.Expires < DateTime.UtcNow)
-                .OrderBy(x => x.Id)
-                .Take(_options.TokenCleanupBatchSize)
-                .ToArrayAsync(cancellationToken);
-
-            found = expired.Length;
-            _logger.LogInformation("Removing {serverSideSessionCount} server side sessions", found);
-
-            if (found > 0)
-            {
-                _persistedGrantDbContext.ServerSideSessions.RemoveRange(expired);
-                await SaveChangesAsync(cancellationToken);
-
-                if (_operationalStoreNotification != null)
-                {
-                    await _operationalStoreNotification.ServerSideSessionsRemovedAsync(expired);
-                }
-            }
-        }
-    }
-
-    private async Task SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        var count = 3;
-
-        while (count > 0)
-        {
-            try
-            {
-                await _persistedGrantDbContext.SaveChangesAsync(cancellationToken);
-                return;
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                count--;
-
-                // we get this if/when someone else already deleted the records
-                // we want to essentially ignore this, and keep working
-                _logger.LogDebug("Concurrency exception removing expired grants: {exception}", ex.Message);
-
-                foreach (var entry in ex.Entries)
-                {
-                    // mark this entry as not attached anymore so we don't try to re-delete
-                    entry.State = EntityState.Detached;
-                }
-            }
-        }
-
-        _logger.LogDebug("Too many concurrency exceptions. Exiting.");
     }
 }

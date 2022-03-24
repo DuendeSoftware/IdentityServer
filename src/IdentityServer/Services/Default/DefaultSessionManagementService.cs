@@ -3,7 +3,7 @@
 
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +15,7 @@ namespace Duende.IdentityServer.Services;
 /// </summary>
 public class DefaultSessionManagementService : ISessionManagementService
 {
-    private readonly IServerSideTicketStore _serverSideTicketStore;
+    private readonly IServerSideTicketService _serverSideTicketService;
     private readonly IServerSideSessionStore _serverSideSessionStore;
     private readonly IPersistedGrantStore _persistedGrantStore;
     private readonly IBackChannelLogoutService _backChannelLogoutService;
@@ -23,9 +23,13 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <summary>
     /// Ctor.
     /// </summary>
-    public DefaultSessionManagementService(IServerSideTicketStore serverSideTicketStore, IServerSideSessionStore serverSideSessionStore, IPersistedGrantStore persistedGrantStore, IBackChannelLogoutService backChannelLogoutService)
+    public DefaultSessionManagementService(
+        IServerSideTicketService serverSideTicketService,
+        IServerSideSessionStore serverSideSessionStore,
+        IPersistedGrantStore persistedGrantStore,
+        IBackChannelLogoutService backChannelLogoutService)
     {
-        _serverSideTicketStore = serverSideTicketStore;
+        _serverSideTicketService = serverSideTicketService;
         _serverSideSessionStore = serverSideSessionStore;
         _persistedGrantStore = persistedGrantStore;
         _backChannelLogoutService = backChannelLogoutService;
@@ -34,7 +38,7 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
-        return _serverSideTicketStore.QuerySessionsAsync(filter, cancellationToken);
+        return _serverSideTicketService.QuerySessionsAsync(filter, cancellationToken);
     }
 
     static readonly string[] OnlyTokenTypes = new[] {
@@ -47,17 +51,6 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public async Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default)
     {
-        if (context.RemoveServerSideSession)
-        {
-            // delete the cookies
-            await _serverSideSessionStore.DeleteSessionsAsync(new SessionFilter
-            {
-                SubjectId = context.SubjectId,
-                SessionId = context.SessionId,
-            }, cancellationToken);
-        }
-
-
         if (context.RevokeTokens || context.RevokeConsents)
         {
             // delete the tokens
@@ -71,7 +64,7 @@ public class DefaultSessionManagementService : ISessionManagementService
             {
                 grantFilter.ClientIds = context.ClientIds;
             }
-            
+
             if (!context.RevokeTokens || !context.RevokeConsents)
             {
                 if (context.RevokeConsents)
@@ -87,12 +80,11 @@ public class DefaultSessionManagementService : ISessionManagementService
             await _persistedGrantStore.RemoveAllAsync(grantFilter);
         }
 
-
         // send back channel SLO
         if (context.SendBackchannelLogoutNotification)
         {
             // we might have more than one, so load them all
-            var sessions = await _serverSideTicketStore.GetSessionsAsync(
+            var sessions = await _serverSideTicketService.GetSessionsAsync(
                 new SessionFilter
                 {
                     SubjectId = context.SubjectId,
@@ -106,9 +98,20 @@ public class DefaultSessionManagementService : ISessionManagementService
                 {
                     SubjectId = session.SubjectId,
                     SessionId = session.SessionId,
+                    Issuer = session.Issuer,
                     ClientIds = session.ClientIds.Where(x => context.ClientIds == null || context.ClientIds.Contains(x))
                 });
             }
+        }
+
+        if (context.RemoveServerSideSession)
+        {
+            // delete the cookies
+            await _serverSideSessionStore.DeleteSessionsAsync(new SessionFilter
+            {
+                SubjectId = context.SubjectId,
+                SessionId = context.SessionId,
+            }, cancellationToken);
         }
     }
 }
