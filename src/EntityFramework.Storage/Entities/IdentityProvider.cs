@@ -35,7 +35,7 @@ public class IdentityProvider
     public string Type { get; set; }
 
     /// <summary>
-    /// Seralized value for the identity provider properties dictionary.
+    /// Serialized value for the identity provider properties dictionary.
     /// </summary>
     public string Properties { get; set; }
 

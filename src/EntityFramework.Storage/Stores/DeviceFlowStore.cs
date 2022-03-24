@@ -71,7 +71,7 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.StoreDeviceAuthorization");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DeviceFlowStore.StoreDeviceAuthorization");
         
         Context.DeviceFlowCodes.Add(ToEntity(data, deviceCode, userCode));
 
@@ -85,7 +85,7 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.FindByUserCode");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DeviceFlowStore.FindByUserCode");
         
         var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.UserCode == userCode)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
@@ -104,7 +104,7 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.FindByDeviceCode");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DeviceFlowStore.FindByDeviceCode");
         
         var deviceFlowCodes = (await Context.DeviceFlowCodes.AsNoTracking().Where(x => x.DeviceCode == deviceCode)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
@@ -124,7 +124,7 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.UpdateByUserCode");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DeviceFlowStore.UpdateByUserCode");
         
         var existing = (await Context.DeviceFlowCodes.Where(x => x.UserCode == userCode)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
@@ -140,6 +140,8 @@ public class DeviceFlowStore : IDeviceFlowStore
 
         existing.SubjectId = data.Subject?.FindFirst(JwtClaimTypes.Subject).Value;
         existing.Data = entity.Data;
+        existing.SessionId = data.SessionId;
+        existing.Description = data.Description;
 
         try
         {
@@ -158,7 +160,7 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public virtual async Task RemoveByDeviceCodeAsync(string deviceCode)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DeviceFlowStore.RemoveByDeviceCode");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DeviceFlowStore.RemoveByDeviceCode");
         
         var deviceFlowCodes = (await Context.DeviceFlowCodes.Where(x => x.DeviceCode == deviceCode)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
@@ -194,6 +196,8 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     protected DeviceFlowCodes ToEntity(DeviceCode model, string deviceCode, string userCode)
     {
+        // TODO: consider removing this in v7.0 since it's not properly/fully used
+
         if (model == null || deviceCode == null || userCode == null) return null;
 
         return new DeviceFlowCodes
@@ -202,6 +206,8 @@ public class DeviceFlowStore : IDeviceFlowStore
             UserCode = userCode,
             ClientId = model.ClientId,
             SubjectId = model.Subject?.FindFirst(JwtClaimTypes.Subject).Value,
+            SessionId = model.SessionId,
+            Description = model.Description,
             CreationTime = model.CreationTime,
             Expiration = model.CreationTime.AddSeconds(model.Lifetime),
             Data = Serializer.Serialize(model)

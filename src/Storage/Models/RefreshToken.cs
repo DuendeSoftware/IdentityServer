@@ -39,7 +39,7 @@ public class RefreshToken
     public DateTime? ConsumedTime { get; set; }
 
     /// <summary>
-    /// Obsolete. This property remains to keep backwards compatibility with seralized persisted grants.
+    /// Obsolete. This property remains to keep backwards compatibility with serialized persisted grants.
     /// </summary>
     /// <value>
     /// The access token.

@@ -33,7 +33,7 @@ public class DynamicProviderOptions
     public string SignOutScheme { get; set; } = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
     /// <summary>
-    /// Registers a provider confiuration model and authenticaiton handler for the protocol type being used.
+    /// Registers a provider configuration model and authentication handler for the protocol type being used.
     /// </summary>
     public void AddProviderType<THandler, TOptions, TIdentityProvider>(string type)
         where THandler : IAuthenticationRequestHandler
