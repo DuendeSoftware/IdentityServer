@@ -183,7 +183,12 @@ public static class IdentityServerConstants
 
     public static class Tracing
     {
-        public static readonly string ServiceName = Duende.IdentityServer.Tracing.ServiceName;
+        public static readonly string Basic = Duende.IdentityServer.Tracing.TraceNames.Basic;
+        public static readonly string Stores = Duende.IdentityServer.Tracing.TraceNames.Store;
+        public static readonly string Cache = Duende.IdentityServer.Tracing.TraceNames.Cache;
+        public static readonly string Validation = Duende.IdentityServer.Tracing.TraceNames.Validation;
+        public static readonly string Services = Duende.IdentityServer.Tracing.TraceNames.Services;
+        
         public static readonly string ServiceVersion = Duende.IdentityServer.Tracing.ServiceVersion;
     }
 }

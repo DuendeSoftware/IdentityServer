@@ -60,7 +60,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.ServerSideSessionsFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
-            subject.ISVFeature.Should().BeFalse();
+            subject.RedistributionFeature.Should().BeFalse();
             subject.CibaFeature.Should().BeTrue();
         }
         {
@@ -74,7 +74,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.ServerSideSessionsFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
-            subject.ISVFeature.Should().BeFalse();
+            subject.RedistributionFeature.Should().BeFalse();
             subject.CibaFeature.Should().BeFalse();
         }
         {
@@ -88,7 +88,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.ServerSideSessionsFeature.Should().BeFalse();
             subject.BffFeature.Should().BeFalse();
-            subject.ISVFeature.Should().BeFalse();
+            subject.RedistributionFeature.Should().BeFalse();
             subject.CibaFeature.Should().BeFalse();
         }
         {
@@ -102,7 +102,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.ServerSideSessionsFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
-            subject.ISVFeature.Should().BeFalse();
+            subject.RedistributionFeature.Should().BeFalse();
             subject.CibaFeature.Should().BeTrue();
         }
 
@@ -118,7 +118,7 @@ public class LicenseValidatorTests
             subject.KeyManagementFeature.Should().BeFalse();
             subject.ResourceIsolationFeature.Should().BeFalse();
             subject.DynamicProvidersFeature.Should().BeFalse();
-            subject.ISVFeature.Should().BeFalse();
+            subject.RedistributionFeature.Should().BeFalse();
             subject.CibaFeature.Should().BeFalse();
         }
 
@@ -134,7 +134,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.ServerSideSessionsFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
-            subject.ISVFeature.Should().BeTrue();
+            subject.RedistributionFeature.Should().BeTrue();
             subject.CibaFeature.Should().BeTrue();
         }
         {
@@ -148,7 +148,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.ServerSideSessionsFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
-            subject.ISVFeature.Should().BeTrue();
+            subject.RedistributionFeature.Should().BeTrue();
             subject.CibaFeature.Should().BeFalse();
         }
         {
@@ -162,7 +162,7 @@ public class LicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.ServerSideSessionsFeature.Should().BeFalse();
             subject.BffFeature.Should().BeFalse();
-            subject.ISVFeature.Should().BeTrue();
+            subject.RedistributionFeature.Should().BeTrue();
             subject.CibaFeature.Should().BeFalse();
         }
         {
@@ -232,7 +232,7 @@ public class LicenseValidatorTests
             subject.ServerSideSessionsFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
             subject.DynamicProvidersFeature.Should().BeTrue();
-            subject.ISVFeature.Should().BeTrue();
+            subject.RedistributionFeature.Should().BeTrue();
             subject.CibaFeature.Should().BeTrue();
         }
         {

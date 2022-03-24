@@ -31,7 +31,7 @@ public class ReturnUrlParser
     /// <returns></returns>
     public virtual async Task<AuthorizationRequest> ParseAsync(string returnUrl)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("ReturnUrlParser.Parse");
+        using var activity = Tracing.ValidationActivitySource.StartActivity("ReturnUrlParser.Parse");
         
         foreach (var parser in _parsers)
         {
@@ -54,7 +54,7 @@ public class ReturnUrlParser
     /// </returns>
     public virtual bool IsValidReturnUrl(string returnUrl)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("ReturnUrlParser.IsValidReturnUrl");
+        using var activity = Tracing.ValidationActivitySource.StartActivity("ReturnUrlParser.IsValidReturnUrl");
         
         foreach (var parser in _parsers)
         {

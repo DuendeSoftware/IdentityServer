@@ -103,7 +103,7 @@ public class DefaultTokenService : ITokenService
     /// </returns>
     public virtual async Task<Token> CreateIdentityTokenAsync(TokenCreationRequest request)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenService.CreateIdentityToken");
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultTokenService.CreateIdentityToken");
         
         Logger.LogTrace("Creating identity token");
         request.Validate();
@@ -181,7 +181,7 @@ public class DefaultTokenService : ITokenService
     /// </returns>
     public virtual async Task<Token> CreateAccessTokenAsync(TokenCreationRequest request)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenService.CreateAccessToken");
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultTokenService.CreateAccessToken");
         
         Logger.LogTrace("Creating access token");
         request.Validate();
@@ -252,7 +252,7 @@ public class DefaultTokenService : ITokenService
     /// <exception cref="System.InvalidOperationException">Invalid token type.</exception>
     public virtual async Task<string> CreateSecurityTokenAsync(Token token)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultTokenService.CreateSecurityToken");
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultTokenService.CreateSecurityToken");
         
         string tokenResult;
 
