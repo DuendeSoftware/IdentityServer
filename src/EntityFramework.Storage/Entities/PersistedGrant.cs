@@ -10,7 +10,7 @@ namespace Duende.IdentityServer.EntityFramework.Entities;
 
 public class PersistedGrant
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
     public string Key { get; set; }
     public string Type { get; set; }
     public string SubjectId { get; set; }

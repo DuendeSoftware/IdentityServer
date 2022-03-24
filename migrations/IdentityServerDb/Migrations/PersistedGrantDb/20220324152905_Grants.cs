@@ -50,7 +50,7 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 name: "PersistedGrants",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Key = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),

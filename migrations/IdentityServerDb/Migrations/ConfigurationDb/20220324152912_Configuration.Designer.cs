@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServerDb.Migrations.ConfigurationDb
 {
     [DbContext(typeof(ConfigurationDbContext))]
-    [Migration("20220323143742_Configuration")]
+    [Migration("20220324152912_Configuration")]
     partial class Configuration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
