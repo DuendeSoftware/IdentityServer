@@ -35,9 +35,8 @@ internal class AuthorizeEndpoint : AuthorizeEndpointBase
 
     public override async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity(Constants.EndpointNames.Authorize + "Endpoint");
-        // todo: add complete url?
-        
+        using var activity = Tracing.BasicActivitySource.StartActivity(Constants.EndpointNames.Authorize + "Endpoint");
+
         Logger.LogDebug("Start authorize request");
 
         NameValueCollection values;

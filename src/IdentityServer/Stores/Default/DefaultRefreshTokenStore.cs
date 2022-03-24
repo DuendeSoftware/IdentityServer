@@ -38,7 +38,7 @@ public class DefaultRefreshTokenStore : DefaultGrantStore<RefreshToken>, IRefres
     /// <returns></returns>
     public async Task<string> StoreRefreshTokenAsync(RefreshToken refreshToken)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultRefreshTokenStore.StoreRefreshTokenAsync");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DefaultRefreshTokenStore.StoreRefreshTokenAsync");
         
         return await CreateItemAsync(refreshToken, refreshToken.ClientId, refreshToken.SubjectId, refreshToken.SessionId, refreshToken.Description, refreshToken.CreationTime, refreshToken.Lifetime);
     }
@@ -51,7 +51,7 @@ public class DefaultRefreshTokenStore : DefaultGrantStore<RefreshToken>, IRefres
     /// <returns></returns>
     public Task UpdateRefreshTokenAsync(string handle, RefreshToken refreshToken)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultRefreshTokenStore.UpdateRefreshToken");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DefaultRefreshTokenStore.UpdateRefreshToken");
         
         return StoreItemAsync(handle, refreshToken, refreshToken.ClientId, refreshToken.SubjectId, refreshToken.SessionId, refreshToken.Description, refreshToken.CreationTime, refreshToken.CreationTime.AddSeconds(refreshToken.Lifetime), refreshToken.ConsumedTime);
     }
@@ -63,7 +63,7 @@ public class DefaultRefreshTokenStore : DefaultGrantStore<RefreshToken>, IRefres
     /// <returns></returns>
     public async Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultRefreshTokenStore.GetRefreshToken");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DefaultRefreshTokenStore.GetRefreshToken");
         
         var refreshToken = await GetItemAsync(refreshTokenHandle);
 
@@ -99,7 +99,7 @@ public class DefaultRefreshTokenStore : DefaultGrantStore<RefreshToken>, IRefres
     /// <returns></returns>
     public Task RemoveRefreshTokenAsync(string refreshTokenHandle)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultRefreshTokenStore.RemoveRefreshToken");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DefaultRefreshTokenStore.RemoveRefreshToken");
         
         return RemoveItemAsync(refreshTokenHandle);
     }
@@ -112,7 +112,7 @@ public class DefaultRefreshTokenStore : DefaultGrantStore<RefreshToken>, IRefres
     /// <returns></returns>
     public Task RemoveRefreshTokensAsync(string subjectId, string clientId)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultRefreshTokenStore.RemoveRefreshTokens");
+        using var activity = Tracing.StoreActivitySource.StartActivity("DefaultRefreshTokenStore.RemoveRefreshTokens");
         
         return RemoveAllAsync(subjectId, clientId);
     }
