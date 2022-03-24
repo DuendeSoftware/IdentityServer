@@ -335,7 +335,8 @@ internal class TokenValidator : ITokenValidator
             client = await _clients.FindEnabledClientByIdAsync(clientId.Value);
             if (client == null)
             {
-                throw new InvalidOperationException("Client does not exist anymore.");
+                LogError($"Client deleted or disabled: {clientId}");
+                return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
             }
         }
 
