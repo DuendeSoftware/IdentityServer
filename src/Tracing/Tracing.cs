@@ -14,8 +14,8 @@ internal static class Tracing
     /// <summary>
     /// Base ActivitySource
     /// </summary>
-    public static ActivitySource BaseActivitySource { get; } = new(
-        TraceNames.Base,
+    public static ActivitySource BasicActivitySource { get; } = new(
+        TraceNames.Basic,
         ServiceVersion);
 
     /// <summary>
@@ -56,27 +56,27 @@ internal static class Tracing
         /// <summary>
         /// Service name for base traces
         /// </summary>
-        public static string Base => "Duende.IdentityServer";
+        public static string Basic => "Duende.IdentityServer";
 
         /// <summary>
         /// Service name for store traces
         /// </summary>
-        public static string Store => Base + ".Stores";
+        public static string Store => Basic + ".Stores";
     
         /// <summary>
         /// Service name for caching traces
         /// </summary>
-        public static string Cache => Base + ".Cache";
+        public static string Cache => Basic + ".Cache";
     
         /// <summary>
         /// Service name for caching traces
         /// </summary>
-        public static string Services => Base + ".Services";
+        public static string Services => Basic + ".Services";
         
         /// <summary>
         /// Service name for detailed validation traces
         /// </summary>
-        public static string Validation => Base + ".Validation";
+        public static string Validation => Basic + ".Validation";
     }
     
     public static class Properties

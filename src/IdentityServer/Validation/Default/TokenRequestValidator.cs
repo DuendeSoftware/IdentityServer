@@ -88,7 +88,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
     /// </exception>
     public async Task<TokenRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
     {
-        using var activity = Tracing.BaseActivitySource.StartActivity("TokenRequestValidator.ValidateRequest");
+        using var activity = Tracing.BasicActivitySource.StartActivity("TokenRequestValidator.ValidateRequest");
         
         _logger.LogDebug("Start token request validation");
 

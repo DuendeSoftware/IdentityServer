@@ -34,7 +34,7 @@ internal class EndSessionEndpoint : IEndpointHandler
 
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Tracing.BaseActivitySource.StartActivity(Constants.EndpointNames.EndSession + "Endpoint");
+        using var activity = Tracing.BasicActivitySource.StartActivity(Constants.EndpointNames.EndSession + "Endpoint");
         
         NameValueCollection parameters;
         if (HttpMethods.IsGet(context.Request.Method))

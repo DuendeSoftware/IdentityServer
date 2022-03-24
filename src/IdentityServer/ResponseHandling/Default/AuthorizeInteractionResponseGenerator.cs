@@ -77,7 +77,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// <returns></returns>
     public virtual async Task<InteractionResponse> ProcessInteractionAsync(ValidatedAuthorizeRequest request, ConsentResponse consent = null)
     {
-        using var activity = Tracing.BaseActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessInteraction");
+        using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessInteraction");
         activity?.SetTag(Tracing.Properties.ClientId, request.Client.ClientId);
         
         Logger.LogTrace("ProcessInteractionAsync");
@@ -133,7 +133,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// <returns></returns>
     protected internal virtual async Task<InteractionResponse> ProcessLoginAsync(ValidatedAuthorizeRequest request)
     {
-        using var activity = Tracing.BaseActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessLogin");
+        using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessLogin");
         
         if (request.PromptModes.Contains(OidcConstants.PromptModes.Login) ||
             request.PromptModes.Contains(OidcConstants.PromptModes.SelectAccount))
@@ -261,7 +261,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// <exception cref="ArgumentException">Invalid PromptMode</exception>
     protected internal virtual async Task<InteractionResponse> ProcessConsentAsync(ValidatedAuthorizeRequest request, ConsentResponse consent = null)
     {
-        using var activity = Tracing.BaseActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessConsent");
+        using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessConsent");
             
         if (request == null) throw new ArgumentNullException(nameof(request));
 
