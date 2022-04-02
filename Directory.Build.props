@@ -6,6 +6,9 @@
         <Copyright>Duende Software</Copyright>
         <Product>Duende IdentityServer</Product>
 
+        <AnalysisMode>All</AnalysisMode>
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>Nullable</WarningsAsErrors>
         <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
 
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
