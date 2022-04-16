@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Configuration\Duende.IdentityServer.Configuration.csproj" />
+        <ProjectReference Include="..\IdentityServer\Duende.IdentityServer.csproj" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <Compile Include="..\Tracing\Tracing.cs">
+            <Link>Tracing.cs</Link>
+        </Compile>
+    </ItemGroup>
+
+</Project>

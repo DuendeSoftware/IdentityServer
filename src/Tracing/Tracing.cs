@@ -24,7 +24,14 @@ internal static class Tracing
     public static ActivitySource StoreActivitySource { get; } = new(
         TraceNames.Store,
         ServiceVersion);
-    
+
+    /// <summary>
+    /// Store ActivitySource
+    /// </summary>
+    public static ActivitySource ConfigurationActivitySource { get; } = new(
+        TraceNames.Store,
+        ServiceVersion);
+
     /// <summary>
     /// Cache ActivitySource
     /// </summary>
@@ -62,7 +69,12 @@ internal static class Tracing
         /// Service name for store traces
         /// </summary>
         public static string Store => Basic + ".Stores";
-    
+
+        /// <summary>
+        /// Service name for configuration traces
+        /// </summary>
+        public static string Configuration => Basic + ".Configuration";
+
         /// <summary>
         /// Service name for caching traces
         /// </summary>
