@@ -29,17 +29,17 @@ public class IdentityProviderMapperProfile : Profile
 }
 
 class PropertiesConverter :
-    IValueConverter<Dictionary<string, string>, string>,
-    IValueConverter<string, Dictionary<string, string>>
+    IValueConverter<IReadOnlyDictionary<string, string>, string>,
+    IValueConverter<string, IReadOnlyDictionary<string, string>>
 {
     public static PropertiesConverter Converter = new PropertiesConverter();
 
-    public string Convert(Dictionary<string, string> sourceMember, ResolutionContext context)
+    public string Convert(IReadOnlyDictionary<string, string> sourceMember, ResolutionContext context)
     {
         return JsonSerializer.Serialize(sourceMember);
     }
 
-    public Dictionary<string, string> Convert(string sourceMember, ResolutionContext context)
+    public IReadOnlyDictionary<string, string> Convert(string sourceMember, ResolutionContext context)
     {
         if (String.IsNullOrWhiteSpace(sourceMember))
         {

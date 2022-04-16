@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 namespace Duende.IdentityServer.Models;
 
 /// <summary>
@@ -28,6 +28,18 @@ public class IdentityProviderName
 }
 
 /// <summary>
+/// Additional options that are used to setup a new <see cref="IdentityProvider"/>
+/// </summary>
+public class IdentityProviderOptions
+{
+    /// <summary>
+    /// additional properties to add to the provider
+    /// make sure the keys added do not collide with the property names that exist within the class
+    /// </summary>
+    public Dictionary<string, string> AdditionalProperties { get; set; }
+}
+
+/// <summary>
 /// Models general storage for an external authentication provider/handler scheme
 /// </summary>
 public class IdentityProvider
@@ -43,6 +55,14 @@ public class IdentityProvider
     /// <summary>
     /// Ctor
     /// </summary>
+    public IdentityProvider(string type, Action<IdentityProviderOptions> setupAction) : this(type)
+    {
+        ProcessOptions(setupAction);
+    }
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
     public IdentityProvider(string type, IdentityProvider other) : this(type)
     {
         if (other == null) throw new ArgumentNullException(nameof(other));
@@ -52,7 +72,32 @@ public class IdentityProvider
         DisplayName = other.DisplayName;
         Enabled = other.Enabled;
         Type = other.Type;
-        Properties = new Dictionary<string, string>(other.Properties);
+        // add the other's properties this way, so it never collides with already set properties 
+        //  via other property setters in this class or subclasses
+        ProcessOptions(options =>
+            options.AdditionalProperties = new Dictionary<string, string>(other.Properties));
+    }
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    public IdentityProvider(string type, IdentityProvider other, Action<IdentityProviderOptions> setupAction) : this(type, other)
+    {
+        ProcessOptions(setupAction);
+    }
+
+    /// <summary>
+    /// Processes additional setup options passed in from the constructor
+    /// </summary>
+    private void ProcessOptions(Action<IdentityProviderOptions> setupAction)
+    {
+        if (setupAction == null)
+            throw new ArgumentNullException(nameof(setupAction));
+
+        var idpConfiguration = new IdentityProviderOptions();
+        setupAction(idpConfiguration);
+        foreach (var property in idpConfiguration.AdditionalProperties)
+            _properties.Add(property.Key, property.Value);
     }
 
     /// <summary>
@@ -78,7 +123,26 @@ public class IdentityProvider
     /// <summary>
     /// Protocol specific properties for the provider.
     /// </summary>
-    public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+    private Dictionary<string, string> _properties = new Dictionary<string, string>();
+
+    /// <summary>
+    /// Protocol specific properties for the provider.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Properties 
+    {
+        // ensure that the properties collection can never be modified
+        // directly by the outside code after the object is constructed.  
+        // since this _properties collection is populated via standard property setters
+        //  via subclasses which implement specific providers (e.g. OidcProvider)
+        // which is not intuitive to the consumer of this class.  
+        get => _properties;
+        // private setter for AutoMapper (which can access properties with private setters)
+        private set
+        {
+            foreach (var kvp in value)
+                this[kvp.Key] = kvp.Value;
+        }
+    }
 
     /// <summary>
     /// Properties indexer
@@ -89,12 +153,12 @@ public class IdentityProvider
     {
         get
         {
-            Properties.TryGetValue(name, out var result);
+            _properties.TryGetValue(name, out var result);
             return result;
         }
         set
         {
-            Properties[name] = value;
+            _properties[name] = value;
         }
     }
 }

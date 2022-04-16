@@ -18,11 +18,25 @@ public class OidcProvider : IdentityProvider
     public OidcProvider() : base("oidc")
     {
     }
-        
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    public OidcProvider(Action<IdentityProviderOptions> options) : base("oidc", options)
+    {
+    }
+
     /// <summary>
     /// Ctor
     /// </summary>
     public OidcProvider(IdentityProvider other) : base("oidc", other)
+    {
+    }
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    public OidcProvider(IdentityProvider other, Action<IdentityProviderOptions> options) : base("oidc", other, options)
     {
     }
 
