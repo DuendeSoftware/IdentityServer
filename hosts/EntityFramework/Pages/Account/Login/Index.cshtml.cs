@@ -21,7 +21,6 @@ public class Index : PageModel
 {
     private readonly TestUserStore _users;
     private readonly IIdentityServerInteractionService _interaction;
-    private readonly IClientStore _clientStore;
     private readonly IEventService _events;
     private readonly IAuthenticationSchemeProvider _schemeProvider;
     private readonly IIdentityProviderStore _identityProviderStore;
@@ -33,7 +32,6 @@ public class Index : PageModel
         
     public Index(
         IIdentityServerInteractionService interaction,
-        IClientStore clientStore,
         IAuthenticationSchemeProvider schemeProvider,
         IIdentityProviderStore identityProviderStore,
         IEventService events,
@@ -43,7 +41,6 @@ public class Index : PageModel
         _users = users ?? throw new Exception("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
             
         _interaction = interaction;
-        _clientStore = clientStore;
         _schemeProvider = schemeProvider;
         _identityProviderStore = identityProviderStore;
         _events = events;
@@ -209,17 +206,13 @@ public class Index : PageModel
 
 
         var allowLocal = true;
-        if (context?.Client.ClientId != null)
+        var client = context?.Client;
+        if (client != null)
         {
-            var client = await _clientStore.FindEnabledClientByIdAsync(context.Client.ClientId);
-            if (client != null)
+            allowLocal = client.EnableLocalLogin;
+            if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Any())
             {
-                allowLocal = client.EnableLocalLogin;
-
-                if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Any())
-                {
-                    providers = providers.Where(provider => client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
-                }
+                providers = providers.Where(provider => client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
             }
         }
 
