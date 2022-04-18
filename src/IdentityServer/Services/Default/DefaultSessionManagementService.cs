@@ -15,7 +15,7 @@ namespace Duende.IdentityServer.Services;
 /// </summary>
 public class DefaultSessionManagementService : ISessionManagementService
 {
-    private readonly IServerSideTicketService _serverSideTicketService;
+    private readonly IServerSideTicketStore _serverSideTicketStore;
     private readonly IServerSideSessionStore _serverSideSessionStore;
     private readonly IPersistedGrantStore _persistedGrantStore;
     private readonly IBackChannelLogoutService _backChannelLogoutService;
@@ -24,12 +24,12 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// Ctor.
     /// </summary>
     public DefaultSessionManagementService(
-        IServerSideTicketService serverSideTicketService,
+        IServerSideTicketStore serverSideTicketStore,
         IServerSideSessionStore serverSideSessionStore,
         IPersistedGrantStore persistedGrantStore,
         IBackChannelLogoutService backChannelLogoutService)
     {
-        _serverSideTicketService = serverSideTicketService;
+        _serverSideTicketStore = serverSideTicketStore;
         _serverSideSessionStore = serverSideSessionStore;
         _persistedGrantStore = persistedGrantStore;
         _backChannelLogoutService = backChannelLogoutService;
@@ -38,7 +38,9 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
-        return _serverSideTicketService.QuerySessionsAsync(filter, cancellationToken);
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultSessionManagementService.QuerySessions");
+
+        return _serverSideTicketStore.QuerySessionsAsync(filter, cancellationToken);
     }
 
     static readonly string[] OnlyTokenTypes = new[] {
@@ -51,6 +53,8 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public async Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultSessionManagementService.RemoveSessions");
+
         if (context.RevokeTokens || context.RevokeConsents)
         {
             // delete the tokens
@@ -84,7 +88,7 @@ public class DefaultSessionManagementService : ISessionManagementService
         if (context.SendBackchannelLogoutNotification)
         {
             // we might have more than one, so load them all
-            var sessions = await _serverSideTicketService.GetSessionsAsync(
+            var sessions = await _serverSideTicketStore.GetSessionsAsync(
                 new SessionFilter
                 {
                     SubjectId = context.SubjectId,

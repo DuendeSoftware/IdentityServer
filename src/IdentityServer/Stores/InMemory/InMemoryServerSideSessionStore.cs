@@ -24,6 +24,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task CreateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.CreateSession");
+        
         if (!_store.TryAdd(session.Key, session.Clone()))
         {
             throw new Exception("Key already exists");
@@ -34,6 +36,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task<ServerSideSession> GetSessionAsync(string key, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.GetSession");
+        
         _store.TryGetValue(key, out var item);
         return Task.FromResult(item?.Clone());
     }
@@ -41,6 +45,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task UpdateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.UpdateSession");
+        
         _store[session.Key] = session.Clone();
         return Task.CompletedTask;
     }
@@ -48,6 +54,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task DeleteSessionAsync(string key, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.DeleteSession");
+        
         _store.TryRemove(key, out _);
         return Task.CompletedTask;
     }
@@ -57,6 +65,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task<IReadOnlyCollection<ServerSideSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.GetSessions");
+        
         filter.Validate();
 
         var query = _store.Values.AsQueryable();
@@ -76,6 +86,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task DeleteSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.DeleteSessions");
+        
         filter.Validate();
 
         var query = _store.Values.AsQueryable();
@@ -102,6 +114,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public Task<IReadOnlyCollection<ServerSideSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.GetAndRemoveExpiredSession");
+        
         var results = _store.Values
             .Where(x => x.Expires < DateTime.UtcNow)
             .OrderBy(x => x.Key)
@@ -121,6 +135,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc/>
     public Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.QuerySessions");
+        
         // it's possible that this implementation could have been done differently (e.g. use the page number for the token)
         // but it was done deliberatly in such a way to allow document databases to mimic the logic
         // and omit features not supported (such as total count, total pages, and current page)

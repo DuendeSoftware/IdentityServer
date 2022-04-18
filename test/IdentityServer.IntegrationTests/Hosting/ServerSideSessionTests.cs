@@ -27,7 +27,7 @@ public class ServerSideSessionTests
 
     private IdentityServerPipeline _pipeline = new IdentityServerPipeline();
     private IServerSideSessionStore _sessionStore;
-    private IServerSideTicketService _ticketService;
+    private IServerSideTicketStore _ticketService;
     private ISessionManagementService _sessionMgmt;
     private IPersistedGrantStore _grantStore;
     private IRefreshTokenStore _refreshTokenStore;
@@ -101,7 +101,7 @@ public class ServerSideSessionTests
         _pipeline.Initialize();
 
         _sessionStore = _pipeline.Resolve<IServerSideSessionStore>();
-        _ticketService = _pipeline.Resolve<IServerSideTicketService>();
+        _ticketService = _pipeline.Resolve<IServerSideTicketStore>();
         _sessionMgmt = _pipeline.Resolve<ISessionManagementService>();
         _grantStore = _pipeline.Resolve<IPersistedGrantStore>();
         _refreshTokenStore = _pipeline.Resolve<IRefreshTokenStore>();

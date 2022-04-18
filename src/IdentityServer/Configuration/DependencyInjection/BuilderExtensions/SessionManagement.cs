@@ -39,7 +39,7 @@ public static class SessionManagementServiceCollectionExtensions
         builder.Services.AddSingleton<IServerSideSessionsMarker, NopIServerSideSessionsMarker>();
         builder.Services.AddSingleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureApplicationCookieTicketStore>();
         builder.Services.TryAddTransient<ISessionManagementService, DefaultSessionManagementService>();
-        builder.Services.TryAddTransient<IServerSideTicketService, ServerSideTicketService>();
+        builder.Services.TryAddTransient<IServerSideTicketStore, ServerSideTicketStore>();
 
         // wraps IRefreshTokenService to extend sessions
         builder.Services.AddTransientDecorator<IRefreshTokenService, ServerSideSessionRefreshTokenService>();

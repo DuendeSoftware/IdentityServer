@@ -5,7 +5,6 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
@@ -16,18 +15,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Services;
+namespace Duende.IdentityServer.Stores;
 
 /// <summary>
 /// IServerSideSessionService backed by server side session store
 /// </summary>
-public class ServerSideTicketService : IServerSideTicketService
+public class ServerSideTicketStore : IServerSideTicketStore
 {
     private readonly IdentityServerOptions _options;
     private readonly IIssuerNameService _issuerNameService;
     private readonly IServerSideSessionStore _store;
     private readonly IDataProtector _protector;
-    private readonly ILogger<ServerSideTicketService> _logger;
+    private readonly ILogger<ServerSideTicketStore> _logger;
 
     /// <summary>
     /// ctor
@@ -37,12 +36,12 @@ public class ServerSideTicketService : IServerSideTicketService
     /// <param name="store"></param>
     /// <param name="dataProtectionProvider"></param>
     /// <param name="logger"></param>
-    public ServerSideTicketService(
+    public ServerSideTicketStore(
         IdentityServerOptions options,
         IIssuerNameService issuerNameService,
         IServerSideSessionStore store,
         IDataProtectionProvider dataProtectionProvider,
-        ILogger<ServerSideTicketService> logger)
+        ILogger<ServerSideTicketStore> logger)
     {
         _options = options;
         _issuerNameService = issuerNameService;
@@ -54,6 +53,8 @@ public class ServerSideTicketService : IServerSideTicketService
     /// <inheritdoc />
     public async Task<string> StoreAsync(AuthenticationTicket ticket)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.Store");
+
         ArgumentNullException.ThrowIfNull(ticket);
 
         ticket.SetIssuer(await _issuerNameService.GetCurrentAsync());
@@ -83,6 +84,8 @@ public class ServerSideTicketService : IServerSideTicketService
     /// <inheritdoc />
     public async Task<AuthenticationTicket> RetrieveAsync(string key)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.Retrieve");
+        
         ArgumentNullException.ThrowIfNull(key);
 
         _logger.LogDebug("Retrieve AuthenticationTicket for key {key}", key);
@@ -111,6 +114,8 @@ public class ServerSideTicketService : IServerSideTicketService
     /// <inheritdoc />
     public async Task RenewAsync(string key, AuthenticationTicket ticket)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.Renew");
+        
         ArgumentNullException.ThrowIfNull(ticket);
 
         var session = await _store.GetSessionAsync(key);
@@ -144,6 +149,8 @@ public class ServerSideTicketService : IServerSideTicketService
     /// <inheritdoc />
     public Task RemoveAsync(string key)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.Remove");
+        
         ArgumentNullException.ThrowIfNull(key);
 
         _logger.LogDebug("Removing AuthenticationTicket from store for key {key}", key);
@@ -154,6 +161,8 @@ public class ServerSideTicketService : IServerSideTicketService
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<UserSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.GetSessions");
+        
         var sessions = await _store.GetSessionsAsync(filter, cancellationToken);
 
         var results = sessions
@@ -179,6 +188,8 @@ public class ServerSideTicketService : IServerSideTicketService
     /// <inheritdoc />
     public async Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.QuerySessions");
+        
         var results = await _store.QuerySessionsAsync(filter, cancellationToken);
 
         var tickets = results.Results
@@ -215,6 +226,8 @@ public class ServerSideTicketService : IServerSideTicketService
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<UserSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.GetAndRemoveExpiredSessions");
+        
         var sessions = await _store.GetAndRemoveExpiredSessionsAsync(count, cancellationToken);
 
         var results = sessions

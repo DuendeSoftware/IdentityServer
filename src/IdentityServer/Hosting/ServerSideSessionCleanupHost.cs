@@ -9,6 +9,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -119,14 +120,14 @@ public class ServerSideSessionCleanupHost : IHostedService
             {
                 var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<ServerSideSessionCleanupHost>>();
                 var options = serviceScope.ServiceProvider.GetRequiredService<IdentityServerOptions>();
-                var serverSideTicketService = serviceScope.ServiceProvider.GetRequiredService<IServerSideTicketService>();
+                var serverSideTicketStore = serviceScope.ServiceProvider.GetRequiredService<IServerSideTicketStore>();
                 var sessionCoordinationService = serviceScope.ServiceProvider.GetRequiredService<ISessionCoordinationService>();
 
                 var found = Int32.MaxValue;
 
                 while (found > 0)
                 {
-                    var sessions = await serverSideTicketService.GetAndRemoveExpiredSessionsAsync(options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
+                    var sessions = await serverSideTicketStore.GetAndRemoveExpiredSessionsAsync(options.ServerSideSessions.RemoveExpiredSessionsBatchSize, cancellationToken);
                     found = sessions.Count;
 
                     if (found > 0)
