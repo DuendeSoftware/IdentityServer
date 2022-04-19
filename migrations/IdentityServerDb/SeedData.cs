@@ -107,7 +107,11 @@ public class SeedData
                 DisplayName = "Google",
                 Authority = "https://accounts.google.com",
                 ClientId = "998042782978-gkes3j509qj26omrh6orvrnu0klpflh6.apps.googleusercontent.com",
-                Scope = "openid profile email"
+                Scope = "openid profile email",
+                Properties = 
+                {
+                    { "foo", "bar" }
+                }
             }.ToEntity());
             context.SaveChanges();
         }

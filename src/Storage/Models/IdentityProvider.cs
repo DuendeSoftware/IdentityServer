@@ -78,7 +78,7 @@ public class IdentityProvider
     /// <summary>
     /// Protocol specific properties for the provider.
     /// </summary>
-    public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+    public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
     /// <summary>
     /// Properties indexer
