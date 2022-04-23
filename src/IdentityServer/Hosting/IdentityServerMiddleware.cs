@@ -10,10 +10,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
-using Microsoft.Extensions.DependencyInjection;
-using Duende.IdentityServer.Stores;
-using System.Collections.Generic;
-using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Models;
 using System.Linq;
 
 namespace Duende.IdentityServer.Hosting;
