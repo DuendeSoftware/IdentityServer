@@ -44,6 +44,15 @@ public interface IClientRepository
     Task Delete(string clientId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// List the clients
+    /// </summary>
+    /// <param name="continuationToken">A continuation token to continue listing </param>
+    /// <param name="maxCount"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<ClientListResult> List(string? continuationToken = null, int maxCount = 10, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Check if the CorsOriginExists on any client.
     /// </summary>
     /// <param name="origin"></param>

@@ -49,9 +49,18 @@ public class ClientRepository : Repository, IClientRepository
     public Task Delete(string clientId, CancellationToken cancellationToken = default)
     {
         //TODO: can't delete by id?
-        //Context.Clients!.Remove();
+        //Context.Clients.Remove();
         throw new NotImplementedException();
     }
+
+    public Task<ClientListResult> List(
+        string? continuationToken = null,
+        int maxCount = 10,
+        CancellationToken cancellationToken = default)
+    {
+        // Context.Clients.Take()
+        throw new NotImplementedException();
+;    }
 
     /// <inheritdoc/>
     public virtual async Task<bool> CorsOriginExists(string origin, CancellationToken cancellationToken = default)
