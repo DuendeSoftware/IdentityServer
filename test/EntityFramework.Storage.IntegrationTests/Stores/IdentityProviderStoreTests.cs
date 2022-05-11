@@ -8,7 +8,6 @@ using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.EntityFramework.Stores;
-using Duende.IdentityServer.Hosting.DynamicProviders;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using FluentAssertions;

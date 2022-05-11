@@ -1,4 +1,3 @@
-using System;
 using Duende.IdentityServer;
 using IdentityServerHost.Data;
 using IdentityServerHost.Models;
@@ -8,8 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
 

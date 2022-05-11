@@ -8,7 +8,6 @@ using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
-using static Duende.IdentityServer.Constants;
 using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;

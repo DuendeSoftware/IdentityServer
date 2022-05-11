@@ -13,7 +13,6 @@ using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.Validation;
 

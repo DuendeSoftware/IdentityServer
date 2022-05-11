@@ -16,7 +16,6 @@ using Xunit;
 using IdentityModel.Client;
 using System.Collections.Generic;
 using System;
-using System.Net.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace IntegrationTests.Hosting;
