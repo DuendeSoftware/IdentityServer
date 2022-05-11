@@ -3,10 +3,6 @@
 
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
 
 namespace IntegrationTests.Common;

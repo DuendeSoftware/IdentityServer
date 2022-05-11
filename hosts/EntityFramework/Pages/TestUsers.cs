@@ -3,7 +3,6 @@
 
 
 using IdentityModel;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Json;
 using Duende.IdentityServer;

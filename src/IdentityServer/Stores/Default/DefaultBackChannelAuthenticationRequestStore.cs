@@ -9,7 +9,6 @@ using Duende.IdentityServer.Stores.Serialization;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Extensions;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Duende.IdentityServer.Stores;
 

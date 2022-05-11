@@ -17,7 +17,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using System;
-using Duende.IdentityServer.Stores;
 using Duende.IdentityServer;
 using Microsoft.AspNetCore.Authentication;
 

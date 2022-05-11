@@ -2,8 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using Microsoft.Extensions.Logging;
-using System;
 using Duende.IdentityServer.Validation;
 
 namespace IdentityServerHost.Extensions;

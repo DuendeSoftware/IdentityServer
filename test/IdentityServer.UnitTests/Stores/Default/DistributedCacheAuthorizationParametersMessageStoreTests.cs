@@ -2,18 +2,11 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Duende.IdentityServer;
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Stores.Default;
-using Duende.IdentityServer.Stores.Serialization;
 using FluentAssertions;
 using UnitTests.Common;
 using Xunit;

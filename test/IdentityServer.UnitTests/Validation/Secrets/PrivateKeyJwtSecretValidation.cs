@@ -21,7 +21,6 @@ using UnitTests.Validation.Setup;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
-using Microsoft.AspNetCore.Http;
 
 namespace UnitTests.Validation.Secrets;
 
