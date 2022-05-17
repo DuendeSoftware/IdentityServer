@@ -43,7 +43,7 @@ public class ConfigurationDbContext<TContext> : DbContext, IConfigurationDbConte
     /// <summary>
     /// The store options.
     /// </summary>
-    public ConfigurationStoreOptions StoreOptions { get; private set; }
+    public ConfigurationStoreOptions StoreOptions { get; set; }
     
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfigurationDbContext"/> class.
