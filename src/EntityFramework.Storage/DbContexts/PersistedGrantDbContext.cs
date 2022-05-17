@@ -28,17 +28,6 @@ public class PersistedGrantDbContext : PersistedGrantDbContext<PersistedGrantDbC
         : base(options)
     {
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PersistedGrantDbContext"/> class.
-    /// </summary>
-    /// <param name="options">The options.</param>
-    /// <param name="storeOptions"></param>
-    /// <exception cref="ArgumentNullException">storeOptions</exception>
-    public PersistedGrantDbContext(DbContextOptions<PersistedGrantDbContext> options, OperationalStoreOptions storeOptions)
-        : base(options, storeOptions)
-    {
-    }
 }
 
 /// <summary>
@@ -62,18 +51,6 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
     public PersistedGrantDbContext(DbContextOptions options)
         : base(options)
     {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PersistedGrantDbContext"/> class.
-    /// </summary>
-    /// <param name="options">The options.</param>
-    /// <param name="storeOptions"></param>
-    /// <exception cref="ArgumentNullException">storeOptions</exception>
-    public PersistedGrantDbContext(DbContextOptions options, OperationalStoreOptions storeOptions)
-        : base(options)
-    {
-        StoreOptions = storeOptions;
     }
 
     /// <inheritdoc/>
