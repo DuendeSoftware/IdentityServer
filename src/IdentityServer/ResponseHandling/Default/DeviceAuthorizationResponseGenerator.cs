@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace Duende.IdentityServer.ResponseHandling;
 
 /// <summary>
-/// The device authorizaiton response generator
+/// The device authorization response generator
 /// </summary>
 /// <seealso cref="IDeviceAuthorizationResponseGenerator" />
 public class DeviceAuthorizationResponseGenerator : IDeviceAuthorizationResponseGenerator
@@ -72,7 +72,7 @@ public class DeviceAuthorizationResponseGenerator : IDeviceAuthorizationResponse
     /// <exception cref="ArgumentException">Value cannot be null or whitespace. - baseUrl</exception>
     public virtual async Task<DeviceAuthorizationResponse> ProcessAsync(DeviceAuthorizationRequestValidationResult validationResult, string baseUrl)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DeviceAuthorizationResponseGenerator.Process");
+        using var activity = Tracing.BasicActivitySource.StartActivity("DeviceAuthorizationResponseGenerator.Process");
         
         if (validationResult == null) throw new ArgumentNullException(nameof(validationResult));
         if (validationResult.ValidatedRequest.Client == null) throw new ArgumentNullException(nameof(validationResult.ValidatedRequest.Client));

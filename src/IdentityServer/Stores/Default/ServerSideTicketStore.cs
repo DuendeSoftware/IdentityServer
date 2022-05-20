@@ -18,11 +18,12 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Stores;
 
 /// <summary>
-/// IServerSideSessionStore backed ticket store
+/// IServerSideSessionService backed by server side session store
 /// </summary>
 public class ServerSideTicketStore : IServerSideTicketStore
 {
     private readonly IdentityServerOptions _options;
+    private readonly IIssuerNameService _issuerNameService;
     private readonly IServerSideSessionStore _store;
     private readonly IDataProtector _protector;
     private readonly ILogger<ServerSideTicketStore> _logger;
@@ -31,16 +32,19 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// ctor
     /// </summary>
     /// <param name="options"></param>
+    /// <param name="issuerNameService"></param>
     /// <param name="store"></param>
     /// <param name="dataProtectionProvider"></param>
     /// <param name="logger"></param>
     public ServerSideTicketStore(
         IdentityServerOptions options,
+        IIssuerNameService issuerNameService,
         IServerSideSessionStore store,
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerSideTicketStore> logger)
     {
         _options = options;
+        _issuerNameService = issuerNameService;
         _store = store;
         _protector = dataProtectionProvider.CreateProtector("Duende.SessionManagement.ServerSideTicketStore");
         _logger = logger;
@@ -49,7 +53,11 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public async Task<string> StoreAsync(AuthenticationTicket ticket)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.Store");
+
         ArgumentNullException.ThrowIfNull(ticket);
+
+        ticket.SetIssuer(await _issuerNameService.GetCurrentAsync());
 
         var key = CryptoRandom.CreateUniqueId(format: CryptoRandom.OutputFormat.Hex);
 
@@ -64,7 +72,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
             Expires = ticket.GetExpiration(),
             SubjectId = ticket.GetSubjectId(),
             SessionId = ticket.GetSessionId(),
-            DisplayName = ticket.GetDisplayName(_options.Authentication.UserDisplayNameClaimType),
+            DisplayName = ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
             Ticket = ticket.Serialize(_protector)
         };
 
@@ -76,6 +84,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public async Task<AuthenticationTicket> RetrieveAsync(string key)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.Retrieve");
+        
         ArgumentNullException.ThrowIfNull(key);
 
         _logger.LogDebug("Retrieve AuthenticationTicket for key {key}", key);
@@ -104,6 +114,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public async Task RenewAsync(string key, AuthenticationTicket ticket)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.Renew");
+        
         ArgumentNullException.ThrowIfNull(ticket);
 
         var session = await _store.GetSessionAsync(key);
@@ -116,7 +128,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
 
         var sub = ticket.GetSubjectId();
         var sid = ticket.GetSessionId();
-        var name = String.IsNullOrWhiteSpace(_options.Authentication.UserDisplayNameClaimType) ? null : ticket.Principal.FindFirst(_options.Authentication.UserDisplayNameClaimType)?.Value;
+        var name = String.IsNullOrWhiteSpace(_options.ServerSideSessions.UserDisplayNameClaimType) ? null : ticket.Principal.FindFirst(_options.ServerSideSessions.UserDisplayNameClaimType)?.Value;
 
         var isNew = session.SubjectId != sub || session.SessionId != sid;
         if (isNew)
@@ -137,6 +149,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public Task RemoveAsync(string key)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.Remove");
+        
         ArgumentNullException.ThrowIfNull(key);
 
         _logger.LogDebug("Removing AuthenticationTicket from store for key {key}", key);
@@ -147,6 +161,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<UserSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.GetSessions");
+        
         var sessions = await _store.GetSessionsAsync(filter, cancellationToken);
 
         var results = sessions
@@ -156,10 +172,11 @@ public class ServerSideTicketStore : IServerSideTicketStore
             {
                 SubjectId = item.Ticket.GetSubjectId(),
                 SessionId = item.Ticket.GetSessionId(),
-                DisplayName = item.Ticket.GetDisplayName(_options.Authentication.UserDisplayNameClaimType),
+                DisplayName = item.Ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
                 Created = item.Ticket.GetIssued(),
                 Renewed = item.Renewed,
                 Expires = item.Ticket.GetExpiration(),
+                Issuer = item.Ticket.GetIssuer(),
                 ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
                 AuthenticationTicket = item.Ticket
             })
@@ -171,6 +188,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public async Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.QuerySessions");
+        
         var results = await _store.QuerySessionsAsync(filter, cancellationToken);
 
         var tickets = results.Results
@@ -180,10 +199,11 @@ public class ServerSideTicketStore : IServerSideTicketStore
             {
                 SubjectId = item.Ticket.GetSubjectId(),
                 SessionId = item.Ticket.GetSessionId(),
-                DisplayName = item.Ticket.GetDisplayName(_options.Authentication.UserDisplayNameClaimType),
+                DisplayName = item.Ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
                 Created = item.Ticket.GetIssued(),
                 Renewed = item.Renewed,
                 Expires = item.Ticket.GetExpiration(),
+                Issuer = item.Ticket.GetIssuer(),
                 ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
                 AuthenticationTicket = item.Ticket
             })
@@ -201,5 +221,32 @@ public class ServerSideTicketStore : IServerSideTicketStore
         };
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<UserSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default)
+    {
+        using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideTicketStore.GetAndRemoveExpiredSessions");
+        
+        var sessions = await _store.GetAndRemoveExpiredSessionsAsync(count, cancellationToken);
+
+        var results = sessions
+            .Select(x => new { x.Renewed, Ticket = x.Deserialize(_protector, _logger)! })
+            .Where(x => x != null && x.Ticket != null)
+            .Select(item => new UserSession
+            {
+                SubjectId = item.Ticket.GetSubjectId(),
+                SessionId = item.Ticket.GetSessionId(),
+                DisplayName = item.Ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
+                Created = item.Ticket.GetIssued(),
+                Renewed = item.Renewed,
+                Expires = item.Ticket.GetExpiration(),
+                Issuer = item.Ticket.GetIssuer(),
+                ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
+                AuthenticationTicket = item.Ticket
+            })
+            .ToArray();
+
+        return results;
     }
 }

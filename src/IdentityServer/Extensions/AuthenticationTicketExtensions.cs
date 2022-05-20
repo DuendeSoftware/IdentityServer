@@ -52,6 +52,24 @@ public static class AuthenticationTicketExtensions
     }
 
     /// <summary>
+    /// Gets the issuer
+    /// </summary>
+    public static string GetIssuer(this AuthenticationTicket ticket)
+    {
+        ticket.Properties.Items.TryGetValue(JwtClaimTypes.Issuer, out var value);
+        return value;
+    }
+    
+    /// <summary>
+    /// Sets a issuer
+    /// </summary>
+    public static void SetIssuer(this AuthenticationTicket ticket, string issuer)
+    {
+        ticket.Properties.Items[JwtClaimTypes.Issuer] = issuer;
+    }
+
+
+    /// <summary>
     /// Extracts the issuance time
     /// </summary>
     public static DateTime GetIssued(this AuthenticationTicket ticket)

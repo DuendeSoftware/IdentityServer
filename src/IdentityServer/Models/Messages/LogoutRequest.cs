@@ -101,7 +101,7 @@ public class LogoutMessage
     public IDictionary<string, string[]> Parameters { get; set; } = new Dictionary<string, string[]>();
 
     /// <summary>
-    ///  Flag to indicate if the payload contains useful information or not to avoid serailization.
+    ///  Flag to indicate if the payload contains useful information or not to avoid serialization.
     /// </summary>
     internal bool ContainsPayload => ClientId.IsPresent() || ClientIds?.Any() == true;
 }

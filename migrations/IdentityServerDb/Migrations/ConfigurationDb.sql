@@ -88,6 +88,7 @@ CREATE TABLE [Clients] (
     [DeviceCodeLifetime] int NOT NULL,
     [CibaLifetime] int NULL,
     [PollingInterval] int NULL,
+    [CoordinateLifetimeWithUserSession] bit NULL,
     [Created] datetime2 NOT NULL,
     [Updated] datetime2 NULL,
     [LastAccessed] datetime2 NULL,
@@ -360,7 +361,7 @@ CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20220309202515_Configuration', N'6.0.0');
+VALUES (N'20220324152912_Configuration', N'6.0.0');
 GO
 
 COMMIT;

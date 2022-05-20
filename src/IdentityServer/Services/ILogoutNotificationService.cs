@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
@@ -54,4 +54,10 @@ public class BackChannelLogoutRequest
     /// Gets a value indicating whether the session identifier is required.
     /// </summary>
     public bool SessionIdRequired { get; set; }
+
+    /// <summary>
+    /// The issuer for the back-channel logout
+    /// </summary>
+    public string Issuer { get; set; }
+
 }

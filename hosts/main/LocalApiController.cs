@@ -2,10 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using Duende.IdentityServer;
 
 namespace IdentityServerHost;
 

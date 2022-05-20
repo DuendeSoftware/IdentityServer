@@ -3,7 +3,7 @@
 
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +23,11 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <summary>
     /// Ctor.
     /// </summary>
-    public DefaultSessionManagementService(IServerSideTicketStore serverSideTicketStore, IServerSideSessionStore serverSideSessionStore, IPersistedGrantStore persistedGrantStore, IBackChannelLogoutService backChannelLogoutService)
+    public DefaultSessionManagementService(
+        IServerSideTicketStore serverSideTicketStore,
+        IServerSideSessionStore serverSideSessionStore,
+        IPersistedGrantStore persistedGrantStore,
+        IBackChannelLogoutService backChannelLogoutService)
     {
         _serverSideTicketStore = serverSideTicketStore;
         _serverSideSessionStore = serverSideSessionStore;
@@ -34,6 +38,8 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultSessionManagementService.QuerySessions");
+
         return _serverSideTicketStore.QuerySessionsAsync(filter, cancellationToken);
     }
 
@@ -47,16 +53,7 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public async Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default)
     {
-        if (context.RemoveServerSideSession)
-        {
-            // delete the cookies
-            await _serverSideSessionStore.DeleteSessionsAsync(new SessionFilter
-            {
-                SubjectId = context.SubjectId,
-                SessionId = context.SessionId,
-            }, cancellationToken);
-        }
-
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultSessionManagementService.RemoveSessions");
 
         if (context.RevokeTokens || context.RevokeConsents)
         {
@@ -71,7 +68,7 @@ public class DefaultSessionManagementService : ISessionManagementService
             {
                 grantFilter.ClientIds = context.ClientIds;
             }
-            
+
             if (!context.RevokeTokens || !context.RevokeConsents)
             {
                 if (context.RevokeConsents)
@@ -86,7 +83,6 @@ public class DefaultSessionManagementService : ISessionManagementService
 
             await _persistedGrantStore.RemoveAllAsync(grantFilter);
         }
-
 
         // send back channel SLO
         if (context.SendBackchannelLogoutNotification)
@@ -106,9 +102,20 @@ public class DefaultSessionManagementService : ISessionManagementService
                 {
                     SubjectId = session.SubjectId,
                     SessionId = session.SessionId,
+                    Issuer = session.Issuer,
                     ClientIds = session.ClientIds.Where(x => context.ClientIds == null || context.ClientIds.Contains(x))
                 });
             }
+        }
+
+        if (context.RemoveServerSideSession)
+        {
+            // delete the cookies
+            await _serverSideSessionStore.DeleteSessionsAsync(new SessionFilter
+            {
+                SubjectId = context.SubjectId,
+                SessionId = context.SessionId,
+            }, cancellationToken);
         }
     }
 }

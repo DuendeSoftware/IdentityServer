@@ -3,8 +3,6 @@
 
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
@@ -41,6 +39,11 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
     where TContext : DbContext, IPersistedGrantDbContext
 {
     /// <summary>
+    /// The options for this store.
+    /// </summary>
+    protected OperationalStoreOptions StoreOptions { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="PersistedGrantDbContext"/> class.
     /// </summary>
     /// <param name="options">The options.</param>
@@ -65,13 +68,17 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var storeOptions = this.GetService<OperationalStoreOptions>();
-
-        if (storeOptions is null)
+        if (StoreOptions is null)
         {
-            throw new ArgumentNullException(nameof(storeOptions));
+            StoreOptions = this.GetService<OperationalStoreOptions>();
+
+            if (StoreOptions is null)
+            {
+                throw new ArgumentNullException(nameof(StoreOptions), "OperationalStoreOptions must be configured in the DI system.");
+            }
         }
-        modelBuilder.ConfigurePersistedGrantContext(storeOptions);
+        
+        modelBuilder.ConfigurePersistedGrantContext(StoreOptions);
 
         base.OnModelCreating(modelBuilder);
     }

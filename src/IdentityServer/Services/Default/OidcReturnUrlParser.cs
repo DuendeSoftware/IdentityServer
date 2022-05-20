@@ -41,7 +41,7 @@ internal class OidcReturnUrlParser : IReturnUrlParser
 
     public async Task<AuthorizationRequest> ParseAsync(string returnUrl)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("OidcReturnUrlParser.Parse");
+        using var activity = Tracing.ValidationActivitySource.StartActivity("OidcReturnUrlParser.Parse");
         
         if (IsValidReturnUrl(returnUrl))
         {
@@ -68,7 +68,7 @@ internal class OidcReturnUrlParser : IReturnUrlParser
 
     public bool IsValidReturnUrl(string returnUrl)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("OidcReturnUrlParser.IsValidReturnUrl");
+        using var activity = Tracing.ValidationActivitySource.StartActivity("OidcReturnUrlParser.IsValidReturnUrl");
         
         if (_options.UserInteraction.AllowOriginInReturnUrl && returnUrl != null)
         {

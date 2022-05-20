@@ -1,6 +1,4 @@
-using System;
 using IdentityServerHost;
-using Microsoft.AspNetCore.Builder;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;

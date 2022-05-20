@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Collections.Generic;
 using System.Threading;
@@ -26,4 +25,9 @@ public interface IServerSideTicketStore : ITicketStore
     /// Queries user sessions based on filter
     /// </summary>
     Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes and returns expired sessions
+    /// </summary>
+    Task<IReadOnlyCollection<UserSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default);
 }

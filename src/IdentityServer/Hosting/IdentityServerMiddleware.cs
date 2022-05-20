@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
+using Duende.IdentityServer.Models;
+using System.Linq;
 
 namespace Duende.IdentityServer.Hosting;
 
@@ -37,22 +39,22 @@ public class IdentityServerMiddleware
     /// </summary>
     /// <param name="context">The context.</param>
     /// <param name="router">The router.</param>
-    /// <param name="session">The user session.</param>
+    /// <param name="userSession">The user session.</param>
     /// <param name="events">The event service.</param>
     /// <param name="issuerNameService">The issuer name service</param>
-    /// <param name="backChannelLogoutService"></param>
+    /// <param name="sessionCoordinationService"></param>
     /// <returns></returns>
     public async Task Invoke(
         HttpContext context, 
         IEndpointRouter router, 
-        IUserSession session, 
+        IUserSession userSession, 
         IEventService events,
         IIssuerNameService issuerNameService,
-        IBackChannelLogoutService backChannelLogoutService)
+        ISessionCoordinationService sessionCoordinationService)
     {
         // this will check the authentication session and from it emit the check session
         // cookie needed from JS-based signout clients.
-        await session.EnsureSessionIdCookieAsync();
+        await userSession.EnsureSessionIdCookieAsync();
 
         context.Response.OnStarting(async () =>
         {
@@ -61,13 +63,20 @@ public class IdentityServerMiddleware
                 _logger.LogDebug("SignOutCalled set; processing post-signout session cleanup.");
 
                 // this clears our session id cookie so JS clients can detect the user has signed out
-                await session.RemoveSessionIdCookieAsync();
+                await userSession.RemoveSessionIdCookieAsync();
 
-                // back channel logout
-                var logoutContext = await session.GetLogoutNotificationContext();
-                if (logoutContext != null)
+                var user = await userSession.GetUserAsync();
+                if (user != null)
                 {
-                    await backChannelLogoutService.SendLogoutNotificationsAsync(logoutContext);
+                    var session = new UserSession
+                    {
+                        SubjectId = user.GetSubjectId(),
+                        SessionId = await userSession.GetSessionIdAsync(),
+                        DisplayName = user.GetDisplayName(),
+                        ClientIds = (await userSession.GetClientListAsync()).ToList(),
+                        Issuer = await issuerNameService.GetCurrentAsync()
+                    };
+                    await sessionCoordinationService.ProcessLogoutAsync(session);
                 }
             }
         });
@@ -79,7 +88,7 @@ public class IdentityServerMiddleware
             {
                 var endpointType = endpoint.GetType().FullName;
                 
-                using var activity = Tracing.ActivitySource.StartActivity("IdentityServerProtocolRequest");
+                using var activity = Tracing.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
                 activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
                 
                 LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());

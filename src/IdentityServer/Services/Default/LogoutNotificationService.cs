@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 using IdentityModel;
@@ -38,7 +38,7 @@ public class LogoutNotificationService : ILogoutNotificationService
     /// <inheritdoc/>
     public async Task<IEnumerable<string>> GetFrontChannelLogoutNotificationsUrlsAsync(LogoutNotificationContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("LogoutNotificationService.GetFrontChannelLogoutNotificationsUrls");
+        using var activity = Tracing.ServiceActivitySource.StartActivity("LogoutNotificationService.GetFrontChannelLogoutNotificationsUrls");
         
         var frontChannelUrls = new List<string>();
         foreach (var clientId in context.ClientIds)
@@ -85,7 +85,7 @@ public class LogoutNotificationService : ILogoutNotificationService
     /// <inheritdoc/>
     public async Task<IEnumerable<BackChannelLogoutRequest>> GetBackChannelLogoutNotificationsAsync(LogoutNotificationContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("LogoutNotificationService.GetBackChannelLogoutNotifications");
+        using var activity = Tracing.ServiceActivitySource.StartActivity("LogoutNotificationService.GetBackChannelLogoutNotifications");
         
         var backChannelLogouts = new List<BackChannelLogoutRequest>();
         foreach (var clientId in context.ClientIds)
@@ -101,7 +101,8 @@ public class LogoutNotificationService : ILogoutNotificationService
                         LogoutUri = client.BackChannelLogoutUri,
                         SubjectId = context.SubjectId,
                         SessionId = context.SessionId,
-                        SessionIdRequired = client.BackChannelLogoutSessionRequired
+                        SessionIdRequired = client.BackChannelLogoutSessionRequired,
+                        Issuer = context.Issuer,
                     };
 
                     backChannelLogouts.Add(back);

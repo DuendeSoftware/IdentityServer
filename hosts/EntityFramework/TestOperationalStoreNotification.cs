@@ -2,10 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework;
 using Duende.IdentityServer.EntityFramework.Entities;
 

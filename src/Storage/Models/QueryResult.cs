@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Duende.IdentityServer.Models;
 
 /// <summary>
-/// Query result for all user sessions
+/// Query result for paged data
 /// </summary>
 public class QueryResult<T>
 {

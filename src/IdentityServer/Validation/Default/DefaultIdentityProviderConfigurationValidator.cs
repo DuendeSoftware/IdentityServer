@@ -3,7 +3,6 @@
 
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
@@ -29,7 +28,7 @@ public class DefaultIdentityProviderConfigurationValidator : IIdentityProviderCo
     /// <inheritdoc/>
     public virtual async Task ValidateAsync(IdentityProviderConfigurationValidationContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultIdentityProviderConfigurationValidator.Validate");
+        using var activity = Tracing.ValidationActivitySource.StartActivity("DefaultIdentityProviderConfigurationValidator.Validate");
         
         var type = _options.DynamicProviders.FindProviderType(context.IdentityProvider.Type);
         if (type == null)

@@ -1,8 +1,5 @@
 using IdentityModel;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace IdentityServerHost;
 
@@ -14,7 +11,11 @@ internal static class IdentityServerExtensions
 
         builder.Services.AddIdentityServer(options =>
         {
-            options.Authentication.UserDisplayNameClaimType = JwtClaimTypes.Name;
+            options.Authentication.CoordinateClientLifetimesWithUserSession = true;
+            options.ServerSideSessions.UserDisplayNameClaimType = JwtClaimTypes.Name;
+            options.ServerSideSessions.RemoveExpiredSessions = true;
+            options.ServerSideSessions.RemoveExpiredSessionsFrequency = TimeSpan.FromSeconds(10);
+            options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout = true;
         })
             .AddTestUsers(TestUsers.Users)
             // this adds the config data from DB (clients, resources, CORS)
@@ -31,7 +32,6 @@ internal static class IdentityServerExtensions
                 options.EnableTokenCleanup = false;
                 options.RemoveConsumedTokens = true;
                 options.TokenCleanupInterval = 10; // interval in seconds
-                options.RemoveExpiredServerSideSessions = false;
             })
             .AddServerSideSessions()
             // this is something you will want in production to reduce load on and requests to the DB

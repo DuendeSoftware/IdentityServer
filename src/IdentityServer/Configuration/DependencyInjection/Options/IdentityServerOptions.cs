@@ -172,4 +172,9 @@ public class IdentityServerOptions
     /// Options for dynamic external providers.
     /// </summary>
     public DynamicProviderOptions DynamicProviders { get; set; } = new DynamicProviderOptions();
+
+    /// <summary>
+    /// Options for server-side sessions.
+    /// </summary>
+    public ServerSideSessionOptions ServerSideSessions { get; set; } = new ServerSideSessionOptions();
 }

@@ -29,20 +29,20 @@ internal class License
         var edition = claims.FindFirst("edition")?.Value;
         if (!Enum.TryParse<License.LicenseEdition>(edition, true, out var editionValue))
         {
-            throw new Exception($"Invalid edition in licence: '{edition}'");
+            throw new Exception($"Invalid edition in license: '{edition}'");
         }
 
         Edition = editionValue;
-        ISVFeature = claims.HasClaim("feature", "isv");
+        RedistributionFeature = claims.HasClaim("feature", "isv") || claims.HasClaim("feature", "redistribution");
 
-        if (IsCommunityEdition && ISVFeature)
+        if (IsCommunityEdition && RedistributionFeature)
         {
-            throw new Exception("Invalid License: ISV is not valid for community edition.");
+            throw new Exception("Invalid License: Redistribution is not valid for community edition.");
         }
 
-        if (IsBffEdition && ISVFeature)
+        if (IsBffEdition && RedistributionFeature)
         {
-            throw new Exception("Invalid License: ISV is not valid for BFF edition.");
+            throw new Exception("Invalid License: Redistribution is not valid for BFF edition.");
         }
 
         if (IsBffEdition)
@@ -115,7 +115,7 @@ internal class License
         if (!claims.HasClaim("feature", "unlimited_clients"))
         {
             // default values
-            if (ISVFeature)
+            if (RedistributionFeature)
             {
                 // default for all ISV editions
                 ClientLimit = 5;
@@ -140,7 +140,7 @@ internal class License
                 ClientLimit = clientLimit;
             }
 
-            if (!ISVFeature)
+            if (!RedistributionFeature)
             {
                 // these for the non-ISV editions that always have unlimited, regardless of explicit value
                 switch (Edition)
@@ -195,7 +195,7 @@ internal class License
     public bool KeyManagementFeature { get; set; }
     public bool ResourceIsolationFeature { get; set; }
     public bool DynamicProvidersFeature { get; set; }
-    public bool ISVFeature { get; set; }
+    public bool RedistributionFeature { get; set; }
     public bool BffFeature { get; set; }
     public bool CibaFeature { get; set; }
     public bool ServerSideSessionsFeature { get; set; }

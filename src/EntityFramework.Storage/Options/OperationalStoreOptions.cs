@@ -85,14 +85,6 @@ public class OperationalStoreOptions
     ///   <c>true</c> if consumed tokens are to be included in cleanup; otherwise, <c>false</c>.
     /// </value>
     public bool RemoveConsumedTokens { get; set; } = false;
-    
-    /// <summary>
-    /// Gets or sets a value indicating whether expired server side sessions will be included in the automatic clean up.
-    /// </summary>
-    /// <value>
-    ///   <c>true</c> if expired user sessions are to be included in cleanup; otherwise, <c>false</c>.
-    /// </value>
-    public bool RemoveExpiredServerSideSessions { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the token cleanup interval (in seconds). The default is 3600 (1 hour).

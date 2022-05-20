@@ -24,6 +24,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task CreateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.CreateSession");
+        
         if (!_store.TryAdd(session.Key, session.Clone()))
         {
             throw new Exception("Key already exists");
@@ -34,6 +36,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task<ServerSideSession> GetSessionAsync(string key, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.GetSession");
+        
         _store.TryGetValue(key, out var item);
         return Task.FromResult(item?.Clone());
     }
@@ -41,6 +45,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task UpdateSessionAsync(ServerSideSession session, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.UpdateSession");
+        
         _store[session.Key] = session.Clone();
         return Task.CompletedTask;
     }
@@ -48,6 +54,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task DeleteSessionAsync(string key, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.DeleteSession");
+        
         _store.TryRemove(key, out _);
         return Task.CompletedTask;
     }
@@ -57,6 +65,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task<IReadOnlyCollection<ServerSideSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.GetSessions");
+        
         filter.Validate();
 
         var query = _store.Values.AsQueryable();
@@ -76,6 +86,8 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     /// <inheritdoc />
     public Task DeleteSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.DeleteSessions");
+        
         filter.Validate();
 
         var query = _store.Values.AsQueryable();
@@ -99,10 +111,32 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
     }
 
 
+    /// <inheritdoc/>
+    public Task<IReadOnlyCollection<ServerSideSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default)
+    {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.GetAndRemoveExpiredSession");
+        
+        var results = _store.Values
+            .Where(x => x.Expires < DateTime.UtcNow)
+            .OrderBy(x => x.Key)
+            .Take(count)
+            .ToArray();
+
+        foreach (var item in results)
+        {
+            _store.Remove(item.Key, out _);
+        }
+
+        return Task.FromResult((IReadOnlyCollection<ServerSideSession>) results);
+    }
+
+
 
     /// <inheritdoc/>
     public Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryServerSideSessionStore.QuerySessions");
+        
         // it's possible that this implementation could have been done differently (e.g. use the page number for the token)
         // but it was done deliberatly in such a way to allow document databases to mimic the logic
         // and omit features not supported (such as total count, total pages, and current page)
@@ -182,7 +216,7 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
 
             if (currPage == 1 && hasNext && items.Length < countRequested)
             {
-                // this handles when we went back and are now at the begining but items were deleted.
+                // this handles when we went back and are now at the beginning but items were deleted.
                 // we need to start over and re-query from the beginning.
                 filter.ResultsToken = null;
                 filter.RequestPriorResults = false;
@@ -192,7 +226,7 @@ public class InMemoryServerSideSessionStore : IServerSideSessionStore
         else
         {
             items = query.OrderBy(x => x.Key)
-                // if last is "", then this will just start at begining
+                // if last is "", then this will just start at beginning
                 .Where(x => String.Compare(x.Key, last) > 0)
                 // and we +1 to see if there's a next page
                 .Take(countRequested + 1)

@@ -1,4 +1,4 @@
-﻿using Clients;
+using Clients;
 using IdentityModel;
 using IdentityModel.Client;
 using System;
@@ -35,7 +35,8 @@ namespace ConsoleDeviceFlow
             var response = await client.RequestDeviceAuthorizationAsync(new DeviceAuthorizationRequest
             {
                 Address = disco.DeviceAuthorizationEndpoint,
-                ClientId = "device"
+                ClientId = "device",
+                ClientCredentialStyle = ClientCredentialStyle.PostBody
             });
 
             if (response.IsError) throw new Exception(response.Error);

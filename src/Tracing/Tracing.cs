@@ -11,22 +11,73 @@ internal static class Tracing
     private static readonly Version AssemblyVersion = typeof(Tracing).Assembly.GetName().Version;
 
     /// <summary>
-    /// Standard ActivitySource for IdentityServer
+    /// Base ActivitySource
     /// </summary>
-    public static ActivitySource ActivitySource { get; } = new(
-        ServiceName,
+    public static ActivitySource BasicActivitySource { get; } = new(
+        TraceNames.Basic,
         ServiceVersion);
 
     /// <summary>
-    /// Service name
+    /// Store ActivitySource
     /// </summary>
-    public static string ServiceName => "Duende.IdentityServer";
-
+    public static ActivitySource StoreActivitySource { get; } = new(
+        TraceNames.Store,
+        ServiceVersion);
+    
     /// <summary>
-    /// Serivce version
+    /// Cache ActivitySource
+    /// </summary>
+    public static ActivitySource CacheActivitySource { get; } = new(
+        TraceNames.Cache,
+        ServiceVersion);
+    
+    /// <summary>
+    /// Cache ActivitySource
+    /// </summary>
+    public static ActivitySource ServiceActivitySource { get; } = new(
+        TraceNames.Services,
+        ServiceVersion);
+    
+    /// <summary>
+    /// Detailed validation ActivitySource
+    /// </summary>
+    public static ActivitySource ValidationActivitySource { get; } = new(
+        TraceNames.Validation,
+        ServiceVersion);
+    
+    /// <summary>
+    /// Service version
     /// </summary>
     public static string ServiceVersion => $"{AssemblyVersion.Major}.{AssemblyVersion.Minor}.{AssemblyVersion.Build}";
 
+    public static class TraceNames
+    {
+        /// <summary>
+        /// Service name for base traces
+        /// </summary>
+        public static string Basic => "Duende.IdentityServer";
+
+        /// <summary>
+        /// Service name for store traces
+        /// </summary>
+        public static string Store => Basic + ".Stores";
+    
+        /// <summary>
+        /// Service name for caching traces
+        /// </summary>
+        public static string Cache => Basic + ".Cache";
+    
+        /// <summary>
+        /// Service name for caching traces
+        /// </summary>
+        public static string Services => Basic + ".Services";
+        
+        /// <summary>
+        /// Service name for detailed validation traces
+        /// </summary>
+        public static string Validation => Basic + ".Validation";
+    }
+    
     public static class Properties
     {
         public const string EndpointType = "endpoint_type";

@@ -102,6 +102,7 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
                     DeviceCodeLifetime = table.Column<int>(type: "int", nullable: false),
                     CibaLifetime = table.Column<int>(type: "int", nullable: true),
                     PollingInterval = table.Column<int>(type: "int", nullable: true),
+                    CoordinateLifetimeWithUserSession = table.Column<bool>(type: "bit", nullable: true),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Updated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     LastAccessed = table.Column<DateTime>(type: "datetime2", nullable: true),

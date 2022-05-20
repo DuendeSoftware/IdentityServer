@@ -3,8 +3,6 @@
 
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
-using Microsoft.AspNetCore.Authentication;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,57 +18,11 @@ public interface ISessionManagementService
     /// Queries all the session related data for a user.
     /// </summary>
     Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Removes all the session related data for a user.
     /// </summary>
     Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Results from querying user sessions from session management service.
-/// </summary>
-public class UserSession
-{
-    /// <summary>
-    /// The subject ID
-    /// </summary>
-    public string SubjectId { get; set; } = default!;
-
-    /// <summary>
-    /// The session ID
-    /// </summary>
-    public string SessionId { get; set; } = default!;
-
-    /// <summary>
-    /// The display name for the user
-    /// </summary>
-    public string DisplayName { get; set; }
-
-    /// <summary>
-    /// The creation time
-    /// </summary>
-    public DateTime Created { get; set; }
-
-    /// <summary>
-    /// The renewal time
-    /// </summary>
-    public DateTime Renewed { get; set; }
-
-    /// <summary>
-    /// The expiration time
-    /// </summary>
-    public DateTime? Expires { get; set; }
-
-    /// <summary>
-    /// The client ids for the session
-    /// </summary>
-    public IReadOnlyCollection<string> ClientIds { get; set; } = default!;
-
-    /// <summary>
-    /// The underlying AuthenticationTicket
-    /// </summary>
-    public AuthenticationTicket AuthenticationTicket { get; set; } = default!;
 }
 
 /// <summary>
@@ -84,7 +36,7 @@ public class RemoveSessionsContext
     public string SubjectId { get; init; }
 
     /// <summary>
-    /// The sesion ID
+    /// The session ID
     /// </summary>
     public string SessionId { get; init; }
 

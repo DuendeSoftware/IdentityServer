@@ -74,7 +74,7 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
     /// <inheritdoc/>
     public virtual async Task SendLogoutNotificationsAsync(LogoutNotificationContext context)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("DefaultBackChannelLogoutService.SendLogoutNotifications");
+        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultBackChannelLogoutService.SendLogoutNotifications");
         
         var backChannelRequests = await LogoutNotificationService.GetBackChannelLogoutNotificationsAsync(context);
         if (backChannelRequests.Any())
@@ -143,6 +143,11 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
         if (claims.Any(x => x.Type == JwtClaimTypes.Nonce))
         {
             throw new InvalidOperationException("nonce claim is not allowed in the back-channel signout token.");
+        }
+
+        if (request.Issuer != null)
+        {
+            return await Tools.IssueJwtAsync(DefaultLogoutTokenLifetime, request.Issuer, claims);
         }
 
         return await Tools.IssueJwtAsync(DefaultLogoutTokenLifetime, claims);

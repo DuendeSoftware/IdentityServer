@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Services.KeyManagement;
 
 /// <summary>
-/// In-memory implmenetaion of ISigningKeyStoreCache based on static variables. This expects to be used as a singleton.
+/// In-memory implementation of ISigningKeyStoreCache based on static variables. This expects to be used as a singleton.
 /// </summary>
 class InMemoryKeyStoreCache : ISigningKeyStoreCache
 {

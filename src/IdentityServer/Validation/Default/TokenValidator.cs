@@ -32,6 +32,7 @@ internal class TokenValidator : ITokenValidator
     private readonly IClientStore _clients;
     private readonly IProfileService _profile;
     private readonly IKeyMaterialService _keys;
+    private readonly ISessionCoordinationService _sessionCoordinationService;
     private readonly ISystemClock _clock;
     private readonly TokenValidationLog _log;
 
@@ -43,6 +44,7 @@ internal class TokenValidator : ITokenValidator
         IReferenceTokenStore referenceTokenStore,
         ICustomTokenValidator customValidator,
         IKeyMaterialService keys,
+        ISessionCoordinationService sessionCoordinationService,
         ISystemClock clock,
         ILogger<TokenValidator> logger)
     {
@@ -53,6 +55,7 @@ internal class TokenValidator : ITokenValidator
         _referenceTokenStore = referenceTokenStore;
         _customValidator = customValidator;
         _keys = keys;
+        _sessionCoordinationService = sessionCoordinationService;
         _clock = clock;
         _logger = logger;
 
@@ -62,7 +65,7 @@ internal class TokenValidator : ITokenValidator
     public async Task<TokenValidationResult> ValidateIdentityTokenAsync(string token, string clientId = null,
         bool validateLifetime = true)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("TokenValidator.ValidateIdentityToken");
+        using var activity = Tracing.BasicActivitySource.StartActivity("TokenValidator.ValidateIdentityToken");
         
         _logger.LogDebug("Start identity token validation");
 
@@ -124,7 +127,7 @@ internal class TokenValidator : ITokenValidator
 
     public async Task<TokenValidationResult> ValidateAccessTokenAsync(string token, string expectedScope = null)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("TokenValidator.ValidateAccessToken");
+        using var activity = Tracing.BasicActivitySource.StartActivity("TokenValidator.ValidateAccessToken");
         
         _logger.LogTrace("Start access token validation");
 
@@ -220,6 +223,25 @@ internal class TokenValidator : ITokenValidator
 
                 return result;
             }
+
+            var sub = subClaim.Value;
+            var sid = principal.FindFirstValue("sid");
+            if (sid != null)
+            {
+                var sessionResult = await _sessionCoordinationService.ValidateSessionAsync(new SessionValidationRequest
+                {
+                    SubjectId = sub,
+                    SessionId = sid,
+                    Client = result.Client,
+                    Type = SessionValidationType.AccessToken
+                });
+
+                if (!sessionResult)
+                {
+                    _logger.LogError("Server-side session invalid for subject Id {subjectId} and session Id {sessionId}.", sub, sid);
+                    return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
+                }
+            }
         }
 
         // check expected scope(s)
@@ -253,7 +275,7 @@ internal class TokenValidator : ITokenValidator
     private async Task<TokenValidationResult> ValidateJwtAsync(string jwtString,
         IEnumerable<SecurityKeyInfo> validationKeys, bool validateLifetime = true, string audience = null)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("TokenValidator.ValidateJwt");
+        using var activity = Tracing.BasicActivitySource.StartActivity("TokenValidator.ValidateJwt");
         
         var handler = new JsonWebTokenHandler();
 
@@ -313,7 +335,8 @@ internal class TokenValidator : ITokenValidator
             client = await _clients.FindEnabledClientByIdAsync(clientId.Value);
             if (client == null)
             {
-                throw new InvalidOperationException("Client does not exist anymore.");
+                LogError($"Client deleted or disabled: {clientId}");
+                return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
             }
         }
 
@@ -350,7 +373,7 @@ internal class TokenValidator : ITokenValidator
 
     private async Task<TokenValidationResult> ValidateReferenceAccessTokenAsync(string tokenHandle)
     {
-        using var activity = Tracing.ActivitySource.StartActivity("TokenValidator.ValidateReferenceAccessToken");
+        using var activity = Tracing.BasicActivitySource.StartActivity("TokenValidator.ValidateReferenceAccessToken");
         
         _log.TokenHandle = tokenHandle;
         var token = await _referenceTokenStore.GetReferenceTokenAsync(tokenHandle);

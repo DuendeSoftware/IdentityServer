@@ -3,8 +3,6 @@ using Duende.IdentityServer;
 using IdentityModel;
 using IdentityServerHost.Configuration;
 using IdentityServerHost.Extensions;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServerHost;
@@ -23,7 +21,7 @@ internal static class IdentityServerExtensions
                 options.EmitScopesAsSpaceDelimitedStringInJwt = true;
                 options.Endpoints.EnableJwtRequestUri = true;
 
-                options.Authentication.UserDisplayNameClaimType = JwtClaimTypes.Name;
+                options.ServerSideSessions.UserDisplayNameClaimType = JwtClaimTypes.Name;
             })
             .AddServerSideSessions()
             .AddInMemoryClients(Clients.Get())
