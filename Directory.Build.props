@@ -5,6 +5,12 @@
         <Company>Duende Software</Company>
         <Copyright>Duende Software</Copyright>
         <Product>Duende IdentityServer</Product>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <LangVersion>10.0</LangVersion>
+        <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <ReportAnalyzer>true</ReportAnalyzer>
+        <AnalysisMode>Default</AnalysisMode>
 
         <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
 
@@ -26,6 +32,20 @@
         <None Include="../../LICENSE" Pack="true" Visible="false" PackagePath="" />
         <None Include="../../icon.png" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+
+        <PackageReference Include="Meziantou.Analyzer" Version="1.0.702">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+
+	</ItemGroup>
 
     <PropertyGroup>
         <MinVerAutoIncrement>minor</MinVerAutoIncrement>

@@ -105,7 +105,7 @@ public class Index : PageModel
                         IsPersistent = true,
                         ExpiresUtc = DateTimeOffset.UtcNow.Add(LoginOptions.RememberMeLoginDuration)
                     };
-                };
+                }
 
                 // issue authentication cookie with subject ID and username
                 var isuser = new IdentityServerUser(user.SubjectId)
