@@ -10,7 +10,7 @@ namespace IdentityServerHost.Pages.ServerSideSessions
     {
         private readonly ISessionManagementService _sessionManagementService;
 
-        public IndexModel(ISessionManagementService sessionManagementService)
+        public IndexModel(ISessionManagementService sessionManagementService = null)
         {
             _sessionManagementService = sessionManagementService;
         }
@@ -28,15 +28,17 @@ namespace IdentityServerHost.Pages.ServerSideSessions
 
         public async Task OnGet()
         {
-            UserSessions = await _sessionManagementService.QuerySessionsAsync(new SessionQuery
+            if (_sessionManagementService != null)
             {
-                ResultsToken = Token,
-                RequestPriorResults = Prev == "true",
-                CountRequested = 10,
-                DisplayName = Filter,
-                SessionId = Filter,
-                SubjectId = Filter,
-            });
+                UserSessions = await _sessionManagementService.QuerySessionsAsync(new SessionQuery
+                {
+                    ResultsToken = Token,
+                    RequestPriorResults = Prev == "true",
+                    DisplayName = Filter,
+                    SessionId = Filter,
+                    SubjectId = Filter,
+                });
+            }
         }
 
         [BindProperty]
