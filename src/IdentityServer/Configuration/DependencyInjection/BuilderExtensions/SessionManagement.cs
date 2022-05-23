@@ -75,7 +75,14 @@ public static class SessionManagementServiceCollectionExtensions
     public static IIdentityServerBuilder AddServerSideSessionStore<T>(this IIdentityServerBuilder builder)
         where T : class, IServerSideSessionStore
     {
-        builder.Services.AddTransient<IServerSideSessionStore, T>();
+        builder.Services.AddTransient<IServerSideSessionStore>(svcs =>
+        {
+            if (svcs.GetService<IServerSideSessionsMarker>() == null) return null;
+            return svcs.GetRequiredService<T>();
+        });
+
+        builder.Services.AddTransient<T>();
+
         return builder;
     }
 }
