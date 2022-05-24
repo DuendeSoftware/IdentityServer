@@ -23,7 +23,7 @@ internal static class IdentityServerExtensions
 
                 options.ServerSideSessions.UserDisplayNameClaimType = JwtClaimTypes.Name;
             })
-            .AddServerSideSessions()
+            //.AddServerSideSessions()
             .AddInMemoryClients(Clients.Get())
             .AddInMemoryIdentityResources(Resources.IdentityResources)
             .AddInMemoryApiScopes(Resources.ApiScopes)
