@@ -22,7 +22,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="All" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
         
-        <PackageReference Include="OpenTelemetry"  />
+        <PackageReference Include="OpenTelemetry" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" />

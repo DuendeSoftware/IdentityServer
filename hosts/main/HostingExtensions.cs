@@ -19,6 +19,8 @@ internal static class HostingExtensions
             .AddRazorRuntimeCompilation();
 
         builder.Services.AddControllers();
+        builder.Services.AddHealthChecks()
+            .AddCheck<DiscoveryHealthCheck>("DiscoveryHealthCheck");
 
         // cookie policy to deal with temporary browser incompatibilities
         builder.Services.AddSameSiteCookiePolicy();
@@ -150,6 +152,9 @@ internal static class HostingExtensions
         app.UseRouting();
         app.UseIdentityServer();
         app.UseAuthorization();
+        
+        // health checks
+        app.MapHealthChecks("/health");
 
         // local API endpoints
         app.MapControllers()
