@@ -46,13 +46,29 @@ internal class LicenseValidator
         if (_license?.RedistributionFeature == true && !isDevelopment)
         {
             // for redistribution/prod scenarios, we want most of these to be at trace level
-            _errorLog = _informationLog = _debugLog = _logger.LogTrace;
+            _errorLog = _informationLog = _debugLog = LogToTrace;
         }
         else
         {
             _errorLog = _logger.LogError;
             _informationLog = _logger.LogInformation;
-            _debugLog = _logger.LogDebug;
+            _debugLog = LogToDebug;
+        }
+    }
+
+    private static void LogToTrace(string message, params object[] args)
+    {
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            LoggerExtensions.LogTrace(_logger, message, args);
+        }
+    }
+    
+    private static void LogToDebug(string message, params object[] args)
+    {
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            LoggerExtensions.LogTrace(_logger, message, args);
         }
     }
 
