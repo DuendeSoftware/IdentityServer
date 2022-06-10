@@ -147,6 +147,11 @@ public static class TokenExtensions
         {
             return long.Parse(claim.Value);
         }
+        
+        if (claim.ValueType == ClaimValueTypes.Double)
+        {
+            return double.Parse(claim.Value);
+        }
 
         if (claim.ValueType == IdentityServerConstants.ClaimValueTypes.Json)
         {
