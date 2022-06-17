@@ -12,6 +12,9 @@ on:
 env:
   DOTNET_NOLOGO: true
 
+permissions:
+  contents: read
+  
 jobs:
   build:
     strategy:
