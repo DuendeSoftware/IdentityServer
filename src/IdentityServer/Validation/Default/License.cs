@@ -17,6 +17,11 @@ internal class License
 
     public License(ClaimsPrincipal claims)
     {
+        if (Int32.TryParse(claims.FindFirst("id")?.Value, out var id))
+        {
+            Id = id;
+        }
+
         CompanyName = claims.FindFirst("company_name")?.Value;
         ContactInfo = claims.FindFirst("contact_info")?.Value;
 
@@ -175,6 +180,8 @@ internal class License
             }
         }
     }
+
+    public int Id { get; set; }
 
     public string CompanyName { get; set; }
     public string ContactInfo { get; set; }
