@@ -4,13 +4,14 @@
 
 using Duende.IdentityServer.Extensions;
 using System.Collections.Specialized;
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.ResponseHandling;
 
 namespace Duende.IdentityServer.Models;
 
 internal static class AuthorizeResponseExtensions
 {
-    public static NameValueCollection ToNameValueCollection(this AuthorizeResponse response)
+    public static NameValueCollection ToNameValueCollection(this AuthorizeResponse response, IdentityServerOptions options)
     {
         var collection = new NameValueCollection();
 
@@ -62,7 +63,10 @@ internal static class AuthorizeResponseExtensions
             
         if (response.Issuer.IsPresent())
         {
-            collection.Add("iss", response.Issuer);
+            if (options.EmitIssuerIdentificationResponseParameter)
+            {
+                collection.Add("iss", response.Issuer);    
+            }
         }
 
         return collection;
