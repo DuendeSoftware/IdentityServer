@@ -3,7 +3,7 @@
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
         <FrameworkVersion>6.0.0</FrameworkVersion>
         <ExtensionsVersion>6.0.0</ExtensionsVersion>
-        <EntityFrameworkVersion>6.0.0</EntityFrameworkVersion>
+        <EntityFrameworkVersion>6.0.6</EntityFrameworkVersion>
         <WilsonVersion>6.10.0</WilsonVersion>
     </PropertyGroup>
 
@@ -14,7 +14,7 @@
         <!--build related-->
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
         <PackageReference Include="MinVer" Version="3.0.0" PrivateAssets="All"/>
-        <PackageReference Update="SimpleExec" Version="9.0.0"/>
+        <PackageReference Update="SimpleExec" Version="10.0.0"/>
         <PackageReference Update="Bullseye" Version="4.0.0"/>
 
         <!--tests -->
