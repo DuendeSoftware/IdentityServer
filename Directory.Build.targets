@@ -14,7 +14,7 @@
         <!--build related-->
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
         <PackageReference Include="MinVer" Version="3.0.0" PrivateAssets="All"/>
-        <PackageReference Update="SimpleExec" Version="9.0.0"/>
+        <PackageReference Update="SimpleExec" Version="10.0.0"/>
         <PackageReference Update="Bullseye" Version="4.0.0"/>
 
         <!--tests -->
@@ -60,7 +60,7 @@
         <PackageReference Update="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc9" />
         <PackageReference Update="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9" />
         <PackageReference Update="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9" />
-        <PackageReference Update="OpenTelemetry.Instrumentation.SqlClient" Version="1.0.0-rc9" />
+        <PackageReference Update="OpenTelemetry.Instrumentation.SqlClient" Version="1.0.0-rc9.4" />
     </ItemGroup>
 
     <Target Name="SetAssemblyVersion" AfterTargets="MinVer">
