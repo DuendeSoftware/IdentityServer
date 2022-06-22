@@ -15,12 +15,12 @@ public class Consent : PageModel
 {
     private readonly IBackchannelAuthenticationInteractionService _interaction;
     private readonly IEventService _events;
-    private readonly ILogger<Index> _logger;
+    private readonly ILogger<Consent> _logger;
 
     public Consent(
         IBackchannelAuthenticationInteractionService interaction,
         IEventService events,
-        ILogger<Index> logger)
+        ILogger<Consent> logger)
     {
         _interaction = interaction;
         _events = events;
