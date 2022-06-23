@@ -42,6 +42,11 @@ public class IdentityServerOptions
     /// Specifies whether scopes in JWTs are emitted as array or string
     /// </summary>
     public bool EmitScopesAsSpaceDelimitedStringInJwt { get; set; } = false;
+    
+    /// <summary>
+    /// Specifies whether authorize responses contain the iss parameter (https://www.rfc-editor.org/rfc/rfc9207.html)
+    /// </summary>
+    public bool EmitIssuerIdentificationResponseParameter { get; set; } = true;
         
     /// <summary>
     /// Specifies whether the s_hash claim gets emitted in identity tokens. Defaults to false.

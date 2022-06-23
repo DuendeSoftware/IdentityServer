@@ -144,7 +144,7 @@ internal class AuthorizeResult : IEndpointResult
     private string BuildRedirectUri()
     {
         var uri = Response.RedirectUri;
-        var query = Response.ToNameValueCollection().ToQueryString();
+        var query = Response.ToNameValueCollection(_options).ToQueryString();
 
         if (Response.Request.ResponseMode == OidcConstants.ResponseModes.Query)
         {
@@ -173,7 +173,7 @@ internal class AuthorizeResult : IEndpointResult
         var url = Response.Request.RedirectUri;
         url = HtmlEncoder.Default.Encode(url);
         html = html.Replace("{uri}", url);
-        html = html.Replace("{body}", Response.ToNameValueCollection().ToFormPost());
+        html = html.Replace("{body}", Response.ToNameValueCollection(_options).ToFormPost());
 
         return html;
     }

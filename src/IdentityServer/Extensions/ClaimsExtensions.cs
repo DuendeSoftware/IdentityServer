@@ -54,7 +54,7 @@ internal static class ClaimsExtensions
         if (claim.ValueType == ClaimValueTypes.Integer ||
             claim.ValueType == ClaimValueTypes.Integer32)
         {
-            if (Int32.TryParse(claim.Value, out int value))
+            if (Int32.TryParse(claim.Value, out var value))
             {
                 return value;
             }
@@ -62,7 +62,15 @@ internal static class ClaimsExtensions
 
         if (claim.ValueType == ClaimValueTypes.Integer64)
         {
-            if (Int64.TryParse(claim.Value, out long value))
+            if (Int64.TryParse(claim.Value, out var value))
+            {
+                return value;
+            }
+        }
+        
+        if (claim.ValueType == ClaimValueTypes.Double)
+        {
+            if (Double.TryParse(claim.Value, out var value))
             {
                 return value;
             }
@@ -70,7 +78,7 @@ internal static class ClaimsExtensions
 
         if (claim.ValueType == ClaimValueTypes.Boolean)
         {
-            if (bool.TryParse(claim.Value, out bool value))
+            if (bool.TryParse(claim.Value, out var value))
             {
                 return value;
             }
