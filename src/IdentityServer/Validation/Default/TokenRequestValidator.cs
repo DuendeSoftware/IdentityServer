@@ -141,6 +141,8 @@ internal class TokenRequestValidator : ITokenRequestValidator
         // check for resource indicator and basic formatting
         //////////////////////////////////////////////////////////
         var resourceIndicators = parameters.GetValues(OidcConstants.TokenRequest.Resource) ?? Enumerable.Empty<string>();
+        // special check for some Azure product: https://github.com/DuendeSoftware/Support/issues/48
+        //resourceIndicators = resourceIndicators.Select(x => x?.Trim()).Where(x => !String.IsNullOrEmpty(x?.Trim())).ToArray();
 
         if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
         {
