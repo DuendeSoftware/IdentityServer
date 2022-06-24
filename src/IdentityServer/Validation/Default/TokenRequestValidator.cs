@@ -584,6 +584,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _validatedRequest.RefreshToken = result.RefreshToken;
         _validatedRequest.RefreshTokenHandle = refreshTokenHandle;
         _validatedRequest.Subject = result.RefreshToken.Subject;
+        _validatedRequest.SessionId = result.RefreshToken.SessionId;
 
         //////////////////////////////////////////////////////////
         // resource indicator
