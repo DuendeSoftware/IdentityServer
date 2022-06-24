@@ -275,6 +275,26 @@ public class ResourceTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task client_credentials_with_empty_resource_should_be_treated_as_if_no_resource_and_succeed()
+    {
+        var tokenResponse = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = client_id,
+            ClientSecret = client_secret,
+            Parameters =
+            {
+                { "resource", " " }
+            }
+        });
+
+        var claims = ParseAccessTokenClaims(tokenResponse);
+        claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:api1", "urn:api2" });
+        claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope2", "scope3", "scope4" });
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task refresh_token_requested_without_resource_without_scope_should_succeed()
     {
         var tokenResponse = await _mockPipeline.BackChannelClient.RequestPasswordTokenAsync(new PasswordTokenRequest
