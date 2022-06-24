@@ -3,6 +3,7 @@
 
 
 using Microsoft.Extensions.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -22,7 +23,10 @@ public static class IReadableStringCollectionExtensions
         {
             foreach (var val in field.Value)
             {
-                nv.Add(field.Key, val);
+                if (!String.IsNullOrEmpty(val?.Trim()))
+                {
+                    nv.Add(field.Key, val);
+                }
             }
         }
 
@@ -38,7 +42,10 @@ public static class IReadableStringCollectionExtensions
         {
             foreach (var item in field.Value)
             {
-                nv.Add(field.Key, item);
+                if (!String.IsNullOrEmpty(item?.Trim()))
+                {
+                    nv.Add(field.Key, item);
+                }
             }
         }
 
