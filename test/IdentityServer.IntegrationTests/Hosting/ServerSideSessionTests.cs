@@ -220,11 +220,13 @@ public class ServerSideSessionTests
         _pipeline.RemoveLoginCookie();
         await _pipeline.LoginAsync("alice");
         _pipeline.RemoveLoginCookie();
-        await _pipeline.LoginAsync("alice");
+        await _pipeline.LoginAsync("bob");
         _pipeline.RemoveLoginCookie();
 
         var tickets = await _ticketService.QuerySessionsAsync(new SessionQuery { SubjectId = "alice" });
+        tickets.TotalCount.Should().Be(2);
         var sessions = await _sessionStore.QuerySessionsAsync(new SessionQuery { SubjectId = "alice" });
+        sessions.TotalCount.Should().Be(2);
 
         tickets.ResultsToken.Should().Be(sessions.ResultsToken);
         tickets.HasPrevResults.Should().Be(sessions.HasPrevResults);
