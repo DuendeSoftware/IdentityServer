@@ -41,7 +41,7 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
     /// <summary>
     /// The options for this store.
     /// </summary>
-    protected OperationalStoreOptions StoreOptions { get; set; }
+    public OperationalStoreOptions StoreOptions { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PersistedGrantDbContext"/> class.
