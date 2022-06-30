@@ -13,6 +13,7 @@ using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
+using System.IO;
 
 namespace Duende.IdentityServer.Endpoints;
 
@@ -74,7 +75,15 @@ internal class IntrospectionEndpoint : IEndpointHandler
             return new StatusCodeResult(HttpStatusCode.UnsupportedMediaType);
         }
 
-        return await ProcessIntrospectionRequestAsync(context);
+        try
+        {
+            return await ProcessIntrospectionRequestAsync(context);
+        }
+        catch (InvalidDataException ex)
+        {
+            _logger.LogWarning(ex, "Invalid HTTP request for introspection endpoint");
+            return new StatusCodeResult(HttpStatusCode.BadRequest);
+        }
     }
 
     private async Task<IEndpointResult> ProcessIntrospectionRequestAsync(HttpContext context)

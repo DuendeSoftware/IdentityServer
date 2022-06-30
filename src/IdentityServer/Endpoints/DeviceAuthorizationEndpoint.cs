@@ -14,6 +14,7 @@ using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.IO;
 
 namespace Duende.IdentityServer.Endpoints;
 
@@ -65,7 +66,15 @@ internal class DeviceAuthorizationEndpoint : IEndpointHandler
             return Error(OidcConstants.TokenErrors.InvalidRequest);
         }
 
-        return await ProcessDeviceAuthorizationRequestAsync(context);
+        try
+        {
+            return await ProcessDeviceAuthorizationRequestAsync(context);
+        }
+        catch (InvalidDataException ex)
+        {
+            _logger.LogWarning(ex, "Invalid HTTP request for device endpoint");
+            return Error(OidcConstants.TokenErrors.InvalidRequest);
+        }
     }
 
     private async Task<IEndpointResult> ProcessDeviceAuthorizationRequestAsync(HttpContext context)
