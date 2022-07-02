@@ -17,7 +17,12 @@ public static class ModelBuilderExtensions
     private static EntityTypeBuilder<TEntity> ToTable<TEntity>(this EntityTypeBuilder<TEntity> entityTypeBuilder, TableConfiguration configuration)
         where TEntity : class
     {
-        return string.IsNullOrWhiteSpace(configuration.Schema) ? entityTypeBuilder.ToTable(configuration.Name) : entityTypeBuilder.ToTable(configuration.Name, configuration.Schema);
+        if (!string.IsNullOrWhiteSpace(configuration.Name))
+        {
+            return string.IsNullOrWhiteSpace(configuration.Schema) ? entityTypeBuilder.ToTable(configuration.Name) : entityTypeBuilder.ToTable(configuration.Name, configuration.Schema);
+        }
+
+        return entityTypeBuilder;
     }
 
     /// <summary>
@@ -32,6 +37,7 @@ public static class ModelBuilderExtensions
         modelBuilder.Entity<Client>(client =>
         {
             client.ToTable(storeOptions.Client);
+
             client.HasKey(x => x.Id);
 
             client.Property(x => x.ClientId).HasMaxLength(200).IsRequired();
