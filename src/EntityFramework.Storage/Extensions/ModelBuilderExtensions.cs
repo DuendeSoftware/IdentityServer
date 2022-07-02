@@ -37,7 +37,6 @@ public static class ModelBuilderExtensions
         modelBuilder.Entity<Client>(client =>
         {
             client.ToTable(storeOptions.Client);
-
             client.HasKey(x => x.Id);
 
             client.Property(x => x.ClientId).HasMaxLength(200).IsRequired();
