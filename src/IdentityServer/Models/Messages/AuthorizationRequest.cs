@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -109,7 +110,6 @@ public class AuthorizationRequest
     /// </value>
     public IEnumerable<Claim> RequestObjectValues { get; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthorizationRequest"/> class.
     /// </summary>
@@ -122,8 +122,15 @@ public class AuthorizationRequest
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthorizationRequest"/> class.
     /// </summary>
-    internal AuthorizationRequest(ValidatedAuthorizeRequest request)
+    /// <param name="request">Authorized request validated parameters.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
+    public AuthorizationRequest(ValidatedAuthorizeRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         Client = request.Client;
         RedirectUri = request.RedirectUri;
         DisplayMode = request.DisplayMode;
