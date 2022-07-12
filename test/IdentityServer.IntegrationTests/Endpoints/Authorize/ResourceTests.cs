@@ -178,6 +178,85 @@ public class ResourceTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task empty_resource_indicator_on_authz_endpoint_should_succeed()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            scope: "openid profile scope1 scope2 scope3 scope4 offline_access",
+            redirectUri: "https://client1/callback");
+
+        url += "&resource= ";
+
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        var code = GetCode(response);
+
+        var tokenResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = code,
+            RedirectUri = "https://client1/callback",
+            Parameters =
+            {
+                { "resource", " " }
+            }
+        });
+
+        {
+            var claims = ParseAccessTokenClaims(tokenResponse);
+            claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:resource1", "urn:resource2" });
+            claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "openid", "profile", "scope1", "scope2", "scope3", "scope4", "offline_access" });
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task empty_resource_indicator_on_code_exchange_should_succeed()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            scope: "openid profile scope1 scope2 scope3 scope4 offline_access",
+            redirectUri: "https://client1/callback");
+
+        url += "&resource=urn:resource1";
+        url += "&resource=urn:resource3";
+
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        var code = GetCode(response);
+
+        var tokenResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = code,
+            RedirectUri = "https://client1/callback",
+            Parameters =
+            {
+                { "resource", " " }
+            }
+        });
+
+        {
+            var claims = ParseAccessTokenClaims(tokenResponse);
+            claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:resource1", "urn:resource2" });
+            claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "openid", "profile", "scope1", "scope2", "scope3", "scope4", "offline_access" });
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task resource_indicator_on_code_exchange_should_succeed()
     {
         await _mockPipeline.LoginAsync("bob");

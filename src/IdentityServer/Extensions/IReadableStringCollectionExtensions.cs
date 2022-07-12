@@ -3,6 +3,7 @@
 
 
 using Microsoft.Extensions.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -22,7 +23,11 @@ public static class IReadableStringCollectionExtensions
         {
             foreach (var val in field.Value)
             {
-                nv.Add(field.Key, val);
+                // special check for some Azure product: https://github.com/DuendeSoftware/Support/issues/48
+                if (!String.IsNullOrWhiteSpace(val))
+                {
+                    nv.Add(field.Key, val);
+                }
             }
         }
 
@@ -38,7 +43,11 @@ public static class IReadableStringCollectionExtensions
         {
             foreach (var item in field.Value)
             {
-                nv.Add(field.Key, item);
+                // special check for some Azure product: https://github.com/DuendeSoftware/Support/issues/48
+                if (!String.IsNullOrWhiteSpace(item))
+                {
+                    nv.Add(field.Key, item);
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -13,6 +13,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Test;
 using IntegrationTests.Common;
 using Xunit;
+using System.Text;
 
 namespace IntegrationTests.Endpoints.Token;
 
@@ -117,5 +118,21 @@ public class TokenEndpointTests
         var json = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
         result.ContainsKey("error").Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task invalid_form_post_text_values_should_return_400_error()
+    {
+        var text = $"grant_type=client_credentials&client_id={client_id}&client_secret={client_secret}&scope=%00";
+        var content = new StringContent(text, Encoding.UTF8, "application/x-www-form-urlencoded");
+        
+        var response = await _mockPipeline.BackChannelClient.PostAsync(IdentityServerPipeline.TokenEndpoint, content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var json = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+        var error = result["error"].GetString();
+        error.Should().Be("invalid_request");
     }
 }

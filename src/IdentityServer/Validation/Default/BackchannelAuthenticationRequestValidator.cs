@@ -136,8 +136,8 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
         //////////////////////////////////////////////////////////
         // check for resource indicators and valid format
         //////////////////////////////////////////////////////////
-        var resourceIndicators = _validatedRequest.Raw.GetValues("resource") ?? Enumerable.Empty<string>();
-
+        var resourceIndicators = _validatedRequest.Raw.GetValues(OidcConstants.AuthorizeRequest.Resource) ?? Enumerable.Empty<string>();
+        
         if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
         {
             return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Resource indicator maximum length exceeded");

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -14,6 +14,7 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Extensions;
+using System.IO;
 
 namespace Duende.IdentityServer.Endpoints;
 
@@ -74,9 +75,15 @@ internal class TokenRevocationEndpoint : IEndpointHandler
             return new StatusCodeResult(HttpStatusCode.UnsupportedMediaType);
         }
 
-        var response = await ProcessRevocationRequestAsync(context);
-
-        return response;
+        try
+        {
+            return await ProcessRevocationRequestAsync(context);
+        }
+        catch (InvalidDataException ex)
+        {
+            _logger.LogWarning(ex, "Invalid HTTP request for revocation endpoint");
+            return new StatusCodeResult(HttpStatusCode.BadRequest);
+        }
     }
 
     private async Task<IEndpointResult> ProcessRevocationRequestAsync(HttpContext context)

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Events;
 using IdentityModel;
+using System.IO;
 
 namespace Duende.IdentityServer.Endpoints;
 
@@ -54,7 +55,15 @@ internal class BackchannelAuthenticationEndpoint : IEndpointHandler
             return Error(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest);
         }
 
-        return await ProcessAuthenticationRequestAsync(context);
+        try
+        {
+            return await ProcessAuthenticationRequestAsync(context);
+        }
+        catch (InvalidDataException ex)
+        {
+            _logger.LogWarning(ex, "Invalid HTTP request for backchannel authentication endpoint");
+            return Error(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest);
+        }
     }
 
     private async Task<IEndpointResult> ProcessAuthenticationRequestAsync(HttpContext context)
