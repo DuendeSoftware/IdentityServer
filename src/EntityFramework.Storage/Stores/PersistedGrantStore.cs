@@ -99,7 +99,7 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<Duende.IdentityServer.Models.PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
+    public virtual async Task<IEnumerable<Duende.IdentityServer.Models.PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.GetAll");
         
@@ -146,7 +146,7 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     }
 
     /// <inheritdoc/>
-    public async Task RemoveAllAsync(PersistedGrantFilter filter)
+    public virtual async Task RemoveAllAsync(PersistedGrantFilter filter)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.RemoveAll");
         
