@@ -605,9 +605,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         // check for resource indicators and valid format
         //////////////////////////////////////////////////////////
         var resourceIndicators = request.Raw.GetValues(OidcConstants.AuthorizeRequest.Resource) ?? Enumerable.Empty<string>();
-        // special check for some Azure product: https://github.com/DuendeSoftware/Support/issues/48
-        //resourceIndicators = resourceIndicators.Select(x => x?.Trim()).Where(x => !String.IsNullOrEmpty(x?.Trim())).ToArray();
-
+        
         if (resourceIndicators?.Any(x => x.Length > _options.InputLengthRestrictions.ResourceIndicatorMaxLength) == true)
         {
             return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator maximum length exceeded");
