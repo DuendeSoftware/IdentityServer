@@ -14,6 +14,8 @@ using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
+using System;
+using System.IO;
 
 namespace Duende.IdentityServer.Endpoints;
 
@@ -69,7 +71,15 @@ internal class TokenEndpoint : IEndpointHandler
             return Error(OidcConstants.TokenErrors.InvalidRequest);
         }
 
-        return await ProcessTokenRequestAsync(context);
+        try
+        {
+            return await ProcessTokenRequestAsync(context);
+        }
+        catch(InvalidDataException ex)
+        {
+            _logger.LogWarning(ex, "Invalid HTTP request for token endpoint");
+            return Error(OidcConstants.TokenErrors.InvalidRequest);
+        }
     }
 
     private async Task<IEndpointResult> ProcessTokenRequestAsync(HttpContext context)

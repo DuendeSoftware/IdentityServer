@@ -11,6 +11,7 @@ using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.IO;
 
 namespace Duende.IdentityServer.Endpoints;
 
@@ -35,7 +36,23 @@ internal class EndSessionEndpoint : IEndpointHandler
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity(Constants.EndpointNames.EndSession + "Endpoint");
-        
+
+        try
+        {
+            return await ProcessEndSessionAsync(context);
+        }
+        catch (InvalidDataException ex)
+        {
+            _logger.LogWarning(ex, "Invalid HTTP request for end session endpoint");
+            return new StatusCodeResult(HttpStatusCode.BadRequest);
+        }
+    }
+
+
+    async Task<IEndpointResult> ProcessEndSessionAsync(HttpContext context)
+    {
+        using var activity = Tracing.BasicActivitySource.StartActivity(Constants.EndpointNames.EndSession + "Endpoint");
+
         NameValueCollection parameters;
         if (HttpMethods.IsGet(context.Request.Method))
         {
