@@ -24,7 +24,7 @@ public static class IReadableStringCollectionExtensions
             foreach (var val in field.Value)
             {
                 // special check for some Azure product: https://github.com/DuendeSoftware/Support/issues/48
-                if (!String.IsNullOrWhiteSpace(val))
+                if (!String.IsNullOrWhiteSpace(val) && nv[field.Key] == null)
                 {
                     nv.Add(field.Key, val);
                 }
