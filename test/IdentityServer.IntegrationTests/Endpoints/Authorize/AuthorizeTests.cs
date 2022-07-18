@@ -41,7 +41,7 @@ public class AuthorizeTests
                 RequireConsent = false,
                     
                 AllowedScopes = new List<string> { "openid", "profile" },
-                RedirectUris = new List<string> { "https://client1/callback" },
+                RedirectUris = new List<string> { "https://client1/callback", "https://client1/callback?x=1&x=1" },
                 AllowAccessTokensViaBrowser = true
             },
             new Client
@@ -1343,6 +1343,49 @@ public class AuthorizeTests
         _mockPipeline.CustomRequest.AcrValues.Should().BeEquivalentTo(new string[] { "acr_2", "acr_1" });
         _mockPipeline.CustomRequest.Parameters.AllKeys.Should().Contain("foo");
         _mockPipeline.CustomRequest.Parameters["foo"].Should().Be("bar");
+    }
+
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task duplicate_parms_to_authorize_endpoint_should_ignore_dups()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client1/callback",
+            state: "123_state",
+            nonce: "123_nonce"
+        );
+        url += "&client_id=client1";
+
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.ErrorWasCalled.Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task duplicate_parms_to_redirect_uri_should_succeed()
+    {
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client1/callback?x=1&x=1",
+            state: "123_state",
+            nonce: "123_nonce"
+        );
+
+        // no logged in user, so we should redirect to login page and create 
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.ErrorWasCalled.Should().BeFalse();
+        _mockPipeline.LoginWasCalled.Should().BeTrue();
+        _mockPipeline.LoginRequest.RedirectUri.Should().Be("https://client1/callback?x=1&x=1");
     }
 }
 

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 
 #pragma warning disable 1591
 
@@ -26,7 +27,13 @@ public static class IReadableStringCollectionExtensions
                 // special check for some Azure product: https://github.com/DuendeSoftware/Support/issues/48
                 if (!String.IsNullOrWhiteSpace(val))
                 {
-                    nv.Add(field.Key, val);
+                    // ignore duplicate values, as this is used internally to validate requests
+                    // so for simplicy we filter dup values
+                    var vals = nv.GetValues(field.Key);
+                    if (vals == null || !vals.Contains(val))
+                    {
+                        nv.Add(field.Key, val);
+                    }
                 }
             }
         }
@@ -46,6 +53,7 @@ public static class IReadableStringCollectionExtensions
                 // special check for some Azure product: https://github.com/DuendeSoftware/Support/issues/48
                 if (!String.IsNullOrWhiteSpace(item))
                 {
+                    // this version of the method keeps dups, as it's used to reconstruct the exact same URL elsewhere (e.g. redirect uri)
                     nv.Add(field.Key, item);
                 }
             }
