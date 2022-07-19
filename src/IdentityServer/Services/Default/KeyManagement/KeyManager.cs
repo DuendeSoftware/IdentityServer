@@ -101,11 +101,11 @@ public class KeyManager : IKeyManager
     internal async Task<(IEnumerable<KeyContainer> allKeys, IEnumerable<KeyContainer> signingKeys)> GetAllKeysInternalAsync()
     {
         var cached = true;
-        var keys = await GetKeysFromCacheAsync();
+        var keys = await GetAllKeysFromCacheAsync();
         if (!keys.Any())
         {
             cached = false;
-            keys = await GetKeysFromStoreAsync();
+            keys = await GetAllKeysFromStoreAsync();
         }
 
         // ensure we have all of our active signing keys
@@ -143,7 +143,7 @@ public class KeyManager : IKeyManager
             try
             {
                 // check if another thread did the work already
-                keys = await GetKeysFromCacheAsync();
+                keys = await GetAllKeysFromCacheAsync();
 
                 if (!signingKeysSuccess)
                 {
@@ -157,7 +157,7 @@ public class KeyManager : IKeyManager
                 if (!signingKeysSuccess || rotationRequired)
                 {
                     // still need to do the work, but check if another server did the work already
-                    keys = await GetKeysFromStoreAsync();
+                    keys = await GetAllKeysFromStoreAsync();
 
                     if (!signingKeysSuccess)
                     {
@@ -212,7 +212,7 @@ public class KeyManager : IKeyManager
     {
         if (allKeys == null || !allKeys.Any()) return true;
 
-        var groupedKeys = allKeys.GroupBy(x => x.Algorithm);
+        var groupedKeys = allKeys.GroupBy(x => x.Algorithm).ToArray();
             
         var success = groupedKeys.Count() == _options.KeyManagement.AllowedSigningAlgorithmNames.Count() &&
                       groupedKeys.All(x => _options.KeyManagement.AllowedSigningAlgorithmNames.Contains(x.Key));
@@ -302,7 +302,7 @@ public class KeyManager : IKeyManager
         return container;
     }
         
-    internal async Task<IEnumerable<KeyContainer>> GetKeysFromCacheAsync()
+    internal async Task<IEnumerable<KeyContainer>> GetAllKeysFromCacheAsync()
     {
         var cachedKeys = await _cache.GetKeysAsync();
         if (cachedKeys != null)
@@ -421,7 +421,7 @@ public class KeyManager : IKeyManager
         }
     }
 
-    internal async Task<IEnumerable<KeyContainer>> GetKeysFromStoreAsync(bool cache = true)
+    internal async Task<IEnumerable<KeyContainer>> GetAllKeysFromStoreAsync(bool cache = true)
     {
         _logger.LogTrace("Loading keys from store.");
             
@@ -523,20 +523,20 @@ public class KeyManager : IKeyManager
             }
 
             // reload in case other new keys were recently created
-            keys = new List<KeyContainer>(await GetKeysFromStoreAsync(false));
+            keys = new List<KeyContainer>(await GetAllKeysFromStoreAsync(false));
         }
 
         // explicitly cache here since we didn't when we loaded above
         await CacheKeysAsync(keys);
 
-        var activeKeys = GetCurrentSigningKeys(keys);
+        var activeKeys = GetAllCurrentSigningKeys(keys);
 
         return (keys, activeKeys);
     }
 
     internal bool TryGetAllCurrentSigningKeys(IEnumerable<KeyContainer> keys, out IEnumerable<KeyContainer> signingKeys)
     {
-        signingKeys = GetCurrentSigningKeys(keys);
+        signingKeys = GetAllCurrentSigningKeys(keys);
             
         var success = signingKeys.Count() == _options.KeyManagement.AllowedSigningAlgorithmNames.Count() &&
                       signingKeys.All(x => _options.KeyManagement.AllowedSigningAlgorithmNames.Contains(x.Algorithm));
@@ -544,9 +544,9 @@ public class KeyManager : IKeyManager
         return success;
     }
 
-    internal IEnumerable<KeyContainer> GetCurrentSigningKeys(IEnumerable<KeyContainer> keys)
+    internal IEnumerable<KeyContainer> GetAllCurrentSigningKeys(IEnumerable<KeyContainer> allKeys)
     {
-        if (keys == null || !keys.Any())
+        if (allKeys == null || !allKeys.Any())
         {
             return Enumerable.Empty<KeyContainer>();
         }
@@ -554,7 +554,7 @@ public class KeyManager : IKeyManager
         _logger.LogTrace("Looking for active signing keys.");
 
         var list = new List<KeyContainer>();
-        var groupedKeys = keys.GroupBy(x => x.Algorithm);
+        var groupedKeys = allKeys.GroupBy(x => x.Algorithm);
         foreach (var item in groupedKeys)
         {
             _logger.LogTrace("Looking for an active signing key for alg {alg}.", item.Key);
