@@ -83,7 +83,7 @@ internal class DeviceAuthorizationEndpoint : IEndpointHandler
 
         // validate client
         var clientResult = await _clientValidator.ValidateAsync(context);
-        if (clientResult.Client == null) return Error(OidcConstants.TokenErrors.InvalidClient);
+        if (clientResult.IsError) return Error(clientResult.Error ?? OidcConstants.TokenErrors.InvalidClient);
 
         // validate request
         var form = (await context.Request.ReadFormAsync()).AsNameValueCollection();
