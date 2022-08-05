@@ -27,7 +27,8 @@ public class DynamicClientRegistrationEndpoint
         var result = await _validator.ValidateAsync(context.User, request);
         
         // generate client_id and secet (if no jwks is included)
-        // todo here or in above validator?
+        // todo
+        // here or in above validator?
         
         // pass body, caller identity and Client to validator
         result = await _customValidator.ValidateAsync(context.User, request, result.Client);
