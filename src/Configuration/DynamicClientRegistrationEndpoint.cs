@@ -25,21 +25,33 @@ public class DynamicClientRegistrationEndpoint
         // de-serialize body
         if (context.Request.ContentType != "application/json")
         {
-            
+            context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+            return;
+        }
+
+        DynamicClientRegistrationDocument request;
+        try
+        {
+            request = await context.Request.ReadFromJsonAsync<DynamicClientRegistrationDocument>();
+        }
+        catch (Exception e)
+        {
+            // todo: return error response
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
         }
         
-        
-        var request = await context.Request.ReadFromJsonAsync<DynamicClientRegistrationDocument>();
 
         // validate body values and construct Client object
         var result = await _validator.ValidateAsync(context.User, request);
 
         if (result.IsError)
         {
+            // todo: return error response
             throw new InvalidOperationException(result.Error);
         }
 
-        // todo client secret - generate here, or in validator
+        // todo client secret - generate here, or in validator?
         // should there be a default lifetime on the secret?
         string sharedSecret;
         if (!result.Client.ClientSecrets.Any())
