@@ -71,7 +71,7 @@ public class DynamicClientRegistrationDocument
     /// Default maximum authentication age.
     /// </summary>
     [JsonPropertyName(OidcConstants.ClientMetadata.DefaultMaxAge)]
-    public int DefaultMaxAge { get; set; }
+    public int? DefaultMaxAge { get; set; }
     
     /// <summary>
     /// Custom client metadata fields to include in the serialization.

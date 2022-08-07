@@ -113,6 +113,11 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         {
             client.ClientUri = request.ClientUri.AbsoluteUri;
         }
+
+        if (request.DefaultMaxAge.HasValue)
+        {
+            client.UserSsoLifetime = request.DefaultMaxAge;
+        }
         
         // validation successful - return client
         return Task.FromResult(new DynamicClientRegistrationValidationResult(client)); 
