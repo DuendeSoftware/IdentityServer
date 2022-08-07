@@ -23,6 +23,12 @@ public class DynamicClientRegistrationEndpoint
     public async Task Process(HttpContext context)
     {
         // de-serialize body
+        if (context.Request.ContentType != "application/json")
+        {
+            
+        }
+        
+        
         var request = await context.Request.ReadFromJsonAsync<DynamicClientRegistrationDocument>();
 
         // validate body values and construct Client object
@@ -39,7 +45,7 @@ public class DynamicClientRegistrationEndpoint
         if (!result.Client.ClientSecrets.Any())
         {
             // for now just generate a shared secret
-            sharedSecret = Guid.NewGuid().ToString();
+            sharedSecret = CryptoRandom.CreateUniqueId();
             result.Client.ClientSecrets.Add(new Secret(sharedSecret.ToSha256()));
         }
          
@@ -50,6 +56,25 @@ public class DynamicClientRegistrationEndpoint
         await _store.AddAsync(result.Client);
 
         // return response
-        // todo: generate response from request + client
+        // Upon a successful registration request, the authorization server
+        // returns a client identifier for the client.  The server responds with
+        // an HTTP 201 Created status code and a body of type "application/json"
+        // with content as described in Section 3.2.1.
+        
+        //When a registration error condition occurs, the authorization server
+        //returns an HTTP 400 status code (unless otherwise specified) with
+        //    content type "application/json" consisting of a JSON object [RFC7159]
+        // describing the error in the response body.
+
+        //    Two members are defined for inclusion in the JSON object:
+
+        // error
+        // REQUIRED.  Single ASCII error code string.
+
+        //     error_description
+        // OPTIONAL.  Human-readable ASCII text description of the error used
+        // for debugging.
+        
+        // todo: generate response
     }
 }
