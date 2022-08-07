@@ -100,9 +100,7 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         //////////////////////////////
         
         // todo: if jwks is present - convert JWKs into secrets
-        // todo: otherwise generate shared secret (set a default lifetime?)
         // todo: add jwks_uri suppport
-        
         
         //////////////////////////////
         // misc
