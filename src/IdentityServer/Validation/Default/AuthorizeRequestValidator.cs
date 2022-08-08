@@ -344,7 +344,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             return Invalid(request, description: "Invalid redirect_uri");
         }
 
-        if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
+        if (!Uri.TryCreate(redirectUri, UriKind.RelativeOrAbsolute, out var uri) || !uri.IsAbsoluteUri)
         {
             LogError("malformed redirect_uri", redirectUri, request);
             return Invalid(request, description: "Invalid redirect_uri");
