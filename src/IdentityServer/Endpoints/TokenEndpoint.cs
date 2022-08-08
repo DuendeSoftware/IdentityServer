@@ -88,10 +88,9 @@ internal class TokenEndpoint : IEndpointHandler
 
         // validate client
         var clientResult = await _clientValidator.ValidateAsync(context);
-
-        if (clientResult.Client == null)
+        if (clientResult.IsError)
         {
-            return Error(OidcConstants.TokenErrors.InvalidClient);
+            return Error(clientResult.Error ?? OidcConstants.TokenErrors.InvalidClient);
         }
 
         // validate request

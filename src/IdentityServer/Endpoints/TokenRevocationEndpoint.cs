@@ -92,10 +92,9 @@ internal class TokenRevocationEndpoint : IEndpointHandler
 
         // validate client
         var clientValidationResult = await _clientValidator.ValidateAsync(context);
-
         if (clientValidationResult.IsError)
         {
-            return new TokenRevocationErrorResult(OidcConstants.TokenErrors.InvalidClient);
+            return new TokenRevocationErrorResult(clientValidationResult.Error ?? OidcConstants.TokenErrors.InvalidClient);
         }
 
         _logger.LogTrace("Client validation successful");

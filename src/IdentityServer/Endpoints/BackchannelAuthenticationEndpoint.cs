@@ -72,10 +72,9 @@ internal class BackchannelAuthenticationEndpoint : IEndpointHandler
 
         // validate client
         var clientResult = await _clientValidator.ValidateAsync(context);
-
-        if (clientResult.Client == null)
+        if (clientResult.IsError)
         {
-            return Error(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient);
+            return Error(clientResult.Error ?? OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient);
         }
 
         // validate request
