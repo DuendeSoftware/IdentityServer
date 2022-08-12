@@ -33,7 +33,11 @@ internal class TestClients
 
                 RedirectUris = new List<string>
                 {
-                    "https://server/cb"
+                    "https://server/cb",
+                    "https://server/cb?x[action]=login",
+                    "file://callback.html",
+                    "malformed",
+                    "/malformed"
                 },
 
                 AuthorizationCodeLifetime = 60

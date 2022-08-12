@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -160,11 +160,12 @@ public class Authorize_ProtocolValidation_Invalid
     [Theory]
     [InlineData("malformed")]
     [InlineData("/malformed")]
+    [InlineData("file://callback.html")]
     [Trait("Category", Category)]
     public async Task Malformed_RedirectUri(string redirectUri)
     {
         var parameters = new NameValueCollection();
-        parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "client");
+        parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "codeclient");
         parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid");
         parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, redirectUri);
         parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Code);

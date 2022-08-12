@@ -257,4 +257,20 @@ public class Authorize_ProtocolValidation_Valid
             result.ValidatedRequest.SuppressedPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
         }
     }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Valid_RedirectUri_With_Square_Brackets_In_Query_String()
+    {
+        var parameters = new NameValueCollection();
+        parameters.Add(OidcConstants.AuthorizeRequest.ClientId, "codeclient");
+        parameters.Add(OidcConstants.AuthorizeRequest.Scope, "openid");
+        parameters.Add(OidcConstants.AuthorizeRequest.RedirectUri, "https://server/cb?x[action]=login");
+        parameters.Add(OidcConstants.AuthorizeRequest.ResponseType, OidcConstants.ResponseTypes.Code);
+
+        var validator = Factory.CreateAuthorizeRequestValidator();
+        var result = await validator.ValidateAsync(parameters);
+
+        result.IsError.Should().Be(false);
+    }
 }
