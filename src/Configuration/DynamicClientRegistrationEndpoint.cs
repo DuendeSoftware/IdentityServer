@@ -23,7 +23,7 @@ public class DynamicClientRegistrationEndpoint
     public async Task Process(HttpContext context)
     {
         // de-serialize body
-        if (context.Request.ContentType != "application/json")
+        if (!context.Request.HasJsonContentType())
         {
             context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
             return;
@@ -108,14 +108,6 @@ public class DynamicClientRegistrationEndpoint
         // for debugging.
         
         // todo: generate response
-        var response = request as DynamicClientRegistrationResponse;
-        response.ClientId = response.ClientId;
-
-        if (sharedSecret != null)
-        {
-            response.ClientSecret = sharedSecret;
-        }
-
-        await context.Response.WriteAsJsonAsync(response);
+        
     }
 }
