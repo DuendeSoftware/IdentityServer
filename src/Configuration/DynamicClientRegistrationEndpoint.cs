@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Http;
@@ -87,34 +89,19 @@ public class DynamicClientRegistrationEndpoint
         // create client in configuration system
         await _store.AddAsync(result.Client);
 
-        // return response
-        // Upon a successful registration request, the authorization server
-        // returns a client identifier for the client.  The server responds with
-        // an HTTP 201 Created status code and a body of type "application/json"
-        // with content as described in Section 3.2.1.
-        
-        //When a registration error condition occurs, the authorization server
-        //returns an HTTP 400 status code (unless otherwise specified) with
-        //    content type "application/json" consisting of a JSON object [RFC7159]
-        // describing the error in the response body.
-
-        //    Two members are defined for inclusion in the JSON object:
-
-        // error
-        // REQUIRED.  Single ASCII error code string.
-
-        //     error_description
-        // OPTIONAL.  Human-readable ASCII text description of the error used
-        // for debugging.
-        
-        // todo: generate response
         document.ClientId = result.Client.ClientId;
         if (sharedSecret != null)
         {
             document.ClientSecret = sharedSecret;
+            document.ClientSecretExpiresAt = DateTimeOffset.MaxValue.ToUnixTimeSeconds();
         }
 
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+        
         context.Response.StatusCode = StatusCodes.Status201Created;
-        await context.Response.WriteAsJsonAsync(document);
+        await context.Response.WriteAsJsonAsync(document, options);
     }
 }
