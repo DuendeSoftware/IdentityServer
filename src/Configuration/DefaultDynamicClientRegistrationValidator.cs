@@ -6,7 +6,7 @@ namespace Duende.IdentityServer.Configuration;
 
 public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrationValidator
 {
-    public Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request)
+    public Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationDocument document)
     {
         var client = new Client
         {
@@ -16,11 +16,11 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         //////////////////////////////
         // validate grant types
         //////////////////////////////
-        if (request.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
+        if (document.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
         {
             client.AllowedGrantTypes.Add(GrantType.ClientCredentials);
         }
-        if (request.GrantTypes.Contains(OidcConstants.GrantTypes.AuthorizationCode))
+        if (document.GrantTypes.Contains(OidcConstants.GrantTypes.AuthorizationCode))
         {
             client.AllowedGrantTypes.Add(GrantType.AuthorizationCode);
         }
@@ -31,7 +31,7 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
             return Task.FromResult(new DynamicClientRegistrationValidationResult(DynamicClientRegistrationErrors.InvalidClientMetadata, "unsupported grant type"));
         }
 
-        if (request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
+        if (document.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
         {
             if (client.AllowedGrantTypes.Count == 1 &&
                 client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
@@ -47,9 +47,9 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         //////////////////////////////
         if (client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
         {
-            if (request.RedirectUris.Any())
+            if (document.RedirectUris.Any())
             {
-                foreach (var requestRedirectUri in request.RedirectUris)
+                foreach (var requestRedirectUri in document.RedirectUris)
                 {
                     if (requestRedirectUri.IsAbsoluteUri)
                     {
@@ -70,7 +70,7 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         if (client.AllowedGrantTypes.Count == 1 &&
             client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
         {
-            if (request.RedirectUris.Any())
+            if (document.RedirectUris.Any())
             {
                 return Task.FromResult(new DynamicClientRegistrationValidationResult(DynamicClientRegistrationErrors.InvalidRedirectUri, "redirect URI not compatible with client_credentials grant type"));
             }
@@ -79,13 +79,13 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         //////////////////////////////
         // validate scopes
         //////////////////////////////
-        if (string.IsNullOrEmpty(request.Scope))
+        if (string.IsNullOrEmpty(document.Scope))
         {
             // todo: what to do when scopes are missing? error - leave up to custom validator?
         }
         else
         {
-            var scopes = request.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var scopes = document.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             // todo: ideally scope names get checked against configuration store?
             
             foreach (var scope in scopes)
@@ -104,19 +104,19 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         //////////////////////////////
         // misc
         //////////////////////////////
-        if (!string.IsNullOrWhiteSpace(request.ClientName))
+        if (!string.IsNullOrWhiteSpace(document.ClientName))
         {
-            client.ClientName = request.ClientName;
+            client.ClientName = document.ClientName;
         }
         
-        if (request.ClientUri != null)
+        if (document.ClientUri != null)
         {
-            client.ClientUri = request.ClientUri.AbsoluteUri;
+            client.ClientUri = document.ClientUri.AbsoluteUri;
         }
 
-        if (request.DefaultMaxAge.HasValue)
+        if (document.DefaultMaxAge.HasValue)
         {
-            client.UserSsoLifetime = request.DefaultMaxAge;
+            client.UserSsoLifetime = document.DefaultMaxAge;
         }
         
         // validation successful - return client

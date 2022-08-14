@@ -29,10 +29,10 @@ public class DynamicClientRegistrationEndpoint
             return;
         }
 
-        DynamicClientRegistrationRequest request;
+        DynamicClientRegistrationDocument document;
         try
         {
-            request = await context.Request.ReadFromJsonAsync<DynamicClientRegistrationRequest>();
+            document = await context.Request.ReadFromJsonAsync<DynamicClientRegistrationDocument>();
         }
         catch (Exception e)
         {
@@ -49,7 +49,7 @@ public class DynamicClientRegistrationEndpoint
         
 
         // validate body values and construct Client object
-        var result = await _validator.ValidateAsync(context.User, request);
+        var result = await _validator.ValidateAsync(context.User, document);
 
         if (result.IsError)
         {
@@ -72,7 +72,7 @@ public class DynamicClientRegistrationEndpoint
         }
          
         // pass body, caller identity and Client to validator
-        result = await _customValidator.ValidateAsync(context.User, request, result.Client);
+        result = await _customValidator.ValidateAsync(context.User, document, result.Client);
         
         if (result.IsError)
         {
@@ -108,6 +108,13 @@ public class DynamicClientRegistrationEndpoint
         // for debugging.
         
         // todo: generate response
-        
+        document.ClientId = result.Client.ClientId;
+        if (sharedSecret != null)
+        {
+            document.ClientSecret = sharedSecret;
+        }
+
+        context.Response.StatusCode = StatusCodes.Status201Created;
+        await context.Response.WriteAsJsonAsync(document);
     }
 }
