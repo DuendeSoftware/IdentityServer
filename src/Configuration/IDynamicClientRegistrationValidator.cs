@@ -4,5 +4,5 @@ namespace Duende.IdentityServer.Configuration;
 
 public interface IDynamicClientRegistrationValidator
 {
-    Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request);
+    Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationDocument document);
 }

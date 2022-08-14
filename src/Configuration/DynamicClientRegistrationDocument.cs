@@ -4,7 +4,7 @@ using IdentityModel.Jwk;
 
 namespace Duende.IdentityServer.Configuration;
 
-public class DynamicClientRegistrationRequest
+public class DynamicClientRegistrationDocument
 {
     /// <summary>
     /// List of redirection URI strings for use in redirect-based flows such as the authorization code and implicit flows.
@@ -78,4 +78,12 @@ public class DynamicClientRegistrationRequest
     /// </summary>
     [JsonExtensionData]
     public IDictionary<string, object> Extensions { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    
+    
+    /// output fields
+    [JsonPropertyName("client_id")]
+    public string ClientId { get; set; }
+    
+    [JsonPropertyName("client_secret")]
+    public string? ClientSecret { get; set; }
 }
