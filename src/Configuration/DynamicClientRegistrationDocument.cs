@@ -79,11 +79,16 @@ public class DynamicClientRegistrationDocument
     [JsonExtensionData]
     public IDictionary<string, object> Extensions { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
     
+    ///////////////////////////////
+    /// output only fields
+    ///////////////////////////////
     
-    /// output fields
     [JsonPropertyName("client_id")]
     public string ClientId { get; set; }
     
     [JsonPropertyName("client_secret")]
     public string? ClientSecret { get; set; }
+
+    [JsonPropertyName("client_secret_expires_at")]
+    public long? ClientSecretExpiresAt { get; set; }
 }

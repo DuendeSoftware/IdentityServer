@@ -9,7 +9,7 @@
 
     <ItemGroup>
         <!--our stuff -->
-        <PackageReference Update="IdentityModel" Version="6.0.0"/>
+        <PackageReference Update="IdentityModel" Version="6.1.0-preview.1"/>
 
         <!--build related-->
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
