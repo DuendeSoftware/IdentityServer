@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Duende.IdentityServer.Configuration;
 
-public static class EndpointExtensions
+public static class ConfigurationEndpointExtensions
 {
     public static IEndpointConventionBuilder MapDynamicClientRegistration(this IEndpointRouteBuilder endpoints, string path)
     {

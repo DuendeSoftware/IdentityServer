@@ -4,7 +4,7 @@ using IdentityModel.Jwk;
 
 namespace Duende.IdentityServer.Configuration;
 
-public class DynamicClientRegistrationDocument
+public class DynamicClientRegistrationRequest
 {
     /// <summary>
     /// List of redirection URI strings for use in redirect-based flows such as the authorization code and implicit flows.
