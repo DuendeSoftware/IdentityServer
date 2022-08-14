@@ -27,9 +27,3 @@ public class DynamicClientRegistrationValidationResult
 
     public bool IsError => !string.IsNullOrWhiteSpace(Error);
 }
-
-public static class DynamicClientRegistrationError
-{
-    public const string InvalidRedirectUri = "invalid_redirect_uri";
-    public const string InvalidClientMetadata = "invalid_client_metadata";
-}

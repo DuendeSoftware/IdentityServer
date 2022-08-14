@@ -29,15 +29,21 @@ public class DynamicClientRegistrationEndpoint
             return;
         }
 
-        DynamicClientRegistrationDocument request;
+        DynamicClientRegistrationRequest request;
         try
         {
-            request = await context.Request.ReadFromJsonAsync<DynamicClientRegistrationDocument>();
+            request = await context.Request.ReadFromJsonAsync<DynamicClientRegistrationRequest>();
         }
         catch (Exception e)
         {
             // todo: return error response
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new DynamicClientRegistrationErrorResponse
+            {
+                Error = DynamicClientRegistrationErrors.InvalidClientMetadata,
+                ErrorDescription = "malformed metadata document"
+            });
+            
             return;
         }
         
@@ -47,13 +53,17 @@ public class DynamicClientRegistrationEndpoint
 
         if (result.IsError)
         {
-            // todo: return error response
-            throw new InvalidOperationException(result.Error);
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new DynamicClientRegistrationErrorResponse
+            {
+                Error = result.Error,
+                ErrorDescription = result.ErrorDescription
+            });
         }
 
         // todo client secret - generate here, or in validator?
         // should there be a default lifetime on the secret?
-        string sharedSecret;
+        string sharedSecret = null;
         if (!result.Client.ClientSecrets.Any())
         {
             // for now just generate a shared secret
@@ -63,6 +73,16 @@ public class DynamicClientRegistrationEndpoint
          
         // pass body, caller identity and Client to validator
         result = await _customValidator.ValidateAsync(context.User, request, result.Client);
+        
+        if (result.IsError)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new DynamicClientRegistrationErrorResponse
+            {
+                Error = result.Error,
+                ErrorDescription = result.ErrorDescription
+            });
+        }
         
         // create client in configuration system
         await _store.AddAsync(result.Client);
@@ -88,5 +108,14 @@ public class DynamicClientRegistrationEndpoint
         // for debugging.
         
         // todo: generate response
+        var response = request as DynamicClientRegistrationResponse;
+        response.ClientId = response.ClientId;
+
+        if (sharedSecret != null)
+        {
+            response.ClientSecret = sharedSecret;
+        }
+
+        await context.Response.WriteAsJsonAsync(response);
     }
 }
