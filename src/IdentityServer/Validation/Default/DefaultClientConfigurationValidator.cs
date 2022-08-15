@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Extensions;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -153,10 +154,10 @@ public class DefaultClientConfigurationValidator : IClientConfigurationValidator
             {
                 var fail = true;
 
-                if (!string.IsNullOrWhiteSpace(origin) && Uri.IsWellFormedUriString(origin, UriKind.Absolute))
+                if (!string.IsNullOrWhiteSpace(origin) && origin.IsUri())
                 {
                     var uri = new Uri(origin);
-                        
+                    
                     if (uri.AbsolutePath == "/" && !origin.EndsWith("/"))
                     {
                         fail = false;
