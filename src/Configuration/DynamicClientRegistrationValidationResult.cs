@@ -17,6 +17,7 @@ public class DynamicClientRegistrationValidationResult
         ArgumentNullException.ThrowIfNull(errorDescription);
 
         Error = error;
+        ErrorDescription = errorDescription;
     }
     
     public Client? Client { get; }

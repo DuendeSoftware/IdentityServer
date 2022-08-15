@@ -36,7 +36,7 @@ public class DynamicClientRegistrationEndpoint
         {
             document = await context.Request.ReadFromJsonAsync<DynamicClientRegistrationDocument>();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             // todo: return error response
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -61,6 +61,8 @@ public class DynamicClientRegistrationEndpoint
                 Error = result.Error,
                 ErrorDescription = result.ErrorDescription
             });
+
+            return;
         }
 
         // todo client secret - generate here, or in validator?
@@ -84,6 +86,8 @@ public class DynamicClientRegistrationEndpoint
                 Error = result.Error,
                 ErrorDescription = result.ErrorDescription
             });
+            
+            return;
         }
         
         // create client in configuration system
