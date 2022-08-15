@@ -166,6 +166,7 @@ public class StringExtensionsTests
     public void IsUri_should_allow_uris()
     {
         "https://path".IsUri().Should().BeTrue();
+        "https://path?foo=[x]".IsUri().Should().BeTrue();
         "file://path".IsUri().Should().BeTrue();
     }
 
