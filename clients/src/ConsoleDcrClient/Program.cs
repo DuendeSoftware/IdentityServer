@@ -25,3 +25,26 @@ if (response.IsError)
 }
 
 Console.WriteLine(JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true }));
+
+Console.ReadLine();
+
+document = new DynamicClientRegistrationDocument
+{
+    GrantTypes = { "client_credentials", "authorization_code", "refresh_token" },
+    RedirectUris = { new Uri("https://client/cb") },
+    Scope = "api1"
+};
+
+response = await client.RegisterClientAsync(new DynamicClientRegistrationRequest
+{
+    Address = Constants.Authority + "/connect/dcr",
+    Document = document
+});
+
+if (response.IsError)
+{
+    Console.WriteLine(response.Error);
+    return;
+}
+
+Console.WriteLine(JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true }));

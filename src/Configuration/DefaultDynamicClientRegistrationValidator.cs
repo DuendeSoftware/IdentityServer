@@ -28,7 +28,9 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         // we only support the two above grant types
         if (client.AllowedGrantTypes.Count == 0)
         {
-            return Task.FromResult(new DynamicClientRegistrationValidationResult(DynamicClientRegistrationErrors.InvalidClientMetadata, "unsupported grant type"));
+            return Task.FromResult(new DynamicClientRegistrationValidationResult(
+                DynamicClientRegistrationErrors.InvalidClientMetadata, 
+                "unsupported grant type"));
         }
 
         if (document.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
@@ -36,7 +38,9 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
             if (client.AllowedGrantTypes.Count == 1 &&
                 client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
             {
-                return Task.FromResult(new DynamicClientRegistrationValidationResult(DynamicClientRegistrationErrors.InvalidClientMetadata, "client credentials does not support refresh tokens"));
+                return Task.FromResult(new DynamicClientRegistrationValidationResult(
+                    DynamicClientRegistrationErrors.InvalidClientMetadata, 
+                    "client credentials does not support refresh tokens"));
             }
 
             client.AllowOfflineAccess = true;
@@ -53,17 +57,21 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
                 {
                     if (requestRedirectUri.IsAbsoluteUri)
                     {
-                        client.RedirectUris.Add(requestRedirectUri.AbsoluteUri);    
+                        client.RedirectUris.Add(requestRedirectUri.AbsoluteUri);
                     }
                     else
                     {
-                        return Task.FromResult(new DynamicClientRegistrationValidationResult(DynamicClientRegistrationErrors.InvalidRedirectUri ,"malformed redirect URI"));
+                        return Task.FromResult(new DynamicClientRegistrationValidationResult(
+                            DynamicClientRegistrationErrors.InvalidRedirectUri,
+                            "malformed redirect URI"));
                     }
                 }
             }
             else
             {
-                return Task.FromResult(new DynamicClientRegistrationValidationResult(DynamicClientRegistrationErrors.InvalidRedirectUri, "redirect URI required for authorization_code grant type"));
+                return Task.FromResult(new DynamicClientRegistrationValidationResult(
+                    DynamicClientRegistrationErrors.InvalidRedirectUri, 
+                    "redirect URI required for authorization_code grant type"));
             }
         }
 
@@ -72,7 +80,9 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         {
             if (document.RedirectUris.Any())
             {
-                return Task.FromResult(new DynamicClientRegistrationValidationResult(DynamicClientRegistrationErrors.InvalidRedirectUri, "redirect URI not compatible with client_credentials grant type"));
+                return Task.FromResult(new DynamicClientRegistrationValidationResult(
+                    DynamicClientRegistrationErrors.InvalidRedirectUri, 
+                    "redirect URI not compatible with client_credentials grant type"));
             }
         }
         
