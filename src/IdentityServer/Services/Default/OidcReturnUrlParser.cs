@@ -70,14 +70,8 @@ internal class OidcReturnUrlParser : IReturnUrlParser
     {
         using var activity = Tracing.ValidationActivitySource.StartActivity("OidcReturnUrlParser.IsValidReturnUrl");
         
-        if (_options.UserInteraction.AllowOriginInReturnUrl && returnUrl != null)
+        if (_options.UserInteraction.AllowOriginInReturnUrl && returnUrl.IsUri())
         {
-            if (!Uri.IsWellFormedUriString(returnUrl, UriKind.RelativeOrAbsolute))
-            {
-                _logger.LogTrace("returnUrl is not valid");
-                return false;
-            }
-
             var host = _urls.Origin;
             if (returnUrl.StartsWith(host, StringComparison.OrdinalIgnoreCase) == true)
             {
