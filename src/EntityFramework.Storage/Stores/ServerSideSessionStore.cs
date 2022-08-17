@@ -80,7 +80,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             await Context.SaveChangesAsync(cancellationToken);
             Logger.LogDebug("Created new server-side session {serverSideSessionKey} in database", session.Key);
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateException ex)
         {
             Logger.LogWarning("Exception creating new server-side session in database: {error}", ex.Message);
         }
@@ -150,7 +150,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             await Context.SaveChangesAsync(cancellationToken);
             Logger.LogDebug("Updated server-side session {serverSideSessionKey} in database", session.Key);
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateException ex)
         {
             Logger.LogWarning("Exception updating existing server side session {serverSideSessionKey} in database: {error}", session.Key, ex.Message);
         }
@@ -180,7 +180,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             await Context.SaveChangesAsync(cancellationToken);
             Logger.LogDebug("Deleted server-side session {serverSideSessionKey} in database", key);
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateException ex)
         {
             Logger.LogWarning("Exception deleting server-side session {serverSideSessionKey} in database: {error}", key, ex.Message);
         }
@@ -239,7 +239,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
             await Context.SaveChangesAsync(cancellationToken);
             Logger.LogDebug("Removed {serverSideSessionCount} server-side sessions from database for {@filter}", entities.Length, filter);
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateException ex)
         {
             Logger.LogInformation("Error removing {serverSideSessionCount} server-side sessions from database for {@filter}: {error}", entities.Length, filter, ex.Message);
         }
