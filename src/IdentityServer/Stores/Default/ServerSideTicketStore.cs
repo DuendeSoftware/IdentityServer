@@ -61,13 +61,6 @@ public class ServerSideTicketStore : IServerSideTicketStore
 
         var key = CryptoRandom.CreateUniqueId(format: CryptoRandom.OutputFormat.Hex);
 
-        await CreateNewSessionAsync(key, ticket);
-
-        return key;
-    }
-
-    private async Task CreateNewSessionAsync(string key, AuthenticationTicket ticket)
-    {
         _logger.LogDebug("Creating entry in store for AuthenticationTicket, key {key}, with expiration: {expiration}", key, ticket.GetExpiration());
 
         var session = new ServerSideSession
@@ -84,6 +77,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
         };
 
         await _store.CreateSessionAsync(session);
+
+        return key;
     }
 
     /// <inheritdoc />
@@ -126,9 +121,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
         var session = await _store.GetSessionAsync(key);
         if (session == null)
         {
-            // https://github.com/dotnet/aspnetcore/issues/41516#issuecomment-1178076544
-            await CreateNewSessionAsync(key, ticket);
-            return;
+            throw new InvalidOperationException($"No matching item in store for key `{key}`");
         }
 
         _logger.LogDebug("Renewing AuthenticationTicket for key {key}, with expiration: {expiration}", key, ticket.GetExpiration());
