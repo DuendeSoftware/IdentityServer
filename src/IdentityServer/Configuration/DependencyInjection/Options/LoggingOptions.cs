@@ -13,8 +13,9 @@ namespace Duende.IdentityServer.Configuration;
 public class LoggingOptions
 {
     /// <summary>
-    /// 
+    /// Gets or sets the collection of keys that will be used to redact sensitive values from a backchannel authentication request log.
     /// </summary>
+    /// <remarks>Please be aware that initializing this property could expose sensitive information in your logs.</remarks>
     public ICollection<string> BackchannelAuthenticationRequestSensitiveValuesFilter { get; set; } =
         new HashSet<string>
         {
@@ -25,8 +26,9 @@ public class LoggingOptions
         };
 
     /// <summary>
-    /// 
+    /// Gets or sets the collection of keys that will be used to redact sensitive values from a token request log.
     /// </summary>
+    /// <remarks>Please be aware that initializing this property could expose sensitive information in your logs.</remarks>
     public ICollection<string> TokenRequestSensitiveValuesFilter { get; set; } = 
         new HashSet<string>
         {
@@ -38,8 +40,9 @@ public class LoggingOptions
         };
 
     /// <summary>
-    /// 
+    /// Gets or sets the collection of keys that will be used to redact sensitive values from an authorize request log.
     /// </summary>
+    /// <remarks>Please be aware that initializing this property could expose sensitive information in your logs.</remarks>
     public ICollection<string> AuthorizeRequestSensitiveValuesFilter { get; set; } = 
         new HashSet<string>
         {
