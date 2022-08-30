@@ -17,6 +17,10 @@ using IdentityModel.Client;
 using System.Collections.Generic;
 using System;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Session;
+using FluentAssertions.Common;
+using Duende.IdentityServer;
 
 namespace IntegrationTests.Hosting;
 
@@ -38,13 +42,26 @@ public class ServerSideSessionTests
         public string Origin { get; set; }
         public string BasePath { get; set; }
     }
-    
+    public bool ShouldRenewCookie { get; set; } = false;
+
     public ServerSideSessionTests()
     {
         _urls.Origin = IdentityServerPipeline.BaseUrl;
         _urls.BasePath = "/";
-        _pipeline.OnPostConfigureServices += s => 
+        _pipeline.OnPostConfigureServices += s =>
         {
+            s.PostConfigure<CookieAuthenticationOptions>(IdentityServerConstants.DefaultCookieAuthenticationScheme, opts =>
+            {
+                opts.Events.OnValidatePrincipal = async ctx =>
+                {
+                    ctx.ShouldRenew = ShouldRenewCookie;
+                    if (ShouldRenewCookie)
+                    {
+                        await _sessionStore.DeleteSessionsAsync(new SessionFilter { SubjectId = "bob" });
+                    }
+                };
+            });
+
             s.AddSingleton<IServerUrls>(_urls);
             s.AddIdentityServerBuilder().AddServerSideSessions();
         };
@@ -52,9 +69,10 @@ public class ServerSideSessionTests
         {
             _pipeline.Options.ServerSideSessions.RemoveExpiredSessionsFrequency = TimeSpan.FromMilliseconds(100);
 
-            app.Map("/user", ep => {
-                ep.Run(ctx => 
-                { 
+            app.Map("/user", ep =>
+            {
+                ep.Run(ctx =>
+                {
                     if (ctx.User.Identity.IsAuthenticated)
                     {
                         ctx.Response.StatusCode = 200;
@@ -120,6 +138,18 @@ public class ServerSideSessionTests
         await _pipeline.LoginAsync("bob");
         (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "bob" })).Should().NotBeEmpty();
         (await IsLoggedIn()).Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task renewal_should_create_new_record_if_missing()
+    {
+        await _pipeline.LoginAsync("bob");
+        
+        ShouldRenewCookie = true;
+        (await IsLoggedIn()).Should().BeTrue();
+        
+        (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "bob" })).Should().NotBeEmpty();
     }
 
     [Fact]
