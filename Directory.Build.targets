@@ -7,6 +7,13 @@
         <WilsonVersion>6.10.0</WilsonVersion>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0'">
+        <FrameworkVersion>7.0.0-rc.1.*</FrameworkVersion>
+        <ExtensionsVersion>7.0.0-rc.1.*</ExtensionsVersion>
+        <EntityFrameworkVersion>7.0.0-rc.1.*</EntityFrameworkVersion>
+        <WilsonVersion>6.15.1</WilsonVersion>
+    </PropertyGroup>
+
     <ItemGroup>
         <!--our stuff -->
         <PackageReference Update="IdentityModel" Version="6.0.0"/>
