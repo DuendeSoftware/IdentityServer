@@ -39,6 +39,7 @@ internal class License
 
         Edition = editionValue;
         RedistributionFeature = claims.HasClaim("feature", "isv") || claims.HasClaim("feature", "redistribution");
+        Extras = claims.FindFirst("extras")?.Value;
 
         if (IsCommunityEdition && RedistributionFeature)
         {
@@ -206,6 +207,8 @@ internal class License
     public bool BffFeature { get; set; }
     public bool CibaFeature { get; set; }
     public bool ServerSideSessionsFeature { get; set; }
+
+    public string Extras { get; set; }
 
     public enum LicenseEdition
     {
