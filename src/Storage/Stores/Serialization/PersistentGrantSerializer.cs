@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 using System;
 using System.Text.Json;
@@ -94,7 +95,9 @@ public class PersistentGrantSerializer : IPersistentGrantSerializer
             
         if (container.PersistentGrantDataContainerVersion == 0)
         {
-            return JsonSerializer.Deserialize<T>(json, Settings);
+            var item = JsonSerializer.Deserialize<T>(json, Settings);
+            PostProcess(item as RefreshToken);
+            return item;
         }
 
         if (container.PersistentGrantDataContainerVersion == 1)
@@ -111,10 +114,37 @@ public class PersistentGrantSerializer : IPersistentGrantSerializer
                 payload = _provider.Unprotect(container.Payload);
             }
 
-            return JsonSerializer.Deserialize<T>(payload, Settings);
+            var item = JsonSerializer.Deserialize<T>(payload, Settings);
+            PostProcess(item as RefreshToken);
+            return item;
         }
 
         throw new Exception($"Invalid version in persisted grant data: '{container.PersistentGrantDataContainerVersion}'.");
+    }
+
+    private void PostProcess(RefreshToken refreshToken)
+    {
+        if (refreshToken != null && refreshToken.Version < 5)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var user = new IdentityServerUser(refreshToken.AccessToken.SubjectId);
+            if (refreshToken.AccessToken.Claims != null)
+            {
+                foreach (var claim in refreshToken.AccessToken.Claims)
+                {
+                    user.AdditionalClaims.Add(claim);
+                }
+            }
+
+            refreshToken.Subject = user.CreatePrincipal();
+            refreshToken.ClientId = refreshToken.AccessToken.ClientId;
+            refreshToken.Description = refreshToken.AccessToken.Description;
+            refreshToken.AuthorizedScopes = refreshToken.AccessToken.Scopes;
+            refreshToken.SetAccessToken(refreshToken.AccessToken);
+            refreshToken.AccessToken = null;
+            refreshToken.Version = 5;
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
     }
 }
 
