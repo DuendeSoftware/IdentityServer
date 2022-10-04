@@ -6,6 +6,7 @@ using Duende.IdentityServer.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 using Duende.IdentityServer.Validation;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Events;
 
@@ -33,7 +34,7 @@ public class TokenIntrospectionSuccessEvent : Event
             Token = Obfuscate(result.Token);
         }
             
-        if (!result.Claims.IsNullOrEmpty())
+        if (!IEnumerableExtensions.IsNullOrEmpty(result.Claims))
         {
             ClaimTypes = result.Claims.Select(c => c.Type).Distinct();
             TokenScopes = result.Claims.Where(c => c.Type == "scope").Select(c => c.Value);

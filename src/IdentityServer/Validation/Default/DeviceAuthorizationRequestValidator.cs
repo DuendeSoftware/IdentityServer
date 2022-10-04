@@ -13,6 +13,7 @@ using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -121,7 +122,7 @@ internal class DeviceAuthorizationRequestValidator : IDeviceAuthorizationRequest
         {
             _logger.LogTrace("Client provided no scopes - checking allowed scopes list");
 
-            if (!request.Client.AllowedScopes.IsNullOrEmpty())
+            if (!IEnumerableExtensions.IsNullOrEmpty(request.Client.AllowedScopes))
             {
                 var clientAllowedScopes = new List<string>(request.Client.AllowedScopes);
                 if (request.Client.AllowOfflineAccess)

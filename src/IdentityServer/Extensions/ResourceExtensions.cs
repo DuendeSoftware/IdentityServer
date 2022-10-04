@@ -8,6 +8,7 @@ using System.Linq;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Models;
 
@@ -106,7 +107,7 @@ public static class ResourceExtensions
     {
         var apis = apiResources.ToList();
 
-        if (apis.IsNullOrEmpty())
+        if (IEnumerableExtensions.IsNullOrEmpty(apis))
         {
             return new List<string>();
         }
