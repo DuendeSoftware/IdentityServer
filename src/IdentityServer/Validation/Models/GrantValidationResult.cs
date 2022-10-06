@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -118,7 +118,7 @@ public class GrantValidationResult : ValidationResult
             new Claim(JwtClaimTypes.AuthenticationTime, new DateTimeOffset(authTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };
 
-        if (!claims.IsNullOrEmpty())
+        if (!IEnumerableExtensions.IsNullOrEmpty(claims))
         {
             resultClaims.AddRange(claims);
         }

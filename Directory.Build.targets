@@ -7,6 +7,13 @@
         <WilsonVersion>6.10.0</WilsonVersion>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0'">
+        <FrameworkVersion>7.0.0-rc.1.*</FrameworkVersion>
+        <ExtensionsVersion>7.0.0-rc.1.*</ExtensionsVersion>
+        <EntityFrameworkVersion>7.0.0-rc.1.*</EntityFrameworkVersion>
+        <WilsonVersion>6.15.1</WilsonVersion>
+    </PropertyGroup>
+
     <ItemGroup>
         <!--our stuff -->
         <PackageReference Update="IdentityModel" Version="6.0.0"/>
@@ -34,7 +41,7 @@
         <!--misc -->
         <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(WilsonVersion)"/>
         <PackageReference Update="System.IdentityModel.Tokens.Jwt" Version="$(WilsonVersion)"/>
-        <PackageReference Update="AutoMapper" Version="[11.0.0,12.0)"/>
+        <PackageReference Update="AutoMapper" Version="[12.0.0,13.0)"/>
         <PackageReference Update="Serilog.AspNetCore" Version="6.0.0"/>
 
         <!--microsoft asp.net core -->

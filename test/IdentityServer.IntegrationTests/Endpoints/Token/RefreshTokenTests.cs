@@ -4,7 +4,6 @@
 
 using FluentAssertions;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
@@ -14,7 +13,6 @@ using Duende.IdentityServer.Test;
 using IntegrationTests.Common;
 using Xunit;
 using IdentityModel.Client;
-using System.Text.Encodings.Web;
 using IdentityModel;
 
 namespace IntegrationTests.Endpoints.Token;

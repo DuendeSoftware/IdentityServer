@@ -14,7 +14,6 @@ using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
-using System;
 using System.IO;
 
 namespace Duende.IdentityServer.Endpoints;

@@ -40,7 +40,7 @@ jobs:
     - name: Setup dotnet
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '7.0.100-rc.1.22431.12'
       
     - run: dotnet --info
 

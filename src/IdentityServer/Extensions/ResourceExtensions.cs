@@ -106,7 +106,7 @@ public static class ResourceExtensions
     {
         var apis = apiResources.ToList();
 
-        if (apis.IsNullOrEmpty())
+        if (IEnumerableExtensions.IsNullOrEmpty(apis))
         {
             return new List<string>();
         }
