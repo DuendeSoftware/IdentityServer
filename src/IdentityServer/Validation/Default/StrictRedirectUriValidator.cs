@@ -4,6 +4,7 @@
 
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,7 @@ public class StrictRedirectUriValidator : IRedirectUriValidator
     /// <returns></returns>
     protected bool StringCollectionContainsString(IEnumerable<string> uris, string requestedUri)
     {
-        if (uris.IsNullOrEmpty()) return false;
+        if (IEnumerableExtensions.IsNullOrEmpty(uris)) return false;
 
         return uris.Contains(requestedUri, StringComparer.OrdinalIgnoreCase);
     }

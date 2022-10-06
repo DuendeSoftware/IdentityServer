@@ -6,6 +6,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using IdentityModel;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ public static class IdentityServerToolsExtensions
 
         claims.Add(new Claim(JwtClaimTypes.ClientId, clientId));
 
-        if (!scopes.IsNullOrEmpty())
+        if (!IEnumerableExtensions.IsNullOrEmpty(scopes))
         {
             foreach (var scope in scopes)
             {
@@ -62,7 +63,7 @@ public static class IdentityServerToolsExtensions
                 string.Format(IdentityServerConstants.AccessTokenAudience, (await tools.IssuerNameService.GetCurrentAsync()).EnsureTrailingSlash())));
         }
 
-        if (!audiences.IsNullOrEmpty())
+        if (!IEnumerableExtensions.IsNullOrEmpty(audiences))
         {
             foreach (var audience in audiences)
             {

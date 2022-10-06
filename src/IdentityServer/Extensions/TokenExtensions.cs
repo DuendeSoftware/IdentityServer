@@ -12,6 +12,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using Duende.IdentityServer.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Extensions;
 

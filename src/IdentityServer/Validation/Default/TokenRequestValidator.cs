@@ -18,6 +18,7 @@ using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -897,7 +898,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         {
             _logger.LogTrace("Client provided no scopes - checking allowed scopes list");
 
-            if (!_validatedRequest.Client.AllowedScopes.IsNullOrEmpty())
+            if (!IEnumerableExtensions.IsNullOrEmpty(_validatedRequest.Client.AllowedScopes))
             {
                 // this finds all the scopes the client is allowed to access
                 var clientAllowedScopes = new List<string>();
