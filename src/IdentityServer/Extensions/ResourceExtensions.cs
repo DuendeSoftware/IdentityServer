@@ -8,7 +8,6 @@ using System.Linq;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Models;
 

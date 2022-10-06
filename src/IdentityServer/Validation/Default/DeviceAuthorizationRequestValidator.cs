@@ -13,7 +13,6 @@ using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Validation;
 

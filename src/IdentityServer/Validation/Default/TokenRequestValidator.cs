@@ -18,7 +18,6 @@ using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Validation;
 

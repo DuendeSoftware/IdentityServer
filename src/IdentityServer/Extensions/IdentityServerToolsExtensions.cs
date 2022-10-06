@@ -6,7 +6,6 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using IdentityModel;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;

@@ -4,7 +4,6 @@
 
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;

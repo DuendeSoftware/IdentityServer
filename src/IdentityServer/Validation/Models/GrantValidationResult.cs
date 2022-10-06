@@ -9,7 +9,6 @@ using System.Linq;
 using System.Security.Claims;
 using System;
 using Duende.IdentityServer.Models;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Validation;
 
