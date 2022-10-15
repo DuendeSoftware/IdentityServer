@@ -43,6 +43,8 @@ jobs:
         dotnet-version: '7.0.100-rc.1.22431.12'
       
     - run: dotnet --info
+    
+    - run: ./build.sh codeql
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
