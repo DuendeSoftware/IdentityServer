@@ -46,6 +46,7 @@ jobs:
       
     - run: dotnet --info
     
+    # works
     - run: ./build.sh codeql
 
     # Initializes the CodeQL tools for scanning.
@@ -60,6 +61,7 @@ jobs:
 
     - run: dotnet --info
     
+    # fails
     - run: ./build.sh codeql
     
     - name: Perform CodeQL Analysis
