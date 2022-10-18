@@ -47,7 +47,7 @@ namespace build
             Target(Targets.CodeQL, () =>
             {
                 //Run("dotnet", $"clean {solutionCodeQL} -c Release -v m --nologo");
-                Run("dotnet", $"build --project {solutionCodeQL} -c Release --nologo");
+                Run("dotnet", $"build {solutionCodeQL} -c Release --nologo");
             });
 
             Target(Targets.SignBinary, DependsOn(Targets.Build, Targets.RestoreTools), () =>
