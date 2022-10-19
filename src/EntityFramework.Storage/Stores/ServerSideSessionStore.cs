@@ -163,7 +163,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
         
         cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
         
-        var entity = (await Context.ServerSideSessions.AsNoTracking().Where(x => x.Key == key)
+        var entity = (await Context.ServerSideSessions.Where(x => x.Key == key)
                         .ToArrayAsync(cancellationToken))
                     .SingleOrDefault(x => x.Key == key);
 
