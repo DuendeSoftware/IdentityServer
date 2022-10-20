@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -10,7 +10,7 @@ namespace Duende.IdentityServer.Validation;
 /// <summary>
 /// Represents the result of a backchannel authentication request.
 /// </summary>
-public class BackchannelAuthenticationUserValidatonResult
+public class BackchannelAuthenticationUserValidationResult
 {
     /// <summary>
     /// Indicates if this represents an error.

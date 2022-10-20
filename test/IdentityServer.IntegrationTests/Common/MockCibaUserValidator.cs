@@ -9,10 +9,10 @@ namespace IntegrationTests.Common;
 
 internal class MockCibaUserValidator : IBackchannelAuthenticationUserValidator
 {
-    public BackchannelAuthenticationUserValidatonResult Result { get; set; } = new BackchannelAuthenticationUserValidatonResult();
+    public BackchannelAuthenticationUserValidationResult Result { get; set; } = new BackchannelAuthenticationUserValidationResult();
     public BackchannelAuthenticationUserValidatorContext UserValidatorContext { get; set; }
 
-    public Task<BackchannelAuthenticationUserValidatonResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
+    public Task<BackchannelAuthenticationUserValidationResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
     {
         UserValidatorContext = userValidatorContext;
         return Task.FromResult(Result);
