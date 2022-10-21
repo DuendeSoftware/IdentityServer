@@ -183,6 +183,22 @@ public class PersistedGrantStoreTests : IntegrationTest<PersistedGrantStoreTests
                 SessionId = "s1",
                 Type = "t3"
             })).ToList().Count.Should().Be(0);
+            (await store.GetAllAsync(new PersistedGrantFilter
+            {
+                ClientIds = new List<string>() { "c1", "c2" }
+            })).ToList().Count.Should().Be(8);
+            (await store.GetAllAsync(new PersistedGrantFilter
+            {
+                Types = new List<string>() { "t3", "t2" }
+            })).ToList().Count.Should().Be(5);
+            (await store.GetAllAsync(new PersistedGrantFilter
+            {
+                ClientId = "c1"
+            })).ToList().Count.Should().Be(4);
+            (await store.GetAllAsync(new PersistedGrantFilter
+            {
+                Type = "t3"
+            })).ToList().Count.Should().Be(1);
         }
     }
 
@@ -419,6 +435,55 @@ public class PersistedGrantStoreTests : IntegrationTest<PersistedGrantStoreTests
                 Type = "t3"
             });
             context.PersistedGrants.Count().Should().Be(10);
+        }
+
+        PopulateDb();
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            var store = new PersistedGrantStore(context, FakeLogger<PersistedGrantStore>.Create(), new NoneCancellationTokenProvider());
+
+            await store.RemoveAllAsync(new PersistedGrantFilter
+            {
+                ClientIds = new List<string>() { "c1", "c2" }
+            });
+            context.PersistedGrants.Count().Should().Be(2);
+        }
+
+        PopulateDb();
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            var store = new PersistedGrantStore(context, FakeLogger<PersistedGrantStore>.Create(), new NoneCancellationTokenProvider());
+
+            await store.RemoveAllAsync(new PersistedGrantFilter
+            {
+                Types = new List<string>() { "t3", "t2" }
+            });
+            context.PersistedGrants.Count().Should().Be(5);
+        }
+
+
+        PopulateDb();
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            var store = new PersistedGrantStore(context, FakeLogger<PersistedGrantStore>.Create(), new NoneCancellationTokenProvider());
+
+            await store.RemoveAllAsync(new PersistedGrantFilter
+            {
+                ClientId = "c1"
+            });
+            context.PersistedGrants.Count().Should().Be(6);
+        }
+
+        PopulateDb();
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            var store = new PersistedGrantStore(context, FakeLogger<PersistedGrantStore>.Create(), new NoneCancellationTokenProvider());
+
+            await store.RemoveAllAsync(new PersistedGrantFilter
+            {
+                Type = "t3"
+            });
+            context.PersistedGrants.Count().Should().Be(9);
         }
     }
 
