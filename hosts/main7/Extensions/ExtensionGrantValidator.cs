@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -15,7 +15,7 @@ public class ExtensionGrantValidator : IExtensionGrantValidator
 
         if (credential != null)
         {
-            context.Result = new GrantValidationResult(subject: "818727", authenticationMethod: "custom");
+            context.Result = new GrantValidationResult(subject: "1", authenticationMethod: "custom");
         }
         else
         {

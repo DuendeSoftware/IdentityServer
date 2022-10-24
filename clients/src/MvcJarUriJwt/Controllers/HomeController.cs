@@ -27,7 +27,7 @@ namespace MvcCode.Controllers
             var client = _httpClientFactory.CreateClient("client");
 
             var response = await client.GetStringAsync("identity");
-            ViewBag.Json = JsonDocument.Parse(response).ToString();
+            ViewBag.Json = response;
 
             return View();
         }
