@@ -72,7 +72,6 @@ public class CustomClaimsServiceTests
         var obj = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
 
         obj["foo"].GetString().Should().Be("foo1");
-        obj["aud"].GetString().Should().Be("aud1");
     }
 }
 
@@ -87,7 +86,6 @@ public class CustomClaimsService : DefaultClaimsService
         var result = (await base.GetAccessTokenClaimsAsync(subject, resourceResult, request)).ToList();
 
         result.Add(new Claim("foo", "foo1"));
-        result.Add(new Claim("aud", "aud1"));
 
         return result;
     }
