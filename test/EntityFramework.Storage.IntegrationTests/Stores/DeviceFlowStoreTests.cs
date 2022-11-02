@@ -129,11 +129,13 @@ public class DeviceFlowStoreTests : IntegrationTest<DeviceFlowStoreTests, Persis
             var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
 
             // skip odd behaviour of in-memory provider
+#pragma warning disable EF1001 // Internal EF Core API usage.
             if (options.Extensions.All(x => x.GetType() != typeof(InMemoryOptionsExtension)))
             {
                 await Assert.ThrowsAsync<DbUpdateException>(() =>
                     store.StoreDeviceAuthorizationAsync($"device_{Guid.NewGuid().ToString()}", existingUserCode, deviceCodeData));
             }
+#pragma warning restore EF1001 // Internal EF Core API usage.
         }
     }
 
@@ -172,11 +174,13 @@ public class DeviceFlowStoreTests : IntegrationTest<DeviceFlowStoreTests, Persis
             var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create(), new NoneCancellationTokenProvider());
 
             // skip odd behaviour of in-memory provider
+#pragma warning disable EF1001 // Internal EF Core API usage.
             if (options.Extensions.All(x => x.GetType() != typeof(InMemoryOptionsExtension)))
             {
                 await Assert.ThrowsAsync<DbUpdateException>(() =>
                     store.StoreDeviceAuthorizationAsync(existingDeviceCode, $"user_{Guid.NewGuid().ToString()}", deviceCodeData));
             }
+#pragma warning restore EF1001 // Internal EF Core API usage.
         }
     }
 

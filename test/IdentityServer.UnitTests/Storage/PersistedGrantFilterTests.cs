@@ -10,7 +10,7 @@ namespace IdentityServer.UnitTests.Storage
     public class PersistedGrantFilterTests
     {
         [Fact]
-        public async Task Validate_should_not_throw_if_any_property_is_not_null_or_empty()
+        public void Validate_should_not_throw_if_any_property_is_not_null_or_empty()
         {
             var filter = new PersistedGrantFilter { ClientId = "client-id" };
             filter.Validate();
@@ -43,7 +43,7 @@ namespace IdentityServer.UnitTests.Storage
         }
 
         [Fact]
-        public async Task Validate_should_throw_if_all_properties_are_null_or_empty()
+        public void Validate_should_throw_if_all_properties_are_null_or_empty()
         {
             var filter = new PersistedGrantFilter();
             Assert.Throws<ArgumentException>(() => filter.Validate());
