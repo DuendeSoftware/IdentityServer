@@ -66,6 +66,7 @@ public class BasicAuthenticationSecretParsing
     [InlineData("client", "se+cret")]
     [InlineData("cl+ ient", "se+cret")]
     [InlineData("cl+ ient", "se+ cret")]
+    [InlineData("client:urn", "secret")]
     public async void Valid_BasicAuthentication_Request_in_various_Formats_Manual(string userName, string password)
     {
         Encoding encoding = Encoding.UTF8;
@@ -92,6 +93,7 @@ public class BasicAuthenticationSecretParsing
     [InlineData("client", "se+cret")]
     [InlineData("cl+ ient", "se+cret")]
     [InlineData("cl+ ient", "se+ cret")]
+    [InlineData("client:urn", "secret")]
     public async void Valid_BasicAuthentication_Request_in_various_Formats_IdentityModel(string userName, string password)
     {
         Encoding encoding = Encoding.UTF8;
