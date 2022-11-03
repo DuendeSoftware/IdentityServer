@@ -2,8 +2,11 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IdentityModel;
+using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.Configuration;
 
@@ -48,4 +51,10 @@ public class LoggingOptions
         {
             OidcConstants.AuthorizeRequest.IdTokenHint
         };
+
+    /// <summary>
+    /// Called when the IdentityServer middleware detects an unhandled exception, and is used to determine if the exception is logged.
+    /// Returns true to emit the log, false to suppress.
+    /// </summary>
+    public Func<HttpContext, Exception, bool> UnhandledExceptionLoggingFilter = (context, exception) => !(context.RequestAborted.IsCancellationRequested && exception is TaskCanceledException);
 }

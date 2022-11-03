@@ -12,6 +12,7 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Models;
 using System.Linq;
+using Duende.IdentityServer.Configuration;
 
 namespace Duende.IdentityServer.Hosting;
 
@@ -38,6 +39,7 @@ public class IdentityServerMiddleware
     /// Invokes the middleware.
     /// </summary>
     /// <param name="context">The context.</param>
+    /// <param name="options"></param>
     /// <param name="router">The router.</param>
     /// <param name="userSession">The user session.</param>
     /// <param name="events">The event service.</param>
@@ -46,6 +48,7 @@ public class IdentityServerMiddleware
     /// <returns></returns>
     public async Task Invoke(
         HttpContext context, 
+        IdentityServerOptions options,
         IEndpointRouter router, 
         IUserSession userSession, 
         IEventService events,
@@ -108,8 +111,12 @@ public class IdentityServerMiddleware
         }
         catch (Exception ex)
         {
-            await events.RaiseAsync(new UnhandledExceptionEvent(ex));
-            _logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
+            if (options.Logging.UnhandledExceptionLoggingFilter?.Invoke(context, ex) is not false)
+            {
+                await events.RaiseAsync(new UnhandledExceptionEvent(ex));
+                _logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
+            }
+
             throw;
         }
 
