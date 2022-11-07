@@ -287,6 +287,9 @@ public class DefaultRefreshTokenServiceTests
 
         oldToken.ConsumedTime.Should().Be(now);
         newToken.ConsumedTime.Should().BeNull();
+
+        newToken.CreationTime.Should().Be(oldToken.CreationTime);
+        newToken.Lifetime.Should().Be(oldToken.Lifetime);
     }
         
     [Fact]
