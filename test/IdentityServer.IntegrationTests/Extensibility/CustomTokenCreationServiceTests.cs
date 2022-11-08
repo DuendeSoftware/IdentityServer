@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
@@ -16,23 +17,24 @@ using FluentAssertions;
 using IdentityModel;
 using IdentityModel.Client;
 using IntegrationTests.Common;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace IntegrationTests.Extensibility;
 
-public class CustomClaimsServiceTests
+public class CustomTokenCreationServiceTests
 {
-    private const string Category = "CustomClaimsServiceTests";
+    private const string Category = "CustomTokenCreationServiceTests";
 
     private IdentityServerPipeline _mockPipeline = new IdentityServerPipeline();
 
-    public CustomClaimsServiceTests()
+    public CustomTokenCreationServiceTests()
     {
         _mockPipeline.OnPostConfigureServices += svcs =>
         {
-            svcs.AddTransient<IClaimsService, CustomClaimsService>();
+            svcs.AddTransient<ITokenCreationService, CustomTokenCreationService>();
         };
 
         _mockPipeline.Clients.Add(new Client
@@ -57,7 +59,7 @@ public class CustomClaimsServiceTests
     }
 
     [Fact]
-    public async Task custom_claims_should_be_in_access_token()
+    public async Task custom_aud_should_be_in_access_token()
     {
         var result = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(
             new ClientCredentialsTokenRequest { 
@@ -72,22 +74,19 @@ public class CustomClaimsServiceTests
         var json = Encoding.UTF8.GetString(Base64Url.Decode(payload));
         var obj = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
 
-        obj["foo"].GetString().Should().Be("foo1");
+        obj["aud"].ToStringList().Should().Contain("custom1");
     }
 }
 
-public class CustomClaimsService : DefaultClaimsService
+public class CustomTokenCreationService : DefaultTokenCreationService
 {
-    public CustomClaimsService(IProfileService profile, ILogger<DefaultClaimsService> logger) : base(profile, logger)
+    public CustomTokenCreationService(ISystemClock clock, IKeyMaterialService keys, IdentityServerOptions options, ILogger<DefaultTokenCreationService> logger) : base(clock, keys, options, logger)
     {
     }
 
-    public override async Task<IEnumerable<Claim>> GetAccessTokenClaimsAsync(ClaimsPrincipal subject, ResourceValidationResult resourceResult, ValidatedRequest request)
+    protected override Task<string> CreatePayloadAsync(Token token)
     {
-        var result = (await base.GetAccessTokenClaimsAsync(subject, resourceResult, request)).ToList();
-
-        result.Add(new Claim("foo", "foo1"));
-
-        return result;
+        token.Audiences.Add("custom1");
+        return base.CreatePayloadAsync(token);
     }
 }
