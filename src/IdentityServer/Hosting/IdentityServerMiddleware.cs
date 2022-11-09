@@ -109,13 +109,10 @@ public class IdentityServerMiddleware
                 return;
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (options.Logging.UnhandledExceptionLoggingFilter?.Invoke(context, ex) is not false)
         {
-            if (options.Logging.UnhandledExceptionLoggingFilter?.Invoke(context, ex) is not false)
-            {
-                await events.RaiseAsync(new UnhandledExceptionEvent(ex));
-                _logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
-            }
+            await events.RaiseAsync(new UnhandledExceptionEvent(ex));
+            _logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
 
             throw;
         }
