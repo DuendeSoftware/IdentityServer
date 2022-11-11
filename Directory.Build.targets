@@ -22,7 +22,7 @@
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
         <PackageReference Include="MinVer" Version="4.2.0" PrivateAssets="All"/>
         <PackageReference Update="SimpleExec" Version="11.0.0"/>
-        <PackageReference Update="Bullseye" Version="4.1.1"/>
+        <PackageReference Update="Bullseye" Version="4.2.0"/>
 
         <!--tests -->
         <PackageReference Update="FluentAssertions" Version="5.10.3"/>
