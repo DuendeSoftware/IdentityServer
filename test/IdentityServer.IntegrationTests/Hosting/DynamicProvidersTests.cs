@@ -155,7 +155,7 @@ public class DynamicProvidersTests
                 .AddInMemoryIdentityResources(new IdentityResource[] { })
                 .AddInMemoryOidcProviders(_oidcProviders)
                 .AddInMemoryCaching()
-                .AddIdentityProviderStoreCache<InMemoryOidcProviderStore>()
+                .AddIdentityProviderStoreCache<InMemoryIdentityProviderStore>()
                 .AddDeveloperSigningCredential(persistKey: false);
 
             services.ConfigureAll<OpenIdConnectOptions>(options =>
