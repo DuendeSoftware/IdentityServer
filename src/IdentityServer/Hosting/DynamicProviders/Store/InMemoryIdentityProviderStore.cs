@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Hosting.DynamicProviders;
 
-class InMemoryOidcProviderStore : IIdentityProviderStore
+class InMemoryIdentityProviderStore : IIdentityProviderStore
 {
-    private readonly IEnumerable<OidcProvider> _providers;
+    private readonly IEnumerable<IdentityProvider> _providers;
 
-    public InMemoryOidcProviderStore(IEnumerable<OidcProvider> providers)
+    public InMemoryIdentityProviderStore(IEnumerable<IdentityProvider> providers)
     {
         _providers = providers;
     }
