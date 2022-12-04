@@ -126,10 +126,13 @@ public class TokenCleanupService
     {
         var found = Int32.MaxValue;
 
+        var delay = TimeSpan.FromSeconds(_options.ConsumedTokenCleanupDelay);
+        var consumedTimeThreshold = DateTime.UtcNow.Subtract(delay);
+
         while (found >= _options.TokenCleanupBatchSize)
         {
             var expiredGrants = await _persistedGrantDbContext.PersistedGrants
-                .Where(x => x.ConsumedTime < DateTime.UtcNow)
+                .Where(x => x.ConsumedTime < consumedTimeThreshold)
                 .OrderBy(x => x.ConsumedTime)
                 .Take(_options.TokenCleanupBatchSize)
                 .ToArrayAsync(cancellationToken);

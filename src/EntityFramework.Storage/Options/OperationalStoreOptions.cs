@@ -87,6 +87,14 @@ public class OperationalStoreOptions
     public bool RemoveConsumedTokens { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets the consumed token cleanup delay (in seconds). The default
+    /// is 0. This delay is the amount of time that must elapse before tokens
+    /// marked as consumed can be deleted. Note that only refresh tokens with
+    /// OneTimeOnly usage can be marked as consumed.
+    /// </summary>
+    public int ConsumedTokenCleanupDelay { get; set; } = 0;
+
+    /// <summary>
     /// Gets or sets the token cleanup interval (in seconds). The default is 3600 (1 hour).
     /// </summary>
     /// <value>

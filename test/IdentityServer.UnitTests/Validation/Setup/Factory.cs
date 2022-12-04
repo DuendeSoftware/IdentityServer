@@ -51,7 +51,7 @@ internal static class Factory
         {
             issuerNameService = new TestIssuerNameService(options.IssuerUri);
         }
-            
+
         if (resourceStore == null)
         {
             resourceStore = new InMemoryResourcesStore(TestScopes.GetIdentity(), TestScopes.GetApis(), TestScopes.GetScopes());
@@ -66,7 +66,7 @@ internal static class Factory
         {
             profile = new TestProfileService();
         }
-            
+
         if (deviceCodeValidator == null)
         {
             deviceCodeValidator = new TestDeviceCodeValidator();
@@ -113,7 +113,7 @@ internal static class Factory
                 refreshTokenStore,
                 profile);
         }
-            
+
         return new TokenRequestValidator(
             options,
             issuerNameService,
@@ -127,17 +127,26 @@ internal static class Factory
             resourceValidator,
             resourceStore,
             refreshTokenService,
-            new TestEventService(), 
-            new StubClock(), 
+            new TestEventService(),
+            new StubClock(),
             TestLogger.Create<TokenRequestValidator>());
     }
 
     private static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store, IProfileService profile)
     {
+        return CreateRefreshTokenService(store, profile, new PersistentGrantOptions());
+    }
+
+    private static IRefreshTokenService CreateRefreshTokenService(
+        IRefreshTokenStore store, 
+        IProfileService profile,
+        PersistentGrantOptions options)
+    {
         var service = new DefaultRefreshTokenService(
             store,
             profile,
             new StubClock(),
+            options,
             TestLogger.Create<DefaultRefreshTokenService>());
 
         return service;

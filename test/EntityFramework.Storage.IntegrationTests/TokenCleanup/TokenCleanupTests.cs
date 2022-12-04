@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
 using Duende.IdentityServer.EntityFramework;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -145,6 +146,121 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         }
     }
 
+
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task RemoveExpireGrantsAsync_WhenFlagIsOnAndConsumedGrantsExist_ExpectConsumedGrantsRemoved(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        var consumedGrant = new PersistedGrant
+        {
+            Expiration = DateTime.UtcNow.AddDays(3), // Token not yet expired
+            ConsumedTime = DateTime.UtcNow.AddMinutes(-15), // But was consumed
+
+            Key = Guid.NewGuid().ToString(),
+            Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+            ClientId = "app1",
+            Data = "{!}"
+        };
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.Add(consumedGrant);
+            context.SaveChanges();
+        }
+
+        await CreateSut(options, removeConsumedTokens: true).RemoveExpiredGrantsAsync();
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.FirstOrDefault(x => x.Id == consumedGrant.Id).Should().BeNull();
+        }
+    }
+
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task RemoveExpireGrantsAsync_WhenFlagIsOffAndConsumedGrantsExist_ExpectConsumedGrantsNotRemoved(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        var consumedGrant = new PersistedGrant
+        {
+            Expiration = DateTime.UtcNow.AddDays(3), // Token not yet expired
+            ConsumedTime = DateTime.UtcNow.AddMinutes(-15), // But was consumed
+
+            Key = Guid.NewGuid().ToString(),
+            Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+            ClientId = "app1",
+            Data = "{!}"
+        };
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.Add(consumedGrant);
+            context.SaveChanges();
+        }
+
+        await CreateSut(options, removeConsumedTokens: false).RemoveExpiredGrantsAsync();
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.FirstOrDefault(x => x.Id == consumedGrant.Id).Should().NotBeNull();
+        }
+    }
+
+
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task RemoveExpireGrantsAsync_WhenFlagIsOnAndConsumedGrantsExistAndDelayIsSet_ExpectConsumedGrantsRemovedRespectsDelay(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        var delay = 100;
+
+        // This grant was consumed long enough in the past that it should be deleted
+        var oldConsumedGrant = new PersistedGrant
+        {
+            Expiration = DateTime.UtcNow.AddDays(3),                    // Token not yet expired
+            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay + 1)),    // But was consumed MORE than the delay in the past
+
+            Key = Guid.NewGuid().ToString(),
+            Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+            ClientId = "app1",
+            Data = "{!}"
+        };
+
+        // This grant was consumed recently enough that it should not be deleted
+        var newConsumedGrant = new PersistedGrant
+        {
+            Expiration = DateTime.UtcNow.AddDays(3),                    // Token not yet expired
+            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay - 1)),    // But was consumed LESS than the delay in the past
+
+            Key = Guid.NewGuid().ToString(),
+            Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+            ClientId = "app1",
+            Data = "{!}"
+        };
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.Add(newConsumedGrant);
+            context.PersistedGrants.Add(oldConsumedGrant);
+            context.SaveChanges();
+        }
+
+        await CreateSut(options, removeConsumedTokens: true, delay).RemoveExpiredGrantsAsync();
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.FirstOrDefault(x => x.Id == newConsumedGrant.Id).Should().NotBeNull();
+            context.PersistedGrants.FirstOrDefault(x => x.Id == oldConsumedGrant.Id).Should().BeNull();
+        }
+
+    }
+
+
+    private TokenCleanupService CreateSut(
+        DbContextOptions<PersistedGrantDbContext> dbContextOpts,
+        bool removeConsumedTokens,
+        int consumedTokenCleanupDelay = 0
+    ) {
+        StoreOptions.RemoveConsumedTokens = removeConsumedTokens;
+        StoreOptions.ConsumedTokenCleanupDelay = consumedTokenCleanupDelay;
+        return CreateSut(dbContextOpts);
+    }
+
     private TokenCleanupService CreateSut(DbContextOptions<PersistedGrantDbContext> options)
     {
         IServiceCollection services = new ServiceCollection();
@@ -163,9 +279,5 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         services.AddSingleton(StoreOptions);
 
         return services.BuildServiceProvider().GetRequiredService<TokenCleanupService>();
-        //return new EntityFramework.TokenCleanupService(
-        //    services.BuildServiceProvider(),
-        //    new NullLogger<EntityFramework.TokenCleanup>(),
-        //    StoreOptions);
     }
 }
