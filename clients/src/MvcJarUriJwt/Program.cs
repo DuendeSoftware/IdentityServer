@@ -41,7 +41,7 @@ namespace MvcCode
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseSerilog();
-                });
+                })
+                .UseSerilog();
     }
 }
