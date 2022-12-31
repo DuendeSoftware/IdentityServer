@@ -183,6 +183,22 @@ internal static class StringExtensions
     }
 
     [DebuggerStepThrough]
+    public static bool IsUri(this string input)
+    {
+        if (!Uri.TryCreate(input, UriKind.Absolute, out var uri))
+        {
+            return false;
+        }
+
+        if (uri.IsFile && !input.StartsWith(Uri.UriSchemeFile + "://", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    [DebuggerStepThrough]
     public static string AddQueryString(this string url, string query)
     {
         if (!url.Contains("?"))

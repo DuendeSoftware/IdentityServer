@@ -61,35 +61,11 @@ public class DefaultRefreshTokenStore : DefaultGrantStore<RefreshToken>, IRefres
     /// </summary>
     /// <param name="refreshTokenHandle">The refresh token handle.</param>
     /// <returns></returns>
-    public async Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle)
+    public Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("DefaultRefreshTokenStore.GetRefreshToken");
         
-        var refreshToken = await GetItemAsync(refreshTokenHandle);
-
-        if (refreshToken != null && refreshToken.Version < 5)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var user = new IdentityServerUser(refreshToken.AccessToken.SubjectId);
-            if (refreshToken.AccessToken.Claims != null)
-            {
-                foreach (var claim in refreshToken.AccessToken.Claims)
-                {
-                    user.AdditionalClaims.Add(claim);
-                }
-            }
-
-            refreshToken.Subject = user.CreatePrincipal();
-            refreshToken.ClientId = refreshToken.AccessToken.ClientId;
-            refreshToken.Description = refreshToken.AccessToken.Description;
-            refreshToken.AuthorizedScopes = refreshToken.AccessToken.Scopes;
-            refreshToken.SetAccessToken(refreshToken.AccessToken);
-            refreshToken.AccessToken = null;
-            refreshToken.Version = 5;
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        return refreshToken;
+        return GetItemAsync(refreshTokenHandle);
     }
 
     /// <summary>

@@ -106,7 +106,7 @@ public static class ResourceExtensions
     {
         var apis = apiResources.ToList();
 
-        if (apis.IsNullOrEmpty())
+        if (IEnumerableExtensions.IsNullOrEmpty(apis))
         {
             return new List<string>();
         }
@@ -146,7 +146,7 @@ public static class ResourceExtensions
         {
             foreach (var item in list)
             {
-                if (!Uri.IsWellFormedUriString(item, UriKind.Absolute))
+                if (!item.IsUri())
                 {
                     logger.LogDebug("Resource indicator {resource} is not a valid URI.", item);
                     return false;

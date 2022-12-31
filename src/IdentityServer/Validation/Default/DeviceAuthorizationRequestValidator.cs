@@ -121,7 +121,7 @@ internal class DeviceAuthorizationRequestValidator : IDeviceAuthorizationRequest
         {
             _logger.LogTrace("Client provided no scopes - checking allowed scopes list");
 
-            if (!request.Client.AllowedScopes.IsNullOrEmpty())
+            if (!IEnumerableExtensions.IsNullOrEmpty(request.Client.AllowedScopes))
             {
                 var clientAllowedScopes = new List<string>(request.Client.AllowedScopes);
                 if (request.Client.AllowOfflineAccess)

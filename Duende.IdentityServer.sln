@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
@@ -40,6 +40,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetIdentityDb", "migrations\AspNetIdentityDb\AspNetIdentityDb.csproj", "{77E74EC9-2D1D-40E6-AD02-39F848B51B78}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServerDb", "migrations\IdentityServerDb\IdentityServerDb.csproj", "{99CC3909-D62A-4744-B6AD-89CC272975F3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host.Main7", "hosts\main7\Host.Main7.csproj", "{43CF5C83-BD02-49F7-8DB7-FBF7583D668C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duende.IdentityServer.Configuration", "src\Configuration\Duende.IdentityServer.Configuration.csproj", "{70ABA5B5-5C4A-4937-827F-A49A9E29158D}"
 EndProject

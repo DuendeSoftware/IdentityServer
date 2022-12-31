@@ -160,4 +160,26 @@ public class StringExtensionsTests
         scopes[0].Should().Be("scope1");
         scopes[1].Should().Be("scope2");
     }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public void IsUri_should_allow_uris()
+    {
+        "https://path".IsUri().Should().BeTrue();
+        "https://path?foo=[x]".IsUri().Should().BeTrue();
+        "file://path".IsUri().Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public void IsUri_should_block_paths()
+    {
+        // especially on linux
+        // https://github.com/DuendeSoftware/Support/issues/148
+        "/path".IsUri().Should().BeFalse();
+        "//".IsUri().Should().BeFalse();
+        "://".IsUri().Should().BeFalse();
+        " ://".IsUri().Should().BeFalse();
+        " file://path".IsUri().Should().BeFalse();
+    }
 }

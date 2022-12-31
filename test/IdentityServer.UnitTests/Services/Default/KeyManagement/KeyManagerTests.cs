@@ -337,7 +337,7 @@ public class KeyManagerTests
     {
         var id = CreateCacheAndStoreKey();
 
-        var keys = await _subject.GetKeysFromCacheAsync();
+        var keys = await _subject.GetAllKeysFromCacheAsync();
 
         keys.Count().Should().Be(1);
         keys.Single().Id.Should().Be(id);
@@ -570,7 +570,7 @@ public class KeyManagerTests
     {
         var key = CreateAndStoreKey();
 
-        var keys = await _subject.GetKeysFromStoreAsync();
+        var keys = await _subject.GetAllKeysFromStoreAsync();
 
         keys.Should().NotBeNull();
         keys.Single().Id.Should().Be(key);
@@ -586,7 +586,7 @@ public class KeyManagerTests
         var key4 = CreateAndStoreKey(_options.KeyManagement.RotationInterval.Add(TimeSpan.FromSeconds(1)));
         var key5 = CreateAndStoreKey(_options.KeyManagement.KeyRetirementAge.Add(TimeSpan.FromSeconds(5)));
 
-        var keys = await _subject.GetKeysFromStoreAsync();
+        var keys = await _subject.GetAllKeysFromStoreAsync();
 
         keys.Select(x => x.Id).Should().BeEquivalentTo(new[] { key1, key2, key3, key4 });
     }
@@ -597,7 +597,7 @@ public class KeyManagerTests
         var key1 = CreateAndStoreKey(TimeSpan.FromSeconds(10));
         _mockKeyStore.Keys.Add(null);
 
-        var keys = await _subject.GetKeysFromStoreAsync();
+        var keys = await _subject.GetAllKeysFromStoreAsync();
 
         keys.Select(x => x.Id).Should().BeEquivalentTo(new[] { key1 });
     }
@@ -676,11 +676,11 @@ public class KeyManagerTests
     public void GetActiveSigningKey_for_no_keys_should_return_null()
     {
         {
-            var key = _subject.GetCurrentSigningKeys(null);
+            var key = _subject.GetAllCurrentSigningKeys(null);
             key.Should().BeEmpty();
         }
         {
-            var key = _subject.GetCurrentSigningKeys(new RsaKeyContainer[0]);
+            var key = _subject.GetAllCurrentSigningKeys(new RsaKeyContainer[0]);
             key.Should().BeEmpty();
         }
     }

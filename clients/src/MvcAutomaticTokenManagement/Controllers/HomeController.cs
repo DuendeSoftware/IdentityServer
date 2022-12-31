@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Clients;
 
 namespace MvcCode.Controllers
 {
@@ -27,9 +28,11 @@ namespace MvcCode.Controllers
             var client = _httpClientFactory.CreateClient("client");
 
             var response = await client.GetStringAsync("identity");
-            ViewBag.Json = JsonDocument.Parse(response).ToString();
-
+            ViewBag.Json = response.PrettyPrintJson();
+            
             return View();
         }
+
+
     }
 }

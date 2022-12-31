@@ -27,9 +27,9 @@ public class TestBackchannelLoginUserValidator : IBackchannelAuthenticationUserV
     }
 
     /// <inheritdoc/>
-    public Task<BackchannelAuthenticationUserValidatonResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
+    public Task<BackchannelAuthenticationUserValidationResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
     {
-        var result = new BackchannelAuthenticationUserValidatonResult();
+        var result = new BackchannelAuthenticationUserValidationResult();
 
         TestUser user = default;
 

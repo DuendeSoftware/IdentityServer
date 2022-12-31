@@ -14,9 +14,9 @@ namespace Duende.IdentityServer.Validation;
 public class NopBackchannelAuthenticationUserValidator : IBackchannelAuthenticationUserValidator
 {
     /// <inheritdoc/>
-    public Task<BackchannelAuthenticationUserValidatonResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
+    public Task<BackchannelAuthenticationUserValidationResult> ValidateRequestAsync(BackchannelAuthenticationUserValidatorContext userValidatorContext)
     {
-        var result = new BackchannelAuthenticationUserValidatonResult { 
+        var result = new BackchannelAuthenticationUserValidationResult { 
             Error = "not implemented"
         };
         return Task.FromResult(result);

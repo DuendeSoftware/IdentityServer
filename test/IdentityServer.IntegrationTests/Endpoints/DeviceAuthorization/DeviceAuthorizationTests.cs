@@ -75,7 +75,7 @@ public class DeviceAuthorizationTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task empty_request_should_return_InvalidClient()
+    public async Task empty_request_should_return_InvalidRequest()
     {
         var response = await _mockPipeline.BackChannelClient.PostAsync(IdentityServerPipeline.DeviceAuthorization,
             new FormUrlEncodedContent(new Dictionary<string, string>()));
@@ -85,7 +85,7 @@ public class DeviceAuthorizationTests
         var resultDto = ParseJsonBody<ErrorResultDto>(await response.Content.ReadAsStreamAsync());
 
         resultDto.Should().NotBeNull();
-        resultDto.error.Should().Be(OidcConstants.TokenErrors.InvalidClient);
+        resultDto.error.Should().Be(OidcConstants.TokenErrors.InvalidRequest);
     }
 
     [Fact]

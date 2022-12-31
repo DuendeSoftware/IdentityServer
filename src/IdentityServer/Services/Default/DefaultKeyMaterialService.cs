@@ -45,7 +45,7 @@ public class DefaultKeyMaterialService : IKeyMaterialService
     {
         using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultKeyMaterialService.GetSigningCredentials");
         
-        if (allowedAlgorithms.IsNullOrEmpty())
+        if (IEnumerableExtensions.IsNullOrEmpty(allowedAlgorithms))
         {
             var list = _signingCredentialStores.ToList();
             for (var i = 0; i < list.Count; i++)
