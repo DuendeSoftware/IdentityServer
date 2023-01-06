@@ -3,6 +3,7 @@
 
 
 using Duende.IdentityServer.Validation;
+using IdentityModel;
 using Xunit;
 
 namespace UnitTests.Extensions;
@@ -25,5 +26,23 @@ public class ValidatedAuthorizeRequestExtensionsTests
         {
             request.RemoveAcrValue(acr);
         }
+    }
+
+    [Fact]
+    public void ToOptimizedFullDictionary_should_return_dictionary_with_array_for_repeated_keys_when_request_objects_are_used()
+    {
+        var request = new ValidatedAuthorizeRequest()
+        {
+            Raw = new System.Collections.Specialized.NameValueCollection
+            {
+                { OidcConstants.AuthorizeRequest.Request, "Request object here" },
+                { OidcConstants.AuthorizeRequest.Resource, "Resource1" },
+                { OidcConstants.AuthorizeRequest.Resource, "Resource2" },
+            }
+        };
+
+        var res = request.ToOptimizedFullDictionary();
+
+        Assert.Equal(2, res[OidcConstants.AuthorizeRequest.Resource].Length);
     }
 }
