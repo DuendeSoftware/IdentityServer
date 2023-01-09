@@ -360,8 +360,8 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
                 entries.Add(OidcConstants.Discovery.RequestUriParameterSupported, true);
             }
         }
-            
-        entries.Add(OidcConstants.Discovery.AuthorizationResponseIssParameterSupported, true);
+
+        entries.Add(OidcConstants.Discovery.AuthorizationResponseIssParameterSupported, Options.EmitIssuerIdentificationResponseParameter);
 
         if (Options.MutualTls.Enabled)
         {
