@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -19,10 +19,11 @@ public class UnhandledExceptionEvent : Event
     public UnhandledExceptionEvent(Exception ex)
         : base(EventCategories.Error,
             "Unhandled Exception",
-            EventTypes.Error, 
+            EventTypes.Error,
             EventIds.UnhandledException,
             ex.Message)
     {
+        Exception = ex;
         Details = ex.ToString();
     }
 
@@ -33,4 +34,12 @@ public class UnhandledExceptionEvent : Event
     /// The details.
     /// </value>
     public string Details { get; set; }
+
+    /// <summary>
+    /// Gets or sets the exception.
+    /// </summary>
+    /// <value>
+    /// The exception.
+    /// </value>
+    public Exception Exception { get; set; }
 }
