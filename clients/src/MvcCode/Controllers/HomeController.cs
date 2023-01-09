@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -26,7 +26,7 @@ namespace MvcCode.Controllers
 
         public IActionResult Secure() => View();
 
-        public IActionResult Logout() => SignOut("oidc");
+        public IActionResult Logout() => SignOut("oidc", "Cookies");
         
         public async Task<IActionResult> CallApi()
         {

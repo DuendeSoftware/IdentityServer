@@ -44,7 +44,7 @@ namespace MvcCode
                     options.Events.OnSigningOut = async e =>
                     {
                         // automatically revoke refresh token at signout time
-                        await e.HttpContext.RevokeUserRefreshTokenAsync();
+                        await e.HttpContext.RevokeRefreshTokenAsync();
                     };
                 })
                 .AddOpenIdConnect("oidc", options =>
@@ -77,7 +77,7 @@ namespace MvcCode
                 });
 
             // add automatic token management
-            services.AddAccessTokenManagement();
+            services.AddOpenIdConnectAccessTokenManagement();
 
             // add HTTP client to call protected API
             services.AddUserAccessTokenHttpClient("client", configureClient: client =>
