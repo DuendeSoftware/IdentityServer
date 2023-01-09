@@ -144,7 +144,7 @@ public class ServerSideSessionCleanupHost : IHostedService
         }
         catch (Exception ex)
         {
-            _logger.LogError("Exception removing expired sessions: {exception}", ex.Message);
+            _logger.LogError(ex, "Exception removing expired sessions");
         }
     }
 }
