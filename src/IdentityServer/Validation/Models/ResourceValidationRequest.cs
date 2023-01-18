@@ -3,6 +3,7 @@
 
 
 using Duende.IdentityServer.Models;
+using System;
 using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Validation;
@@ -31,5 +32,6 @@ public class ResourceValidationRequest
     /// Flag that indicates that validation should allow requested scopes to match non-isolated resources.
     /// If set to false, then only the scopes that match the exact resource indicators requested will be allowed.
     /// </summary>
+    [Obsolete("IncludeNonIsolatedApiResources is no longer used and will be removed in a future version.")]
     public bool IncludeNonIsolatedApiResources { get; set; }
 }

@@ -312,24 +312,7 @@ public class ResourceValidation
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task resource_indicator_should_include_all_apis_that_match_scope_and_only_the_resources_requested()
-    {
-        var validator = Factory.CreateResourceValidator(_subject);
-        var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
-        {
-            Client = _resourceClient,
-            Scopes = new[] { "scope1" },
-            ResourceIndicators = new[] { "isolated1" }
-        });
-
-        result.Succeeded.Should().BeTrue();
-        result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "isolated1" });
-        result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope1" });
-    }
-        
-    [Fact]
-    [Trait("Category", Category)]
-    public async Task IncludeNonIsolatedApiResources_should_allow_include_all_resources_that_match_scope()
+    public async Task should_include_all_resources_that_match_scope()
     {
         var validator = Factory.CreateResourceValidator(_subject);
         var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
@@ -337,12 +320,12 @@ public class ResourceValidation
             Client = _resourceClient,
             Scopes = new[] { "scope1", "offline_access" },
             ResourceIndicators = new[] { "isolated1" },
-            IncludeNonIsolatedApiResources = true,
         });
 
         result.Succeeded.Should().BeTrue();
         result.Resources.ApiResources.Select(x => x.Name).Should().BeEquivalentTo(new[] { "resource1", "isolated1" });
         result.Resources.ApiScopes.Select(x => x.Name).Should().BeEquivalentTo(new[] { "scope1" });
+        result.Resources.OfflineAccess.Should().BeTrue();
     }
 
     [Fact]
@@ -380,7 +363,7 @@ public class ResourceValidation
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task scope_not_in_resource_should_fail()
+    public async Task resource_without_matching_scope_in_request_should_fail()
     {
         var validator = Factory.CreateResourceValidator(_subject);
         var result = await validator.ValidateRequestedResourcesAsync(new ResourceValidationRequest

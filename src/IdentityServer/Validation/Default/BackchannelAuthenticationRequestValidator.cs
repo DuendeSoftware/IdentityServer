@@ -158,7 +158,6 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
             Client = _validatedRequest.Client,
             Scopes = _validatedRequest.RequestedScopes,
             ResourceIndicators = resourceIndicators,
-            IncludeNonIsolatedApiResources = _validatedRequest.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess),
         });
 
         if (!validatedResources.Succeeded)

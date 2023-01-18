@@ -398,7 +398,7 @@ public class ResourceTests
         var url = _mockPipeline.CreateAuthorizeUrl(
             clientId: "client1",
             responseType: "code",
-            scope: "scope1 scope2",
+            scope: "scope1 scope2 scope3",
             redirectUri: "https://client1/callback");
 
         url += "&resource=urn:resource1";
@@ -423,6 +423,141 @@ public class ResourceTests
             var claims = ParseAccessTokenClaims(tokenResponse);
             claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:resource1" });
             claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope2" });
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task resource_indicator_without_offline_access_no_resource_on_code_exchange_should_succeed()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            scope: "scope1 scope2 scope3",
+            redirectUri: "https://client1/callback");
+
+        url += "&resource=urn:resource1";
+
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        var code = GetCode(response);
+
+        var tokenResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = code,
+            RedirectUri = "https://client1/callback",
+            Parameters =
+            {
+                // no resource param
+            }
+        });
+
+        {
+            var claims = ParseAccessTokenClaims(tokenResponse);
+            claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:resource1", "urn:resource2" });
+            claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope2", "scope3" });
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task resource_indicator_for_isolated_resource_with_offline_access_should_succeed()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            scope: "scope1 scope3 offline_access",
+            redirectUri: "https://client1/callback");
+
+        url += "&resource=urn:resource3";
+
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        var code = GetCode(response);
+
+        var tokenResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = code,
+            RedirectUri = "https://client1/callback",
+            Parameters =
+            {
+                // no resource param
+            }
+        });
+
+        {
+            var claims = ParseAccessTokenClaims(tokenResponse);
+            claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:resource1" });
+            claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope1", "scope3", "offline_access" });
+        }
+        
+        tokenResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            RefreshToken = tokenResponse.RefreshToken,
+            Parameters =
+            {
+                { "resource", "urn:resource3" }
+            }
+        });
+
+        {
+            var claims = ParseAccessTokenClaims(tokenResponse);
+            claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:resource3" });
+            claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope3", "offline_access" });
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task resource_indicator_for_isolated_resource_without_offline_access_should_succeed()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            scope: "scope1 scope3",
+            redirectUri: "https://client1/callback");
+
+        url += "&resource=urn:resource3";
+
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        var code = GetCode(response);
+
+        var tokenResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = code,
+            RedirectUri = "https://client1/callback",
+            Parameters =
+            {
+                { "resource", "urn:resource3" }
+            }
+        });
+
+        {
+            var claims = ParseAccessTokenClaims(tokenResponse);
+            claims.Where(x => x.Type == "aud").Select(x => x.Value).Should().BeEquivalentTo(new[] { "urn:resource3" });
+            claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "scope3" });
         }
     }
 

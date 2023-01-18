@@ -340,8 +340,6 @@ internal class TokenRequestValidator : ITokenRequestValidator
             Client = _validatedRequest.Client,
             Scopes = _validatedRequest.AuthorizationCode.RequestedScopes,
             ResourceIndicators = _validatedRequest.AuthorizationCode.RequestedResourceIndicators,
-            // if we are issuing a refresh token, then we need to allow the non-isolated resource
-            IncludeNonIsolatedApiResources = _validatedRequest.AuthorizationCode.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess)
         });
 
         if (!validatedResources.Succeeded)
@@ -612,8 +610,6 @@ internal class TokenRequestValidator : ITokenRequestValidator
             Client = _validatedRequest.Client,
             Scopes = _validatedRequest.RefreshToken.AuthorizedScopes,
             ResourceIndicators = resourceIndicators,
-            // we're issuing refresh token, so we need to allow for non-isolated resource
-            IncludeNonIsolatedApiResources = true,
         });
 
         if (!validatedResources.Succeeded)
@@ -780,8 +776,6 @@ internal class TokenRequestValidator : ITokenRequestValidator
             Client = _validatedRequest.Client,
             Scopes = _validatedRequest.BackChannelAuthenticationRequest.AuthorizedScopes,
             ResourceIndicators = _validatedRequest.BackChannelAuthenticationRequest.RequestedResourceIndicators,
-            // if we are issuing a refresh token, then we need to allow the non-isolated resource
-            IncludeNonIsolatedApiResources = _validatedRequest.BackChannelAuthenticationRequest.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess)
         });
 
         if (!validatedResources.Succeeded)
@@ -953,8 +947,6 @@ internal class TokenRequestValidator : ITokenRequestValidator
             Client = _validatedRequest.Client,
             Scopes = requestedScopes,
             ResourceIndicators = resourceIndicators,
-            // if the client is passing explicit scopes, we want to exclude the non-isolated resource scenaio from validation
-            IncludeNonIsolatedApiResources = parameters.Get(OidcConstants.TokenRequest.Scope).IsMissing()
         });
 
         if (!resourceValidationResult.Succeeded)

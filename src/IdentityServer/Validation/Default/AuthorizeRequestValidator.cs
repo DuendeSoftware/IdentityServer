@@ -633,7 +633,6 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             Client = request.Client,
             Scopes = request.RequestedScopes,
             ResourceIndicators = resourceIndicators,
-            IncludeNonIsolatedApiResources = request.RequestedScopes.Contains(OidcConstants.StandardScopes.OfflineAccess),
         });
 
         if (!validatedResources.Succeeded)
