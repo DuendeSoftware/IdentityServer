@@ -82,8 +82,9 @@ internal class AuthorizeResult : IEndpointResult
             Response.Error == OidcConstants.AuthorizeErrors.AccountSelectionRequired ||
             Response.Error == OidcConstants.AuthorizeErrors.LoginRequired ||
             Response.Error == OidcConstants.AuthorizeErrors.ConsentRequired ||
-            Response.Error == OidcConstants.AuthorizeErrors.InteractionRequired || 
-            Response.Error == OidcConstants.AuthorizeErrors.TemporarilyUnavailable;
+            Response.Error == OidcConstants.AuthorizeErrors.InteractionRequired ||
+            Response.Error == OidcConstants.AuthorizeErrors.TemporarilyUnavailable ||
+            Response.Error == "unmet_authentication_requirements"; // TODO: update once IdentityModel updated
 
         if (isSafeError)
         {
