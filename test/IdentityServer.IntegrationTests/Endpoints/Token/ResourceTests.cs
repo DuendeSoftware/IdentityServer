@@ -506,7 +506,7 @@ public class ResourceTests
             tokenResponse.Error.Should().Be("invalid_target");
         }
     }
-        
+
 
     [Fact]
     [Trait("Category", Category)]

@@ -1,4 +1,4 @@
-﻿using Clients;
+using Clients;
 using IdentityModel.OidcClient;
 using Serilog;
 using System;
@@ -26,34 +26,52 @@ namespace ConsoleResourceIndicators
             {
                 Console.WriteLine("\n\n");
 
-                "a) scopes: resource1.scope1, resource2.scope1, resource3.scope1 shared.scope -- no resource indicator".ConsoleGreen();
-                "b) scopes: resource1.scope1, resource2.scope1, resource3.scope1 shared.scope -- urn:resource1, urn:resource2".ConsoleGreen();
-                "c) scopes: resource1.scope1, resource2.scope1, resource3.scope1 shared.scope -- urn:resource1, urn:resource2, urn:resource3".ConsoleGreen();
-                
+                var tests = new List<Tuple<string, string[]>>()
+                {
+                    { new("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope offline_access", null) },
+                    { new("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", null) },
+                    { new("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope offline_access", new[] { "urn:resource1", "urn:resource2" })},
+                    { new("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", new[] { "urn:resource1", "urn:resource2" })},
+                    { new("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope offline_access", new[] { "urn:resource1", "urn:resource2", "urn:resource3" })},
+                    { new("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", new[] { "urn:resource1", "urn:resource2", "urn:resource3" })},
+                    { new("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope offline_access", new[] { "urn:resource3" })},
+                    { new("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", new[] { "urn:resource3" })},
+                    { new("resource3.scope1 offline_access", new[] { "urn:resource3" })},
+                    { new("resource3.scope1", new[] { "urn:resource3" })},
+                    { new("resource1.scope1 offline_access", new[] { "urn:resource3" })},
+                    { new("shared.scope", new[] { "urn:invalid" })},
+                };
+
+                var a = ConsoleKey.A;
+                foreach(var test in tests)
+                {
+                    var resources = test.Item2 != null ? test.Item2.Aggregate((x, y) => $"{x}, {y}") : "-none-";
+                    (a++.ToString() + ") SCOPES: " + test.Item1 + ", RESOURCES: " + resources).ConsoleGreen();
+                }
+
                 "x) exit".ConsoleGreen();
                 var key = Console.ReadKey();
 
-                switch (key.Key)
+                if (key.Key == ConsoleKey.X) return;
+                if (ConsoleKey.A <= key.Key && key.Key < ConsoleKey.X)
                 {
-                    case ConsoleKey.A:
-                        await FrontChannel("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", Array.Empty<string>());
-                        break;
-                    case ConsoleKey.B:
-                        await FrontChannel("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", new[] { "urn:resource1", "urn:resource2" });
-                        break;
-                    case ConsoleKey.C:
-                        await FrontChannel("resource1.scope1 resource2.scope1 resource3.scope1 shared.scope", new[] { "urn:resource1", "urn:resource2", "urn:resource3" });
-                        break;
-                    case ConsoleKey.X:
-                        return;
+                    var item = tests[key.Key - ConsoleKey.A];
+                    try
+                    {
+                        await FrontChannel(item.Item1, item.Item2);
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine($"Exception: {ex.Message}");
+                    }
                 }
-                
-                
             }
         }
 
         private static async Task FrontChannel(string scope, IEnumerable<string> resource)
         {
+            resource = resource ?? Enumerable.Empty<string>();
+
             // create a redirect URI using an available port on the loopback address.
             // requires the OP to allow random ports on 127.0.0.1 - otherwise set a static port
             var browser = new SystemBrowser();
@@ -66,7 +84,7 @@ namespace ConsoleResourceIndicators
                 ClientId = "console.resource.indicators",
 
                 RedirectUri = redirectUri,
-                Scope = scope + " offline_access",
+                Scope = scope,
                 Resource = resource.ToList(),
                 FilterClaims = false,
                 LoadProfile = false,
@@ -97,6 +115,13 @@ namespace ConsoleResourceIndicators
             Console.WriteLine("Standard access token:");
             Console.WriteLine(Encoding.UTF8.GetString(Base64Url.Decode(header)).PrettyPrintJson());
             Console.WriteLine(Encoding.UTF8.GetString(Base64Url.Decode(payload)).PrettyPrintJson());
+
+            if (result.RefreshToken == null)
+            {
+                Console.WriteLine();
+                Console.WriteLine("No Refresh Token, exiting.");
+                return;
+            }
 
             await BackChannel(result);
         }

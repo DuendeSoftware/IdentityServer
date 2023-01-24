@@ -1939,3 +1939,7 @@ indent_size=2
 indent_style=space
 indent_size=4
 tab_width=4
+
+
+# IDE1006: Naming Styles
+dotnet_diagnostic.IDE1006.severity = none

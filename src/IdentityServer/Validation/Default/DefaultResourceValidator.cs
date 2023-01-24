@@ -64,22 +64,13 @@ public class DefaultResourceValidator : IResourceValidator
         if (request.ResourceIndicators?.Any() == true)
         {
             // remove isolated API resources not included in the requested resource indicators
+            // and keep any ApiResources that aren't marked as isolated
+            //
+            // todo: maybe add a "strict" resource semantics option to filter out shared api resources?
+            //
             scopeResourcesFromStore.ApiResources = scopeResourcesFromStore.ApiResources
-                .Where(x => 
-                    // only allow non-isolated resources if the request could produce multiple access
-                    // tokens. this will happen if the request is for a RT, so check for offline_access
-                    (request.IncludeNonIsolatedApiResources && !x.RequireResourceIndicator) || 
-                    request.ResourceIndicators.Contains(x.Name))
+                .Where(x => !x.RequireResourceIndicator || request.ResourceIndicators.Contains(x.Name))
                 .ToHashSet();
-
-            if (!request.IncludeNonIsolatedApiResources)
-            {
-                // filter API scopes that don't match the resources requested
-                var allResourceScopes = scopeResourcesFromStore.ApiResources.SelectMany(x => x.Scopes).ToArray();
-                scopeResourcesFromStore.ApiScopes =
-                    scopeResourcesFromStore.ApiScopes.Where(x => allResourceScopes.Contains(x.Name))
-                        .ToHashSet();
-            }
 
             // find requested resource indicators not matched by scope
             var matchedApiResourceNames = scopeResourcesFromStore.ApiResources.Select(x => x.Name).ToArray();
@@ -107,7 +98,8 @@ public class DefaultResourceValidator : IResourceValidator
             await ValidateScopeAsync(request.Client, scopeResourcesFromStore, scope, result);
         }
 
-            
+        // TODO: consider validating resources requested against client w/ some ValidateResource API
+
         if (result.InvalidScopes.Count > 0 || result.InvalidResourceIndicators.Count > 0)
         {
             result.Resources.IdentityResources.Clear();
