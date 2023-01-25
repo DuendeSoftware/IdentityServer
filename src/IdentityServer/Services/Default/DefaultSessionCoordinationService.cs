@@ -119,7 +119,8 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
             {
                 SubjectId = session.SubjectId,
                 SessionId = session.SessionId,
-                ClientIds = session.ClientIds
+                ClientIds = session.ClientIds,
+                Issuer = session.Issuer,
             });
         }
     }
