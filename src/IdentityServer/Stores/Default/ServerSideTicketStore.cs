@@ -145,6 +145,11 @@ public class ServerSideTicketStore : IServerSideTicketStore
             session.SessionId = sid;
         }
 
+        if (ticket.GetIssuer() == null)
+        {
+            // when issuing a new cookie on top of an existing cookie, the AuthenticationTicket passed above is new (and not the prior one loaded from the ticket store)
+            ticket.SetIssuer(await _issuerNameService.GetCurrentAsync());
+        }
         session.Renewed = ticket.GetIssued();
         session.Expires = ticket.GetExpiration();
         session.DisplayName = name;
