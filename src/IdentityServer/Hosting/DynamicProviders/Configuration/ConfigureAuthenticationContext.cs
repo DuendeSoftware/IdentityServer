@@ -14,7 +14,7 @@ namespace Duende.IdentityServer.Hosting.DynamicProviders;
 /// <typeparam name="TAuthenticationOptions"></typeparam>
 /// <typeparam name="TIdentityProvider"></typeparam>
 public class ConfigureAuthenticationContext<TAuthenticationOptions, TIdentityProvider>
-    where TAuthenticationOptions : AuthenticationSchemeOptions
+    where TAuthenticationOptions : RemoteAuthenticationOptions
     where TIdentityProvider : IdentityProvider
 {
     /// <summary>
