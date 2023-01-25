@@ -14,6 +14,7 @@ using Duende.IdentityServer.Stores.Serialization;
 using FluentAssertions;
 using UnitTests.Validation.Setup;
 using Xunit;
+using Duende.IdentityServer.Configuration;
 
 namespace UnitTests.Services.Default;
 
@@ -21,12 +22,15 @@ public class DefaultRefreshTokenServiceTests
 {
     private DefaultRefreshTokenService _subject;
     private DefaultRefreshTokenStore _store;
+    private PersistentGrantOptions _options;
 
     private ClaimsPrincipal _user = new IdentityServerUser("123").CreatePrincipal();
     private StubClock _clock = new StubClock();
 
     public DefaultRefreshTokenServiceTests()
     {
+        _options = new PersistentGrantOptions();
+
         _store = new DefaultRefreshTokenStore(
             new InMemoryPersistedGrantStore(),
             new PersistentGrantSerializer(),
@@ -36,7 +40,8 @@ public class DefaultRefreshTokenServiceTests
         _subject = new DefaultRefreshTokenService(
             _store, 
             new TestProfileService(),
-            _clock, 
+            _clock,
+            _options,
             TestLogger.Create<DefaultRefreshTokenService>());
     }
 
@@ -108,6 +113,7 @@ public class DefaultRefreshTokenServiceTests
         refreshToken.Should().NotBeNull();
         refreshToken.Lifetime.Should().Be(client.SlidingRefreshTokenLifetime);
     }
+
 
     [Fact]
     public async Task UpdateRefreshToken_one_time_use_should_create_new_token()
@@ -259,8 +265,9 @@ public class DefaultRefreshTokenServiceTests
     }
 
     [Fact]
-    public async Task UpdateRefreshToken_one_time_use_should_consume_token_and_create_new_one_with_correct_dates()
+    public async Task UpdateRefreshToken_one_time_use_with_consume_on_use_should_consume_token_and_create_new_one_with_correct_dates()
     {
+        _options.DeleteOneTimeOnlyRefreshTokensOnUse = false;
         var client = new Client
         {
             ClientId = "client1",
@@ -290,6 +297,41 @@ public class DefaultRefreshTokenServiceTests
 
         newToken.CreationTime.Should().Be(oldToken.CreationTime);
         newToken.Lifetime.Should().Be(oldToken.Lifetime);
+    }
+
+        [Fact]
+    public async Task UpdateRefreshToken_one_time_use_with_delete_should_delete_on_use_token_and_create_new_one_with_correct_dates()
+    {
+        _options.DeleteOneTimeOnlyRefreshTokensOnUse = true;
+        var client = new Client
+        {
+            ClientId = "client1",
+            RefreshTokenUsage = TokenUsage.OneTimeOnly
+        };
+
+        var refreshToken = new RefreshToken
+        {
+            ClientId = client.ClientId,
+            Subject = _user,
+            CreationTime = DateTime.UtcNow,
+            Lifetime = 10,
+        };
+
+        var handle = await _store.StoreRefreshTokenAsync(refreshToken);
+
+        var now = DateTime.UtcNow;
+        _clock.UtcNowFunc = () => now;
+
+        var newHandle = await _subject.UpdateRefreshTokenAsync(new RefreshTokenUpdateRequest { Handle = handle, RefreshToken = refreshToken, Client = client });
+
+        var oldToken = await _store.GetRefreshTokenAsync(handle);
+        var newToken = await _store.GetRefreshTokenAsync(newHandle);
+
+        oldToken.Should().BeNull();
+        newToken.ConsumedTime.Should().BeNull();
+
+        newToken.CreationTime.Should().Be(refreshToken.CreationTime);
+        newToken.Lifetime.Should().Be(refreshToken.Lifetime);
     }
         
     [Fact]

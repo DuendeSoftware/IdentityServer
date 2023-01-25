@@ -19,6 +19,13 @@ public class PersistentGrantOptions
     /// Data protect the persisted grants "data" column.
     /// </summary>
     public bool DataProtectData { get; set; } = true;
+
+    /// <summary>
+    /// Delete one time only refresh tokens when they are used to obtain a new
+    /// token. If false, one time only refresh tokens will instead be marked as
+    /// Consumed.
+    /// </summary>
+    public bool DeleteOneTimeOnlyRefreshTokensOnUse { get; set; } = true;
 }
 
 /// <summary>

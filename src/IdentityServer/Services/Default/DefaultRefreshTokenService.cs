@@ -10,6 +10,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using Duende.IdentityServer.Stores.Serialization;
 
 namespace Duende.IdentityServer.Services;
 
@@ -39,19 +40,29 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     protected ISystemClock Clock { get; }
 
     /// <summary>
+    /// The persistent grant options
+    /// </summary>
+    protected PersistentGrantOptions Options { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="DefaultRefreshTokenService" /> class.
     /// </summary>
     /// <param name="refreshTokenStore">The refresh token store</param>
     /// <param name="profile"></param>
     /// <param name="clock">The clock</param>
+    /// <param name="options">The persistent grant options</param>
     /// <param name="logger">The logger</param>
-    public DefaultRefreshTokenService(IRefreshTokenStore refreshTokenStore, IProfileService profile,
+    public DefaultRefreshTokenService(
+        IRefreshTokenStore refreshTokenStore, 
+        IProfileService profile,
         ISystemClock clock,
+        PersistentGrantOptions options,
         ILogger<DefaultRefreshTokenService> logger)
     {
         RefreshTokenStore = refreshTokenStore;
         Profile = profile;
         Clock = clock;
+        Options = options;
 
         Logger = logger;
     }
@@ -230,13 +241,23 @@ public class DefaultRefreshTokenService : IRefreshTokenService
 
         if (request.Client.RefreshTokenUsage == TokenUsage.OneTimeOnly)
         {
-            Logger.LogDebug("Token usage is one-time only. Setting current handle as consumed, and generating new handle");
 
-            // flag as consumed
-            if (request.RefreshToken.ConsumedTime == null)
+            if(Options.DeleteOneTimeOnlyRefreshTokensOnUse)
             {
-                request.RefreshToken.ConsumedTime = Clock.UtcNow.UtcDateTime;
-                await RefreshTokenStore.UpdateRefreshTokenAsync(handle, request.RefreshToken);
+                Logger.LogDebug("Token usage is one-time only and refresh behavior is delete. Deleting current handle, and generating new handle");
+
+                await RefreshTokenStore.RemoveRefreshTokenAsync(handle);
+            } 
+            else
+            {
+                Logger.LogDebug("Token usage is one-time only and refresh behavior is mark as consumed. Setting current handle as consumed, and generating new handle");
+                
+                // flag as consumed
+                if (request.RefreshToken.ConsumedTime == null)
+                {
+                    request.RefreshToken.ConsumedTime = Clock.UtcNow.UtcDateTime;
+                    await RefreshTokenStore.UpdateRefreshTokenAsync(handle, request.RefreshToken);
+                }
             }
 
             // create new one
