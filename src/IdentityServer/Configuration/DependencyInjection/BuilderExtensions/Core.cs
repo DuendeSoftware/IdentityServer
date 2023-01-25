@@ -30,6 +30,7 @@ using Duende.IdentityServer.Services.KeyManagement;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Hosting.DynamicProviders;
 using Duende.IdentityServer.Internal;
+using Duende.IdentityServer.Stores.Empty;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -168,6 +169,9 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IBackchannelAuthenticationUserValidator, NopBackchannelAuthenticationUserValidator>();
 
         builder.Services.TryAddTransient(typeof(IConcurrencyLock<>), typeof(DefaultConcurrencyLock<>));
+
+        builder.Services.TryAddTransient<IClientStore, EmptyClientStore>();
+        builder.Services.TryAddTransient<IResourceStore, EmptyResourceStore>();
 
         return builder;
     }
