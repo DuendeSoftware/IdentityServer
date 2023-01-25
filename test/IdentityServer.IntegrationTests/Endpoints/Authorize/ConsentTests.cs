@@ -316,4 +316,47 @@ public class ConsentTests
         authorization.Error.Should().Be("temporarily_unavailable");
         authorization.ErrorDescription.Should().Be("some description");
     }
+
+    [Theory]
+    [InlineData((Type) null)]
+    [InlineData(typeof(QueryStringAuthorizationParametersMessageStore))]
+    [InlineData(typeof(DistributedCacheAuthorizationParametersMessageStore))]
+    [Trait("Category", Category)]
+    public async Task consent_response_of_unmet_authentication_requirements_should_return_error_to_client(Type storeType)
+    {
+        if (storeType != null)
+        {
+            _mockPipeline.OnPostConfigureServices += services =>
+            {
+                services.AddTransient(typeof(IAuthorizationParametersMessageStore), storeType);
+            };
+            _mockPipeline.Initialize();
+        }
+
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.ConsentResponse = new ConsentResponse()
+        {
+            Error = AuthorizationError.UnmetAuthenticationRequirements,
+            ErrorDescription = "some description"
+        };
+        _mockPipeline.BrowserClient.StopRedirectingAfter = 2;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client2",
+            responseType: "id_token token",
+            scope: "openid profile api1 api2",
+            redirectUri: "https://client2/callback",
+            state: "123_state",
+            nonce: "123_nonce");
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client2/callback");
+
+        var authorization = new IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeTrue();
+        authorization.Error.Should().Be("unmet_authentication_requirements");
+        authorization.ErrorDescription.Should().Be("some description");
+    }
 }

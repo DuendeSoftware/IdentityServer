@@ -89,4 +89,9 @@ public enum AuthorizationError
     /// Temporarily unavailable
     /// </summary>
     TemporarilyUnavailable,
+
+    /// <summary>
+    /// Unmet Authentication Requirements
+    /// </summary>
+    UnmetAuthenticationRequirements,
 }
