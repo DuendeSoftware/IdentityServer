@@ -157,10 +157,7 @@ public static class ValidatedAuthorizeRequestExtensions
                     key == OidcConstants.AuthorizeRequest.ResponseType || 
                     request.RequestObjectValues.All(x => x.Type != key))
                 {
-                    foreach(var value in request.Raw.GetValues(key))
-                    {
-                        collection.Add(key, value);
-                    }
+                    collection.Add(key, request.Raw[key]);
                 }
             }
 

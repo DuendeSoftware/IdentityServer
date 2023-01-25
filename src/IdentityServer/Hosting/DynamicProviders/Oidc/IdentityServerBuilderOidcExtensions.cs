@@ -7,7 +7,6 @@ using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -50,6 +49,8 @@ public static class IdentityServerBuilderOidcExtensions
     /// <returns></returns>
     public static IIdentityServerBuilder AddInMemoryOidcProviders(this IIdentityServerBuilder builder, IEnumerable<OidcProvider> providers)
     {
-        return builder.AddInMemoryIdentityProviders(providers);
+        builder.Services.AddSingleton(providers);
+        builder.AddIdentityProviderStore<InMemoryOidcProviderStore>();
+        return builder;
     }
 }
