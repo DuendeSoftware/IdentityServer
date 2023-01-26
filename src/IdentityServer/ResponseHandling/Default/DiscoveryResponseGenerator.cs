@@ -359,6 +359,12 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
             {
                 entries.Add(OidcConstants.Discovery.RequestUriParameterSupported, true);
             }
+
+            if (Options.UserInteraction.PromptValuesSupported?.Any() == true)
+            {
+                // TODO: update to constant once IdentityModel updated
+                entries.Add("prompt_values_supported", Options.UserInteraction.PromptValuesSupported.ToArray());
+            }
         }
 
         entries.Add(OidcConstants.Discovery.AuthorizationResponseIssParameterSupported, Options.EmitIssuerIdentificationResponseParameter);
