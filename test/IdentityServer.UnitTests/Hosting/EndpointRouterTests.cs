@@ -96,7 +96,7 @@ public class EndpointRouterTests
     [Fact]
     public void Find_should_return_null_for_disabled_endpoint()
     {
-        _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint(Constants.EndpointNames.Authorize, "/ep1", typeof(MyEndpointHandler)));
+        _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint(IdentityServerConstants.EndpointNames.Authorize, "/ep1", typeof(MyEndpointHandler)));
         _endpoints.Add(new Duende.IdentityServer.Hosting.Endpoint("ep2", "/ep2", typeof(MyOtherEndpointHandler)));
 
         _options.Endpoints.EnableAuthorizeEndpoint = false;

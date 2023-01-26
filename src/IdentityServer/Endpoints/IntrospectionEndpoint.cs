@@ -58,7 +58,7 @@ internal class IntrospectionEndpoint : IEndpointHandler
     /// <returns></returns>
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity(Constants.EndpointNames.Introspection + "Endpoint");
+        using var activity = Tracing.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.Introspection + "Endpoint");
         
         _logger.LogTrace("Processing introspection request.");
 

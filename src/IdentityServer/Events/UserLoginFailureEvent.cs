@@ -33,7 +33,7 @@ public class UserLoginFailureEvent : Event
         }
         else
         {
-            Endpoint = Constants.EndpointNames.Token;
+            Endpoint = IdentityServerConstants.EndpointNames.Token;
         }
     }
 

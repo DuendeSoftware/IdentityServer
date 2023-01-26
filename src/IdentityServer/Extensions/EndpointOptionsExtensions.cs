@@ -13,15 +13,15 @@ internal static class EndpointOptionsExtensions
     {
         return endpoint?.Name switch
         {
-            Constants.EndpointNames.Authorize => options.EnableAuthorizeEndpoint,
-            Constants.EndpointNames.CheckSession => options.EnableCheckSessionEndpoint,
-            Constants.EndpointNames.DeviceAuthorization => options.EnableDeviceAuthorizationEndpoint,
-            Constants.EndpointNames.Discovery => options.EnableDiscoveryEndpoint,
-            Constants.EndpointNames.EndSession => options.EnableEndSessionEndpoint,
-            Constants.EndpointNames.Introspection => options.EnableIntrospectionEndpoint,
-            Constants.EndpointNames.Revocation => options.EnableTokenRevocationEndpoint,
-            Constants.EndpointNames.Token => options.EnableTokenEndpoint,
-            Constants.EndpointNames.UserInfo => options.EnableUserInfoEndpoint,
+            IdentityServerConstants.EndpointNames.Authorize => options.EnableAuthorizeEndpoint,
+            IdentityServerConstants.EndpointNames.CheckSession => options.EnableCheckSessionEndpoint,
+            IdentityServerConstants.EndpointNames.DeviceAuthorization => options.EnableDeviceAuthorizationEndpoint,
+            IdentityServerConstants.EndpointNames.Discovery => options.EnableDiscoveryEndpoint,
+            IdentityServerConstants.EndpointNames.EndSession => options.EnableEndSessionEndpoint,
+            IdentityServerConstants.EndpointNames.Introspection => options.EnableIntrospectionEndpoint,
+            IdentityServerConstants.EndpointNames.Revocation => options.EnableTokenRevocationEndpoint,
+            IdentityServerConstants.EndpointNames.Token => options.EnableTokenEndpoint,
+            IdentityServerConstants.EndpointNames.UserInfo => options.EnableUserInfoEndpoint,
             _ => true
         };
     }

@@ -34,7 +34,7 @@ public class BackchannelAuthenticationFailureEvent : Event
             }
         }
 
-        Endpoint = Constants.EndpointNames.BackchannelAuthentication;
+        Endpoint = IdentityServerConstants.EndpointNames.BackchannelAuthentication;
         Error = error;
         ErrorDescription = description;
     }
@@ -58,7 +58,7 @@ public class BackchannelAuthenticationFailureEvent : Event
             }
         }
 
-        Endpoint = Constants.EndpointNames.BackchannelAuthentication;
+        Endpoint = IdentityServerConstants.EndpointNames.BackchannelAuthentication;
         Error = result.Error;
         ErrorDescription = result.ErrorDescription;
     }

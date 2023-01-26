@@ -26,7 +26,7 @@ public class TokenIssuedSuccessEvent : Event
         ClientId = response.Request.ClientId;
         ClientName = response.Request.Client.ClientName;
         RedirectUri = response.RedirectUri;
-        Endpoint = Constants.EndpointNames.Authorize;
+        Endpoint = IdentityServerConstants.EndpointNames.Authorize;
         SubjectId = response.Request.Subject.GetSubjectId();
         Scopes = response.Scope;
         GrantType = response.Request.GrantType;
@@ -57,7 +57,7 @@ public class TokenIssuedSuccessEvent : Event
     {
         ClientId = request.ValidatedRequest.Client.ClientId;
         ClientName = request.ValidatedRequest.Client.ClientName;
-        Endpoint = Constants.EndpointNames.Token;
+        Endpoint = IdentityServerConstants.EndpointNames.Token;
         SubjectId = request.ValidatedRequest.Subject?.GetSubjectId();
         GrantType = request.ValidatedRequest.GrantType;
 

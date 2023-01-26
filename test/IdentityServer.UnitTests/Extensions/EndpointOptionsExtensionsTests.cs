@@ -24,7 +24,7 @@ public class EndpointOptionsExtensionsTests
         Assert.Equal(
             expectedIsEndpointEnabled,
             _options.IsEndpointEnabled(
-                CreateTestEndpoint(Constants.EndpointNames.Authorize)));
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.Authorize)));
     }
 
     [Theory]
@@ -37,7 +37,7 @@ public class EndpointOptionsExtensionsTests
         Assert.Equal(
             expectedIsEndpointEnabled,
             _options.IsEndpointEnabled(
-                CreateTestEndpoint(Constants.EndpointNames.CheckSession)));
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.CheckSession)));
     }
 
     [Theory]
@@ -50,7 +50,7 @@ public class EndpointOptionsExtensionsTests
         Assert.Equal(
             expectedIsEndpointEnabled,
             _options.IsEndpointEnabled(
-                CreateTestEndpoint(Constants.EndpointNames.DeviceAuthorization)));
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.DeviceAuthorization)));
     }
 
     [Theory]
@@ -63,7 +63,7 @@ public class EndpointOptionsExtensionsTests
         Assert.Equal(
             expectedIsEndpointEnabled,
             _options.IsEndpointEnabled(
-                CreateTestEndpoint(Constants.EndpointNames.Discovery)));
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.Discovery)));
     }
 
     [Theory]
@@ -76,7 +76,7 @@ public class EndpointOptionsExtensionsTests
         Assert.Equal(
             expectedIsEndpointEnabled,
             _options.IsEndpointEnabled(
-                CreateTestEndpoint(Constants.EndpointNames.EndSession)));
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.EndSession)));
     }
 
     [Theory]
@@ -89,7 +89,7 @@ public class EndpointOptionsExtensionsTests
         Assert.Equal(
             expectedIsEndpointEnabled,
             _options.IsEndpointEnabled(
-                CreateTestEndpoint(Constants.EndpointNames.Introspection)));
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.Introspection)));
     }
 
     [Theory]
@@ -102,7 +102,7 @@ public class EndpointOptionsExtensionsTests
         Assert.Equal(
             expectedIsEndpointEnabled,
             _options.IsEndpointEnabled(
-                CreateTestEndpoint(Constants.EndpointNames.Token)));
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.Token)));
     }
 
     [Theory]
@@ -115,7 +115,7 @@ public class EndpointOptionsExtensionsTests
         Assert.Equal(
             expectedIsEndpointEnabled,
             _options.IsEndpointEnabled(
-                CreateTestEndpoint(Constants.EndpointNames.Revocation)));
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.Revocation)));
     }
 
     [Theory]
@@ -128,7 +128,7 @@ public class EndpointOptionsExtensionsTests
         Assert.Equal(
             expectedIsEndpointEnabled,
             _options.IsEndpointEnabled(
-                CreateTestEndpoint(Constants.EndpointNames.UserInfo)));
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.UserInfo)));
     }
 
     private Endpoint CreateTestEndpoint(string name)

@@ -27,7 +27,7 @@ internal class EndSessionCallbackEndpoint : IEndpointHandler
 
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity(Constants.EndpointNames.EndSession + "CallbackEndpoint");
+        using var activity = Tracing.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.EndSession + "CallbackEndpoint");
         
         if (!HttpMethods.IsGet(context.Request.Method))
         {
