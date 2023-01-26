@@ -137,7 +137,9 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
         using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessLogin");
         
         if (request.PromptModes.Contains(OidcConstants.PromptModes.Login) ||
-            request.PromptModes.Contains(OidcConstants.PromptModes.SelectAccount))
+            request.PromptModes.Contains(OidcConstants.PromptModes.SelectAccount) ||
+            // TODO: update to constant once IdentityModel updated
+            request.PromptModes.Contains("create"))
         {
             Logger.LogInformation("Showing login: request contains prompt={0}", request.PromptModes.ToSpaceSeparatedString());
 

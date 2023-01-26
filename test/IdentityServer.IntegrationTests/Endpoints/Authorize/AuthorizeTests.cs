@@ -1285,6 +1285,48 @@ public class AuthorizeTests
         response.Headers.Location.ToString().Should().Contain("id_token=");
     }
 
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task prompt_create_should_show_login_page_and_preserve_prompt_values()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce",
+            extra: new { prompt = "create" }
+        );
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.LoginWasCalled.Should().BeTrue();
+        _mockPipeline.LoginRequest.PromptModes.Should().Contain("create");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task prompt_create_and_login_should_show_login_page_and_preserve_prompt_values()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce",
+            extra: new { prompt = "create login" }
+        );
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.LoginWasCalled.Should().BeTrue();
+        _mockPipeline.LoginRequest.PromptModes.Should().BeEquivalentTo(new[] { "create", "login" });
+    }
+
 
     [Theory]
     [InlineData((Type) null)]
