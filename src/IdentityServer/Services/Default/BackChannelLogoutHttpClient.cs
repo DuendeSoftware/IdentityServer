@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -47,16 +48,38 @@ public class DefaultBackChannelLogoutHttpClient : IBackChannelLogoutHttpClient
             var response = await _client.PostAsync(url, new FormUrlEncodedContent(payload), _cancellationTokenProvider.CancellationToken);
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogDebug("Response from back-channel logout endpoint: {url} status code: {status}", url, (int)response.StatusCode);
+                _logger.LogDebug("Response from back-channel logout endpoint: {url} status code: {status}", url, (int) response.StatusCode);
             }
             else
             {
-                _logger.LogWarning("Response from back-channel logout endpoint: {url} status code: {status}", url, (int)response.StatusCode);
+                BackChannelError err = null;
+                
+                var errorjson = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    err = JsonSerializer.Deserialize<BackChannelError>(errorjson);
+                }
+                catch { }
+
+                if (err == null)
+                {
+                    _logger.LogWarning("Response from back-channel logout endpoint: {url} status code: {status}", url, (int) response.StatusCode);
+                }
+                else
+                {
+                    _logger.LogWarning("Response from back-channel logout endpoint: {url} status code: {status}, error: {error}, error_description: {error_description}", url, (int) response.StatusCode, err.error, err.error_description);
+                }
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception invoking back-channel logout for url: {url}", url);
         }
+    }
+
+    internal class BackChannelError
+    {
+        public string error { get; set; }
+        public string error_description { get; set; }
     }
 }
