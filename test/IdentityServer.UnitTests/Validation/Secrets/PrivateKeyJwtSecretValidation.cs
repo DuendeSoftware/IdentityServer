@@ -41,14 +41,14 @@ public class PrivateKeyJwtSecretValidation
         _clients = new InMemoryClientStore(ClientValidationTestClients.Get());
     }
 
-    private JwtSecurityToken CreateToken(string clientId, DateTime? nowOverride = null)
+    private JwtSecurityToken CreateToken(string clientId, DateTime? nowOverride = null, string aud = "https://idsrv3.com/connect/token")
     {
         var certificate = TestCert.Load();
         var now = nowOverride ?? DateTime.UtcNow;
 
         var token = new JwtSecurityToken(
             clientId,
-            "https://idsrv3.com/connect/token",
+            aud,
             new List<Claim>()
             {
                 new Claim("jti", Guid.NewGuid().ToString()),
@@ -119,7 +119,29 @@ public class PrivateKeyJwtSecretValidation
 
         result.Success.Should().BeTrue();
     }
-        
+
+    [Theory]
+    [InlineData("https://idsrv3.com")]
+    [InlineData("https://idsrv3.com/")]
+    [InlineData("https://idsrv3.com/connect/token")]
+    [InlineData("https://idsrv3.com/connect/ciba")]
+    public async Task Valid_aud(string aud)
+    {
+        var clientId = "certificate_base64_valid";
+        var client = await _clients.FindEnabledClientByIdAsync(clientId);
+
+        var secret = new ParsedSecret
+        {
+            Id = clientId,
+            Credential = new JwtSecurityTokenHandler().WriteToken(CreateToken(clientId, aud:aud)),
+            Type = IdentityServerConstants.ParsedSecretTypes.JwtBearer
+        };
+
+        var result = await _validator.ValidateAsync(client.ClientSecrets, secret);
+
+        result.Success.Should().BeTrue();
+    }
+
     [Fact]
     public async Task Invalid_Replay()
     {
