@@ -32,9 +32,22 @@ public static class ValidatedAuthorizeRequestExtensions
             }
             suppress.Append(OidcConstants.PromptModes.SelectAccount);
         }
+        // TODO: update to constant once IdentityModel updated
+        if (request.PromptModes.Contains("create"))
+        {
+            if (suppress.Length > 0)
+            {
+                suppress.Append(" ");
+            }
+            suppress.Append("create");
+        }
 
         request.Raw.Add(Constants.SuppressedPrompt, suppress.ToString());
-        request.PromptModes = request.PromptModes.Except(new[] { OidcConstants.PromptModes.Login, OidcConstants.PromptModes.SelectAccount }).ToArray();
+        request.PromptModes = request.PromptModes.Except(new[] { 
+            OidcConstants.PromptModes.Login, 
+            OidcConstants.PromptModes.SelectAccount,
+            "create"
+        }).ToArray();
     }
 
     public static string GetPrefixedAcrValue(this ValidatedAuthorizeRequest request, string prefix)
