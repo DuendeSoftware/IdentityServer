@@ -595,4 +595,77 @@ public class EndSessionTests
 
         _mockPipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
     }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task back_channel_json_errors_can_be_logged()
+    {
+        var resp = new HttpResponseMessage(HttpStatusCode.BadRequest);
+        var json = JsonSerializer.Serialize(new { error = "some_error" });
+        resp.Content = new StringContent(json, Encoding.UTF8, "application/json");
+        _mockPipeline.BackChannelMessageHandler.Response = resp;
+
+        await _mockPipeline.LoginAsync("bob");
+
+        var response = await _mockPipeline.RequestAuthorizationEndpointAsync(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce");
+        response.Should().NotBeNull();
+
+        await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.EndSessionEndpoint);
+
+        _mockPipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task back_channel_bad_json_errors_can_be_logged()
+    {
+        var resp = new HttpResponseMessage(HttpStatusCode.BadRequest);
+        var json = "*#U#NFONSLKHND $#KLN#NFM NOT GOOD JSON  @OM><@<><@>@<?>@@";
+        resp.Content = new StringContent(json, Encoding.UTF8, "application/json");
+        _mockPipeline.BackChannelMessageHandler.Response = resp;
+
+        await _mockPipeline.LoginAsync("bob");
+
+        var response = await _mockPipeline.RequestAuthorizationEndpointAsync(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce");
+        response.Should().NotBeNull();
+
+        await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.EndSessionEndpoint);
+
+        _mockPipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task back_channel_errors_no_content_can_be_logged()
+    {
+        var resp = new HttpResponseMessage(HttpStatusCode.BadRequest);
+        _mockPipeline.BackChannelMessageHandler.Response = resp;
+
+        await _mockPipeline.LoginAsync("bob");
+
+        var response = await _mockPipeline.RequestAuthorizationEndpointAsync(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce");
+        response.Should().NotBeNull();
+
+        await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.EndSessionEndpoint);
+
+        _mockPipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
+    }
 }
