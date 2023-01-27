@@ -34,7 +34,7 @@ public class UserLoginSuccessEvent : Event
         }
         else
         {
-            Endpoint = Constants.EndpointNames.Token;
+            Endpoint = IdentityServerConstants.EndpointNames.Token;
         }
         ClientId = clientId;
     }
@@ -61,7 +61,7 @@ public class UserLoginSuccessEvent : Event
         }
         else
         {
-            Endpoint = Constants.EndpointNames.Token;
+            Endpoint = IdentityServerConstants.EndpointNames.Token;
         }
     }
 

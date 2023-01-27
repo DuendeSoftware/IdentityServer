@@ -22,7 +22,7 @@ public class BackchannelAuthenticationSuccessEvent : Event
     {
         ClientId = request.ValidatedRequest.Client.ClientId;
         ClientName = request.ValidatedRequest.Client.ClientName;
-        Endpoint = Constants.EndpointNames.BackchannelAuthentication;
+        Endpoint = IdentityServerConstants.EndpointNames.BackchannelAuthentication;
         SubjectId = request.ValidatedRequest.Subject?.GetSubjectId();
         Scopes = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString();
     }

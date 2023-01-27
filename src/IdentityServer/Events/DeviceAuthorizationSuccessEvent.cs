@@ -24,7 +24,7 @@ public class DeviceAuthorizationSuccessEvent : Event
     {
         ClientId = request.ValidatedRequest.Client?.ClientId;
         ClientName = request.ValidatedRequest.Client?.ClientName;
-        Endpoint = Constants.EndpointNames.DeviceAuthorization;
+        Endpoint = IdentityServerConstants.EndpointNames.DeviceAuthorization;
         Scopes = request.ValidatedRequest.ValidatedResources?.RawScopeValues.ToSpaceSeparatedString();
     }
 

@@ -22,7 +22,7 @@ internal class CheckSessionEndpoint : IEndpointHandler
 
     public Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity(Constants.EndpointNames.CheckSession + "Endpoint");
+        using var activity = Tracing.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.CheckSession + "Endpoint");
         
         IEndpointResult result;
 

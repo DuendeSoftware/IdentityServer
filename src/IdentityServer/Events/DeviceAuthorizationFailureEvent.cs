@@ -28,7 +28,7 @@ public class DeviceAuthorizationFailureEvent : Event
                 
         }
 
-        Endpoint = Constants.EndpointNames.DeviceAuthorization;
+        Endpoint = IdentityServerConstants.EndpointNames.DeviceAuthorization;
         Error = result.Error;
         ErrorDescription = result.ErrorDescription;
     }

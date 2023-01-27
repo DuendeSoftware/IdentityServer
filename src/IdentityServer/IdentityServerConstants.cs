@@ -93,9 +93,7 @@ public static class IdentityServerConstants
         public const string AuthorizationCodeValidation = "AuthorizationCodeValidation";
         public const string UserInfoRequestValidation = "UserInfoRequestValidation";
         public const string DeviceCodeValidation = "DeviceCodeValidation";
-
-        public const string BackchannelAuthenticationRequestIdValidation =
-            "BackchannelAuthenticationRequestIdValidation";
+        public const string BackchannelAuthenticationRequestIdValidation = "BackchannelAuthenticationRequestIdValidation";
     }
 
 
@@ -190,5 +188,19 @@ public static class IdentityServerConstants
         public static readonly string Services = Duende.IdentityServer.Tracing.TraceNames.Services;
         
         public static readonly string ServiceVersion = Duende.IdentityServer.Tracing.ServiceVersion;
+    }
+
+    public static class EndpointNames
+    {
+        public const string Authorize = "Authorize";
+        public const string BackchannelAuthentication = "BackchannelAuthentication";
+        public const string Token = "Token";
+        public const string DeviceAuthorization = "DeviceAuthorization";
+        public const string Discovery = "Discovery";
+        public const string Introspection = "Introspection";
+        public const string Revocation = "Revocation";
+        public const string EndSession = "Endsession";
+        public const string CheckSession = "Checksession";
+        public const string UserInfo = "Userinfo";
     }
 }

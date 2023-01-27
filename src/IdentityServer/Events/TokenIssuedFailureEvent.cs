@@ -36,7 +36,7 @@ public class TokenIssuedFailureEvent : Event
             }
         }
 
-        Endpoint = Constants.EndpointNames.Authorize;
+        Endpoint = IdentityServerConstants.EndpointNames.Authorize;
         Error = error;
         ErrorDescription = description;
     }
@@ -61,7 +61,7 @@ public class TokenIssuedFailureEvent : Event
             }
         }
 
-        Endpoint = Constants.EndpointNames.Token;
+        Endpoint = IdentityServerConstants.EndpointNames.Token;
         Error = result.Error;
         ErrorDescription = result.ErrorDescription;
     }

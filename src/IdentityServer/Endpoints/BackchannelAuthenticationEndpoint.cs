@@ -44,7 +44,7 @@ internal class BackchannelAuthenticationEndpoint : IEndpointHandler
 
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity(Constants.EndpointNames.BackchannelAuthentication + "Endpoint");
+        using var activity = Tracing.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.BackchannelAuthentication + "Endpoint");
         
         _logger.LogTrace("Processing backchannel authentication request.");
 
