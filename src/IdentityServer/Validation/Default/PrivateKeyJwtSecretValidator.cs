@@ -92,9 +92,13 @@ public class PrivateKeyJwtSecretValidator : ISecretValidator
         {
             // token endpoint URL
             string.Concat(_urls.BaseUrl.EnsureTrailingSlash(), Constants.ProtocolRoutePaths.Token),
-            // TODO: remove the issuer URL in a future major release?
+            // issuer URL + token (legacy support)
+            string.Concat((await _issuerNameService.GetCurrentAsync()).EnsureTrailingSlash(), Constants.ProtocolRoutePaths.Token),
             // issuer URL
-            string.Concat((await _issuerNameService.GetCurrentAsync()).EnsureTrailingSlash(), Constants.ProtocolRoutePaths.Token)
+            await _issuerNameService.GetCurrentAsync(),
+            // CIBA endpoint: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#auth_request
+            string.Concat(_urls.BaseUrl.EnsureTrailingSlash(), Constants.ProtocolRoutePaths.BackchannelAuthentication),
+            // TODO: PAR once added
         }.Distinct();
 
         var tokenValidationParameters = new TokenValidationParameters
