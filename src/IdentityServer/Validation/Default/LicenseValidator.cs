@@ -103,7 +103,7 @@ internal class LicenseValidator
 
             if (_options.KeyManagement.Enabled && !_license.KeyManagementFeature)
             {
-                errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer.");
+                errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");
             }
         }
 
