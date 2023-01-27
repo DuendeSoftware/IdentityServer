@@ -1,8 +1,11 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
 using Duende.IdentityServer.Models;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Validation;
@@ -19,7 +22,12 @@ public interface IRedirectUriValidator
     /// <param name="client">The client.</param>
     /// <returns><c>true</c> is the URI is valid; <c>false</c> otherwise.</returns>
     Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client);
-        
+
+    /// <summary>
+    /// Determines whether a redirect URI is valid for a client.
+    /// </summary>
+    Task<bool> IsRedirectUriValidAsync(RedirectUriValidationContext context) => IsRedirectUriValidAsync(context.RequestedUri, context.Client);
+
     /// <summary>
     /// Determines whether a post logout URI is valid for a client.
     /// </summary>
@@ -27,4 +35,48 @@ public interface IRedirectUriValidator
     /// <param name="client">The client.</param>
     /// <returns><c>true</c> is the URI is valid; <c>false</c> otherwise.</returns>
     Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client);
+}
+
+/// <summary>
+/// Models the context for validating a client's redirect URI
+/// </summary>
+public class RedirectUriValidationContext
+{
+    /// <summary>
+    /// Default ctor
+    /// </summary>
+    public RedirectUriValidationContext()
+    {
+    }
+
+    /// <summary>
+    /// ctor
+    /// </summary>
+    public RedirectUriValidationContext(string redirectUri, ValidatedAuthorizeRequest request)
+    {
+        RequestedUri = redirectUri;
+        Client = request.Client;
+        RequestParameters = request.Raw;
+        RequestObjectValues = request.RequestObjectValues;
+    }
+
+    /// <summary>
+    /// The URI to validate for the client
+    /// </summary>
+    public string RequestedUri { get; set; }
+
+    /// <summary>
+    /// The client
+    /// </summary>
+    public Client Client { get; set; }
+
+    /// <summary>
+    /// Gets or sets the request parameters
+    /// </summary>
+    public NameValueCollection RequestParameters { get; set; }
+
+    /// <summary>
+    /// Validated request object values
+    /// </summary>
+    public IEnumerable<Claim> RequestObjectValues { get; set; }
 }
