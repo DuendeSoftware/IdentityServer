@@ -161,7 +161,7 @@ internal class LicenseValidator
                 if (_issuers.Count > _license.IssuerLimit)
                 {
                     _errorLog.Invoke(
-                        "Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}. The issuers used were: {issuers}.",
+                        "Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}. The issuers used were: {issuers}. This might be due to your server being accessed via different URLs or a direct IP and/or you have reverse proxy or a gateway involved. This suggests a network infrastructure configuration problem, or you are deliberately hosting multiple URLs and require an upgraded license.",
                         new object[] { _license.IssuerLimit, _issuers.Count, _issuers.Keys.ToArray() });
                 }
             }
