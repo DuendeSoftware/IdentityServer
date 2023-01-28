@@ -12,6 +12,7 @@ using Duende.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Internal;
+using System.Security.Cryptography;
 
 namespace Duende.IdentityServer.Services.KeyManagement;
 
@@ -439,9 +440,13 @@ public class KeyManager : IKeyManager
                         }
                         return key;
                     }
+                    catch(CryptographicException ex)
+                    {
+                        _logger.LogError(ex, "Error unprotecting the IdentityServer signing key with kid {kid}. This is likely due to the ASP.NET Core data protection key that was used to protect it is not available. This could occur because data protection has not been configured properly for your load balanced environment, or the IdentityServer signing key store was populated with keys from a different environment with different ASP.NET Core data protection keys. Once you have corrected the problem and if you keep getting this error then it is safe to delete the specific IdentityServer signing key with that kid.", x?.Id);
+                    }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error unprotecting key with kid {kid}.", x?.Id);
+                        _logger.LogError(ex, "Error loading key with kid {kid}.", x?.Id);
                     }
                     return null;
                 })
