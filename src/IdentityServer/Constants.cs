@@ -110,7 +110,8 @@ internal static class Constants
         OidcConstants.PromptModes.None,
         OidcConstants.PromptModes.Login,
         OidcConstants.PromptModes.Consent,
-        OidcConstants.PromptModes.SelectAccount
+        OidcConstants.PromptModes.SelectAccount,
+        OidcConstants.PromptModes.Create,
     };
 
     public const string SuppressedPrompt = "suppressed_" + OidcConstants.AuthorizeRequest.Prompt;

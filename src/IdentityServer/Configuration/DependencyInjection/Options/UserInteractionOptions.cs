@@ -3,6 +3,7 @@
 
 
 using Duende.IdentityServer.Extensions;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Configuration;
 
@@ -111,4 +112,9 @@ public class UserInteractionOptions
     /// Flag that allows return URL validation to accept full URL that includes the IdentityServer origin. Defaults to false.
     /// </summary>
     public bool AllowOriginInReturnUrl { get; set; }
+
+    /// <summary>
+    /// The collection of OIDC prompt modes supported and that will be published in discovery.
+    /// </summary>
+    public ICollection<string> PromptValuesSupported { get; set; } = new HashSet<string>(Constants.SupportedPromptModes);
 }

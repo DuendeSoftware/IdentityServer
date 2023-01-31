@@ -228,4 +228,54 @@ public class DiscoveryEndpointTests
 
         result.Issuer.Should().Be("https://грант.рф");
     }
+
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task prompt_values_supported_should_contain_defaults()
+    {
+        IdentityServerPipeline pipeline = new IdentityServerPipeline();
+        pipeline.Initialize();
+
+        var result = await pipeline.BackChannelClient.GetAsync("https://server/.well-known/openid-configuration");
+
+        var json = await result.Content.ReadAsStringAsync();
+        var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+        var prompts = data["prompt_values_supported"].EnumerateArray()
+            .Select(x => x.GetString()).ToList();
+        prompts.Should().BeEquivalentTo(new[] { "none", "login", "consent", "select_account", "create" });
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task prompt_values_supported_should_be_absent_if_no_authorize_endpoint_enabled()
+    {
+        IdentityServerPipeline pipeline = new IdentityServerPipeline();
+        pipeline.Initialize();
+        pipeline.Options.Endpoints.EnableAuthorizeEndpoint = false;
+
+        var result = await pipeline.BackChannelClient.GetAsync("https://server/.well-known/openid-configuration");
+
+        var json = await result.Content.ReadAsStringAsync();
+        var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+        data.ContainsKey("prompt_values_supported").Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task custom_prompt_values_supported_should_contain_values()
+    {
+        IdentityServerPipeline pipeline = new IdentityServerPipeline();
+        pipeline.Initialize();
+        pipeline.Options.UserInteraction.PromptValuesSupported.Remove("select_account");
+        pipeline.Options.UserInteraction.PromptValuesSupported.Add("custom");
+
+        var result = await pipeline.BackChannelClient.GetAsync("https://server/.well-known/openid-configuration");
+
+        var json = await result.Content.ReadAsStringAsync();
+        var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+        var prompts = data["prompt_values_supported"].EnumerateArray()
+            .Select(x => x.GetString()).ToList();
+        prompts.Should().BeEquivalentTo(new[] { "none", "login", "consent", "custom", "create" });
+    }
 }
