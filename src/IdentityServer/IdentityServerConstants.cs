@@ -197,6 +197,7 @@ public static class IdentityServerConstants
         public const string Token = "Token";
         public const string DeviceAuthorization = "DeviceAuthorization";
         public const string Discovery = "Discovery";
+        public const string Jwks = "Jwks";
         public const string Introspection = "Introspection";
         public const string Revocation = "Revocation";
         public const string EndSession = "Endsession";
