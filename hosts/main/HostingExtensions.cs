@@ -20,7 +20,8 @@ internal static class HostingExtensions
 
         builder.Services.AddControllers();
         builder.Services.AddHealthChecks()
-                    .AddCheck<DiscoveryHealthCheck>("DiscoveryHealthCheck");
+                    .AddCheck<DiscoveryHealthCheck>("DiscoveryHealthCheck")
+                    .AddCheck<DiscoveryKeysHealthCheck>("DiscoveryKeysHealthCheck");
 
         // cookie policy to deal with temporary browser incompatibilities
         builder.Services.AddSameSiteCookiePolicy();
