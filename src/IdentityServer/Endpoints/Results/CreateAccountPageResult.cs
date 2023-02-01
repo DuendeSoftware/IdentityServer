@@ -10,27 +10,27 @@ using Duende.IdentityServer.Validation;
 namespace Duende.IdentityServer.Endpoints.Results;
 
 /// <summary>
-/// Result for consent page
+/// Result for create account page
 /// </summary>
-public class ConsentPageResult : InteractivePageResult
+public class CreateAccountPageResult : InteractivePageResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ConsentPageResult"/> class.
+    /// Initializes a new instance of the <see cref="CreateAccountPageResult"/> class.
     /// </summary>
     /// <param name="request">The request.</param>
     /// <param name="options"></param>
     /// <exception cref="System.ArgumentNullException">request</exception>
-    public ConsentPageResult(ValidatedAuthorizeRequest request, IdentityServerOptions options)
-        : base(request, options.UserInteraction.ConsentUrl, options.UserInteraction.ConsentReturnUrlParameter)
+    public CreateAccountPageResult(ValidatedAuthorizeRequest request, IdentityServerOptions options) 
+        : base(request, options.UserInteraction.CreateAccountUrl, options.UserInteraction.CreateAccountReturnUrlParameter)
     {
     }
 
-    internal ConsentPageResult(
+    internal CreateAccountPageResult(
         ValidatedAuthorizeRequest request,
         IdentityServerOptions options,
         IServerUrls urls,
         IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
-        : base(request, options.UserInteraction.ConsentUrl, options.UserInteraction.ConsentReturnUrlParameter, urls, authorizationParametersMessageStore)
+        : base(request, options.UserInteraction.CreateAccountUrl, options.UserInteraction.CreateAccountReturnUrlParameter, urls, authorizationParametersMessageStore)
     {
     }
 }
