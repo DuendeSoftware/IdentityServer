@@ -124,15 +124,19 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
             }
             if (interactionResult.IsLogin)
             {
-                return new LoginPageResult(request);
+                return new LoginPageResult(request, _options);
             }
             if (interactionResult.IsConsent)
             {
-                return new ConsentPageResult(request);
+                return new ConsentPageResult(request, _options);
             }
             if (interactionResult.IsRedirect)
             {
-                return new CustomRedirectResult(request, interactionResult.RedirectUrl);
+                return new CustomRedirectResult(request, interactionResult.RedirectUrl, _options);
+            }
+            if (interactionResult.IsCreateAccount)
+            {
+                return new CreateAccountPageResult(request, _options);
             }
 
             var response = await _authorizeResponseGenerator.CreateResponseAsync(request);
