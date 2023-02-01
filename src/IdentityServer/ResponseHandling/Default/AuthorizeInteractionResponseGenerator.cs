@@ -105,6 +105,17 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             };
         }
 
+        if (request.PromptModes.Contains(OidcConstants.PromptModes.Create) && 
+            Options.UserInteraction.PromptValuesSupported.Contains(OidcConstants.PromptModes.Create))
+        {
+            Logger.LogInformation("Showing create account: request contains prompt=create");
+            request.RemovePrompt();
+            return new InteractionResponse
+            {
+                IsCreateAccount = true
+            };
+        }
+        
         var result = await ProcessLoginAsync(request);
             
         if (!result.IsLogin && !result.IsError && !result.IsRedirect)
@@ -112,7 +123,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             result = await ProcessConsentAsync(request, consent);
         }
 
-        if ((result.IsLogin || result.IsConsent || result.IsRedirect) && request.PromptModes.Contains(OidcConstants.PromptModes.None))
+        if ((result.ResponseType == InteractionResponseType.UserInteraction) && request.PromptModes.Contains(OidcConstants.PromptModes.None))
         {
             // prompt=none means do not show the UI
             Logger.LogInformation("Changing response to LoginRequired: prompt=none was requested");
@@ -137,8 +148,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
         using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessLogin");
         
         if (request.PromptModes.Contains(OidcConstants.PromptModes.Login) ||
-            request.PromptModes.Contains(OidcConstants.PromptModes.SelectAccount) ||
-            request.PromptModes.Contains(OidcConstants.PromptModes.Create))
+            request.PromptModes.Contains(OidcConstants.PromptModes.SelectAccount))
         {
             Logger.LogInformation("Showing login: request contains prompt={0}", request.PromptModes.ToSpaceSeparatedString());
 
