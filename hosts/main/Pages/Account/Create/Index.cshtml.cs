@@ -17,27 +17,18 @@ public class Index : PageModel
 {
     private readonly TestUserStore _users;
     private readonly IIdentityServerInteractionService _interaction;
-    private readonly IEventService _events;
-    private readonly IAuthenticationSchemeProvider _schemeProvider;
-    private readonly IIdentityProviderStore _identityProviderStore;
 
     [BindProperty]
     public InputModel Input { get; set; }
         
     public Index(
         IIdentityServerInteractionService interaction,
-        IAuthenticationSchemeProvider schemeProvider,
-        IIdentityProviderStore identityProviderStore,
-        IEventService events,
         TestUserStore users = null)
     {
         // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
         _users = users ?? throw new Exception("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
             
         _interaction = interaction;
-        _schemeProvider = schemeProvider;
-        _identityProviderStore = identityProviderStore;
-        _events = events;
     }
 
     public IActionResult OnGet(string returnUrl)
@@ -78,9 +69,50 @@ public class Index : PageModel
             }
         }
 
+        if (_users.FindByUsername(Input.Username) != null)
+        {
+            ModelState.AddModelError("Input.Username", "Invalid username");
+        }
+
         if (ModelState.IsValid)
         {
+            var user = _users.CreateUser(Input.Username, Input.Password, Input.Name, Input.Email);
 
+            // issue authentication cookie with subject ID and username
+            var isuser = new IdentityServerUser(user.SubjectId)
+            {
+                DisplayName = user.Username
+            };
+
+            await HttpContext.SignInAsync(isuser);
+
+            if (context != null)
+            {
+                if (context.IsNativeClient())
+                {
+                    // The client is native, so this change in how to
+                    // return the response is for better UX for the end user.
+                    return this.LoadingPage(Input.ReturnUrl);
+                }
+
+                // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
+                return Redirect(Input.ReturnUrl);
+            }
+
+            // request for a local page
+            if (Url.IsLocalUrl(Input.ReturnUrl))
+            {
+                return Redirect(Input.ReturnUrl);
+            }
+            else if (string.IsNullOrEmpty(Input.ReturnUrl))
+            {
+                return Redirect("~/");
+            }
+            else
+            {
+                // user might have clicked on a malicious link - should be logged
+                throw new Exception("invalid return URL");
+            }
         }
 
         return Page();

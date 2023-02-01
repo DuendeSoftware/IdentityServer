@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -36,17 +36,17 @@ public class TestUserStore
     public bool ValidateCredentials(string username, string password)
     {
         var user = FindByUsername(username);
-            
+
         if (user != null)
         {
             if (string.IsNullOrWhiteSpace(user.Password) && string.IsNullOrWhiteSpace(password))
             {
                 return true;
             }
-                
+
             return user.Password.Equals(password);
         }
-            
+
         return false;
     }
 
@@ -152,6 +152,46 @@ public class TestUserStore
         // add user to in-memory store
         _users.Add(user);
 
+        return user;
+    }
+
+    /// <summary>
+    /// Adds a new a user.
+    /// </summary>
+    /// <returns></returns>
+    public TestUser CreateUser(string username, string password, string name = null, string email = null)
+    {
+        if (_users.Any(x => x.Username == username))
+        {
+            throw new Exception("That username already exists.");
+        }
+
+        // create a new unique subject id
+        var sub = CryptoRandom.CreateUniqueId(format: CryptoRandom.OutputFormat.Hex);
+
+        var claims = new List<Claim>();
+        if (!String.IsNullOrEmpty(name))
+        {
+            claims.Add(new Claim(ClaimTypes.Name, name));
+        }
+        if (!String.IsNullOrEmpty(email))
+        {
+            claims.Add(new Claim(ClaimTypes.Email, email));
+        }
+
+        // create new user
+        var user = new TestUser
+        {
+            SubjectId = sub,
+            Username = username,
+            Password = password,
+            Claims = claims
+        };
+
+        // add user to in-memory store
+        _users.Add(user);
+
+        // success
         return user;
     }
 }

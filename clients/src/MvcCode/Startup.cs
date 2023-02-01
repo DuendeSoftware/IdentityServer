@@ -12,6 +12,7 @@ using IdentityModel.Client;
 using Microsoft.Extensions.Configuration;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using System.Threading.Tasks;
 
 namespace MvcCode
 {
@@ -80,6 +81,12 @@ namespace MvcCode
                     {
                         NameClaimType = JwtClaimTypes.Name,
                         RoleClaimType = JwtClaimTypes.Role,
+                    };
+
+                    options.Events.OnRedirectToIdentityProvider = ctx =>
+                    {
+                        // ctx.ProtocolMessage.Prompt = "create";
+                        return Task.CompletedTask;
                     };
                 });
             
