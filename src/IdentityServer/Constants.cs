@@ -111,7 +111,8 @@ internal static class Constants
         OidcConstants.PromptModes.Login,
         OidcConstants.PromptModes.Consent,
         OidcConstants.PromptModes.SelectAccount,
-        OidcConstants.PromptModes.Create,
+        // Create not in here by default -- it's added if customer sets the CreateAccountUrl user interaction option
+        //OidcConstants.PromptModes.Create, 
     };
 
     public const string SuppressedPrompt = "suppressed_" + OidcConstants.AuthorizeRequest.Prompt;
@@ -181,6 +182,7 @@ internal static class Constants
             public const string Error = "errorId";
             public const string Login = "returnUrl";
             public const string Consent = "returnUrl";
+            public const string CreateAccount = "returnUrl";
             public const string Logout = "logoutId";
             public const string EndSessionCallback = "endSessionId";
             public const string Custom = "returnUrl";

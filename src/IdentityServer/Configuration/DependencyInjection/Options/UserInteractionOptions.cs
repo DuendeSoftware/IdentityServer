@@ -61,6 +61,22 @@ public class UserInteractionOptions
     public string ConsentReturnUrlParameter { get; set; } = Constants.UIConstants.DefaultRoutePathParams.Consent;
 
     /// <summary>
+    /// Gets or sets the create account (or register) URL, for use with the OIDC prompt parameter. If a local URL, the value must start with a leading slash.
+    /// </summary>
+    /// <value>
+    /// The create account URL.
+    /// </value>
+    public string CreateAccountUrl { get; set; } // null by default to omit support in discovery
+
+    /// <summary>
+    /// Gets or sets the create account (or register) return URL parameter.
+    /// </summary>
+    /// <value>
+    /// The create account return URL parameter.
+    /// </value>
+    public string CreateAccountReturnUrlParameter { get; set; } = Constants.UIConstants.DefaultRoutePathParams.CreateAccount;
+
+    /// <summary>
     /// Gets or sets the error URL. If a local URL, the value must start with a leading slash.
     /// </summary>
     /// <value>
@@ -115,6 +131,7 @@ public class UserInteractionOptions
 
     /// <summary>
     /// The collection of OIDC prompt modes supported and that will be published in discovery.
+    /// The value "create" is omitted unless the CreateAccountUrl value is set.
     /// </summary>
-    public ICollection<string> PromptValuesSupported { get; set; } = new HashSet<string>(Constants.SupportedPromptModes);
+    internal ICollection<string> PromptValuesSupported { get; set; } = new HashSet<string>(Constants.SupportedPromptModes);
 }
