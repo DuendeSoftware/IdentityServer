@@ -741,6 +741,11 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                     LogError("prompt contains 'none' and other values. 'none' should be used by itself.", request);
                     return Invalid(request, description: "Invalid prompt");
                 }
+                if (prompts.Contains(OidcConstants.PromptModes.Create) && prompts.Length > 1)
+                {
+                    LogError("prompt contains 'create' and other values. 'create' should be used by itself.", request);
+                    return Invalid(request, description: "Invalid prompt");
+                }
 
                 request.OriginalPromptModes = prompts;
             }
