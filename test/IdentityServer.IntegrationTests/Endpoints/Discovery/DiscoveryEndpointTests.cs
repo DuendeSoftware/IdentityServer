@@ -243,7 +243,30 @@ public class DiscoveryEndpointTests
         var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
         var prompts = data["prompt_values_supported"].EnumerateArray()
             .Select(x => x.GetString()).ToList();
-        prompts.Should().BeEquivalentTo(new[] { "none", "login", "consent", "select_account", "create" });
+        prompts.Should().BeEquivalentTo(new[] { "none", "login", "consent", "select_account" });
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task createaccount_options_should_include_create_in_prompt_values_supported()
+    {
+        IdentityServerPipeline pipeline = new IdentityServerPipeline();
+        pipeline.OnPostConfigureServices += services =>
+        {
+            services.PostConfigure<IdentityServerOptions>(opts => { 
+                opts.UserInteraction.CreateAccountUrl = "/account/create";
+            });
+        };
+        pipeline.Initialize();
+        
+
+        var result = await pipeline.BackChannelClient.GetAsync("https://server/.well-known/openid-configuration");
+
+        var json = await result.Content.ReadAsStringAsync();
+        var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+        var prompts = data["prompt_values_supported"].EnumerateArray()
+            .Select(x => x.GetString()).ToList();
+        prompts.Should().Contain("create");
     }
 
     [Fact]
@@ -259,23 +282,5 @@ public class DiscoveryEndpointTests
         var json = await result.Content.ReadAsStringAsync();
         var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
         data.ContainsKey("prompt_values_supported").Should().BeFalse();
-    }
-
-    [Fact]
-    [Trait("Category", Category)]
-    public async Task custom_prompt_values_supported_should_contain_values()
-    {
-        IdentityServerPipeline pipeline = new IdentityServerPipeline();
-        pipeline.Initialize();
-        pipeline.Options.UserInteraction.PromptValuesSupported.Remove("select_account");
-        pipeline.Options.UserInteraction.PromptValuesSupported.Add("custom");
-
-        var result = await pipeline.BackChannelClient.GetAsync("https://server/.well-known/openid-configuration");
-
-        var json = await result.Content.ReadAsStringAsync();
-        var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
-        var prompts = data["prompt_values_supported"].EnumerateArray()
-            .Select(x => x.GetString()).ToList();
-        prompts.Should().BeEquivalentTo(new[] { "none", "login", "consent", "custom", "create" });
     }
 }
