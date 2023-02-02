@@ -10,7 +10,7 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// <summary>
 /// Result for create account page
 /// </summary>
-public class CreateAccountPageResult : InteractivePageResult
+public class CreateAccountPageResult : AuthorizeInteractionPageResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateAccountPageResult"/> class.

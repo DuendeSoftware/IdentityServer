@@ -10,7 +10,7 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// <summary>
 /// Result for login page
 /// </summary>
-public class LoginPageResult : InteractivePageResult
+public class LoginPageResult : AuthorizeInteractionPageResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="LoginPageResult"/> class.

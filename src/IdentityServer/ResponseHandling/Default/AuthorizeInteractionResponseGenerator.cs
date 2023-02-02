@@ -106,24 +106,17 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             };
         }
 
-        // check prompt=create here, as we don't support it with any other combo
-        if (request.PromptModes.Contains(OidcConstants.PromptModes.Create))
+        // see if create account was requested
+        var result = await ProcessCreateAccountAsync(request);
+        if (result.ResponseType == InteractionResponseType.None)
         {
-            Logger.LogInformation("Showing create account: request contains prompt=create");
-            request.RemovePrompt();
-            return new InteractionResponse
+            // see if the user needs to login
+            result = await ProcessLoginAsync(request);
+            if (result.ResponseType == InteractionResponseType.None)
             {
-                IsCreateAccount = true
-            };
-        }
-        
-        // see if the user needs to login
-        var result = await ProcessLoginAsync(request);
-            
-        if (!result.IsLogin && !result.IsError && !result.IsRedirect)
-        {
-            // see if the user needs to consent
-            result = await ProcessConsentAsync(request, consent);
+                // see if the user needs to consent
+                result = await ProcessConsentAsync(request, consent);
+            }
         }
 
         if ((result.ResponseType == InteractionResponseType.UserInteraction) && request.PromptModes.Contains(OidcConstants.PromptModes.None))
@@ -139,6 +132,33 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Processes the create account logic.
+    /// </summary>
+    /// <param name="request">The request.</param>
+    /// <returns></returns>
+    protected internal virtual Task<InteractionResponse> ProcessCreateAccountAsync(ValidatedAuthorizeRequest request)
+    {
+        InteractionResponse result;
+
+        // check prompt=create here, as we don't support it with any other combo
+        if (request.PromptModes.Contains(OidcConstants.PromptModes.Create))
+        {
+            Logger.LogInformation("Showing create account: request contains prompt=create");
+            request.RemovePrompt();
+            result = new InteractionResponse
+            {
+                IsCreateAccount = true
+            };
+        }
+        else
+        {
+            result = new InteractionResponse();
+        }
+
+        return Task.FromResult(result);
     }
 
     /// <summary>

@@ -20,20 +20,20 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// Result for an interactive page
 /// </summary>
 /// <seealso cref="IEndpointResult" />
-public abstract class InteractivePageResult : IEndpointResult
+public abstract class AuthorizeInteractionPageResult : IEndpointResult
 {
     private readonly ValidatedAuthorizeRequest _request;
     private string _redirectUrl;
     private string _returnUrlParameterName;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="InteractivePageResult"/> class.
+    /// Initializes a new instance of the <see cref="AuthorizeInteractionPageResult"/> class.
     /// </summary>
     /// <param name="request">The request.</param>
     /// <param name="redirectUrl"></param>
     /// <param name="returnUrlParameterName"></param>
     /// <exception cref="System.ArgumentNullException">request</exception>
-    public InteractivePageResult(ValidatedAuthorizeRequest request, string redirectUrl, string returnUrlParameterName)
+    public AuthorizeInteractionPageResult(ValidatedAuthorizeRequest request, string redirectUrl, string returnUrlParameterName)
     {
         _request = request ?? throw new ArgumentNullException(nameof(request));
         _redirectUrl = redirectUrl ?? throw new ArgumentNullException(nameof(redirectUrl));

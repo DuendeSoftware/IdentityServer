@@ -10,7 +10,7 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// <summary>
 /// Result for consent page
 /// </summary>
-public class ConsentPageResult : InteractivePageResult
+public class ConsentPageResult : AuthorizeInteractionPageResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ConsentPageResult"/> class.

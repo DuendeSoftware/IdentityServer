@@ -362,8 +362,7 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
 
             if (Options.UserInteraction.PromptValuesSupported?.Any() == true)
             {
-                // TODO: update to constant once IdentityModel updated
-                entries.Add("prompt_values_supported", Options.UserInteraction.PromptValuesSupported.ToArray());
+                entries.Add(OidcConstants.Discovery.PromptValuesSupported, Options.UserInteraction.PromptValuesSupported.ToArray());
             }
         }
 

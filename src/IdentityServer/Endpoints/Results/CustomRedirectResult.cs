@@ -10,7 +10,7 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// <summary>
 /// Result for a custom redirect
 /// </summary>
-public class CustomRedirectResult : InteractivePageResult
+public class CustomRedirectResult : AuthorizeInteractionPageResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CustomRedirectResult"/> class.
