@@ -874,26 +874,23 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         }
 
         //////////////////////////////////////////////////////////
-        // check session cookie
+        // session id
         //////////////////////////////////////////////////////////
-        if (_options.Endpoints.EnableCheckSessionEndpoint)
+        if (request.Subject.IsAuthenticated())
         {
-            if (request.Subject.IsAuthenticated())
+            var sessionId = await _userSession.GetSessionIdAsync();
+            if (sessionId.IsPresent())
             {
-                var sessionId = await _userSession.GetSessionIdAsync();
-                if (sessionId.IsPresent())
-                {
-                    request.SessionId = sessionId;
-                }
-                else
-                {
-                    LogError("Check session endpoint enabled, but SessionId is missing", request);
-                }
+                request.SessionId = sessionId;
             }
             else
             {
-                request.SessionId = ""; // empty string for anonymous users
+                LogError("SessionId is missing", request);
             }
+        }
+        else
+        {
+            request.SessionId = ""; // empty string for anonymous users
         }
 
         return Valid(request);
