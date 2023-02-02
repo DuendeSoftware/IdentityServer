@@ -25,6 +25,8 @@ internal static class IdentityServerExtensions
                 options.Endpoints.EnableJwtRequestUri = true;
 
                 options.ServerSideSessions.UserDisplayNameClaimType = JwtClaimTypes.Name;
+
+                options.UserInteraction.CreateAccountUrl = "/Account/Create";
             })
             //.AddServerSideSessions()
             .AddInMemoryClients(Clients.Get())

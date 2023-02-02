@@ -164,6 +164,10 @@ public class IdentityServerPipeline
         app.UseIdentityServer();
 
         // UI endpoints
+        app.Map("/account/create", path =>
+        {
+            path.Run(ctx => OnCreateAccount(ctx));
+        });
         app.Map(Constants.UIConstants.DefaultRoutePaths.Login.EnsureLeadingSlash(), path =>
         {
             path.Run(ctx => OnLogin(ctx));
@@ -197,6 +201,18 @@ public class IdentityServerPipeline
     {
         LoginWasCalled = true;
         await ReadLoginRequest(ctx);
+        await IssueLoginCookie(ctx);
+    }
+
+    public bool CreateAccountWasCalled { get; set; }
+    public string CreateAccountReturnUrl { get; set; }
+    public AuthorizationRequest CreateAccountRequest { get; set; }
+    private async Task OnCreateAccount(HttpContext ctx)
+    {
+        CreateAccountWasCalled = true;
+        var interaction = ctx.RequestServices.GetRequiredService<IIdentityServerInteractionService>();
+        CreateAccountReturnUrl = ctx.Request.Query[Options.UserInteraction.CreateAccountReturnUrlParameter].FirstOrDefault();
+        CreateAccountRequest = await interaction.GetAuthorizationContextAsync(CreateAccountReturnUrl);
         await IssueLoginCookie(ctx);
     }
 

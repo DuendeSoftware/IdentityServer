@@ -8,18 +8,18 @@ using Duende.IdentityServer.Validation;
 namespace Duende.IdentityServer.Endpoints.Results;
 
 /// <summary>
-/// Result for login page
+/// Result for create account page
 /// </summary>
-public class LoginPageResult : AuthorizeInteractionPageResult
+public class CreateAccountPageResult : AuthorizeInteractionPageResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="LoginPageResult"/> class.
+    /// Initializes a new instance of the <see cref="CreateAccountPageResult"/> class.
     /// </summary>
     /// <param name="request">The request.</param>
     /// <param name="options"></param>
     /// <exception cref="System.ArgumentNullException">request</exception>
-    public LoginPageResult(ValidatedAuthorizeRequest request, IdentityServerOptions options) 
-        : base(request, options.UserInteraction.LoginUrl, options.UserInteraction.LoginReturnUrlParameter)
+    public CreateAccountPageResult(ValidatedAuthorizeRequest request, IdentityServerOptions options) 
+        : base(request, options.UserInteraction.CreateAccountUrl, options.UserInteraction.CreateAccountReturnUrlParameter)
     {
     }
 }

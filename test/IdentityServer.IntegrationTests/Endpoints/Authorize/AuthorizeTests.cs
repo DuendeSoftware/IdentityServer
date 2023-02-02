@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Stores;
@@ -1283,6 +1284,84 @@ public class AuthorizeTests
         response.StatusCode.Should().Be(HttpStatusCode.Redirect);
         response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
         response.Headers.Location.ToString().Should().Contain("id_token=");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task without_config_prompt_create_should_not_show_create_account_page()
+    {
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce",
+            extra: new { prompt = "create" }
+        );
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.CreateAccountWasCalled.Should().BeFalse();
+        _mockPipeline.LoginWasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task with_config_prompt_create_should_show_create_account_page_and_preserve_prompt_values()
+    {
+        _mockPipeline.OnPreConfigureServices += svcs => 
+        {
+            svcs.PostConfigure<IdentityServerOptions>(opts =>
+            {
+                opts.UserInteraction.CreateAccountUrl = "/account/create";
+            });
+        };
+        _mockPipeline.Initialize();
+
+        await _mockPipeline.LoginAsync("bob");
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce",
+            extra: new { prompt = "create" }
+        );
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.CreateAccountWasCalled.Should().BeTrue();
+        _mockPipeline.CreateAccountRequest.PromptModes.Should().Contain("create");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task prompt_create_and_login_should_be_an_error()
+    {
+        _mockPipeline.OnPreConfigureServices += svcs =>
+        {
+            svcs.PostConfigure<IdentityServerOptions>(opts =>
+            {
+                opts.UserInteraction.CreateAccountUrl = "/account/create";
+            });
+        };
+        _mockPipeline.Initialize(); 
+        
+        await _mockPipeline.LoginAsync("bob");
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce",
+            extra: new { prompt = "create login" }
+        );
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.ErrorWasCalled.Should().BeTrue();
     }
 
 

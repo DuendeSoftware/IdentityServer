@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,10 +7,42 @@ using Duende.IdentityServer.Extensions;
 namespace Duende.IdentityServer.ResponseHandling;
 
 /// <summary>
+/// Models the types of interaction results from the IAuthorizeInteractionResponseGenerator
+/// </summary>
+public enum InteractionResponseType
+{
+    /// <summary>
+    /// No interaction response, so a success result should be returned to the client
+    /// </summary>
+    None,
+    /// <summary>
+    /// Error of some sort. Depending on error, it will be shown to the user, or returned to the client.
+    /// </summary>
+    Error,
+    /// <summary>
+    /// Some sort of user interaction is required, such as login, consent, or something else.
+    /// </summary>
+    UserInteraction,
+}
+
+/// <summary>
 /// Indicates interaction outcome for user on authorization endpoint.
 /// </summary>
 public class InteractionResponse
 {
+    /// <summary>
+    /// The interaction response type.
+    /// </summary>
+    public InteractionResponseType ResponseType
+    {
+        get
+        {
+            if (IsError) return InteractionResponseType.Error;
+            if (IsLogin || IsConsent || IsCreateAccount || IsRedirect) return InteractionResponseType.UserInteraction;
+            return InteractionResponseType.None;
+        }
+    }
+
     /// <summary>
     /// Gets or sets a value indicating whether the user must login.
     /// </summary>
@@ -26,6 +58,14 @@ public class InteractionResponse
     /// <c>true</c> if this instance is consent; otherwise, <c>false</c>.
     /// </value>
     public bool IsConsent { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the user must create an account.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if this instance is create an account; otherwise, <c>false</c>.
+    /// </value>
+    public bool IsCreateAccount { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether the result is an error.

@@ -228,4 +228,59 @@ public class DiscoveryEndpointTests
 
         result.Issuer.Should().Be("https://грант.рф");
     }
+
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task prompt_values_supported_should_contain_defaults()
+    {
+        IdentityServerPipeline pipeline = new IdentityServerPipeline();
+        pipeline.Initialize();
+
+        var result = await pipeline.BackChannelClient.GetAsync("https://server/.well-known/openid-configuration");
+
+        var json = await result.Content.ReadAsStringAsync();
+        var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+        var prompts = data["prompt_values_supported"].EnumerateArray()
+            .Select(x => x.GetString()).ToList();
+        prompts.Should().BeEquivalentTo(new[] { "none", "login", "consent", "select_account" });
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task createaccount_options_should_include_create_in_prompt_values_supported()
+    {
+        IdentityServerPipeline pipeline = new IdentityServerPipeline();
+        pipeline.OnPostConfigureServices += services =>
+        {
+            services.PostConfigure<IdentityServerOptions>(opts => { 
+                opts.UserInteraction.CreateAccountUrl = "/account/create";
+            });
+        };
+        pipeline.Initialize();
+        
+
+        var result = await pipeline.BackChannelClient.GetAsync("https://server/.well-known/openid-configuration");
+
+        var json = await result.Content.ReadAsStringAsync();
+        var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+        var prompts = data["prompt_values_supported"].EnumerateArray()
+            .Select(x => x.GetString()).ToList();
+        prompts.Should().Contain("create");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task prompt_values_supported_should_be_absent_if_no_authorize_endpoint_enabled()
+    {
+        IdentityServerPipeline pipeline = new IdentityServerPipeline();
+        pipeline.Initialize();
+        pipeline.Options.Endpoints.EnableAuthorizeEndpoint = false;
+
+        var result = await pipeline.BackChannelClient.GetAsync("https://server/.well-known/openid-configuration");
+
+        var json = await result.Content.ReadAsStringAsync();
+        var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+        data.ContainsKey("prompt_values_supported").Should().BeFalse();
+    }
 }

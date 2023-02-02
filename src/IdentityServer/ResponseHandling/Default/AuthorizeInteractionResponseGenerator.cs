@@ -82,6 +82,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
         
         Logger.LogTrace("ProcessInteractionAsync");
 
+        // handle the scenario where use choose to deny prior to even logging in
         if (consent != null && consent.Granted == false && consent.Error.HasValue)
         {
             // special case when anonymous user has issued an error prior to authenticating
@@ -105,14 +106,20 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             };
         }
 
-        var result = await ProcessLoginAsync(request);
-            
-        if (!result.IsLogin && !result.IsError && !result.IsRedirect)
+        // see if create account was requested
+        var result = await ProcessCreateAccountAsync(request);
+        if (result.ResponseType == InteractionResponseType.None)
         {
-            result = await ProcessConsentAsync(request, consent);
+            // see if the user needs to login
+            result = await ProcessLoginAsync(request);
+            if (result.ResponseType == InteractionResponseType.None)
+            {
+                // see if the user needs to consent
+                result = await ProcessConsentAsync(request, consent);
+            }
         }
 
-        if ((result.IsLogin || result.IsConsent || result.IsRedirect) && request.PromptModes.Contains(OidcConstants.PromptModes.None))
+        if ((result.ResponseType == InteractionResponseType.UserInteraction) && request.PromptModes.Contains(OidcConstants.PromptModes.None))
         {
             // prompt=none means do not show the UI
             Logger.LogInformation("Changing response to LoginRequired: prompt=none was requested");
@@ -125,6 +132,33 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Processes the create account logic.
+    /// </summary>
+    /// <param name="request">The request.</param>
+    /// <returns></returns>
+    protected internal virtual Task<InteractionResponse> ProcessCreateAccountAsync(ValidatedAuthorizeRequest request)
+    {
+        InteractionResponse result;
+
+        // check prompt=create here, as we don't support it with any other combo
+        if (request.PromptModes.Contains(OidcConstants.PromptModes.Create))
+        {
+            Logger.LogInformation("Showing create account: request contains prompt=create");
+            request.RemovePrompt();
+            result = new InteractionResponse
+            {
+                IsCreateAccount = true
+            };
+        }
+        else
+        {
+            result = new InteractionResponse();
+        }
+
+        return Task.FromResult(result);
     }
 
     /// <summary>

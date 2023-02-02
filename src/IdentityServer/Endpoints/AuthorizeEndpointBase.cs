@@ -118,21 +118,29 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
 
             // determine user interaction
             var interactionResult = await _interactionGenerator.ProcessInteractionAsync(request, consent?.Data);
-            if (interactionResult.IsError)
+            if (interactionResult.ResponseType == InteractionResponseType.Error)
             {
                 return await CreateErrorResultAsync("Interaction generator error", request, interactionResult.Error, interactionResult.ErrorDescription, false);
             }
-            if (interactionResult.IsLogin)
+            
+            if (interactionResult.ResponseType == InteractionResponseType.UserInteraction)
             {
-                return new LoginPageResult(request);
-            }
-            if (interactionResult.IsConsent)
-            {
-                return new ConsentPageResult(request);
-            }
-            if (interactionResult.IsRedirect)
-            {
-                return new CustomRedirectResult(request, interactionResult.RedirectUrl);
+                if (interactionResult.IsLogin)
+                {
+                    return new LoginPageResult(request, _options);
+                }
+                if (interactionResult.IsConsent)
+                {
+                    return new ConsentPageResult(request, _options);
+                }
+                if (interactionResult.IsRedirect)
+                {
+                    return new CustomRedirectResult(request, interactionResult.RedirectUrl, _options);
+                }
+                if (interactionResult.IsCreateAccount)
+                {
+                    return new CreateAccountPageResult(request, _options);
+                }
             }
 
             var response = await _authorizeResponseGenerator.CreateResponseAsync(request);

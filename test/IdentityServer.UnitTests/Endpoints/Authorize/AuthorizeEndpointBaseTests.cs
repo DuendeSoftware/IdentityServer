@@ -183,6 +183,9 @@ public class AuthorizeEndpointBaseTests
 
         _stubAuthorizeRequestValidator.Result = new AuthorizeRequestValidationResult(_validatedAuthorizeRequest);
 
+        _options.UserInteraction.LoginUrl = "/Account/Login";
+        _options.UserInteraction.LoginReturnUrlParameter = "returnUrl";
+
         _subject = new TestAuthorizeEndpoint(
             _fakeEventService,
             _fakeLogger,

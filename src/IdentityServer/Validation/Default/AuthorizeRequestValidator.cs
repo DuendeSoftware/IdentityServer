@@ -734,11 +734,16 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         if (prompt.IsPresent())
         {
             var prompts = prompt.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (prompts.All(p => Constants.SupportedPromptModes.Contains(p)))
+            if (prompts.All(p => _options.UserInteraction.PromptValuesSupported?.Contains(p) == true))
             {
                 if (prompts.Contains(OidcConstants.PromptModes.None) && prompts.Length > 1)
                 {
                     LogError("prompt contains 'none' and other values. 'none' should be used by itself.", request);
+                    return Invalid(request, description: "Invalid prompt");
+                }
+                if (prompts.Contains(OidcConstants.PromptModes.Create) && prompts.Length > 1)
+                {
+                    LogError("prompt contains 'create' and other values. 'create' should be used by itself.", request);
                     return Invalid(request, description: "Invalid prompt");
                 }
 
@@ -746,6 +751,9 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
             else
             {
+                // TODO: change to error in a major release?
+                // https://github.com/DuendeSoftware/IdentityServer/issues/845#issuecomment-1405377531
+                // https://openid.net/specs/openid-connect-prompt-create-1_0.html#name-authorization-request
                 _logger.LogDebug("Unsupported prompt mode - ignored: " + prompt);
             }
         }
@@ -754,11 +762,16 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         if (suppressed_prompt.IsPresent())
         {
             var prompts = suppressed_prompt.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (prompts.All(p => Constants.SupportedPromptModes.Contains(p)))
+            if (prompts.All(p => _options.UserInteraction.PromptValuesSupported?.Contains(p) == true))
             {
                 if (prompts.Contains(OidcConstants.PromptModes.None) && prompts.Length > 1)
                 {
                     LogError("suppressed_prompt contains 'none' and other values. 'none' should be used by itself.", request);
+                    return Invalid(request, description: "Invalid prompt");
+                }
+                if (prompts.Contains(OidcConstants.PromptModes.Create) && prompts.Length > 1)
+                {
+                    LogError("prompt contains 'create' and other values. 'create' should be used by itself.", request);
                     return Invalid(request, description: "Invalid prompt");
                 }
 
@@ -766,6 +779,9 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
             else
             {
+                // TODO: change to error in a major release?
+                // https://github.com/DuendeSoftware/IdentityServer/issues/845#issuecomment-1405377531
+                // https://openid.net/specs/openid-connect-prompt-create-1_0.html#name-authorization-request
                 _logger.LogDebug("Unsupported suppressed_prompt mode - ignored: " + prompt);
             }
         }
