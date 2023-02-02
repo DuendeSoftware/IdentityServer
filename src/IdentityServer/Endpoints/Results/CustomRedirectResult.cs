@@ -3,8 +3,6 @@
 
 
 using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 
 namespace Duende.IdentityServer.Endpoints.Results;
@@ -27,16 +25,6 @@ public class CustomRedirectResult : InteractivePageResult
     /// </exception>
     public CustomRedirectResult(ValidatedAuthorizeRequest request, string url, IdentityServerOptions options)
         : base(request, url, options.UserInteraction.CustomRedirectReturnUrlParameter)
-    {
-    }
-
-    internal CustomRedirectResult(
-        ValidatedAuthorizeRequest request,
-        string url,
-        IdentityServerOptions options,
-        IServerUrls urls,
-        IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
-        : base(request, url, options.UserInteraction.CustomRedirectReturnUrlParameter, urls, authorizationParametersMessageStore)
     {
     }
 }

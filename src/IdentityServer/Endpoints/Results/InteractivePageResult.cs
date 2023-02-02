@@ -23,8 +23,8 @@ namespace Duende.IdentityServer.Endpoints.Results;
 public abstract class InteractivePageResult : IEndpointResult
 {
     private readonly ValidatedAuthorizeRequest _request;
-    private string _redirectUrl { get; set; }
-    private string _returnUrlParameterName { get; set; }
+    private string _redirectUrl;
+    private string _returnUrlParameterName;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InteractivePageResult"/> class.
@@ -40,24 +40,13 @@ public abstract class InteractivePageResult : IEndpointResult
         _returnUrlParameterName = returnUrlParameterName ?? throw new ArgumentNullException(nameof(returnUrlParameterName));
     }
 
-    internal InteractivePageResult(
-        ValidatedAuthorizeRequest request,
-        string redirectUrl, string returnUrlParameterName,
-        IServerUrls urls,
-        IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
-        : this(request, redirectUrl, returnUrlParameterName)
-    {
-        _urls = urls;
-        _authorizationParametersMessageStore = authorizationParametersMessageStore;
-    }
-
     private IServerUrls _urls;
     private IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
     private void Init(HttpContext context)
     {
-        _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
-        _authorizationParametersMessageStore = _authorizationParametersMessageStore ?? context.RequestServices.GetService<IAuthorizationParametersMessageStore>();
+        _urls = context.RequestServices.GetRequiredService<IServerUrls>();
+        _authorizationParametersMessageStore = context.RequestServices.GetService<IAuthorizationParametersMessageStore>();
     }
 
     /// <summary>

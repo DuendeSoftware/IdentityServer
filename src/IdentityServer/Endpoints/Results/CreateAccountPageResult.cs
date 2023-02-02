@@ -3,8 +3,6 @@
 
 
 using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 
 namespace Duende.IdentityServer.Endpoints.Results;
@@ -22,15 +20,6 @@ public class CreateAccountPageResult : InteractivePageResult
     /// <exception cref="System.ArgumentNullException">request</exception>
     public CreateAccountPageResult(ValidatedAuthorizeRequest request, IdentityServerOptions options) 
         : base(request, options.UserInteraction.CreateAccountUrl, options.UserInteraction.CreateAccountReturnUrlParameter)
-    {
-    }
-
-    internal CreateAccountPageResult(
-        ValidatedAuthorizeRequest request,
-        IdentityServerOptions options,
-        IServerUrls urls,
-        IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
-        : base(request, options.UserInteraction.CreateAccountUrl, options.UserInteraction.CreateAccountReturnUrlParameter, urls, authorizationParametersMessageStore)
     {
     }
 }

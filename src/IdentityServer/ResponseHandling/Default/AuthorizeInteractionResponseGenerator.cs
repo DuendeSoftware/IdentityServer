@@ -82,6 +82,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
         
         Logger.LogTrace("ProcessInteractionAsync");
 
+        // handle the scenario where use choose to deny prior to even logging in
         if (consent != null && consent.Granted == false && consent.Error.HasValue)
         {
             // special case when anonymous user has issued an error prior to authenticating
@@ -105,8 +106,8 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             };
         }
 
-        if (request.PromptModes.Contains(OidcConstants.PromptModes.Create) && 
-            Options.UserInteraction.PromptValuesSupported.Contains(OidcConstants.PromptModes.Create))
+        // check prompt=create here, as we don't support it with any other combo
+        if (request.PromptModes.Contains(OidcConstants.PromptModes.Create))
         {
             Logger.LogInformation("Showing create account: request contains prompt=create");
             request.RemovePrompt();
@@ -116,10 +117,12 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             };
         }
         
+        // see if the user needs to login
         var result = await ProcessLoginAsync(request);
             
         if (!result.IsLogin && !result.IsError && !result.IsRedirect)
         {
+            // see if the user needs to consent
             result = await ProcessConsentAsync(request, consent);
         }
 

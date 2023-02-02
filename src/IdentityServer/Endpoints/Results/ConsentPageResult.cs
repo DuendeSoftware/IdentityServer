@@ -3,8 +3,6 @@
 
 
 using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 
 namespace Duende.IdentityServer.Endpoints.Results;
@@ -22,15 +20,6 @@ public class ConsentPageResult : InteractivePageResult
     /// <exception cref="System.ArgumentNullException">request</exception>
     public ConsentPageResult(ValidatedAuthorizeRequest request, IdentityServerOptions options)
         : base(request, options.UserInteraction.ConsentUrl, options.UserInteraction.ConsentReturnUrlParameter)
-    {
-    }
-
-    internal ConsentPageResult(
-        ValidatedAuthorizeRequest request,
-        IdentityServerOptions options,
-        IServerUrls urls,
-        IAuthorizationParametersMessageStore authorizationParametersMessageStore = null) 
-        : base(request, options.UserInteraction.ConsentUrl, options.UserInteraction.ConsentReturnUrlParameter, urls, authorizationParametersMessageStore)
     {
     }
 }
