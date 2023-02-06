@@ -65,7 +65,19 @@ public class BasicAuthenticationSecretParser : ISecretParser
             return notfound;
         }
 
-        var parameter = authorizationHeader.Substring("Basic ".Length);
+        // worst-case scenario check on the length of the Authorization header (given all the possible encoding)
+        // before we start to do any real parsing or string splitting
+        var schemeLength = "Basic ".Length;
+        var urlEncodingMaxLength = (_options.InputLengthRestrictions.ClientId + _options.InputLengthRestrictions.ClientSecret) * 3; // *3 for the URL encoding
+        var valuesMaxLength = urlEncodingMaxLength + 1; // +1 for the single colon
+        var authorizationHeaderHeaderMaxLength = schemeLength + Math.Max(valuesMaxLength / 3, (valuesMaxLength / 3) + 1) * 4; // for the base64 encoding
+        if (authorizationHeader.Length > authorizationHeaderHeaderMaxLength)
+        {
+            _logger.LogError("Authorization header exceeds maximum length allowed.");
+            return notfound;
+        }
+
+        var parameter = authorizationHeader.Substring(schemeLength);
 
         string pair;
         try
@@ -91,8 +103,9 @@ public class BasicAuthenticationSecretParser : ISecretParser
             return notfound;
         }
 
-        var clientId = pair.Substring(0, ix);
-        var secret = pair.Substring(ix + 1);
+        // RFC6749 says individual values must be application/x-www-form-urlencoded
+        var clientId = UrlDecode(pair.Substring(0, ix));
+        var secret = UrlDecode(pair.Substring(ix + 1));
 
         if (clientId.IsPresent())
         {
@@ -112,8 +125,8 @@ public class BasicAuthenticationSecretParser : ISecretParser
 
                 var parsedSecret = new ParsedSecret
                 {
-                    Id = Decode(clientId),
-                    Credential = Decode(secret),
+                    Id = clientId,
+                    Credential = secret,
                     Type = IdentityServerConstants.ParsedSecretTypes.SharedSecret
                 };
 
@@ -126,7 +139,7 @@ public class BasicAuthenticationSecretParser : ISecretParser
 
                 var parsedSecret = new ParsedSecret
                 {
-                    Id = Decode(clientId),
+                    Id = clientId,
                     Type = IdentityServerConstants.ParsedSecretTypes.NoSecret
                 };
 
@@ -138,9 +151,7 @@ public class BasicAuthenticationSecretParser : ISecretParser
         return notfound;
     }
 
-    // RFC6749 says individual values must be application/x-www-form-urlencoded
-    // 2.3.1
-    private string Decode(string value)
+    private string UrlDecode(string value)
     {
         if (value.IsMissing()) return string.Empty;
 
