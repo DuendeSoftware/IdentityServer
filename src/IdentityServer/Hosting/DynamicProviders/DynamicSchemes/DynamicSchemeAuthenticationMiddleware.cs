@@ -27,20 +27,23 @@ class DynamicSchemeAuthenticationMiddleware
         if (context.Request.Path.StartsWithSegments(_options.PathPrefix))
         {
             var startIndex = _options.PathPrefix.ToString().Length;
-            var scheme = context.Request.Path.Value.Substring(startIndex + 1);
-            var idx = scheme.IndexOf('/');
-            if (idx > 0)
+            if (context.Request.Path.Value.Length > startIndex)
             {
-                // this assumes the path is: /<PathPrefix>/<scheme>/<extra>
-                // e.g.: /federation/my-oidc-provider/signin
-                scheme = scheme.Substring(0, idx);
-            }
+                var scheme = context.Request.Path.Value.Substring(startIndex + 1);
+                var idx = scheme.IndexOf('/');
+                if (idx > 0)
+                {
+                    // this assumes the path is: /<PathPrefix>/<scheme>/<extra>
+                    // e.g.: /federation/my-oidc-provider/signin
+                    scheme = scheme.Substring(0, idx);
+                }
 
-            var handlers = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
-            var handler = await handlers.GetHandlerAsync(context, scheme) as IAuthenticationRequestHandler;
-            if (handler != null && await handler.HandleRequestAsync())
-            {
-                return;
+                var handlers = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
+                var handler = await handlers.GetHandlerAsync(context, scheme) as IAuthenticationRequestHandler;
+                if (handler != null && await handler.HandleRequestAsync())
+                {
+                    return;
+                }
             }
         }
 

@@ -365,4 +365,17 @@ public class DynamicProvidersTests
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 #endif
+
+    [Fact]
+    public async Task missing_segments_in_redirect_uri_should_return_not_found()
+    {
+        var response = await _host.HttpClient.GetAsync(_host.Url("/federation/idp1"));
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task federation_endpoint_with_no_scheme_should_return_not_found()
+    {
+        var response = await _host.HttpClient.GetAsync(_host.Url("/federation"));
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }
