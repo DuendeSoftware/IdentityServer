@@ -576,6 +576,84 @@ public class EndSessionTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task back_channel_logout_token_should_have_typ_header_set()
+    {
+        _mockPipeline.BackChannelMessageHandler.OnInvoke = async req =>
+        {
+            req.RequestUri.ToString().Should().StartWith("https://client3/signout");
+
+            var form = await req.Content.ReadAsStringAsync();
+            form.Should().Contain(OidcConstants.BackChannelLogoutRequest.LogoutToken);
+
+            var token = form.Split('=')[1];
+            var parts = token.Split('.');
+            parts.Length.Should().Be(3);
+
+            var bytes = Base64Url.Decode(parts[0]);
+            var json = Encoding.UTF8.GetString(bytes);
+            var header = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+
+            header["typ"].GetString().Should().Be("logout+jwt");
+        };
+
+        await _mockPipeline.LoginAsync("bob");
+
+        var response = await _mockPipeline.RequestAuthorizationEndpointAsync(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce");
+        response.Should().NotBeNull();
+
+        await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.EndSessionEndpoint);
+
+        _mockPipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task back_channel_logout_token_should_use_configured_typ_header_value()
+    {
+        _mockPipeline.Options.LogoutTokenJwtType = "jwt";
+
+        _mockPipeline.BackChannelMessageHandler.OnInvoke = async req =>
+        {
+            req.RequestUri.ToString().Should().StartWith("https://client3/signout");
+
+            var form = await req.Content.ReadAsStringAsync();
+            form.Should().Contain(OidcConstants.BackChannelLogoutRequest.LogoutToken);
+
+            var token = form.Split('=')[1];
+            var parts = token.Split('.');
+            parts.Length.Should().Be(3);
+
+            var bytes = Base64Url.Decode(parts[0]);
+            var json = Encoding.UTF8.GetString(bytes);
+            var header = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+
+            header["typ"].GetString().Should().Be("jwt");
+        };
+
+        await _mockPipeline.LoginAsync("bob");
+
+        var response = await _mockPipeline.RequestAuthorizationEndpointAsync(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce");
+        response.Should().NotBeNull();
+
+        await _mockPipeline.BrowserClient.GetAsync(IdentityServerPipeline.EndSessionEndpoint);
+
+        _mockPipeline.BackChannelMessageHandler.InvokeWasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task back_channel_logout_should_not_affect_end_session_callback()
     {
         _mockPipeline.BackChannelMessageHandler.OnInvoke = req => throw new Exception("boom!");
