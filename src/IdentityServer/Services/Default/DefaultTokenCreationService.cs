@@ -96,12 +96,19 @@ public class DefaultTokenCreationService : ITokenCreationService
     protected virtual Task<Dictionary<string, object>> CreateHeaderElementsAsync(Token token)
     {
         var additionalHeaderElements = new Dictionary<string, object>();
-            
+
         if (token.Type == IdentityServerConstants.TokenTypes.AccessToken)
         {
             if (Options.AccessTokenJwtType.IsPresent())
             {
                 additionalHeaderElements.Add("typ", Options.AccessTokenJwtType);
+            }
+        }
+        else if (token.Type == IdentityServerConstants.TokenTypes.LogoutToken)
+        {
+            if (Options.LogoutTokenJwtType.IsPresent())
+            {
+                additionalHeaderElements.Add("typ", Options.LogoutTokenJwtType);
             }
         }
 

@@ -47,20 +47,8 @@ public class IdentityServerTools
     /// <exception cref="System.ArgumentNullException">claims</exception>
     public virtual async Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims)
     {
-        if (claims == null) throw new ArgumentNullException(nameof(claims));
-
         var issuer = await IssuerNameService.GetCurrentAsync();
-
-        var token = new Token
-        {
-            CreationTime = _clock.UtcNow.UtcDateTime,
-            Issuer = issuer,
-            Lifetime = lifetime,
-
-            Claims = new HashSet<Claim>(claims, new ClaimComparer())
-        };
-
-        return await _tokenCreation.CreateTokenAsync(token);
+        return await IssueJwtAsync(lifetime, issuer, claims);
     }
 
     /// <summary>
@@ -71,12 +59,28 @@ public class IdentityServerTools
     /// <param name="claims">The claims.</param>
     /// <returns></returns>
     /// <exception cref="System.ArgumentNullException">claims</exception>
-    public virtual async Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims)
+    public virtual Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims)
+    {
+        var tokenType = OidcConstants.TokenTypes.AccessToken;
+        return IssueJwtAsync(lifetime, issuer, tokenType, claims);
+    }
+
+    /// <summary>
+    /// Issues a JWT.
+    /// </summary>
+    /// <param name="lifetime">The lifetime.</param>
+    /// <param name="issuer">The issuer.</param>
+    /// <param name="tokenType"></param>
+    /// <param name="claims">The claims.</param>
+    /// <returns></returns>
+    /// <exception cref="System.ArgumentNullException">claims</exception>
+    public virtual async Task<string> IssueJwtAsync(int lifetime, string issuer, string tokenType, IEnumerable<Claim> claims)
     {
         if (String.IsNullOrWhiteSpace(issuer)) throw new ArgumentNullException(nameof(issuer));
+        if (String.IsNullOrWhiteSpace(tokenType)) throw new ArgumentNullException(nameof(tokenType));
         if (claims == null) throw new ArgumentNullException(nameof(claims));
 
-        var token = new Token
+        var token = new Token(tokenType)
         {
             CreationTime = _clock.UtcNow.UtcDateTime,
             Issuer = issuer,
@@ -84,7 +88,7 @@ public class IdentityServerTools
 
             Claims = new HashSet<Claim>(claims, new ClaimComparer())
         };
-
+        
         return await _tokenCreation.CreateTokenAsync(token);
     }
 }
