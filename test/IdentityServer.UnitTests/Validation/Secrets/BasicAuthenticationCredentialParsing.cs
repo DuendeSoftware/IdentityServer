@@ -13,6 +13,7 @@ using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Xunit;
+using System.Text.Encodings.Web;
 
 namespace UnitTests.Validation.Secrets;
 
@@ -171,6 +172,79 @@ public class BasicAuthenticationSecretParsing
         context.Request.Headers.Add("Authorization", new StringValues(headerValue));
 
         var secret = await _parser.ParseAsync(context);
+        secret.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(100)]
+    [InlineData(101)]
+    [InlineData(102)]
+    [InlineData(103)]
+    [InlineData(104)]
+    [InlineData(105)]
+    [InlineData(106)]
+    [InlineData(107)]
+    [InlineData(108)]
+    [Trait("Category", Category)]
+    public async void Valid_BasicAuthentication_Request_Maximum_Url_Encoded_Values_Should_Work(int maxLength)
+    {
+        var parser = CreateParser(maxLength);
+
+        var context = new DefaultHttpContext();
+
+        var clientId = "!".Repeat(maxLength);
+        var clientSecret = "#".Repeat(maxLength);
+        var credential = $"{Uri.EscapeDataString(clientId)}:{Uri.EscapeDataString(clientSecret)}";
+
+        var headerValue = string.Format("Basic {0}",
+            Convert.ToBase64String(Encoding.UTF8.GetBytes(credential)));
+        context.Request.Headers.Add("Authorization", new StringValues(headerValue));
+
+        var secret = await parser.ParseAsync(context);
+        secret.Id.Should().Be(clientId);
+        secret.Credential.Should().Be(clientSecret);
+    }
+
+    private static BasicAuthenticationSecretParser CreateParser(int maxLength)
+    {
+        var options = new IdentityServerOptions
+        {
+            InputLengthRestrictions = new InputLengthRestrictions
+            {
+                ClientId = maxLength,
+                ClientSecret = maxLength
+            }
+        };
+        var parser = new BasicAuthenticationSecretParser(options, TestLogger.Create<BasicAuthenticationSecretParser>());
+        return parser;
+    }
+
+    [Theory]
+    [InlineData(100)]
+    [InlineData(101)]
+    [InlineData(102)]
+    [InlineData(103)]
+    [InlineData(104)]
+    [InlineData(105)]
+    [InlineData(106)]
+    [InlineData(107)]
+    [InlineData(108)]
+    [Trait("Category", Category)]
+    public async void Valid_BasicAuthentication_Request_Authorization_Header_Too_Long_Should_Fail(int maxLength)
+    {
+        var parser = CreateParser(maxLength);
+
+        var context = new DefaultHttpContext();
+
+        var clientId = Uri.EscapeDataString("!".Repeat(maxLength));
+        var clientSecret = Uri.EscapeDataString("#".Repeat(maxLength)) + "x";
+        var credential = $"{clientId}:{clientSecret}";
+
+        var headerValue = string.Format("Basic {0}",
+            Convert.ToBase64String(Encoding.UTF8.GetBytes(credential)));
+        context.Request.Headers.Add("Authorization", new StringValues(headerValue));
+
+        var secret = await parser.ParseAsync(context);
         secret.Should().BeNull();
     }
 
