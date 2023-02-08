@@ -17,6 +17,8 @@ namespace ConsoleIntrospectionClient
 
             var response = await RequestTokenAsync();
             await IntrospectAsync(response.AccessToken);
+
+            Console.ReadKey();
         }
 
         static async Task<TokenResponse> RequestTokenAsync()
@@ -34,7 +36,8 @@ namespace ConsoleIntrospectionClient
 
                 UserName = "bob",
                 Password = "bob",
-                Scope = "resource1.scope1 resource2.scope1"
+                // Scope = "resource1.scope1 resource1.scope2 resource2.scope1"
+                Scope = "resource2.scope1"
             });
 
             if (response.IsError) throw new Exception(response.Error);
