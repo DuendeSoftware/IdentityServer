@@ -22,7 +22,6 @@ public class LoggingOptions
     public ICollection<string> BackchannelAuthenticationRequestSensitiveValuesFilter { get; set; } =
         new HashSet<string>
         {
-            // TODO: IdentityModel
             OidcConstants.TokenRequest.ClientSecret,
             OidcConstants.TokenRequest.ClientAssertion,
             OidcConstants.AuthorizeRequest.IdTokenHint

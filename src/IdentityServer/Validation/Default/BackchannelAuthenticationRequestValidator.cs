@@ -497,7 +497,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
 
     private void LogWithRequestDetails(LogLevel logLevel, string message = null, object values = null)
     {
-        var details = new BackchannelAuthenticationRequestValidationLog(_validatedRequest, _options.Logging.TokenRequestSensitiveValuesFilter);
+        var details = new BackchannelAuthenticationRequestValidationLog(_validatedRequest, _options.Logging.BackchannelAuthenticationRequestSensitiveValuesFilter);
 
         if (message.IsPresent())
         {
