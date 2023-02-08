@@ -145,9 +145,6 @@ public class TokenResponseGenerator : ITokenResponseGenerator
 
         var response = await CreateResponseAsync(request);
 
-        //////////////////////////
-        // id token
-        /////////////////////////
         if (request.ValidatedRequest.AuthorizationCode.IsOpenId)
         {
             // load the client that belongs to the authorization code
@@ -242,9 +239,6 @@ public class TokenResponseGenerator : ITokenResponseGenerator
 
         var response = await CreateResponseAsync(request);
 
-        //////////////////////////
-        // id token
-        /////////////////////////
         if (request.ValidatedRequest.DeviceCode.IsOpenId)
         {
             // load the client that belongs to the device code
@@ -285,10 +279,6 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         Logger.LogTrace("Creating response for CIBA request");
 
         var response = await CreateResponseAsync(request);
-
-        //////////////////////////
-        // id token
-        /////////////////////////
 
         // load the client that belongs to the device code
         Client client = null;
