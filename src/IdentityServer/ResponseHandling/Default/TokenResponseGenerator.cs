@@ -143,25 +143,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for authorization code request");
 
-        //////////////////////////
-        // access token
-        /////////////////////////
-        var (accessToken, refreshToken) = await CreateAccessTokenAsync(request.ValidatedRequest);
-        var response = new TokenResponse
-        {
-            AccessToken = accessToken,
-            AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
-            Custom = request.CustomResponse,
-            Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
-        };
-
-        //////////////////////////
-        // refresh token
-        /////////////////////////
-        if (refreshToken.IsPresent())
-        {
-            response.RefreshToken = refreshToken;
-        }
+        var response = await CreateResponseAsync(request);
 
         //////////////////////////
         // id token
@@ -258,25 +240,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for device code request");
 
-        //////////////////////////
-        // access token
-        /////////////////////////
-        var (accessToken, refreshToken) = await CreateAccessTokenAsync(request.ValidatedRequest);
-        var response = new TokenResponse
-        {
-            AccessToken = accessToken,
-            AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
-            Custom = request.CustomResponse,
-            Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
-        };
-
-        //////////////////////////
-        // refresh token
-        /////////////////////////
-        if (refreshToken.IsPresent())
-        {
-            response.RefreshToken = refreshToken;
-        }
+        var response = await CreateResponseAsync(request);
 
         //////////////////////////
         // id token
@@ -320,30 +284,12 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for CIBA request");
 
-        //////////////////////////
-        // access token
-        /////////////////////////
-        var (accessToken, refreshToken) = await CreateAccessTokenAsync(request.ValidatedRequest);
-        var response = new TokenResponse
-        {
-            AccessToken = accessToken,
-            AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
-            Custom = request.CustomResponse,
-            Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
-        };
-
-        //////////////////////////
-        // refresh token
-        /////////////////////////
-        if (refreshToken.IsPresent())
-        {
-            response.RefreshToken = refreshToken;
-        }
+        var response = await CreateResponseAsync(request);
 
         //////////////////////////
         // id token
         /////////////////////////
-            
+
         // load the client that belongs to the device code
         Client client = null;
         if (request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId != null)
@@ -384,11 +330,25 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     }
 
     /// <summary>
+    /// <para>
+    /// This function is deprecated and will be removed in a future version.
+    /// Use <c>CreateResponseAsync</c> instead.
+    /// </para>
     /// Creates the response for a token request.
     /// </summary>
     /// <param name="validationResult">The validation result.</param>
     /// <returns></returns>
     protected virtual async Task<TokenResponse> ProcessTokenRequestAsync(TokenRequestValidationResult validationResult)
+    {
+        return await CreateResponseAsync(validationResult);
+    }
+
+    /// <summary>
+    /// Creates a response for a token request containing an access token and a refresh token if requested.
+    /// </summary>
+    /// <param name="validationResult">The validation result.</param>
+    /// <returns></returns>
+    protected virtual async Task<TokenResponse> CreateResponseAsync(TokenRequestValidationResult validationResult)
     {
         (var accessToken, var refreshToken) = await CreateAccessTokenAsync(validationResult.ValidatedRequest);
         var response = new TokenResponse
@@ -406,6 +366,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
 
         return response;
     }
+
 
     /// <summary>
     /// Creates the access/refresh token.
