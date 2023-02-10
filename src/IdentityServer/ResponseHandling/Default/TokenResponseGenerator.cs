@@ -118,7 +118,12 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for client credentials request");
 
+        #pragma warning disable CS0618
+        // Using a deprecated function until it is removed to avoid a breaking
+        // change earlier than intended.
         return ProcessTokenRequestAsync(request);
+        #pragma warning restore CS0618
+
     }
 
     /// <summary>
@@ -130,7 +135,11 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for password request");
 
+        #pragma warning disable CS0618
+        // Using a deprecated function until it is removed to avoid a breaking
+        // change earlier than intended.
         return ProcessTokenRequestAsync(request);
+        #pragma warning restore CS0618
     }
 
     /// <summary>
@@ -316,7 +325,11 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for extension grant request");
 
+        #pragma warning disable CS0618
+        // Using a deprecated function until it is removed to avoid a breaking
+        // change earlier than intended.
         return ProcessTokenRequestAsync(request);
+        #pragma warning restore CS0618
     }
 
     /// <summary>
@@ -328,6 +341,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     /// </summary>
     /// <param name="validationResult">The validation result.</param>
     /// <returns></returns>
+    [Obsolete("Use CreateResponseAsync instead.")]
     protected virtual async Task<TokenResponse> ProcessTokenRequestAsync(TokenRequestValidationResult validationResult)
     {
         return await CreateResponseAsync(validationResult);
