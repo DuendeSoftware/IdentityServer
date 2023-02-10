@@ -1,3 +1,4 @@
+using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

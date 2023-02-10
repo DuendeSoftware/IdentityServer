@@ -1,26 +1,27 @@
 using System.Security.Claims;
+using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 
-namespace Duende.IdentityServer.Configuration;
+namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
 public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrationValidator
 {
-    public Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationDocument document)
+    public Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request)
     {
         var client = new Client
         {
             ClientId = CryptoRandom.CreateUniqueId()
         };
-        
+
         //////////////////////////////
         // validate grant types
         //////////////////////////////
-        if (document.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
+        if (request.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
         {
             client.AllowedGrantTypes.Add(GrantType.ClientCredentials);
         }
-        if (document.GrantTypes.Contains(OidcConstants.GrantTypes.AuthorizationCode))
+        if (request.GrantTypes.Contains(OidcConstants.GrantTypes.AuthorizationCode))
         {
             client.AllowedGrantTypes.Add(GrantType.AuthorizationCode);
         }
@@ -28,32 +29,32 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         // we only support the two above grant types
         if (client.AllowedGrantTypes.Count == 0)
         {
-            return Task.FromResult(new DynamicClientRegistrationValidationResult(
-                DynamicClientRegistrationErrors.InvalidClientMetadata, 
+            return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
+                DynamicClientRegistrationErrors.InvalidClientMetadata,
                 "unsupported grant type"));
         }
 
-        if (document.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
+        if (request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
         {
             if (client.AllowedGrantTypes.Count == 1 &&
                 client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
             {
-                return Task.FromResult(new DynamicClientRegistrationValidationResult(
-                    DynamicClientRegistrationErrors.InvalidClientMetadata, 
+                return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
+                    DynamicClientRegistrationErrors.InvalidClientMetadata,
                     "client credentials does not support refresh tokens"));
             }
 
             client.AllowOfflineAccess = true;
         }
-        
+
         //////////////////////////////
         // validate redirect URIs
         //////////////////////////////
         if (client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
         {
-            if (document.RedirectUris.Any())
+            if (request.RedirectUris.Any())
             {
-                foreach (var requestRedirectUri in document.RedirectUris)
+                foreach (var requestRedirectUri in request.RedirectUris)
                 {
                     if (requestRedirectUri.IsAbsoluteUri)
                     {
@@ -61,7 +62,7 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
                     }
                     else
                     {
-                        return Task.FromResult(new DynamicClientRegistrationValidationResult(
+                        return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
                             DynamicClientRegistrationErrors.InvalidRedirectUri,
                             "malformed redirect URI"));
                     }
@@ -69,8 +70,8 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
             }
             else
             {
-                return Task.FromResult(new DynamicClientRegistrationValidationResult(
-                    DynamicClientRegistrationErrors.InvalidRedirectUri, 
+                return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
+                    DynamicClientRegistrationErrors.InvalidRedirectUri,
                     "redirect URI required for authorization_code grant type"));
             }
         }
@@ -78,58 +79,58 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         if (client.AllowedGrantTypes.Count == 1 &&
             client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
         {
-            if (document.RedirectUris.Any())
+            if (request.RedirectUris.Any())
             {
-                return Task.FromResult(new DynamicClientRegistrationValidationResult(
-                    DynamicClientRegistrationErrors.InvalidRedirectUri, 
+                return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
+                    DynamicClientRegistrationErrors.InvalidRedirectUri,
                     "redirect URI not compatible with client_credentials grant type"));
             }
         }
-        
+
         //////////////////////////////
         // validate scopes
         //////////////////////////////
-        if (string.IsNullOrEmpty(document.Scope))
+        if (string.IsNullOrEmpty(request.Scope))
         {
             // todo: what to do when scopes are missing? error - leave up to custom validator?
         }
         else
         {
-            var scopes = document.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var scopes = request.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             // todo: ideally scope names get checked against configuration store?
-            
+
             foreach (var scope in scopes)
             {
                 client.AllowedScopes.Add(scope);
             }
         }
-        
+
         //////////////////////////////
         // secret handling
         //////////////////////////////
-        
+
         // todo: if jwks is present - convert JWKs into secrets
-        // todo: add jwks_uri suppport
-        
+        // todo: add jwks_uri support
+
         //////////////////////////////
         // misc
         //////////////////////////////
-        if (!string.IsNullOrWhiteSpace(document.ClientName))
+        if (!string.IsNullOrWhiteSpace(request.ClientName))
         {
-            client.ClientName = document.ClientName;
-        }
-        
-        if (document.ClientUri != null)
-        {
-            client.ClientUri = document.ClientUri.AbsoluteUri;
+            client.ClientName = request.ClientName;
         }
 
-        if (document.DefaultMaxAge.HasValue)
+        if (request.ClientUri != null)
         {
-            client.UserSsoLifetime = document.DefaultMaxAge;
+            client.ClientUri = request.ClientUri.AbsoluteUri;
         }
-        
+
+        if (request.DefaultMaxAge.HasValue)
+        {
+            client.UserSsoLifetime = request.DefaultMaxAge;
+        }
+
         // validation successful - return client
-        return Task.FromResult(new DynamicClientRegistrationValidationResult(client)); 
+        return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidatedRequest(client, request));
     }
 }

@@ -2,9 +2,9 @@ using System.Text.Json.Serialization;
 using IdentityModel;
 using IdentityModel.Jwk;
 
-namespace Duende.IdentityServer.Configuration;
+namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
-public class DynamicClientRegistrationDocument
+public record DynamicClientRegistrationRequest
 {
     /// <summary>
     /// List of redirection URI strings for use in redirect-based flows such as the authorization code and implicit flows.
@@ -70,25 +70,13 @@ public class DynamicClientRegistrationDocument
     /// <summary>
     /// Default maximum authentication age.
     /// </summary>
+    // TODO Check spec for semantics of this
     [JsonPropertyName(OidcConstants.ClientMetadata.DefaultMaxAge)]
     public int? DefaultMaxAge { get; set; }
-    
+
     /// <summary>
     /// Custom client metadata fields to include in the serialization.
     /// </summary>
     [JsonExtensionData]
     public IDictionary<string, object> Extensions { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
-    
-    ///////////////////////////////
-    /// output only fields
-    ///////////////////////////////
-    
-    [JsonPropertyName("client_id")]
-    public string ClientId { get; set; }
-    
-    [JsonPropertyName("client_secret")]
-    public string? ClientSecret { get; set; }
-
-    [JsonPropertyName("client_secret_expires_at")]
-    public long? ClientSecretExpiresAt { get; set; }
 }
