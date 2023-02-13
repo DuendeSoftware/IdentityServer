@@ -75,22 +75,27 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _events = events;
     }
 
-    /// <summary>
-    /// Validates the request.
-    /// </summary>
-    /// <param name="parameters">The parameters.</param>
-    /// <param name="clientValidationResult">The client validation result.</param>
-    /// <returns></returns>
-    /// <exception cref="System.ArgumentNullException">
-    /// parameters
-    /// or
-    /// client
-    /// </exception>
-    public async Task<TokenRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
+    /// <inheritdoc/>
+    public Task<TokenRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
+    {
+        return ValidateRequestAsync(new TokenRequestValidationContext
+        {
+            RequestParameters = parameters,
+            ClientValidationResult = clientValidationResult
+        });
+    }
+
+    /// <inheritdoc/>
+    public async Task<TokenRequestValidationResult> ValidateRequestAsync(TokenRequestValidationContext context)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity("TokenRequestValidator.ValidateRequest");
         
         _logger.LogDebug("Start token request validation");
+
+        if (context == null) throw new ArgumentNullException(nameof(context));
+
+        var parameters = context.RequestParameters;
+        var clientValidationResult = context.ClientValidationResult;
 
         _validatedRequest = new ValidatedTokenRequest
         {
@@ -159,6 +164,14 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
         _validatedRequest.RequestedResourceIndicator = resourceIndicators.SingleOrDefault();
 
+        //////////////////////////////////////////////////////////
+        // DPoP
+        //////////////////////////////////////////////////////////
+        // TODO: IdentityModel
+        if (context.RequestHeaders.TryGetValue("DPoP", out var dpopHeader))
+        {
+
+        }
 
         //////////////////////////////////////////////////////////
         // run specific logic for grants

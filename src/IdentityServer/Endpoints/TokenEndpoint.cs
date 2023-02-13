@@ -95,7 +95,14 @@ internal class TokenEndpoint : IEndpointHandler
         // validate request
         var form = (await context.Request.ReadFormAsync()).AsNameValueCollection();
         _logger.LogTrace("Calling into token request validator: {type}", _requestValidator.GetType().FullName);
-        var requestResult = await _requestValidator.ValidateRequestAsync(form, clientResult);
+
+        var requestContext = new TokenRequestValidationContext
+        { 
+            RequestParameters = form, 
+            ClientValidationResult = clientResult,
+            RequestHeaders = new HeaderCollection(context.Request.Headers)
+        };
+        var requestResult = await _requestValidator.ValidateRequestAsync(requestContext);
 
         if (requestResult.IsError)
         {

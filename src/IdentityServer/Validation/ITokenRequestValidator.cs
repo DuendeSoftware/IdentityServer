@@ -12,11 +12,14 @@ namespace Duende.IdentityServer.Validation;
 /// </summary>
 public interface ITokenRequestValidator
 {
+    // TODO: can we remove? this was not designed to be replaced. can mark with obsolete and remove in v7.0?
     /// <summary>
     /// Validates the request.
     /// </summary>
-    /// <param name="parameters">The parameters.</param>
-    /// <param name="clientValidationResult">The client validation result.</param>
-    /// <returns></returns>
     Task<TokenRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult);
+
+    /// <summary>
+    /// Validates the request.
+    /// </summary>
+    Task<TokenRequestValidationResult> ValidateRequestAsync(TokenRequestValidationContext context) => ValidateRequestAsync(context.RequestParameters, context.ClientValidationResult);
 }
