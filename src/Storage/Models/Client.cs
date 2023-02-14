@@ -117,6 +117,11 @@ public class Client
     public bool AllowAccessTokensViaBrowser { get; set; } = false;
 
     /// <summary>
+    /// Specifies whether a DPoP (Demonstrating Proof-of-Possession) token is requied to be used by this client (defaults to <c>false</c>).
+    /// </summary>
+    public bool RequireDPoP { get; set; }
+
+    /// <summary>
     /// Specifies allowed URIs to return tokens or authorization codes to
     /// </summary>
     public ICollection<string> RedirectUris { get; set; } = new HashSet<string>();

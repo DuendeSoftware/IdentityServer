@@ -215,7 +215,6 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IUserCodeGenerator, NumericUserCodeGenerator>();
         builder.Services.TryAddTransient<ILogoutNotificationService, LogoutNotificationService>();
         builder.Services.TryAddTransient<IBackChannelLogoutService, DefaultBackChannelLogoutService>();
-        builder.Services.TryAddTransient<IResourceValidator, DefaultResourceValidator>();
         builder.Services.TryAddTransient<IScopeParser, DefaultScopeParser>();
         builder.Services.TryAddTransient<ISessionCoordinationService, DefaultSessionCoordinationService>();
 
@@ -297,7 +296,9 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IDeviceAuthorizationRequestValidator, DeviceAuthorizationRequestValidator>();
         builder.Services.TryAddTransient<IDeviceCodeValidator, DeviceCodeValidator>();
         builder.Services.TryAddTransient<IBackchannelAuthenticationRequestIdValidator, BackchannelAuthenticationRequestIdValidator>();
-            
+        builder.Services.TryAddTransient<IResourceValidator, DefaultResourceValidator>();
+        builder.Services.TryAddTransient<IDPoPProofValidator, DefaultDPoPProofValidator>();
+
         builder.Services.TryAddTransient<IBackchannelAuthenticationRequestValidator, BackchannelAuthenticationRequestValidator>();
 
         // optional

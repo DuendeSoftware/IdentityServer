@@ -380,6 +380,12 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
             entries.Add(OidcConstants.Discovery.BackchannelUserCodeParameterSupported, true);
         }
 
+        if (Options.Endpoints.EnableTokenEndpoint)
+        {
+            // TODO: IdentityModel
+            entries.Add("dpop_signing_alg_values_supported", new[] { IdentityServerConstants.SupportedDPoPSigningAlgorithms });
+        }
+
         // custom entries
         if (!IEnumerableExtensions.IsNullOrEmpty(Options.Discovery.CustomEntries))
         {

@@ -31,6 +31,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
     private readonly IResourceValidator _resourceValidator;
     private readonly IResourceStore _resourceStore;
     private readonly IRefreshTokenService _refreshTokenService;
+    private readonly IDPoPProofValidator _dPoPProofValidator;
     private readonly IEventService _events;
     private readonly IResourceOwnerPasswordValidator _resourceOwnerValidator;
     private readonly IProfileService _profile;
@@ -54,6 +55,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         IResourceValidator resourceValidator,
         IResourceStore resourceStore,
         IRefreshTokenService refreshTokenService,
+        IDPoPProofValidator dPoPProofValidator,
         IEventService events, 
         ISystemClock clock, 
         ILogger<TokenRequestValidator> logger)
@@ -72,6 +74,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _resourceValidator = resourceValidator;
         _resourceStore = resourceStore;
         _refreshTokenService = refreshTokenService;
+        _dPoPProofValidator = dPoPProofValidator;
         _events = events;
     }
 
@@ -100,11 +103,11 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _validatedRequest = new ValidatedTokenRequest
         {
             IssuerName = await _issuerNameService.GetCurrentAsync(),
-            Raw = parameters ?? throw new ArgumentNullException(nameof(parameters)),
+            Raw = parameters ?? throw new ArgumentNullException(nameof(context.RequestParameters)),
             Options = _options
         };
 
-        if (clientValidationResult == null) throw new ArgumentNullException(nameof(clientValidationResult));
+        if (clientValidationResult == null) throw new ArgumentNullException(nameof(context.ClientValidationResult));
 
         _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
 
@@ -168,9 +171,33 @@ internal class TokenRequestValidator : ITokenRequestValidator
         // DPoP
         //////////////////////////////////////////////////////////
         // TODO: IdentityModel
-        if (context.RequestHeaders.TryGetValue("DPoP", out var dpopHeader))
+        if (context.RequestHeaders.TryGetValues("DPoP", out var dpopHeader))
         {
+            if (dpopHeader.Count() > 1)
+            {
+                LogError("Too many DPoP headers provided.");
+                // TODO: IdentityModel
+                return Invalid("invalid_dpop_proof", "Too many DPoP headers provided.");
+            }
 
+            var dpopContext = new DPoPProofValidatonContext
+            {
+                ProofTooken = dpopHeader.Single(),
+            };
+            var dpopResult = await _dPoPProofValidator.ValidateAsync(dpopContext);
+            if (dpopResult.IsError)
+            {
+                LogError(dpopResult.ErrorDescription ?? dpopResult.Error);
+                return Invalid(dpopResult.Error, dpopResult.ErrorDescription);
+            }
+
+            _validatedRequest.Confirmation = dpopResult.CreateThumbprintCnf();
+        }
+        else if (_validatedRequest.Client.RequireDPoP)
+        {
+            LogError("Client requires DPoP and a DPoP header value was not provided.");
+            // TODO: IdentityModel
+            return Invalid("invalid_dpop_proof", "Client requires DPoP and a DPoP header value was not provided.");
         }
 
         //////////////////////////////////////////////////////////

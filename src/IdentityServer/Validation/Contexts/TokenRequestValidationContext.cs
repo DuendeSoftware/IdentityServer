@@ -2,13 +2,10 @@
 // See LICENSE in the project root for license information.
 
 
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -45,7 +42,7 @@ public interface IHeaderCollection
     ///     This parameter is passed uninitialized.
     /// Returns true if the collection contains an element with the specified key; otherwise, false.
     /// </summary>
-    bool TryGetValue(string key, out string value);
+    bool TryGetValues(string key, out string[] values);
 }
 
 internal class HeaderCollection : IHeaderCollection
@@ -57,19 +54,19 @@ internal class HeaderCollection : IHeaderCollection
         _headers = headers ?? throw new ArgumentNullException(nameof(headers));
     }
 
-    public bool TryGetValue(string key, out string value)
+    public bool TryGetValues(string key, out string[] values)
     {
-        var result = _headers.TryGetValue(key, out var values);
-        value = values;
+        var result = _headers.TryGetValue(key, out var value);
+        values = value.ToArray();
         return result;
     }
 }
 
 internal class EmptyHeaderCollection : IHeaderCollection
 {
-    public bool TryGetValue(string key, out string value)
+    public bool TryGetValues(string key, out string[] values)
     {
-        value = null;
+        values = Enumerable.Empty<string>().ToArray();
         return false;
     }
 }
