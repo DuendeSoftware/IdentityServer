@@ -259,10 +259,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return;
         }
 
-        if (result.Payload.TryGetValue("nonce", out var nonce))
-        {
-            result.Nonce = nonce as string;
-        }
         if (result.Payload.TryGetValue("iat", out var iat))
         {
             if (iat is int)
@@ -273,6 +269,18 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             {
                 result.IssuedAt = (long)iat;
             }
+        }
+
+        if (!result.IssuedAt.HasValue)
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Missing 'iat' value.";
+            return;
+        }
+
+        if (result.Payload.TryGetValue("nonce", out var nonce))
+        {
+            result.Nonce = nonce as string;
         }
 
         if (!result.IssuedAt.HasValue && String.IsNullOrEmpty(result.Nonce))
@@ -317,13 +325,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        if (!result.IssuedAt.HasValue)
-        {
-            result.IsError = true;
-            result.ErrorDescription = "Missing 'iat' value.";
-            return Task.CompletedTask;
-        }
-
         var now = Clock.UtcNow;
         // TODO: where do we define this interval?
         var start = now.Subtract(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
