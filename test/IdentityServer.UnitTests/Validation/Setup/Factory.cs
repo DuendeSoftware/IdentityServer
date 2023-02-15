@@ -127,7 +127,7 @@ internal static class Factory
             resourceValidator,
             resourceStore,
             refreshTokenService,
-            new DefaultDPoPProofValidator(options, new StubClock(), new LoggerFactory().CreateLogger< DefaultDPoPProofValidator >()),
+            new DefaultDPoPProofValidator(new MockServerUrls(), new StubClock(), new LoggerFactory().CreateLogger< DefaultDPoPProofValidator >()),
             new TestEventService(),
             new StubClock(),
             TestLogger.Create<TokenRequestValidator>());

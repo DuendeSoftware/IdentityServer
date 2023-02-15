@@ -28,7 +28,7 @@ public class DPoPProofValidatonContext
     /// <summary>
     /// The DPoP proof token to validate.
     /// </summary>
-    public string ProofTooken { get; internal set; }
+    public string ProofToken { get; internal set; }
 }
 
 /// <summary>
@@ -40,6 +40,16 @@ public class DPoPProofValidatonResult : ValidationResult
     /// The JWK thumbprint from the validated DPoP proof token.
     /// </summary>
     public string JsonWebKeyThumbprint { get; set; }
+
+    /// <summary>
+    /// The payload of the DPoP proof token.
+    /// </summary>
+    public IDictionary<string, object> ProofPayload { get; internal set; }
+
+    /// <summary>
+    /// The serialized JWK from the validated DPoP proof token.
+    /// </summary>
+    public string JsonWebKey { get; set; }
 
     /// <summary>
     /// Create the "cnf" value from the JsonWebKeyThumbprint value;

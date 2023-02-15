@@ -182,7 +182,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
             var dpopContext = new DPoPProofValidatonContext
             {
-                ProofTooken = dpopHeader.Single(),
+                ProofToken = dpopHeader.Single(),
             };
             var dpopResult = await _dPoPProofValidator.ValidateAsync(dpopContext);
             if (dpopResult.IsError)
