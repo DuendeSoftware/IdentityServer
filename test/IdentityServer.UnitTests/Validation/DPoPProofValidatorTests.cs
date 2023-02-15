@@ -371,9 +371,9 @@ public class DPoPProofValidatorTests
         result.Error.Should().Be("invalid_dpop_proof");
     }
 
-    [Fact(Skip = "no nonce support yet")]
+    [Fact]
     [Trait("Category", Category)]
-    public async Task missing_iat_but_nonce_provided_dpop_jwt_should_pass_validation()
+    public async Task missing_iat_but_nonce_provided_dpop_jwt_should_still_fail_validation()
     {
         _payload.Remove("iat");
         _payload["nonce"] = "nonce";
@@ -382,6 +382,7 @@ public class DPoPProofValidatorTests
         var ctx = new DPoPProofValidatonContext { ProofToken = token };
         var result = await _subject.ValidateAsync(ctx);
 
-        result.IsError.Should().BeFalse();
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
     }
 }
