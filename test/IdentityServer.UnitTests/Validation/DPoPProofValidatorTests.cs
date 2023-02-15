@@ -24,7 +24,8 @@ public class DPoPProofValidatorTests
 
     private IdentityServerOptions _options = new IdentityServerOptions();
     private StubClock _clock = new StubClock();
-    
+    private MockReplayCache _mockReplayCache = new MockReplayCache();
+
     private DateTime _now = new DateTime(2020, 3, 10, 9, 0, 0, DateTimeKind.Utc);
     public DateTime UtcNow
     {
@@ -46,14 +47,19 @@ public class DPoPProofValidatorTests
     public DPoPProofValidatorTests()
     {
         _clock.UtcNowFunc = () => UtcNow;
-        _subject = new DefaultDPoPProofValidator(new MockServerUrls() { BasePath = "/", Origin = "https://identityserver" }, _clock, new LoggerFactory().CreateLogger<DefaultDPoPProofValidator>());
+        _subject = new DefaultDPoPProofValidator(
+            _options, 
+            new MockServerUrls() { BasePath = "/", Origin = "https://identityserver" },
+            _mockReplayCache,
+            _clock, 
+            new LoggerFactory().CreateLogger<DefaultDPoPProofValidator>());
 
         _payload = new Dictionary<string, object>
         {
             { "jti", "random" },
             { "htm", "POST" },
             { "htu", "https://identityserver/connect/token" },
-            { "iat", _clock.UtcNow.UtcTicks },
+            { "iat", _clock.UtcNow.ToUnixTimeSeconds() },
         };
 
         CreateHeaderValuesFromPublicKey();
@@ -104,6 +110,31 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task valid_dpop_jwt_should_pass_validation()
+    {
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeFalse();
+        result.JsonWebKeyThumbprint.Should().Be(_JKT);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task replayed_valid_dpop_jwt_should_fail_validation()
+    {
+        _mockReplayCache.Exists = true;
+
+        var token = CreateDPoPProofToken();
+
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+        result.IsError.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task empty_string_should_fail_validation()
     {
         var popToken = "";
@@ -123,18 +154,6 @@ public class DPoPProofValidatorTests
 
         result.IsError.Should().BeTrue();
         result.Error.Should().Be("invalid_dpop_proof");
-    }
-
-    [Fact]
-    [Trait("Category", Category)]
-    public async Task valid_dpop_jwt_should_pass_validation()
-    {
-        var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
-        var result = await _subject.ValidateAsync(ctx);
-
-        result.IsError.Should().BeFalse();
-        result.JsonWebKeyThumbprint.Should().Be(_JKT);
     }
 
     [Fact]
@@ -169,7 +188,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task jwk_with_private_key_dpop_jwt_should_fail_validation()
+    public async Task private_key_dpop_jwt_should_fail_validation()
     {
         _publicJWK = _privateJWK;
         CreateHeaderValuesFromPublicKey();
@@ -184,7 +203,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task jwk_with_malformed_typ_dpop_jwt_should_fail_validation()
+    public async Task malformed_typ_dpop_jwt_should_fail_validation()
     {
         _header["typ"] = true;
 
@@ -198,7 +217,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task jwk_with_missing_jwk_dpop_jwt_should_fail_validation()
+    public async Task missing_jwk_dpop_jwt_should_fail_validation()
     {
         _header.Remove("jwk");
 
@@ -238,5 +257,131 @@ public class DPoPProofValidatorTests
         
         result.IsError.Should().BeTrue();
         result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task missing_jti_dpop_jwt_should_fail_validation()
+    {
+        _payload.Remove("jti");
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task missing_htm_dpop_jwt_should_fail_validation()
+    {
+        _payload.Remove("htm");
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task missing_htu_dpop_jwt_should_fail_validation()
+    {
+        _payload.Remove("htu");
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task invalid_htu_dpop_jwt_should_fail_validation()
+    {
+        _payload["htu"] = "https://identityserver";
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task missing_iat_dpop_jwt_should_fail_validation()
+    {
+        _payload.Remove("iat");
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task malformed_iat_dpop_jwt_should_fail_validation()
+    {
+        _payload["iat"] = "invalid";
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task too_old_iat_dpop_jwt_should_fail_validation()
+    {
+        _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task too_new_iat_dpop_jwt_should_fail_validation()
+    {
+        _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact(Skip = "no nonce support yet")]
+    [Trait("Category", Category)]
+    public async Task missing_iat_but_nonce_provided_dpop_jwt_should_pass_validation()
+    {
+        _payload.Remove("iat");
+        _payload["nonce"] = "nonce";
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeFalse();
     }
 }

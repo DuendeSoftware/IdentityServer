@@ -23,10 +23,22 @@ namespace Duende.IdentityServer.Validation;
 /// </summary>
 public class DefaultDPoPProofValidator : IDPoPProofValidator
 {
+    const string ReplayCachePurpose = "DPoPReplay";
+
+    /// <summary>
+    /// The options
+    /// </summary>
+    protected readonly IdentityServerOptions Options;
+
     /// <summary>
     /// The clock
     /// </summary>
     protected readonly ISystemClock Clock;
+
+    /// <summary>
+    /// The replay cache
+    /// </summary>
+    protected IReplayCache ReplayCache;
 
     /// <summary>
     /// The server urls service
@@ -42,11 +54,15 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// ctor
     /// </summary>
     public DefaultDPoPProofValidator(
+        IdentityServerOptions options,
         IServerUrls server,
+        IReplayCache replayCache,
         ISystemClock clock,
         ILogger<DefaultDPoPProofValidator> logger)
     {
+        Options = options;
         Clock = clock;
+        ReplayCache = replayCache;
         ServerUrls = server;
         Logger = logger;
     }
@@ -84,14 +100,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             {
                 Logger.LogDebug("Failed to validate DPoP payload");
                 return result;
-            }
-
-            await ValidateFreshnessAsync(context, result);
-            if (result.IsError)
-            {
-                Logger.LogDebug("Failed to validate DPoP token freshness");
-                return result;
-
             }
 
             Logger.LogDebug("Successfully validated DPoP proof token with thumbprint: {jkt}", result.JsonWebKeyThumbprint);
@@ -187,14 +195,14 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         try
         {
             var key = new Microsoft.IdentityModel.Tokens.JsonWebKey(result.JsonWebKey);
-            var tvp = new Microsoft.IdentityModel.Tokens.TokenValidationParameters 
+            var tvp = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateAudience = false,
                 ValidateIssuer = false,
                 ValidateLifetime = false,
                 IssuerSigningKey = key,
             };
-            
+
             var handler = new JsonWebTokenHandler();
             tokenValidationResult = handler.ValidateToken(context.ProofToken, tvp);
         }
@@ -214,7 +222,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return Task.CompletedTask;
         }
 
-        result.ProofPayload = tokenValidationResult.Claims;
+        result.Payload = tokenValidationResult.Claims;
 
         return Task.CompletedTask;
     }
@@ -222,30 +230,86 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// <summary>
     /// Validates the payload.
     /// </summary>
-    protected virtual Task ValidatePayloadAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
+    protected virtual async Task ValidatePayloadAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        if (!result.ProofPayload.TryGetValue(JwtClaimTypes.JwtId, out var jti) || jti is not string)
+        if (result.Payload.TryGetValue(JwtClaimTypes.JwtId, out var jti))
+        {
+            result.TokenId = jti as string;
+        }
+
+        if (String.IsNullOrEmpty(result.TokenId))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'jti' value.";
+            return;
         }
 
-        // TODO: validate jti against replay cache
-
-        if (!result.ProofPayload.TryGetValue("htm", out var htm) || !"POST".Equals(htm))
+        if (!result.Payload.TryGetValue("htm", out var htm) || !"POST".Equals(htm))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htm' value.";
+            return;
         }
 
         var tokenUrl = ServerUrls.BaseUrl.EnsureTrailingSlash() + ProtocolRoutePaths.Token;
-        if (!result.ProofPayload.TryGetValue("htu", out var htu) || !tokenUrl.Equals(htu))
+        if (!result.Payload.TryGetValue("htu", out var htu) || !tokenUrl.Equals(htu))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htu' value.";
+            return;
         }
 
-        return Task.CompletedTask;
+        if (result.Payload.TryGetValue("nonce", out var nonce))
+        {
+            result.Nonce = nonce as string;
+        }
+        if (result.Payload.TryGetValue("iat", out var iat))
+        {
+            if (iat is int)
+            {
+                result.IssuedAt = (int)iat;
+            }
+            if (iat is long)
+            {
+                result.IssuedAt = (long)iat;
+            }
+        }
+
+        if (!result.IssuedAt.HasValue && String.IsNullOrEmpty(result.Nonce))
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Must provide either 'nonce' or 'iat' value.";
+            return;
+        }
+
+        await ValidateReplayAsync(context, result);
+        if (result.IsError)
+        {
+            Logger.LogDebug("Detected replay of DPoP token");
+            return;
+        }
+
+        await ValidateFreshnessAsync(context, result);
+        if (result.IsError)
+        {
+            Logger.LogDebug("Failed to validate DPoP token freshness");
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Validates is the token has been replayed.
+    /// </summary>
+    protected virtual async Task ValidateReplayAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
+    {
+        if (await ReplayCache.ExistsAsync(ReplayCachePurpose, result.TokenId))
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Detected DPoP proof token replay.";
+        }
+
+        // TODO: where do we define this interval? 
+        await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, Clock.UtcNow.AddMinutes(5));
     }
 
     /// <summary>
@@ -253,6 +317,24 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
+        if (!result.IssuedAt.HasValue)
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Missing 'iat' value.";
+            return Task.CompletedTask;
+        }
+
+        var now = Clock.UtcNow;
+        // TODO: where do we define this interval?
+        var start = now.Subtract(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
+        var end = now.Add(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
+        if (result.IssuedAt.Value < start || result.IssuedAt.Value > end)
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Invalid 'iat' value.";
+            return Task.CompletedTask;
+        }
+
         return Task.CompletedTask;
     }
 }
