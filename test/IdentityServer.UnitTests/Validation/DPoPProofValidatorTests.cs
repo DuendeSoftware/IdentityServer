@@ -13,14 +13,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using UnitTests.Common;
-using UnitTests.Validation.Setup;
 using Xunit;
 
 namespace UnitTests.Validation;
 
 public class DPoPProofValidatorTests
 {
-    private const string Category = "DPoP validator";
+    private const string Category = "DPoP validator tests";
 
     private IdentityServerOptions _options = new IdentityServerOptions();
     private StubClock _clock = new StubClock();
@@ -158,7 +157,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task invalid_typ_dpop_jwt_should_fail_validation()
+    public async Task invalid_typ_should_fail_validation()
     {
         _header["typ"] = "JWT";
 
@@ -172,7 +171,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task invalid_alg_dpop_jwt_should_fail_validation()
+    public async Task invalid_alg_should_fail_validation()
     {
         var key = new SymmetricSecurityKey(IdentityModel.CryptoRandom.CreateRandomKey(32));
         _publicJWK = JsonSerializer.Serialize(key);
@@ -188,7 +187,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task private_key_dpop_jwt_should_fail_validation()
+    public async Task private_key_should_fail_validation()
     {
         _publicJWK = _privateJWK;
         CreateHeaderValuesFromPublicKey();
@@ -203,7 +202,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task malformed_typ_dpop_jwt_should_fail_validation()
+    public async Task malformed_typ_should_fail_validation()
     {
         _header["typ"] = true;
 
@@ -217,7 +216,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task missing_jwk_dpop_jwt_should_fail_validation()
+    public async Task missing_jwk_should_fail_validation()
     {
         _header.Remove("jwk");
 
@@ -231,7 +230,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task jwk_with_malformed_key_dpop_jwt_should_fail_validation()
+    public async Task jwk_with_malformed_key_should_fail_validation()
     {
         _header["jwk"] = "malformed";
         
@@ -245,7 +244,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task mismatched_key_dpop_jwt_should_fail_validation()
+    public async Task mismatched_key_should_fail_validation()
     {
         var key = CryptoHelper.CreateRsaSecurityKey();
         var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
@@ -261,7 +260,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task missing_jti_dpop_jwt_should_fail_validation()
+    public async Task missing_jti_should_fail_validation()
     {
         _payload.Remove("jti");
 
@@ -275,7 +274,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task missing_htm_dpop_jwt_should_fail_validation()
+    public async Task missing_htm_should_fail_validation()
     {
         _payload.Remove("htm");
 
@@ -289,7 +288,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task missing_htu_dpop_jwt_should_fail_validation()
+    public async Task missing_htu_should_fail_validation()
     {
         _payload.Remove("htu");
 
@@ -303,7 +302,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task invalid_htu_dpop_jwt_should_fail_validation()
+    public async Task invalid_htu_should_fail_validation()
     {
         _payload["htu"] = "https://identityserver";
 
@@ -317,7 +316,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task missing_iat_dpop_jwt_should_fail_validation()
+    public async Task missing_iat_should_fail_validation()
     {
         _payload.Remove("iat");
 
@@ -331,7 +330,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task malformed_iat_dpop_jwt_should_fail_validation()
+    public async Task malformed_iat_should_fail_validation()
     {
         _payload["iat"] = "invalid";
 
@@ -345,7 +344,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task too_old_iat_dpop_jwt_should_fail_validation()
+    public async Task too_old_iat_should_fail_validation()
     {
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
 
@@ -359,7 +358,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task too_new_iat_dpop_jwt_should_fail_validation()
+    public async Task too_new_iat_should_fail_validation()
     {
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
 
@@ -373,7 +372,7 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task missing_iat_but_nonce_provided_dpop_jwt_should_still_fail_validation()
+    public async Task missing_iat_but_nonce_provided_should_still_fail_validation()
     {
         _payload.Remove("iat");
         _payload["nonce"] = "nonce";
