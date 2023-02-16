@@ -430,6 +430,11 @@ internal class TokenValidator : ITokenValidator
                 ClaimValueTypes.Integer64)
         };
 
+        if (!String.IsNullOrEmpty(token.Confirmation))
+        {
+            claims.Add(new Claim(JwtClaimTypes.Confirmation, token.Confirmation, IdentityServerConstants.ClaimValueTypes.Json));
+        }
+
         foreach (var aud in token.Audiences)
         {
             claims.Add(new Claim(JwtClaimTypes.Audience, aud));

@@ -18,6 +18,12 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Linq;
+using System.Net;
+using Duende.IdentityServer;
+using IdentityModel;
+using CsQuery.ExtensionMethods.Internal;
+using Duende.IdentityServer.Configuration;
+using IdentityModel.Jwk;
 
 namespace IntegrationTests.Endpoints.Token;
 
@@ -61,6 +67,7 @@ public class DPoPTokenEndpointTests
                     new Secret("secret".Sha256()),
                 },
                 RedirectUris = { "https://client1/callback" },
+                RequirePkce = false,
                 AllowOfflineAccess = true,
                 AllowedScopes = new List<string> { "openid", "profile", "scope1" },
             },
@@ -68,7 +75,7 @@ public class DPoPTokenEndpointTests
 
         _mockPipeline.Users.Add(new TestUser
         {
-            SubjectId = "123",
+            SubjectId = "bob",
             Username = "bob",
             Password = "bob",
             Claims = new Claim[]
@@ -84,6 +91,14 @@ public class DPoPTokenEndpointTests
             new IdentityResources.Profile(),
             new IdentityResources.Email()
         });
+        _mockPipeline.ApiResources.Add(new ApiResource("api1") 
+        { 
+            Scopes = { "scope1" },
+            ApiSecrets = 
+            {
+                new Secret("secret".Sha256())
+            }
+        });
         _mockPipeline.ApiScopes.AddRange(new ApiScope[] {
             new ApiScope
             {
@@ -95,11 +110,27 @@ public class DPoPTokenEndpointTests
 
         _payload = new Dictionary<string, object>
         {
-            { "jti", "random" },
+            //{ "jti", CryptoRandom.CreateUniqueId() }, // added dynamically below in CreateDPoPProofToken
+            //{ "iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds() }, // added dynamically below in CreateDPoPProofToken
             { "htm", "POST" },
             { "htu", IdentityServerPipeline.TokenEndpoint },
-            { "iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds() },
         };
+
+        CreateHeaderValuesFromPublicKey();
+    }
+
+    void CreateNewDPoPKey()
+    {
+        var key = CryptoHelper.CreateRsaSecurityKey();
+        var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
+        _JKT = Base64UrlEncoder.Encode(key.ComputeJwkThumbprint());
+        _privateJWK = JsonSerializer.Serialize(jwk);
+        _publicJWK = JsonSerializer.Serialize(new
+        {
+            kty = jwk.Kty,
+            e = jwk.E,
+            n = jwk.N,
+        });
 
         CreateHeaderValuesFromPublicKey();
     }
@@ -141,9 +172,19 @@ public class DPoPTokenEndpointTests
 
     string CreateDPoPProofToken(string alg = "RS256", SecurityKey key = null)
     {
+        var payload = new Dictionary<string, object>(_payload);
+        if (!payload.ContainsKey("jti"))
+        {
+            payload.Add("jti", CryptoRandom.CreateUniqueId());
+        }
+        if (!payload.ContainsKey("iat"))
+        {
+            payload.Add("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        }
+
         key ??= new Microsoft.IdentityModel.Tokens.JsonWebKey(_privateJWK);
         var handler = new JsonWebTokenHandler() { SetDefaultTimesOnTokenCreation = false };
-        var token = handler.CreateToken(JsonSerializer.Serialize(_payload), new SigningCredentials(key, alg), _header);
+        var token = handler.CreateToken(JsonSerializer.Serialize(payload), new SigningCredentials(key, alg), _header);
         return token;
     }
 
@@ -155,9 +196,13 @@ public class DPoPTokenEndpointTests
         var token = handler.ReadJwtToken(tokenResponse.AccessToken);
         return token.Claims;
     }
-    private string GetJKT(TokenResponse tokenResponse)
+    private string GetJKTFromAccessToken(TokenResponse tokenResponse)
     {
         var claims = ParseAccessTokenClaims(tokenResponse);
+        return GetJKTFromCnfClaim(claims);
+    }
+    private string GetJKTFromCnfClaim(IEnumerable<Claim> claims)
+    {
         var cnf = claims.SingleOrDefault(x => x.Type == "cnf")?.Value;
         if (cnf != null)
         {
@@ -184,7 +229,7 @@ public class DPoPTokenEndpointTests
         var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
         response.IsError.Should().BeFalse();
         response.TokenType.Should().Be("DPoP");
-        var jkt = GetJKT(response);
+        var jkt = GetJKTFromAccessToken(response);
         jkt.Should().Be(_JKT);
     }
 
@@ -243,5 +288,259 @@ public class DPoPTokenEndpointTests
         var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
         response.IsError.Should().BeTrue();
         response.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task valid_dpop_request_should_return_bound_refresh_token()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            responseMode: "query",
+            scope: "openid scope1 offline_access",
+            redirectUri: "https://client1/callback");
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+
+        var authorization = new AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeFalse();
+
+        var codeRequest = new AuthorizationCodeTokenRequest {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = authorization.Code,
+            RedirectUri = "https://client1/callback",
+        };
+        codeRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
+        codeResponse.IsError.Should().BeFalse();
+        codeResponse.TokenType.Should().Be("DPoP");
+        GetJKTFromAccessToken(codeResponse).Should().Be(_JKT);
+
+        var rtRequest = new RefreshTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            RefreshToken = codeResponse.RefreshToken
+        };
+        rtRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+        
+        var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
+        rtResponse.IsError.Should().BeFalse();
+        rtResponse.TokenType.Should().Be("DPoP");
+        GetJKTFromAccessToken(rtResponse).Should().Be(_JKT);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task different_dpop_key_for_refresh_token_request_should_fail()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            responseMode: "query",
+            scope: "openid scope1 offline_access",
+            redirectUri: "https://client1/callback");
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+
+        var authorization = new AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeFalse();
+
+        var codeRequest = new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = authorization.Code,
+            RedirectUri = "https://client1/callback",
+        };
+        codeRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
+        codeResponse.IsError.Should().BeFalse();
+        codeResponse.TokenType.Should().Be("DPoP");
+        GetJKTFromAccessToken(codeResponse).Should().Be(_JKT);
+
+        var rtRequest = new RefreshTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            RefreshToken = codeResponse.RefreshToken
+        };
+
+        var key = CryptoHelper.CreateRsaSecurityKey();
+        var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
+        _privateJWK = JsonSerializer.Serialize(jwk);
+
+        CreateNewDPoPKey();
+        rtRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
+        rtResponse.IsError.Should().BeTrue();
+        rtResponse.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task missing_proof_token_when_required_on_refresh_token_request_should_fail()
+    {
+        _dpopClient.RequireDPoP = true;
+
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            responseMode: "query",
+            scope: "openid scope1 offline_access",
+            redirectUri: "https://client1/callback");
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+
+        var authorization = new AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeFalse();
+
+        var codeRequest = new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = authorization.Code,
+            RedirectUri = "https://client1/callback",
+        };
+        codeRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
+        codeResponse.IsError.Should().BeFalse();
+        codeResponse.TokenType.Should().Be("DPoP");
+        GetJKTFromAccessToken(codeResponse).Should().Be(_JKT);
+
+        var rtRequest = new RefreshTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            RefreshToken = codeResponse.RefreshToken
+        };
+
+        var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
+        rtResponse.IsError.Should().BeTrue();
+        rtResponse.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task valid_dpop_request_using_reference_token_at_introspection_should_return_binding_information()
+    {
+        _dpopClient.AccessTokenType = AccessTokenType.Reference;
+
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            responseMode: "query",
+            scope: "openid scope1 offline_access",
+            redirectUri: "https://client1/callback");
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+
+        var authorization = new AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeFalse();
+
+        var codeRequest = new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = authorization.Code,
+            RedirectUri = "https://client1/callback",
+        };
+        codeRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
+
+        var introspectionRequest = new TokenIntrospectionRequest 
+        {
+            Address = IdentityServerPipeline.IntrospectionEndpoint,
+            ClientId = "api1",
+            ClientSecret = "secret",
+            Token = codeResponse.AccessToken,
+        };
+        var introspectionResponse = await _mockPipeline.BackChannelClient.IntrospectTokenAsync(introspectionRequest);
+        introspectionResponse.IsError.Should().BeFalse();
+        GetJKTFromCnfClaim(introspectionResponse.Claims).Should().Be(_JKT);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task valid_dpop_request_using_jwt_at_introspection_should_return_binding_information()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            responseMode: "query",
+            scope: "openid scope1 offline_access",
+            redirectUri: "https://client1/callback");
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+
+        var authorization = new AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeFalse();
+
+        var codeRequest = new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = authorization.Code,
+            RedirectUri = "https://client1/callback",
+        };
+        codeRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
+
+        var introspectionRequest = new TokenIntrospectionRequest
+        {
+            Address = IdentityServerPipeline.IntrospectionEndpoint,
+            ClientId = "api1",
+            ClientSecret = "secret",
+            Token = codeResponse.AccessToken,
+        };
+        var introspectionResponse = await _mockPipeline.BackChannelClient.IntrospectTokenAsync(introspectionRequest);
+        introspectionResponse.IsError.Should().BeFalse();
+        GetJKTFromCnfClaim(introspectionResponse.Claims).Should().Be(_JKT);
     }
 }
