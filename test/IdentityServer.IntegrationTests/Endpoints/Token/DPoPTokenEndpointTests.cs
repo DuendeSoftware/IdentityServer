@@ -340,7 +340,7 @@ public class DPoPTokenEndpointTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task when_client_authenticates_then_dpop_proof_should_be_optional_on_token_renewal()
+    public async Task when_client_requires_authentication_then_dpop_proof_should_be_optional_on_token_renewal()
     {
         await _mockPipeline.LoginAsync("bob");
 
@@ -392,7 +392,7 @@ public class DPoPTokenEndpointTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task when_client_does_not_authenticate_then_dpop_proof_should_be_required_on_token_renewal()
+    public async Task when_client_does_not_require_authentication_then_dpop_proof_should_be_required_on_token_renewal()
     {
         _dpopClient.RequireClientSecret = false;
 
