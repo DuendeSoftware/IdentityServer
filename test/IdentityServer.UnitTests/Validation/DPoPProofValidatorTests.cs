@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,8 @@ public class DPoPProofValidatorTests
             return DateTime.UtcNow;
         }
     }
+
+    Client _client = new Client { ClientId = "client1" };
 
     Dictionary<string, object> _header;
     Dictionary<string, object> _payload;
@@ -101,7 +104,7 @@ public class DPoPProofValidatorTests
 
     string CreateDPoPProofToken(string alg = "RS256", SecurityKey key = null)
     {
-        key ??= new JsonWebKey(_privateJWK);
+        key ??= new Microsoft.IdentityModel.Tokens.JsonWebKey(_privateJWK);
         var handler = new JsonWebTokenHandler() { SetDefaultTimesOnTokenCreation = false };
         var token = handler.CreateToken(JsonSerializer.Serialize(_payload), new SigningCredentials(key, alg), _header);
         return token;
@@ -112,7 +115,7 @@ public class DPoPProofValidatorTests
     public async Task valid_dpop_jwt_should_pass_validation()
     {
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeFalse();
@@ -127,7 +130,7 @@ public class DPoPProofValidatorTests
 
         var token = CreateDPoPProofToken();
 
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
         result.IsError.Should().BeTrue();
     }
@@ -137,7 +140,7 @@ public class DPoPProofValidatorTests
     public async Task empty_string_should_fail_validation()
     {
         var popToken = "";
-        var ctx = new DPoPProofValidatonContext { ProofToken = popToken };
+        var ctx = new DPoPProofValidatonContext { ProofToken = popToken, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
         result.IsError.Should().BeTrue();
         result.Error.Should().Be("invalid_dpop_proof");
@@ -148,7 +151,7 @@ public class DPoPProofValidatorTests
     public async Task malformed_dpop_jwt_should_fail_validation()
     {
         var token = "malformed";
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -162,7 +165,7 @@ public class DPoPProofValidatorTests
         _header["typ"] = "JWT";
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -178,7 +181,7 @@ public class DPoPProofValidatorTests
         CreateHeaderValuesFromPublicKey();
         var token = CreateDPoPProofToken("HS256", key);
 
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
         
         result.IsError.Should().BeTrue();
@@ -193,7 +196,7 @@ public class DPoPProofValidatorTests
         CreateHeaderValuesFromPublicKey();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -207,7 +210,7 @@ public class DPoPProofValidatorTests
         _header["typ"] = true;
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -221,7 +224,7 @@ public class DPoPProofValidatorTests
         _header.Remove("jwk");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -235,7 +238,7 @@ public class DPoPProofValidatorTests
         _header["jwk"] = "malformed";
         
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -251,7 +254,7 @@ public class DPoPProofValidatorTests
         _privateJWK = JsonSerializer.Serialize(jwk);
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
         
         result.IsError.Should().BeTrue();
@@ -265,7 +268,7 @@ public class DPoPProofValidatorTests
         _payload.Remove("jti");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -279,7 +282,7 @@ public class DPoPProofValidatorTests
         _payload.Remove("htm");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -293,7 +296,7 @@ public class DPoPProofValidatorTests
         _payload.Remove("htu");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -307,7 +310,7 @@ public class DPoPProofValidatorTests
         _payload["htu"] = "https://identityserver";
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -321,7 +324,7 @@ public class DPoPProofValidatorTests
         _payload.Remove("iat");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -335,7 +338,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = "invalid";
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -349,7 +352,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -363,7 +366,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -378,7 +381,7 @@ public class DPoPProofValidatorTests
         _payload["nonce"] = "nonce";
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();

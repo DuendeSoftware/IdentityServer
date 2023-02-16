@@ -1,7 +1,8 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
+using IdentityModel;
 using System.Collections.Generic;
 
 namespace Duende.IdentityServer.ResponseHandling;
@@ -11,6 +12,11 @@ namespace Duende.IdentityServer.ResponseHandling;
 /// </summary>
 public class TokenResponse
 {
+    /// <summary>
+    /// The type of access token, used to populate the token_type response parameter.
+    /// </summary>
+    public string AccessTokenType { get; set; }
+
     /// <summary>
     /// Gets or sets the identity token.
     /// </summary>

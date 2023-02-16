@@ -106,6 +106,11 @@ public class ValidatedRequest
     public string Confirmation { get; set; }
 
     /// <summary>
+    /// Flag to indicate if this request was made using a DPoP proof token.
+    /// </summary>
+    public bool ContainsDPoPProofToken { get; set; }
+
+    /// <summary>
     /// Gets or sets the client ID that should be used for the current request (this is useful for token exchange scenarios)
     /// </summary>
     /// <value>

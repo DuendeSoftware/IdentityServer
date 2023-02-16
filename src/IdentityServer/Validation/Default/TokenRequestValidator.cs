@@ -192,6 +192,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
                 return Invalid(dpopResult.Error, dpopResult.ErrorDescription);
             }
 
+            _validatedRequest.ContainsDPoPProofToken = true;
             _validatedRequest.Confirmation = dpopResult.CreateThumbprintCnf();
         }
         else if (_validatedRequest.Client.RequireDPoP)

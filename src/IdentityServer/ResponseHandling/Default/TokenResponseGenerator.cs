@@ -150,6 +150,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         var response = new TokenResponse
         {
             AccessToken = accessToken,
+            AccessTokenType = request.ValidatedRequest.ContainsDPoPProofToken ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType,
             AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
             Custom = request.CustomResponse,
             Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
@@ -242,6 +243,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         {
             IdentityToken = await CreateIdTokenFromRefreshTokenRequestAsync(request.ValidatedRequest, accessTokenString),
             AccessToken = accessTokenString,
+            AccessTokenType = request.ValidatedRequest.ContainsDPoPProofToken ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType, 
             AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
             RefreshToken = handle,
             Custom = request.CustomResponse,
@@ -265,6 +267,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         var response = new TokenResponse
         {
             AccessToken = accessToken,
+            AccessTokenType = request.ValidatedRequest.ContainsDPoPProofToken ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType,
             AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
             Custom = request.CustomResponse,
             Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
@@ -327,6 +330,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         var response = new TokenResponse
         {
             AccessToken = accessToken,
+            AccessTokenType = request.ValidatedRequest.ContainsDPoPProofToken ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType,
             AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
             Custom = request.CustomResponse,
             Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
@@ -394,6 +398,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         var response = new TokenResponse
         {
             AccessToken = accessToken,
+            AccessTokenType = validationResult.ValidatedRequest.ContainsDPoPProofToken ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType,
             AccessTokenLifetime = validationResult.ValidatedRequest.AccessTokenLifetime,
             Custom = validationResult.CustomResponse,
             Scope = validationResult.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -33,7 +33,7 @@ internal class TokenResult : IEndpointResult
             access_token = Response.AccessToken,
             refresh_token = Response.RefreshToken,
             expires_in = Response.AccessTokenLifetime,
-            token_type = OidcConstants.TokenResponse.BearerTokenType,
+            token_type = Response.AccessTokenType,
             scope = Response.Scope,
                 
             Custom = Response.Custom

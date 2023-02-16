@@ -15,6 +15,7 @@ using IdentityModel;
 using System.Linq;
 using Duende.IdentityServer.Services;
 using static Duende.IdentityServer.Constants;
+using Duende.IdentityServer.Models;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -310,14 +311,17 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual async Task ValidateReplayAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        if (await ReplayCache.ExistsAsync(ReplayCachePurpose, result.TokenId))
+        // TODO: should this use the client id? should we hash the incoming value?
+        var tokenId = $"{context.Client.ClientId.Sha256()}:{result.TokenId.Sha256()}";
+
+        if (await ReplayCache.ExistsAsync(ReplayCachePurpose, tokenId))
         {
             result.IsError = true;
             result.ErrorDescription = "Detected DPoP proof token replay.";
         }
 
-        // TODO: where do we define this interval? 
-        await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, Clock.UtcNow.AddMinutes(5));
+        // TODO: where do we define this interval? global or per client?
+        await ReplayCache.AddAsync(ReplayCachePurpose, tokenId, Clock.UtcNow.AddMinutes(5));
     }
 
     /// <summary>
@@ -325,6 +329,8 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
+        // TODO: do we need to decide how this is done per-client? nonce vs iat? interval per-client or global?
+
         var now = Clock.UtcNow;
         // TODO: where do we define this interval?
         var start = now.Subtract(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
