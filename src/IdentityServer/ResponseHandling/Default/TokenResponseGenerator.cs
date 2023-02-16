@@ -509,6 +509,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
                 AuthorizedResourceIndicators = authorizedResourceIndicators,
                 AccessToken = at,
                 RequestedResourceIndicator = request.RequestedResourceIndicator,
+                DPoPKeyThumbprint = request.DPoPKeyThumbprint
             };
             var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(rtRequest);
             return (accessToken, refreshToken);

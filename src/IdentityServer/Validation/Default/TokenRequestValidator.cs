@@ -18,6 +18,7 @@ using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authentication;
+using System.Text.Json;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -173,6 +174,13 @@ internal class TokenRequestValidator : ITokenRequestValidator
         // TODO: IdentityModel
         if (context.RequestHeaders.TryGetValues("DPoP", out var dpopHeader))
         {
+            if (_validatedRequest.Confirmation != null)
+            {
+                LogError("Client already has a confirmation mechanism.");
+                // TODO: IdentityModel
+                return Invalid("invalid_dpop_proof", "Client already has a confirmation mechanism.");
+            }
+
             if (dpopHeader.Count() > 1)
             {
                 LogError("Too many DPoP headers provided.");
@@ -192,8 +200,8 @@ internal class TokenRequestValidator : ITokenRequestValidator
                 return Invalid(dpopResult.Error, dpopResult.ErrorDescription);
             }
 
-            _validatedRequest.ContainsDPoPProofToken = true;
-            _validatedRequest.Confirmation = dpopResult.CreateThumbprintCnf();
+            _validatedRequest.DPoPKeyThumbprint = dpopResult.JsonWebKeyThumbprint;
+            _validatedRequest.Confirmation = CreateCnfFromJkt(dpopResult.JsonWebKeyThumbprint);
         }
         else if (_validatedRequest.Client.RequireDPoP)
         {
@@ -625,6 +633,30 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _validatedRequest.RefreshTokenHandle = refreshTokenHandle;
         _validatedRequest.Subject = result.RefreshToken.Subject;
         _validatedRequest.SessionId = result.RefreshToken.SessionId;
+
+        //////////////////////////////////////////////////////////
+        // DPoP
+        //////////////////////////////////////////////////////////
+        if (_validatedRequest.ContainsDPoPProofToken)
+        {
+            if (_validatedRequest.DPoPKeyThumbprint != result.RefreshToken.DPoPKeyThumbprint)
+            {
+                LogWarning("The DPoP proof token thumbprint in refresh token request does not match the original used.");
+                return Invalid("invalid_dpop_proof", "The DPoP proof token thumbprint in refresh token request does not match the original used.");
+            }
+        }
+        else
+        {
+            if (result.RefreshToken.DPoPKeyThumbprint != null && !_validatedRequest.Client.RequireClientSecret)
+            {
+                LogWarning("DPoP proof token required.");
+                return Invalid("invalid_dpop_proof", "DPoP proof token required.");
+            }
+
+            // this is for when clients authenticate to the token endpoint, and are not required to pass a new DPoP proof token
+            _validatedRequest.DPoPKeyThumbprint = result.RefreshToken.DPoPKeyThumbprint;
+            _validatedRequest.Confirmation = CreateCnfFromJkt(result.RefreshToken.DPoPKeyThumbprint);
+        }
 
         //////////////////////////////////////////////////////////
         // resource indicator
@@ -1137,4 +1169,17 @@ internal class TokenRequestValidator : ITokenRequestValidator
     {
         return _events.RaiseAsync(new UserLoginFailureEvent(userName, error, interactive: false, clientId: clientId));
     }
+
+    private string CreateCnfFromJkt(string jkt)
+    {
+        if (String.IsNullOrWhiteSpace(jkt)) return String.Empty;
+
+        var values = new Dictionary<string, string>
+        {
+            // TODO: IdentityModel
+            { "jkt", jkt }
+        };
+        return JsonSerializer.Serialize(values);
+    }
+
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -47,19 +47,4 @@ public class DPoPProofValidatonResult : ValidationResult
     /// The nonce value issued by the server.
     /// </summary>
     public string ServerIssuedNonce { get; set; }
-
-    /// <summary>
-    /// Create the "cnf" value from the JsonWebKeyThumbprint value;
-    /// </summary>
-    public string CreateThumbprintCnf()
-    {
-        if (String.IsNullOrWhiteSpace(JsonWebKeyThumbprint)) return String.Empty;
-
-        var values = new Dictionary<string, string>
-        {
-            // TODO: IdentityModel
-            { "jkt", JsonWebKeyThumbprint }
-        };
-        return JsonSerializer.Serialize(values);
-    }
 }
