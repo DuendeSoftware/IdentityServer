@@ -320,7 +320,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         //////////////////////////////////////////////////////////
         // DPoP
         //////////////////////////////////////////////////////////
-        if (authZcode.DPoPKeyThumbprint != null && _validatedRequest.DPoPKeyThumbprint != authZcode.DPoPKeyThumbprint)
+        if (authZcode.DPoPKeyThumbprint.IsPresent() && _validatedRequest.DPoPKeyThumbprint != authZcode.DPoPKeyThumbprint)
         {
             LogError("The DPoP proof token thumbprint in code exchange request does not match the original used on the authorize endpoint.");
             return Invalid("invalid_dpop_proof", "The DPoP proof token thumbprint in code exchange request does not match the original used on the authorize endpoint.");
@@ -646,7 +646,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         //////////////////////////////////////////////////////////
         // DPoP
         //////////////////////////////////////////////////////////
-        if (_validatedRequest.ContainsDPoPProofToken)
+        if (_validatedRequest.DPoPKeyThumbprint.IsPresent())
         {
             if (_validatedRequest.DPoPKeyThumbprint != result.RefreshToken.DPoPKeyThumbprint)
             {
@@ -656,7 +656,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         }
         else
         {
-            if (result.RefreshToken.DPoPKeyThumbprint != null && !_validatedRequest.Client.RequireClientSecret)
+            if (result.RefreshToken.DPoPKeyThumbprint.IsPresent() && !_validatedRequest.Client.RequireClientSecret)
             {
                 LogError("DPoP proof token required.");
                 return Invalid("invalid_dpop_proof", "DPoP proof token required.");
