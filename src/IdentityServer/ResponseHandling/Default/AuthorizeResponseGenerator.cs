@@ -261,6 +261,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
             Description = request.Description,
             CodeChallenge = request.CodeChallenge.Sha256(),
             CodeChallengeMethod = request.CodeChallengeMethod,
+            DPoPKeyThumbprint = request.DPoPKeyThumbprint,
 
             IsOpenId = request.IsOpenIdRequest,
             RequestedScopes = request.ValidatedResources.RawScopeValues,

@@ -307,7 +307,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
             LogError("Invalid authorization code", new { code });
             return Invalid(OidcConstants.TokenErrors.InvalidGrant);
         }
-            
+
         /////////////////////////////////////////////
         // validate client binding
         /////////////////////////////////////////////
@@ -315,6 +315,15 @@ internal class TokenRequestValidator : ITokenRequestValidator
         {
             LogError("Client is trying to use a code from a different client", new { clientId = _validatedRequest.Client.ClientId, codeClient = authZcode.ClientId });
             return Invalid(OidcConstants.TokenErrors.InvalidGrant);
+        }
+
+        //////////////////////////////////////////////////////////
+        // DPoP
+        //////////////////////////////////////////////////////////
+        if (authZcode.DPoPKeyThumbprint != null && _validatedRequest.DPoPKeyThumbprint != authZcode.DPoPKeyThumbprint)
+        {
+            LogError("The DPoP proof token thumbprint in code exchange request does not match the original used on the authorize endpoint.");
+            return Invalid("invalid_dpop_proof", "The DPoP proof token thumbprint in code exchange request does not match the original used on the authorize endpoint.");
         }
 
         // remove code from store
@@ -641,15 +650,15 @@ internal class TokenRequestValidator : ITokenRequestValidator
         {
             if (_validatedRequest.DPoPKeyThumbprint != result.RefreshToken.DPoPKeyThumbprint)
             {
-                LogWarning("The DPoP proof token thumbprint in refresh token request does not match the original used.");
-                return Invalid("invalid_dpop_proof", "The DPoP proof token thumbprint in refresh token request does not match the original used.");
+                LogError("The DPoP proof token in the refresh token request does not match the original used.");
+                return Invalid("invalid_dpop_proof", "The DPoP proof token in the refresh token request does not match the original used.");
             }
         }
         else
         {
             if (result.RefreshToken.DPoPKeyThumbprint != null && !_validatedRequest.Client.RequireClientSecret)
             {
-                LogWarning("DPoP proof token required.");
+                LogError("DPoP proof token required.");
                 return Invalid("invalid_dpop_proof", "DPoP proof token required.");
             }
 

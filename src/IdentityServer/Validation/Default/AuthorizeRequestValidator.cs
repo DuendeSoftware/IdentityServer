@@ -909,6 +909,22 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             request.SessionId = ""; // empty string for anonymous users
         }
 
+        //////////////////////////////////////////////////////////
+        // DPoP
+        //////////////////////////////////////////////////////////
+        // TODO: IdentityModel
+        var dpop_jwk = request.Raw.Get("dpop_jkt");
+        if (dpop_jwk.IsPresent())
+        {
+            request.DPoPKeyThumbprint = dpop_jwk;
+        }
+        // TODO: this is OPTIONAL in spec, but do we want to do this check here if client is required?
+        //else if (request.Client.RequireDPoP)
+        //{
+        //    LogError("Client is configured to require DPoP and the 'dpop_jkt' parameter is missing.", request);
+        //    return Invalid(request, description: "Missing dpop_jkt");
+        //}
+
         return Valid(request);
     }
 

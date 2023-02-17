@@ -106,16 +106,6 @@ public class ValidatedRequest
     public string Confirmation { get; set; }
 
     /// <summary>
-    /// Flag to indicate if this request was made using a DPoP proof token.
-    /// </summary>
-    public bool ContainsDPoPProofToken => !String.IsNullOrEmpty(DPoPKeyThumbprint);
-
-    /// <summary>
-    /// The thumbprint of the associated DPoP proof key, if one was used.
-    /// </summary>
-    public string DPoPKeyThumbprint { get; set; }
-
-    /// <summary>
     /// Gets or sets the client ID that should be used for the current request (this is useful for token exchange scenarios)
     /// </summary>
     /// <value>
