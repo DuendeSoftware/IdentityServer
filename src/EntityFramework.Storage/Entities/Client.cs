@@ -30,6 +30,7 @@ public class Client
     public bool AllowPlainTextPkce { get; set; }
     public bool RequireRequestObject { get; set; }
     public bool AllowAccessTokensViaBrowser { get; set; }
+    public bool RequireDPoP { get; set; }
     public List<ClientRedirectUri> RedirectUris { get; set; }
     public List<ClientPostLogoutRedirectUri> PostLogoutRedirectUris { get; set; }
     public string FrontChannelLogoutUri { get; set; }
