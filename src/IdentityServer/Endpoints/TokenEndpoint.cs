@@ -107,7 +107,9 @@ internal class TokenEndpoint : IEndpointHandler
         if (requestResult.IsError)
         {
             await _events.RaiseAsync(new TokenIssuedFailureEvent(requestResult));
-            return Error(requestResult.Error, requestResult.ErrorDescription, requestResult.CustomResponse);
+            var err = Error(requestResult.Error, requestResult.ErrorDescription, requestResult.CustomResponse);
+            err.Response.DPoPNonce = requestResult.DPoPNonce;
+            return err;
         }
 
         // create response

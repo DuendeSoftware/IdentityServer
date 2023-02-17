@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -28,6 +28,12 @@ internal class TokenErrorResult : IEndpointResult
     {
         context.Response.StatusCode = 400;
         context.Response.SetNoCache();
+
+        if (Response.DPoPNonce.IsPresent())
+        {
+            // TODO: IdentityModel
+            context.Response.Headers["DPoP-Nonce"] = Response.DPoPNonce;
+        }
 
         var dto = new ResultDto
         {

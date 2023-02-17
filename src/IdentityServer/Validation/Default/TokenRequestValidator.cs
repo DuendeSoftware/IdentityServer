@@ -197,7 +197,9 @@ internal class TokenRequestValidator : ITokenRequestValidator
             if (dpopResult.IsError)
             {
                 LogError(dpopResult.ErrorDescription ?? dpopResult.Error);
-                return Invalid(dpopResult.Error, dpopResult.ErrorDescription);
+                var err = Invalid(dpopResult.Error, dpopResult.ErrorDescription);
+                err.DPoPNonce = dpopResult.ServerIssuedNonce;
+                return err;
             }
 
             _validatedRequest.DPoPKeyThumbprint = dpopResult.JsonWebKeyThumbprint;

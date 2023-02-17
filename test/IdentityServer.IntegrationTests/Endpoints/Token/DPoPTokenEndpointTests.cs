@@ -21,6 +21,11 @@ using System.Linq;
 using System.Net;
 using IdentityModel;
 using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Validation;
+using Duende.IdentityServer.Services;
+using Microsoft.Extensions.Logging;
+using Duende.IdentityServer.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IntegrationTests.Endpoints.Token;
 
@@ -88,10 +93,10 @@ public class DPoPTokenEndpointTests
             new IdentityResources.Profile(),
             new IdentityResources.Email()
         });
-        _mockPipeline.ApiResources.Add(new ApiResource("api1") 
-        { 
+        _mockPipeline.ApiResources.Add(new ApiResource("api1")
+        {
             Scopes = { "scope1" },
-            ApiSecrets = 
+            ApiSecrets =
             {
                 new Secret("secret".Sha256())
             }
@@ -309,7 +314,8 @@ public class DPoPTokenEndpointTests
         var authorization = new AuthorizeResponse(response.Headers.Location.ToString());
         authorization.IsError.Should().BeFalse();
 
-        var codeRequest = new AuthorizationCodeTokenRequest {
+        var codeRequest = new AuthorizationCodeTokenRequest
+        {
             Address = IdentityServerPipeline.TokenEndpoint,
             ClientId = "client1",
             ClientSecret = "secret",
@@ -331,7 +337,7 @@ public class DPoPTokenEndpointTests
             RefreshToken = codeResponse.RefreshToken
         };
         rtRequest.Headers.Add("DPoP", CreateDPoPProofToken());
-        
+
         var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
         rtResponse.IsError.Should().BeFalse();
         rtResponse.TokenType.Should().Be("DPoP");
@@ -588,7 +594,7 @@ public class DPoPTokenEndpointTests
 
         var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
 
-        var introspectionRequest = new TokenIntrospectionRequest 
+        var introspectionRequest = new TokenIntrospectionRequest
         {
             Address = IdentityServerPipeline.IntrospectionEndpoint,
             ClientId = "api1",
@@ -726,5 +732,87 @@ public class DPoPTokenEndpointTests
         var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
         codeResponse.IsError.Should().BeTrue();
         codeResponse.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact
+    // (Skip = "need update from IdentityModel")
+    ]
+    [Trait("Category", Category)]
+    public async Task server_issued_nonce_should_be_emitted()
+    {
+        string nonce = default;
+
+        _mockPipeline.OnPostConfigureServices += services =>
+        {
+            services.AddSingleton<MockDPoPProofValidator>();
+            services.AddSingleton<IDPoPProofValidator>(sp =>
+            {
+                var mockValidator = sp.GetRequiredService<MockDPoPProofValidator>();
+                mockValidator.ServerIssuedNonce = nonce;
+                return mockValidator;
+            });
+        };
+        _mockPipeline.Initialize();
+
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            responseMode: "query",
+            scope: "openid scope1 offline_access",
+            redirectUri: "https://client1/callback",
+            extra: new
+            {
+                dpop_jkt = "invalid"
+            });
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+
+        var authorization = new AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeFalse();
+
+        var codeRequest = new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = authorization.Code,
+            RedirectUri = "https://client1/callback",
+        };
+        codeRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        nonce = "nonce";
+
+        var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
+        codeResponse.IsError.Should().BeTrue();
+        codeResponse.Error.Should().Be("invalid_dpop_proof");
+        codeResponse.HttpResponse.Headers.GetValues("DPoP-Nonce").Single().Should().Be("nonce");
+        // TODO: make IdentityModel expose the response headers?
+    }
+
+    public class MockDPoPProofValidator : DefaultDPoPProofValidator
+    {
+        public string ServerIssuedNonce { get; set; }
+
+        public MockDPoPProofValidator(IdentityServerOptions options, IServerUrls server, IReplayCache replayCache, ISystemClock clock, ILogger<DefaultDPoPProofValidator> logger) : base(options, server, replayCache, clock, logger)
+        {
+        }
+
+        protected override async Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
+        {
+            if (ServerIssuedNonce.IsPresent())
+            {
+                result.ServerIssuedNonce = ServerIssuedNonce;
+                result.IsError = true;
+                return;
+            }
+
+            await base.ValidateFreshnessAsync(context, result);
+        }
     }
 }
