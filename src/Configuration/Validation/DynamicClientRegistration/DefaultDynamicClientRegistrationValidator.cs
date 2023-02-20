@@ -7,6 +7,7 @@ namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistrati
 
 public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrationValidator
 {
+    // TODO - Add log messages throughout
     public Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request)
     {
         var client = new Client
