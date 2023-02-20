@@ -166,9 +166,6 @@ internal static class HostingExtensions
         app.MapRazorPages()
             .RequireAuthorization();
 
-        app.MapDynamicClientRegistration("/connect/dcr")
-            .AllowAnonymous();
-
         return app;
     }
 }

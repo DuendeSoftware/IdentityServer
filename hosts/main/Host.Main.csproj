@@ -35,7 +35,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Configuration\Duende.IdentityServer.Configuration.csproj" />
         <ProjectReference Include="..\..\src\IdentityServer\Duende.IdentityServer.csproj" />
     </ItemGroup>
 

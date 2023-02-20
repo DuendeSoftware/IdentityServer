@@ -3,7 +3,6 @@
 
 using System.Security.Cryptography.X509Certificates;
 using Duende.IdentityServer;
-using Duende.IdentityServer.Configuration;
 using IdentityModel;
 using IdentityServerHost.Configuration;
 using IdentityServerHost.Extensions;
@@ -56,8 +55,6 @@ internal static class IdentityServerExtensions
                     Scope = "openid profile"
                 }
             });
-
-        builder.Services.AddIdentityServerConfiguration();
 
         return builder;
     }
