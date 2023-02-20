@@ -27,9 +27,6 @@ public static class ConfigurationServiceCollectionExtensions
         services.TryAddTransient<IDynamicClientRegistrationValidator, DefaultDynamicClientRegistrationValidator>();
         services.TryAddTransient<ICustomDynamicClientRegistrationValidator, DefaultCustomDynamicClientRegistrationValidator>();
         
-        // todo: remove later
-        services.AddTransient<IClientConfigurationStore, DummyClientConfigurationStore>();
-        
         return services;
     }
 }
