@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Duende.IdentityServer.Configuration.Configuration;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
@@ -11,17 +12,20 @@ namespace Duende.IdentityServer.Configuration;
 
 public class DynamicClientRegistrationEndpoint
 {
+    private readonly IdentityServerConfigurationOptions _options;
     private readonly IDynamicClientRegistrationValidator _validator;
     private readonly ICustomDynamicClientRegistrationValidator _customValidator;
     private readonly IClientConfigurationStore _store;
     private readonly ILogger<DynamicClientRegistrationEndpoint> _logger;
 
     public DynamicClientRegistrationEndpoint(
+        IdentityServerConfigurationOptions options,
         IDynamicClientRegistrationValidator validator,
         ICustomDynamicClientRegistrationValidator customValidator,
         IClientConfigurationStore store,
         ILogger<DynamicClientRegistrationEndpoint> logger)
     {
+        _options = options;
         _validator = validator;
         _customValidator = customValidator;
         _store = store;
@@ -133,8 +137,13 @@ public class DynamicClientRegistrationEndpoint
     {
         var plainText = CryptoRandom.CreateUniqueId();
 
-        // TODO should there be a default lifetime on the secret?
-        var secret = new Secret(plainText.ToSha256());
+        DateTime? lifetime = _options.DynamicClientRegistration.SecretLifetime switch
+        {
+            null => null,
+            TimeSpan t => DateTime.UtcNow.Add(t)
+        };
+
+        var secret = new Secret(plainText.ToSha256(), lifetime);
 
         return Task.FromResult((secret, plainText));
     }
