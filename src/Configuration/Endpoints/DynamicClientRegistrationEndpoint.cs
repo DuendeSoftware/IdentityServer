@@ -5,6 +5,7 @@ using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Configuration;
 
@@ -13,32 +14,48 @@ public class DynamicClientRegistrationEndpoint
     private readonly IDynamicClientRegistrationValidator _validator;
     private readonly ICustomDynamicClientRegistrationValidator _customValidator;
     private readonly IClientConfigurationStore _store;
+    private readonly ILogger<DynamicClientRegistrationEndpoint> _logger;
 
     public DynamicClientRegistrationEndpoint(
         IDynamicClientRegistrationValidator validator,
         ICustomDynamicClientRegistrationValidator customValidator,
-        IClientConfigurationStore store)
+        IClientConfigurationStore store,
+        ILogger<DynamicClientRegistrationEndpoint> logger)
     {
         _validator = validator;
         _customValidator = customValidator;
         _store = store;
+        _logger = logger;
     }
 
     public async Task Process(HttpContext context)
     {
-        var document = await ParseRequest(context);
-        if(document == null) return;
+        // Check content type
+        if (!HasCorrectContentType(context.Request))
+        {
+            WriteContentTypeError(context.Response);
+            return;
+        }
 
-        // validate body values and construct Client object
+        // Parse body
+        var document = await TryParseAsync(context.Request);
+        if(document == null)
+        {
+            await WriteBadRequestError(context.Response);
+            return;
+        }
+
+        // Validate request values 
         var result = await ValidateAsync(context, document);
 
         if (result is DynamicClientRegistrationValidationError validationError)
         {
-            await WriteValidationErrorResponse(validationError, context);
+            await WriteValidationError(validationError, context);
         }
         else if (result is DynamicClientRegistrationValidatedRequest validatedRequest)
         {
-            await HandleValidationSuccess(validatedRequest, context);
+            var response = await CreateAndPersistClientWithSecret(validatedRequest);
+            await WriteSuccessResponse(context, response);
         }
     }
 
@@ -61,34 +78,47 @@ public class DynamicClientRegistrationEndpoint
         }
     }
 
-    private static async Task<DynamicClientRegistrationRequest?> ParseRequest(HttpContext context)
+    private static bool HasCorrectContentType(HttpRequest request) => 
+        // REVIEW: HasJsonContentType accepts content types like application/ld+json
+        // (really, anything in the form application/*-json). The spec technically only allows application/json for DCR.
+        // Do we care?
+        request.HasJsonContentType();
+
+    private void WriteContentTypeError(HttpResponse response)
     {
-        // de-serialize body
-        if (!context.Request.HasJsonContentType())
-        {
-            context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-            return null;
-        }
-        
+        _logger.LogWarning("Invalid content type in dynamic client registration request");
+        response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+    }
+
+    private async Task<DynamicClientRegistrationRequest?> TryParseAsync(HttpRequest request)
+    {
         try
         {
-            var document = await context.Request.ReadFromJsonAsync<DynamicClientRegistrationResponse>()
-                ?? throw new Exception("TODO");
-            return document;
-        }
-        catch
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsJsonAsync(new DynamicClientRegistrationErrorResponse
+            var document = await request.ReadFromJsonAsync<DynamicClientRegistrationRequest>();
+            if(document == null) 
             {
-                Error = DynamicClientRegistrationErrors.InvalidClientMetadata,
-                ErrorDescription = "malformed metadata document"
-            });
-            return null;
+                _logger.LogWarning("Dynamic client registration request body cannot be null");
+            }
+            return document;
+        } 
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Failed to parse dynamic client registration request body");
+            return default;
         }
     }
 
-    public virtual async Task WriteValidationErrorResponse(DynamicClientRegistrationValidationError error, HttpContext context)
+    private async Task WriteBadRequestError(HttpResponse response)
+    {
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        await response.WriteAsJsonAsync(new DynamicClientRegistrationErrorResponse
+        {
+            Error = DynamicClientRegistrationErrors.InvalidClientMetadata,
+            ErrorDescription = "malformed metadata document"
+        });
+    }
+
+    public virtual async Task WriteValidationError(DynamicClientRegistrationValidationError error, HttpContext context)
     {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await context.Response.WriteAsJsonAsync(new DynamicClientRegistrationErrorResponse
@@ -98,7 +128,7 @@ public class DynamicClientRegistrationEndpoint
         });
     }
 
-    // TODO - Extract into a service in DI
+    // Review: Should we extract this into a service in DI?
     public virtual Task<(Secret secret, string plainText)> GenerateSecret()
     {
         var plainText = CryptoRandom.CreateUniqueId();
@@ -109,30 +139,22 @@ public class DynamicClientRegistrationEndpoint
         return Task.FromResult((secret, plainText));
     }
 
-
-// TODO - Rename me
-    public virtual async Task HandleValidationSuccess(DynamicClientRegistrationValidatedRequest validatedRequest, HttpContext context)
+    public virtual async Task<DynamicClientRegistrationResponse> CreateAndPersistClientWithSecret(DynamicClientRegistrationValidatedRequest validatedRequest)
     {
         var secretPlainText = await AddClientSecret(validatedRequest);
 
         // create client in configuration system
         await _store.AddAsync(validatedRequest.Client);
 
-// With a record type, and a with expression, there's almost nothing to do here
-// Kind of no point in a response generator
-// Maybe response generators aren't part of the abstraction here, now that we are changing to use ASP.NET endpoints?
-
-        var response = (DynamicClientRegistrationResponse) validatedRequest.Original with
+        return (DynamicClientRegistrationResponse) validatedRequest.Original with
         {
             ClientId = validatedRequest.Client.ClientId,
             ClientSecret = secretPlainText,
             ClientSecretExpiresAt = DateTimeOffset.MaxValue.ToUnixTimeSeconds(),
         };
-
-        await WriteResponse(context, response);
     }
 
-    private static async Task WriteResponse(HttpContext context, DynamicClientRegistrationResponse document)
+    public virtual async Task WriteSuccessResponse(HttpContext context, DynamicClientRegistrationResponse response)
     {
         var options = new JsonSerializerOptions
         {
@@ -140,15 +162,14 @@ public class DynamicClientRegistrationEndpoint
         };
 
         context.Response.StatusCode = StatusCodes.Status201Created;
-        await context.Response.WriteAsJsonAsync(document, options);
+        await context.Response.WriteAsJsonAsync(response, options);
     }
 
-    private async Task<string> AddClientSecret(DynamicClientRegistrationValidatedRequest validatedRequest)
+    public virtual async Task<string> AddClientSecret(DynamicClientRegistrationValidatedRequest validatedRequest)
     {
         if (validatedRequest.Client.ClientSecrets.Any())
         {
             // TODO - Error message
-            // TODO - We still could have the validator generate a secret, but then the plaintext would need to be a property of the validation result
             throw new Exception("Validator cannot set secrets on the client because we need the plaintext of the secret outside the validator");
         }
 
