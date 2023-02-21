@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.Configuration;
 
@@ -8,8 +8,6 @@ public static class ConfigurationEndpointExtensions
 {
     public static IEndpointConventionBuilder MapDynamicClientRegistration(this IEndpointRouteBuilder endpoints, string path)
     {
-        var endpoint = endpoints.ServiceProvider.GetRequiredService<DynamicClientRegistrationEndpoint>();
-
-        return endpoints.MapPost(path, endpoint.Process);
+        return endpoints.MapPost(path, (DynamicClientRegistrationEndpoint endpoint, HttpContext context) => endpoint.Process(context));
     }
 }
