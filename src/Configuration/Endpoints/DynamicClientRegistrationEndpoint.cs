@@ -7,19 +7,20 @@ using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Duende.IdentityServer.Configuration;
 
 public class DynamicClientRegistrationEndpoint
 {
-    private readonly IdentityServerConfigurationOptions _options;
+    private readonly IOptionsMonitor<IdentityServerConfigurationOptions> _options;
     private readonly IDynamicClientRegistrationValidator _validator;
     private readonly ICustomDynamicClientRegistrationValidator _customValidator;
     private readonly IClientConfigurationStore _store;
     private readonly ILogger<DynamicClientRegistrationEndpoint> _logger;
 
     public DynamicClientRegistrationEndpoint(
-        IdentityServerConfigurationOptions options,
+        IOptionsMonitor<IdentityServerConfigurationOptions> options,
         IDynamicClientRegistrationValidator validator,
         ICustomDynamicClientRegistrationValidator customValidator,
         IClientConfigurationStore store,
@@ -137,7 +138,7 @@ public class DynamicClientRegistrationEndpoint
     {
         var plainText = CryptoRandom.CreateUniqueId();
 
-        DateTime? lifetime = _options.DynamicClientRegistration.SecretLifetime switch
+        DateTime? lifetime = _options.CurrentValue.DynamicClientRegistration.SecretLifetime switch
         {
             null => null,
             TimeSpan t => DateTime.UtcNow.Add(t)

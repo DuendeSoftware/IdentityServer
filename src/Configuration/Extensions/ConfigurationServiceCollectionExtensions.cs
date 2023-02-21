@@ -3,6 +3,7 @@ using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Duende.IdentityServer.Configuration;
 
@@ -27,6 +28,10 @@ public static class ConfigurationServiceCollectionExtensions
         services.TryAddTransient<IDynamicClientRegistrationValidator, DefaultDynamicClientRegistrationValidator>();
         services.TryAddTransient<ICustomDynamicClientRegistrationValidator, DefaultCustomDynamicClientRegistrationValidator>();
         
+        // Review: Should we do this, similar to core identity server?
+        // services.AddSingleton(
+        //     resolver => resolver.GetRequiredService<IOptions<IdentityServerConfigurationOptions>>().Value);
+
         return services;
     }
 }
