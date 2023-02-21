@@ -68,9 +68,11 @@ public record DynamicClientRegistrationRequest
     public string? Scope { get; init; }
 
     /// <summary>
-    /// Default maximum authentication age.
+    /// Default maximum authentication age. 
     /// </summary>
-    // TODO Check spec for semantics of this
+    /// <remarks>
+    /// This is stored as the UserSsoLifetime property of the client.
+    /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.DefaultMaxAge)]
     public int? DefaultMaxAge { get; init; }
 
