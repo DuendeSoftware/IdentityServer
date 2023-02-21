@@ -1,14 +1,25 @@
 using System.Security.Claims;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores;
 using IdentityModel;
+using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
 public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrationValidator
 {
+    private readonly IResourceStore _resources;
+    private readonly ILogger<DefaultDynamicClientRegistrationValidator> _logger;
+
+    public DefaultDynamicClientRegistrationValidator(IResourceStore resources, ILogger<DefaultDynamicClientRegistrationValidator> logger)
+    {
+        _resources = resources;
+        _logger = logger;
+    }
+
     // TODO - Add log messages throughout
-    public Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request)
+    public async Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request)
     {
         var client = new Client
         {
@@ -30,9 +41,9 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         // we only support the two above grant types
         if (client.AllowedGrantTypes.Count == 0)
         {
-            return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
+            return new DynamicClientRegistrationValidationError(
                 DynamicClientRegistrationErrors.InvalidClientMetadata,
-                "unsupported grant type"));
+                "unsupported grant type");
         }
 
         if (request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
@@ -40,9 +51,9 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
             if (client.AllowedGrantTypes.Count == 1 &&
                 client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
             {
-                return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
+                return new DynamicClientRegistrationValidationError(
                     DynamicClientRegistrationErrors.InvalidClientMetadata,
-                    "client credentials does not support refresh tokens"));
+                    "client credentials does not support refresh tokens");
             }
 
             client.AllowOfflineAccess = true;
@@ -63,17 +74,17 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
                     }
                     else
                     {
-                        return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
+                        return new DynamicClientRegistrationValidationError(
                             DynamicClientRegistrationErrors.InvalidRedirectUri,
-                            "malformed redirect URI"));
+                            "malformed redirect URI");
                     }
                 }
             }
             else
             {
-                return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
+                return new DynamicClientRegistrationValidationError(
                     DynamicClientRegistrationErrors.InvalidRedirectUri,
-                    "redirect URI required for authorization_code grant type"));
+                    "redirect URI required for authorization_code grant type");
             }
         }
 
@@ -82,9 +93,9 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         {
             if (request.RedirectUris.Any())
             {
-                return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidationError(
+                return new DynamicClientRegistrationValidationError(
                     DynamicClientRegistrationErrors.InvalidRedirectUri,
-                    "redirect URI not compatible with client_credentials grant type"));
+                    "redirect URI not compatible with client_credentials grant type");
             }
         }
 
@@ -98,7 +109,20 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         else
         {
             var scopes = request.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            // todo: ideally scope names get checked against configuration store?
+
+            var validApiScopes = await _resources.FindApiScopesByNameAsync(scopes);
+            var validIdentityResources = await _resources.FindIdentityResourcesByScopeNameAsync(scopes);
+
+            if(validApiScopes.Count() + validIdentityResources.Count() != scopes.Length)
+            {
+                var validScopeNames = validApiScopes.Select(s => s.Name).Concat(validIdentityResources.Select(s => s.Name));
+                var invalidScopeNames = string.Join(" ", scopes.Except(validScopeNames));
+
+                return new DynamicClientRegistrationValidationError(
+                    DynamicClientRegistrationErrors.InvalidClientMetadata,
+                    $"unsupported scope: {invalidScopeNames}"
+                );
+            }
 
             foreach (var scope in scopes)
             {
@@ -132,6 +156,6 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         }
 
         // validation successful - return client
-        return Task.FromResult((DynamicClientRegistrationValidationResult) new DynamicClientRegistrationValidatedRequest(client, request));
+        return new DynamicClientRegistrationValidatedRequest(client, request);
     }
 }
