@@ -4,6 +4,20 @@ namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 public record DynamicClientRegistrationResponse : DynamicClientRegistrationRequest
 {
+
+    public DynamicClientRegistrationResponse(DynamicClientRegistrationRequest request)
+    {
+        RedirectUris = request.RedirectUris;
+        GrantTypes = request.GrantTypes;
+        ClientName = request.ClientName;
+        ClientUri = request.ClientUri;
+        JwksUri = request.JwksUri;
+        Jwks = request.Jwks;
+        Scope = request.Scope;
+        DefaultMaxAge = request.DefaultMaxAge;
+        Extensions = request.Extensions;
+    }
+
     [JsonPropertyName("client_id")]
     public string ClientId { get; init; } = string.Empty;
 

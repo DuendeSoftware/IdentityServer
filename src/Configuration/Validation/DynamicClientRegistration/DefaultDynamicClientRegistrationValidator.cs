@@ -23,12 +23,21 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
     {
         var client = new Client
         {
+            // TODO - make this an extension point
             ClientId = CryptoRandom.CreateUniqueId()
         };
 
         //////////////////////////////
         // validate grant types
         //////////////////////////////
+        
+        if (request.GrantTypes.Count == 0)
+        {
+            return new DynamicClientRegistrationValidationError(
+                DynamicClientRegistrationErrors.InvalidClientMetadata,
+                "grant type is required");
+        }
+
         if (request.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
         {
             client.AllowedGrantTypes.Add(GrantType.ClientCredentials);
@@ -53,7 +62,7 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
             {
                 return new DynamicClientRegistrationValidationError(
                     DynamicClientRegistrationErrors.InvalidClientMetadata,
-                    "client credentials does not support refresh tokens");
+                     "client credentials does not support refresh tokens");
             }
 
             client.AllowOfflineAccess = true;
@@ -109,6 +118,15 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         else
         {
             var scopes = request.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            // Review: How should we handle a request with the offline_access scope?
+            // How does that interact with the grant_type param?
+            //
+            // Proposal:
+            // if (grant_types includes refresh_token )
+            //       offline_access scope is optional
+            // else
+            //       offline_access scope is forbidden
 
             var validApiScopes = await _resources.FindApiScopesByNameAsync(scopes);
             var validIdentityResources = await _resources.FindIdentityResourcesByScopeNameAsync(scopes);

@@ -19,7 +19,7 @@ public record DynamicClientRegistrationRequest
     /// List of OAuth 2.0 grant type strings that the client can use at the token endpoint.
     /// </summary>
     /// <remarks>
-    /// Example: "authorization_code", "client_credentials", "refresh_token".
+    /// Valid values are "authorization_code", "client_credentials", "refresh_token".
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.GrantTypes)]
     public ICollection<string> GrantTypes { get; init; } = new HashSet<string>();
@@ -80,5 +80,5 @@ public record DynamicClientRegistrationRequest
     /// Custom client metadata fields to include in the serialization.
     /// </summary>
     [JsonExtensionData]
-    public IDictionary<string, object> Extensions { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public IDictionary<string, object> Extensions { get; init; } = new Dictionary<string, object>(StringComparer.Ordinal);
 }

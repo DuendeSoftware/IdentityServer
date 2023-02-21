@@ -1,0 +1,118 @@
+##### Wrong Verbs #####
+###
+GET https://localhost:5001/connect/dcr
+###
+PUT https://localhost:5001/connect/dcr
+###
+DELETE  https://localhost:5001/connect/dcr
+
+##### Malformed Requests ####
+###
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+}
+
+###
+POST https://localhost:5001/connect/dcr
+
+{ }
+
+###
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+null
+
+###
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+"bogus"
+
+
+##### Semantic Errors #####
+### Missing Grant Type
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"]
+}
+
+### Unsupported Grant Type
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["password"]
+}
+
+### Client creds with a redirect uri
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["client_credentials"]
+}
+
+### Auth code without a redirect uri
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "grant_types": ["authorization_code"]
+}
+
+### Auth code without a redirect uri (multiple grant types)
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "grant_types": ["authorization_code", "client_credentials"]
+}
+
+### Client creds with refresh token
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["client_credentials", "refresh_token"]
+}
+
+
+
+##### Valid Requests #####
+###
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["authorization_code"]
+}
+
+### Multiple grant types
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["client_credentials", "authorization_code", "refresh_token"]
+}
+
+
+### Complete request
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["client_credentials", "authorization_code", "refresh_token"],
+    "client_name": "example",
+    "client_uri": "https://example.com",
+    "default_max_age": 10000
+}

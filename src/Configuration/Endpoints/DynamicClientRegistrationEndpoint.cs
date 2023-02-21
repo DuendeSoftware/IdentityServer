@@ -134,7 +134,7 @@ public class DynamicClientRegistrationEndpoint
     }
 
     // Review: Should we extract this into a service in DI?
-    public virtual Task<(Secret secret, string plainText)> GenerateSecret()
+    public virtual Task<(Secret secret, string plainText, DateTime? secretLifteime)> GenerateSecret()
     {
         var plainText = CryptoRandom.CreateUniqueId();
 
@@ -146,21 +146,22 @@ public class DynamicClientRegistrationEndpoint
 
         var secret = new Secret(plainText.ToSha256(), lifetime);
 
-        return Task.FromResult((secret, plainText));
+        return Task.FromResult((secret, plainText, lifetime));
     }
 
     public virtual async Task<DynamicClientRegistrationResponse> CreateAndPersistClientWithSecret(DynamicClientRegistrationValidatedRequest validatedRequest)
     {
-        var secretPlainText = await AddClientSecret(validatedRequest);
+        var (secretPlainText, secretLifetime) = await AddClientSecret(validatedRequest);
 
         // create client in configuration system
         await _store.AddAsync(validatedRequest.Client);
 
-        return (DynamicClientRegistrationResponse) validatedRequest.Original with
+
+        return new DynamicClientRegistrationResponse(validatedRequest.Original) with
         {
             ClientId = validatedRequest.Client.ClientId,
             ClientSecret = secretPlainText,
-            ClientSecretExpiresAt = DateTimeOffset.MaxValue.ToUnixTimeSeconds(),
+            ClientSecretExpiresAt = secretLifetime?.ToUnixTimeSeconds() ?? 0,
         };
     }
 
@@ -175,7 +176,7 @@ public class DynamicClientRegistrationEndpoint
         await context.Response.WriteAsJsonAsync(response, options);
     }
 
-    public virtual async Task<string> AddClientSecret(DynamicClientRegistrationValidatedRequest validatedRequest)
+    public virtual async Task<(string, DateTimeOffset?)> AddClientSecret(DynamicClientRegistrationValidatedRequest validatedRequest)
     {
         if (validatedRequest.Client.ClientSecrets.Any())
         {
@@ -183,8 +184,8 @@ public class DynamicClientRegistrationEndpoint
             throw new Exception("Validator cannot set secrets on the client because we need the plaintext of the secret outside the validator");
         }
 
-        var (secret, plainText) = await GenerateSecret();
+        var (secret, plainText, lifetime) = await GenerateSecret();
         validatedRequest.Client.ClientSecrets.Add(secret);
-        return plainText;
+        return (plainText, lifetime);
     }
 }

@@ -47,7 +47,7 @@ internal static class IdentityServerExtensions
         // and AddClientConfigurationStore in one call for convenience?
         builder.Services.AddIdentityServerConfiguration(opt =>
         {
-            opt.DynamicClientRegistration.SecretLifetime = TimeSpan.FromHours(1);
+            // opt.DynamicClientRegistration.SecretLifetime = TimeSpan.FromHours(1);
         });
         builder.Services.AddClientConfigurationStore();
 
