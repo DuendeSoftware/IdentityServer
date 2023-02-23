@@ -8,8 +8,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -44,16 +47,17 @@ public class DPoPProofValidatorTests
     string _publicJWK = "{\"kty\":\"RSA\",\"use\":\"sig\",\"x5t\":null,\"e\":\"AQAB\",\"n\":\"yWWAOSV3Z_BW9rJEFvbZyeU-q2mJWC0l8WiHNqwVVf7qXYgm9hJC0j1aPHku_Wpl38DpK3Xu3LjWOFG9OrCqga5Pzce3DDJKI903GNqz5wphJFqweoBFKOjj1wegymvySsLoPqqDNVYTKp4nVnECZS4axZJoNt2l1S1bC8JryaNze2stjW60QT-mIAGq9konKKN3URQ12dr478m0Oh-4WWOiY4HrXoSOklFmzK-aQx1JV_SZ04eIGfSw1pZZyqTaB1BwBotiy-QA03IRxwIXQ7BSx5EaxC5uMCMbzmbvJqjt-q8Y1wyl-UQjRucgp7hkfHSE1QT3zEex2Q3NFux7SQ\",\"x5c\":null,\"x\":null,\"y\":null,\"crv\":null}";
     string _JKT = "JGSVlE73oKtQQI1dypYg8_JNat0xJjsQNyOI5oxaZf4";
 
-    DefaultDPoPProofValidator _subject;
+    CustomDefaultDPoPProofValidator _subject;
 
     public DPoPProofValidatorTests()
     {
         _clock.UtcNowFunc = () => UtcNow;
-        _subject = new DefaultDPoPProofValidator(
+        _subject = new CustomDefaultDPoPProofValidator(
             _options, 
             new MockServerUrls() { BasePath = "/", Origin = "https://identityserver" },
             _mockReplayCache,
             _clock, 
+            new StubDataProtectionProvider(),
             new LoggerFactory().CreateLogger<DefaultDPoPProofValidator>());
 
         _payload = new Dictionary<string, object>
@@ -386,5 +390,125 @@ public class DPoPProofValidatorTests
 
         result.IsError.Should().BeTrue();
         result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    // nonce validation
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task missing_nonce_when_required_should_fail_validation_and_issue_nonce()
+    {
+        _subject.ValidateNonce = true;
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+        result.ServerIssuedNonce.Should().NotBeNullOrEmpty();
+    }
+    
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task nonce_provided_when_required_should_succeed()
+    {
+        _subject.ValidateNonce = true;
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        
+        _payload["nonce"] = result.ServerIssuedNonce;
+
+        token = CreateDPoPProofToken();
+        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeFalse();
+        result.JsonWebKeyThumbprint.Should().Be(_JKT);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task invalid_nonce_provided_when_required_should_fail_validation()
+    {
+        _subject.ValidateNonce = true;
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+
+        _payload["nonce"] = result.ServerIssuedNonce + "invalid_stuff";
+
+        token = CreateDPoPProofToken();
+        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+        result.ServerIssuedNonce.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task expired_nonce_provided_when_required_should_fail_validation()
+    {
+        _subject.ValidateNonce = true;
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+
+        _payload["nonce"] = result.ServerIssuedNonce;
+        // too late
+        _now = _now.AddHours(1);
+
+        token = CreateDPoPProofToken();
+        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+        result.ServerIssuedNonce.Should().NotBeNullOrEmpty();
+
+
+        _payload["nonce"] = result.ServerIssuedNonce;
+        // too early
+        _now = _now.AddHours(-1);
+
+        token = CreateDPoPProofToken();
+        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+        result.ServerIssuedNonce.Should().NotBeNullOrEmpty();
+    }
+
+    public class CustomDefaultDPoPProofValidator : DefaultDPoPProofValidator
+    {
+        public bool ValidateNonce { get; set; }
+
+        public CustomDefaultDPoPProofValidator(IdentityServerOptions options, IServerUrls server, IReplayCache replayCache, ISystemClock clock, IDataProtectionProvider dataProtectionProvider, ILogger<DefaultDPoPProofValidator> logger) : base(options, server, replayCache, clock, dataProtectionProvider, logger)
+        {
+        }
+
+        protected override Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
+        {
+            if (!ValidateNonce)
+            {
+                return base.ValidateFreshnessAsync(context, result);
+            }
+            else
+            {
+                return base.ValidateNonceAsync(context, result);
+            }
+        }
     }
 }

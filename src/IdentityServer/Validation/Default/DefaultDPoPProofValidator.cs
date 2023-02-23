@@ -16,6 +16,7 @@ using System.Linq;
 using Duende.IdentityServer.Services;
 using static Duende.IdentityServer.Constants;
 using Duende.IdentityServer.Models;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -24,7 +25,8 @@ namespace Duende.IdentityServer.Validation;
 /// </summary>
 public class DefaultDPoPProofValidator : IDPoPProofValidator
 {
-    const string ReplayCachePurpose = "DPoPReplay";
+    const string ReplayCachePurpose = "DPoPReplay-jti";
+    const string DataProtectorPurpose = "DPoPProofValidation-nonce";
 
     /// <summary>
     /// The options
@@ -47,6 +49,11 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     protected readonly IServerUrls ServerUrls;
 
     /// <summary>
+    /// The data protection provider
+    /// </summary>
+    protected IDataProtector DataProtector { get; }
+
+    /// <summary>
     /// The logger
     /// </summary>
     protected readonly ILogger Logger;
@@ -59,12 +66,14 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         IServerUrls server,
         IReplayCache replayCache,
         ISystemClock clock,
+        IDataProtectionProvider dataProtectionProvider,
         ILogger<DefaultDPoPProofValidator> logger)
     {
         Options = options;
         Clock = clock;
         ReplayCache = replayCache;
         ServerUrls = server;
+        DataProtector = dataProtectionProvider.CreateProtector(DataProtectorPurpose);
         Logger = logger;
     }
 
@@ -330,12 +339,15 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     protected virtual Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
         // TODO: do we need to decide how this is done per-client? nonce vs iat? interval per-client or global?
+        return ValidateIatAsync(context, result);
+    }
 
-        var now = Clock.UtcNow;
-        // TODO: where do we define this interval?
-        var start = now.Subtract(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
-        var end = now.Add(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
-        if (result.IssuedAt.Value < start || result.IssuedAt.Value > end)
+    /// <summary>
+    /// Validates the freshness of the iat value.
+    /// </summary>
+    protected virtual Task ValidateIatAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
+    {
+        if (IsExpired(context, result, result.IssuedAt.Value))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'iat' value.";
@@ -343,5 +355,86 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Validates the freshness of the nonce value.
+    /// </summary>
+    protected virtual async Task ValidateNonceAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
+    {
+        if (result.Nonce.IsMissing())
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Missing 'nonce' value.";
+            result.ServerIssuedNonce = CreateNonce();
+            return;
+        }
+
+        var time = await GetUnixTimeFromNonceAsync(result.Nonce);
+        if (time <= 0)
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Invalid 'nonce' value.";
+            result.ServerIssuedNonce = CreateNonce();
+            return;
+        }
+
+        if (IsExpired(context, result, time))
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Invalid 'nonce' value.";
+            result.ServerIssuedNonce = CreateNonce();
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Creates a nonce value to return to the client.
+    /// </summary>
+    /// <returns></returns>
+    protected virtual string CreateNonce()
+    {
+        var now = Clock.UtcNow.ToUnixTimeSeconds();
+        return DataProtector.Protect(now.ToString());
+    }
+
+    /// <summary>
+    /// Reads the time the nonce was created.
+    /// </summary>
+    /// <returns></returns>
+    protected virtual ValueTask<long> GetUnixTimeFromNonceAsync(string nonce)
+    {
+        try
+        {
+            var value = DataProtector.Unprotect(nonce);
+            if (Int64.TryParse(value, out long iat))
+            {
+                return ValueTask.FromResult(iat);
+            }
+        }
+        catch(Exception ex)
+        {
+            Logger.LogDebug("Error parsing DPoP 'nonce' value: {error}", ex.ToString());
+        }
+        
+        return ValueTask.FromResult<long>(0);
+    }
+
+    /// <summary>
+    /// Validates the expiration of the DPoP proof.
+    /// Returns true if the time is beyond the allowed limits, false otherwise.
+    /// </summary>
+    protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, long unixTime)
+    {
+        var now = Clock.UtcNow;
+        // TODO: where do we define this interval?
+        var start = now.Subtract(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
+        var end = now.Add(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
+        if (unixTime < start || unixTime > end)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
