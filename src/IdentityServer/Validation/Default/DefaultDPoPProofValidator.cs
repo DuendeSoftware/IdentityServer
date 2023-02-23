@@ -320,17 +320,13 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual async Task ValidateReplayAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        // TODO: should this use the client id? should we hash the incoming value?
-        var tokenId = $"{context.Client.ClientId.Sha256()}:{result.TokenId.Sha256()}";
-
-        if (await ReplayCache.ExistsAsync(ReplayCachePurpose, tokenId))
+        if (await ReplayCache.ExistsAsync(ReplayCachePurpose, result.TokenId))
         {
             result.IsError = true;
             result.ErrorDescription = "Detected DPoP proof token replay.";
         }
 
-        // TODO: where do we define this interval? global or per client?
-        await ReplayCache.AddAsync(ReplayCachePurpose, tokenId, Clock.UtcNow.AddMinutes(5));
+        await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, Clock.UtcNow.Add(Options.DPoP.DPoPTokenValidityDuration));
     }
 
     /// <summary>
@@ -427,10 +423,11 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, long unixTime)
     {
         var now = Clock.UtcNow;
-        var start = now.ToUnixTimeSeconds();
+        var skew = Options.DPoP.ClockSkew;
+        var start = now.Subtract(skew).ToUnixTimeSeconds();
         
         var validityWindow = Options.DPoP.DPoPTokenValidityDuration;
-        var end = now.Add(validityWindow).ToUnixTimeSeconds();
+        var end = now.Add(validityWindow + skew).ToUnixTimeSeconds();
         
         if (unixTime < start || unixTime > end)
         {

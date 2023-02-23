@@ -51,6 +51,8 @@ public class DPoPProofValidatorTests
 
     public DPoPProofValidatorTests()
     {
+        _options.DPoP.ClockSkew = TimeSpan.Zero;
+
         _clock.UtcNowFunc = () => UtcNow;
         _subject = new CustomDefaultDPoPProofValidator(
             _options, 
@@ -368,6 +370,68 @@ public class DPoPProofValidatorTests
     public async Task too_new_iat_should_fail_validation()
     {
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task too_old_within_clock_skew_iat_should_succeed()
+    {
+        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(1);
+
+        _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(59)).ToUnixTimeSeconds();
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task too_old_past_clock_skew_iat_should_fail_validation()
+    {
+        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(1);
+
+        _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be("invalid_dpop_proof");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task too_new_within_clock_skew_iat_should_succeed()
+    {
+        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(1);
+
+        _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(119)).ToUnixTimeSeconds();
+
+        var token = CreateDPoPProofToken();
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var result = await _subject.ValidateAsync(ctx);
+
+        result.IsError.Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task too_new_past_clock_skew_iat_should_fail_validation()
+    {
+        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(1);
+
+        _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
         var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };

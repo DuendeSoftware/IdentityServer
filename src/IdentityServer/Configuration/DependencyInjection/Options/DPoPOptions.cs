@@ -14,10 +14,10 @@ public class DPoPOptions
     /// <summary>
     /// Default DPoP token validity duration. Defaults to 1 minute.
     /// </summary>
-    public TimeSpan DPoPTokenValidityDuration { get; set; }
-    
-    ///// <summary>
-    ///// Clock skew
-    ///// </summary>
-    //public TimeSpan ClockSkew { get; set; }
+    public TimeSpan DPoPTokenValidityDuration { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>
+    /// Clock skew used in validating the DPoP token expiration. Defaults to 5 minutes.
+    /// </summary>
+    public TimeSpan ClockSkew { get; set; } = TimeSpan.FromMinutes(5);
 }
