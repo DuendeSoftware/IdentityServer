@@ -332,10 +332,27 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// <summary>
     /// Validates the freshness.
     /// </summary>
-    protected virtual Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
+    protected virtual async Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        // TODO: do we need to decide how this is done per-client? nonce vs iat? interval per-client or global?
-        return ValidateIatAsync(context, result);
+        var validateIat = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
+        if (validateIat)
+        {
+            await ValidateIatAsync(context, result);
+            if (result.IsError)
+            {
+                return;
+            }
+        }
+
+        var validateNonce = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
+        if (validateNonce)
+        {
+            await ValidateNonceAsync(context, result);
+            if (result.IsError)
+            {
+                return;
+            }
+        }
     }
 
     /// <summary>

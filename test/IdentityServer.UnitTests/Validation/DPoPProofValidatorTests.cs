@@ -47,14 +47,14 @@ public class DPoPProofValidatorTests
     string _publicJWK = "{\"kty\":\"RSA\",\"use\":\"sig\",\"x5t\":null,\"e\":\"AQAB\",\"n\":\"yWWAOSV3Z_BW9rJEFvbZyeU-q2mJWC0l8WiHNqwVVf7qXYgm9hJC0j1aPHku_Wpl38DpK3Xu3LjWOFG9OrCqga5Pzce3DDJKI903GNqz5wphJFqweoBFKOjj1wegymvySsLoPqqDNVYTKp4nVnECZS4axZJoNt2l1S1bC8JryaNze2stjW60QT-mIAGq9konKKN3URQ12dr478m0Oh-4WWOiY4HrXoSOklFmzK-aQx1JV_SZ04eIGfSw1pZZyqTaB1BwBotiy-QA03IRxwIXQ7BSx5EaxC5uMCMbzmbvJqjt-q8Y1wyl-UQjRucgp7hkfHSE1QT3zEex2Q3NFux7SQ\",\"x5c\":null,\"x\":null,\"y\":null,\"crv\":null}";
     string _JKT = "JGSVlE73oKtQQI1dypYg8_JNat0xJjsQNyOI5oxaZf4";
 
-    CustomDefaultDPoPProofValidator _subject;
+    DefaultDPoPProofValidator _subject;
 
     public DPoPProofValidatorTests()
     {
         _options.DPoP.ClockSkew = TimeSpan.Zero;
 
         _clock.UtcNowFunc = () => UtcNow;
-        _subject = new CustomDefaultDPoPProofValidator(
+        _subject = new DefaultDPoPProofValidator(
             _options, 
             new MockServerUrls() { BasePath = "/", Origin = "https://identityserver" },
             _mockReplayCache,
@@ -461,7 +461,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task missing_nonce_when_required_should_fail_validation_and_issue_nonce()
     {
-        _subject.ValidateNonce = true;
+        _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         var token = CreateDPoPProofToken();
         var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
@@ -476,7 +476,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task nonce_provided_when_required_should_succeed()
     {
-        _subject.ValidateNonce = true;
+        _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         var token = CreateDPoPProofToken();
         var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
@@ -498,7 +498,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task invalid_nonce_provided_when_required_should_fail_validation()
     {
-        _subject.ValidateNonce = true;
+        _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         var token = CreateDPoPProofToken();
         var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
@@ -521,7 +521,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task expired_nonce_provided_when_required_should_fail_validation()
     {
-        _subject.ValidateNonce = true;
+        _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         var token = CreateDPoPProofToken();
         var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
@@ -553,26 +553,5 @@ public class DPoPProofValidatorTests
         result.IsError.Should().BeTrue();
         result.Error.Should().Be("invalid_dpop_proof");
         result.ServerIssuedNonce.Should().NotBeNullOrEmpty();
-    }
-
-    public class CustomDefaultDPoPProofValidator : DefaultDPoPProofValidator
-    {
-        public bool ValidateNonce { get; set; }
-
-        public CustomDefaultDPoPProofValidator(IdentityServerOptions options, IServerUrls server, IReplayCache replayCache, ISystemClock clock, IDataProtectionProvider dataProtectionProvider, ILogger<DefaultDPoPProofValidator> logger) : base(options, server, replayCache, clock, dataProtectionProvider, logger)
-        {
-        }
-
-        protected override Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
-        {
-            if (!ValidateNonce)
-            {
-                return base.ValidateFreshnessAsync(context, result);
-            }
-            else
-            {
-                return base.ValidateNonceAsync(context, result);
-            }
-        }
     }
 }

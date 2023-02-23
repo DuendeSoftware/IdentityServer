@@ -122,6 +122,11 @@ public class Client
     public bool RequireDPoP { get; set; }
 
     /// <summary>
+    /// DPoP token expiration validity mode. Defaults to using the iat value.
+    /// </summary>
+    public DPoPTokenExpirationValidationMode DPoPValidationMode { get; set; } = DPoPTokenExpirationValidationMode.Iat;
+
+    /// <summary>
     /// Specifies allowed URIs to return tokens or authorization codes to
     /// </summary>
     public ICollection<string> RedirectUris { get; set; } = new HashSet<string>();
@@ -454,4 +459,31 @@ public class Client
             return _inner.GetEnumerator();
         }
     }
+}
+
+/// <summary>
+/// Models how the client's DPoP token expiation should be validated.
+/// </summary>
+[Flags]
+public enum DPoPTokenExpirationValidationMode
+{
+    // TODO: do we allow this custom/none?
+
+    /// <summary>
+    /// No built-in expiration validation.
+    /// </summary>
+    Custom  = 0b_0000_0000,  // 0
+    /// <summary>
+    /// Validate the iat value
+    /// </summary>
+    Iat     = 0b_0000_0001,  // 1
+    /// <summary>
+    /// Validate the nonce value
+    /// </summary>
+    Nonce   = 0b_0000_0010,  // 2
+    
+    /// <summary>
+    /// Validate both the iat and nonce values
+    /// </summary>
+    IatAndNonce = Iat | Nonce
 }
