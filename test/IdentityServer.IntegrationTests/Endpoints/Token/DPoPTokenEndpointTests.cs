@@ -734,9 +734,7 @@ public class DPoPTokenEndpointTests
         codeResponse.Error.Should().Be("invalid_dpop_proof");
     }
 
-    [Fact
-    // (Skip = "need update from IdentityModel")
-    ]
+    [Fact]
     [Trait("Category", Category)]
     public async Task server_issued_nonce_should_be_emitted()
     {

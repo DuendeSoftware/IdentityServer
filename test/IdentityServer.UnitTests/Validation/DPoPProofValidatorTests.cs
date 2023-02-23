@@ -353,7 +353,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_old_iat_should_fail_validation()
     {
-        _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
+        _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(1)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
         var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
@@ -367,7 +367,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_new_iat_should_fail_validation()
     {
-        _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
+        _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
         var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
@@ -467,7 +467,7 @@ public class DPoPProofValidatorTests
 
         _payload["nonce"] = result.ServerIssuedNonce;
         // too late
-        _now = _now.AddHours(1);
+        _now = _now.AddSeconds(61);
 
         token = CreateDPoPProofToken();
         ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
@@ -480,7 +480,7 @@ public class DPoPProofValidatorTests
 
         _payload["nonce"] = result.ServerIssuedNonce;
         // too early
-        _now = _now.AddHours(-1);
+        _now = _now.AddSeconds(-1);
 
         token = CreateDPoPProofToken();
         ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };

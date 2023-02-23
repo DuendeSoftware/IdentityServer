@@ -427,9 +427,11 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, long unixTime)
     {
         var now = Clock.UtcNow;
-        // TODO: where do we define this interval?
-        var start = now.Subtract(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
-        var end = now.Add(TimeSpan.FromMinutes(2)).ToUnixTimeSeconds();
+        var start = now.ToUnixTimeSeconds();
+        
+        var validityWindow = Options.DPoP.DPoPTokenValidityDuration;
+        var end = now.Add(validityWindow).ToUnixTimeSeconds();
+        
         if (unixTime < start || unixTime > end)
         {
             return true;
