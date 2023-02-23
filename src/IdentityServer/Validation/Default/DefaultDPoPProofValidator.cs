@@ -293,13 +293,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             result.Nonce = nonce as string;
         }
 
-        if (!result.IssuedAt.HasValue && String.IsNullOrEmpty(result.Nonce))
-        {
-            result.IsError = true;
-            result.ErrorDescription = "Must provide either 'nonce' or 'iat' value.";
-            return;
-        }
-
         await ValidateReplayAsync(context, result);
         if (result.IsError)
         {

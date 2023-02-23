@@ -8,11 +8,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -544,7 +541,7 @@ public class DPoPProofValidatorTests
 
         _payload["nonce"] = result.ServerIssuedNonce;
         // too early
-        _now = _now.AddSeconds(-1);
+        _now = _now.AddSeconds(-61);
 
         token = CreateDPoPProofToken();
         ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
