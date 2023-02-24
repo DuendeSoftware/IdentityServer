@@ -16,6 +16,9 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
+
+      <!-- Review: Is it okay to reference IdentityServer? -->
+      <ProjectReference Include="..\IdentityServer\Duende.IdentityServer.csproj" />
     </ItemGroup>
 
 </Project>

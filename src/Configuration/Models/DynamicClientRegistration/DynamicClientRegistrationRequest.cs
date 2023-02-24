@@ -36,6 +36,9 @@ public record DynamicClientRegistrationRequest
     [JsonPropertyName(OidcConstants.ClientMetadata.ClientUri)]
     public Uri? ClientUri { get; init; }
 
+    [JsonPropertyName(OidcConstants.ClientMetadata.TokenEndpointAuthenticationMethod)]
+    public string? TokenEndpointAuthenticationMethod { get; init; }
+
     /// <summary>
     /// URL to a JWK Set document which contains the client's public keys.
     /// </summary>
@@ -50,13 +53,8 @@ public record DynamicClientRegistrationRequest
     /// <summary>
     /// JWK Set document which contains the client's public keys.
     /// </summary>
-    /// <remarks>
-    /// Use of this parameter is preferred over the "jwks" parameter, as it allows for easier key rotation.
-    /// The <see cref="JwksUri"/> and <see cref="Jwks"/> parameters MUST NOT both be present in
-    /// the same request or response.
-    /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.Jwks)]
-    public JsonWebKeySet? Jwks { get; init; }
+    public DCR_JsonWebKeySet? Jwks { get; init; }
 
     /// <summary>
     /// String containing a space-separated list of scope values that the client can use when requesting access tokens.

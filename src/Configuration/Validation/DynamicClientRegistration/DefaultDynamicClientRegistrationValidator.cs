@@ -1,9 +1,14 @@
+using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using IdentityModel;
+using IdentityModel.Jwk;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
@@ -30,7 +35,7 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         //////////////////////////////
         // validate grant types
         //////////////////////////////
-        
+
         if (request.GrantTypes.Count == 0)
         {
             return new DynamicClientRegistrationValidationError(
@@ -131,7 +136,7 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
             var validApiScopes = await _resources.FindApiScopesByNameAsync(scopes);
             var validIdentityResources = await _resources.FindIdentityResourcesByScopeNameAsync(scopes);
 
-            if(validApiScopes.Count() + validIdentityResources.Count() != scopes.Length)
+            if (validApiScopes.Count() + validIdentityResources.Count() != scopes.Length)
             {
                 var validScopeNames = validApiScopes.Select(s => s.Name).Concat(validIdentityResources.Select(s => s.Name));
                 var invalidScopeNames = string.Join(" ", scopes.Except(validScopeNames));
@@ -152,8 +157,58 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
         // secret handling
         //////////////////////////////
 
-        // todo: if jwks is present - convert JWKs into secrets
-        // todo: add jwks_uri support
+        if (request.JwksUri is not null && request.Jwks is not null)
+        {
+            return new DynamicClientRegistrationValidationError(
+                DynamicClientRegistrationErrors.InvalidClientMetadata,
+                "The jwks_uri and jwks parameters must not be used together.");
+        }
+
+        if (request.Jwks is null && request.TokenEndpointAuthenticationMethod == OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
+        {
+            return new DynamicClientRegistrationValidationError(
+                DynamicClientRegistrationErrors.InvalidClientMetadata,
+                "Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
+        }
+
+        if (request.Jwks is not null && request.TokenEndpointAuthenticationMethod != OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
+        {
+            return new DynamicClientRegistrationValidationError(
+                DynamicClientRegistrationErrors.InvalidClientMetadata,
+                "Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
+        }
+
+        if (request.Jwks is not null)
+        {
+            var jsonOptions = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                IgnoreReadOnlyFields = true,
+                IgnoreReadOnlyProperties = true,
+            };
+
+            foreach (var jwk in request.Jwks.Keys)
+            {
+                // TODO - Other HMAC hashing algorithms would also expect a private key
+                if (jwk.HasPrivateKey && jwk.Alg != SecurityAlgorithms.HmacSha256)
+                {
+                    return new DynamicClientRegistrationValidationError(
+                        DynamicClientRegistrationErrors.InvalidClientMetadata,
+                        "unexpected private key in jwk"
+                    );
+                }
+
+
+                var debug = JsonSerializer.Serialize(jwk, jsonOptions);
+
+                client.ClientSecrets.Add(new Secret
+                {
+                    Type = IdentityServerConstants.SecretTypes.JsonWebKey,
+                    Value = JsonSerializer.Serialize(jwk, jsonOptions)
+                });
+            }
+        }
+
 
         //////////////////////////////
         // misc
