@@ -1,6 +1,10 @@
-﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication
 
 <h2>Claims</h2>
+
+<div>
+    <a asp-action="Renew" class="btn btn-primary">Renew Tokens</a>
+</div>
 
 <dl>
     @foreach (var claim in User.Claims)

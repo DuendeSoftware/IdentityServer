@@ -1,4 +1,5 @@
 using Clients;
+using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -80,6 +81,10 @@ namespace MvcDPoP
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
             });
+
+            // decorator
+            services.AddTransient<UserTokenEndpointService>();
+            services.AddTransient<IUserTokenEndpointService, DPoPUserTokenEndpointService>();
         }
 
         public void Configure(IApplicationBuilder app)
