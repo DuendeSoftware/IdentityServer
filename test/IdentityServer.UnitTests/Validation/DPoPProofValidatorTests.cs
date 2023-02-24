@@ -24,7 +24,7 @@ public class DPoPProofValidatorTests
 
     private IdentityServerOptions _options = new IdentityServerOptions();
     private StubClock _clock = new StubClock();
-    private MockReplayCache _mockReplayCache = new MockReplayCache();
+    private TestReplayCache _testReplayCache;
 
     private DateTime _now = new DateTime(2020, 3, 10, 9, 0, 0, DateTimeKind.Utc);
     public DateTime UtcNow
@@ -51,10 +51,12 @@ public class DPoPProofValidatorTests
         _options.DPoP.ClockSkew = TimeSpan.Zero;
 
         _clock.UtcNowFunc = () => UtcNow;
+        _testReplayCache = new TestReplayCache(_clock);
+
         _subject = new DefaultDPoPProofValidator(
             _options, 
             new MockServerUrls() { BasePath = "/", Origin = "https://identityserver" },
-            _mockReplayCache,
+            _testReplayCache,
             _clock, 
             new StubDataProtectionProvider(),
             new LoggerFactory().CreateLogger<DefaultDPoPProofValidator>());
@@ -127,15 +129,97 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task clock_skew_should_allow_tokens_outside_normal_duration()
+    {
+        _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
+        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(5);
+
+        {
+            // test 1: client behind server
+            _payload["jti"] = Guid.NewGuid().ToString();
+            var token = CreateDPoPProofToken();
+            _now = _now.AddMinutes(5);
+
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var result = await _subject.ValidateAsync(ctx);
+            result.IsError.Should().BeFalse();
+        }
+
+        {
+            // test 2: client ahead of server
+            _payload["jti"] = Guid.NewGuid().ToString();
+            var token = CreateDPoPProofToken();
+            _now = _now.AddMinutes(-5);
+
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var result = await _subject.ValidateAsync(ctx);
+            result.IsError.Should().BeFalse();
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task clock_skew_should_extend_replay_cache()
+    {
+        _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
+        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(5);
+
+        {
+            // test 1: client behind server
+            _payload["jti"] = Guid.NewGuid().ToString();
+            var token = CreateDPoPProofToken();
+            _now = _now.AddMinutes(5);
+
+            {
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var result = await _subject.ValidateAsync(ctx);
+                result.IsError.Should().BeFalse();
+            }
+            {
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var result = await _subject.ValidateAsync(ctx);
+                result.IsError.Should().BeTrue();
+            }
+        }
+
+        {
+            // test 2: client ahead of server
+            _payload["jti"] = Guid.NewGuid().ToString();
+            var token = CreateDPoPProofToken();
+            _now = _now.AddMinutes(-5);
+
+            {
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var result = await _subject.ValidateAsync(ctx);
+                result.IsError.Should().BeFalse();
+            }
+            {
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var result = await _subject.ValidateAsync(ctx);
+                result.IsError.Should().BeTrue();
+            }
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task replayed_valid_dpop_jwt_should_fail_validation()
     {
-        _mockReplayCache.Exists = true;
-
+        _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
+        _options.DPoP.ClockSkew = TimeSpan.Zero;
+        
         var token = CreateDPoPProofToken();
 
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
-        var result = await _subject.ValidateAsync(ctx);
-        result.IsError.Should().BeTrue();
+        {
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var result = await _subject.ValidateAsync(ctx);
+            result.IsError.Should().BeFalse();
+        }
+        {
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var result = await _subject.ValidateAsync(ctx);
+            result.IsError.Should().BeTrue();
+        }
     }
 
     [Fact]
@@ -551,4 +635,6 @@ public class DPoPProofValidatorTests
         result.Error.Should().Be("invalid_dpop_proof");
         result.ServerIssuedNonce.Should().NotBeNullOrEmpty();
     }
+
+
 }

@@ -25,7 +25,7 @@ namespace Duende.IdentityServer.Validation;
 /// </summary>
 public class DefaultDPoPProofValidator : IDPoPProofValidator
 {
-    const string ReplayCachePurpose = "DPoPReplay-jti";
+    const string ReplayCachePurpose = "DPoPReplay-jti-";
     const string DataProtectorPurpose = "DPoPProofValidation-nonce";
 
     /// <summary>
@@ -293,17 +293,18 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             result.Nonce = nonce as string;
         }
 
-        await ValidateReplayAsync(context, result);
-        if (result.IsError)
-        {
-            Logger.LogDebug("Detected replay of DPoP token");
-            return;
-        }
-
         await ValidateFreshnessAsync(context, result);
         if (result.IsError)
         {
             Logger.LogDebug("Failed to validate DPoP token freshness");
+            return;
+        }
+
+        // we do replay at the end so we only add to the reply cache if everything else is ok
+        await ValidateReplayAsync(context, result);
+        if (result.IsError)
+        {
+            Logger.LogDebug("Detected replay of DPoP token");
             return;
         }
     }
@@ -317,9 +318,14 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         {
             result.IsError = true;
             result.ErrorDescription = "Detected DPoP proof token replay.";
+            return;
         }
 
-        await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, Clock.UtcNow.Add(Options.DPoP.DPoPTokenValidityDuration));
+        // we do x2 here because client clock might be might be before or after, so we're making cache duration 
+        // longer than the likelyhood of proof token expiration, which is done before replay
+        var skew = Options.DPoP.ClockSkew * 2;
+        var cacheDuration = Options.DPoP.ProofTokenValidityDuration + skew;
+        await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, Clock.UtcNow.Add(cacheDuration));
     }
 
     /// <summary>
@@ -436,7 +442,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         var skew = Options.DPoP.ClockSkew;
         var start = now.Subtract(skew).ToUnixTimeSeconds();
         
-        var validityWindow = Options.DPoP.DPoPTokenValidityDuration;
+        var validityWindow = Options.DPoP.ProofTokenValidityDuration;
         var end = now.Add(validityWindow + skew).ToUnixTimeSeconds();
         
         if (unixTime < start || unixTime > end)

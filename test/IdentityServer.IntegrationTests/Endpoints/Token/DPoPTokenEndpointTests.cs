@@ -237,6 +237,129 @@ public class DPoPTokenEndpointTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task replayed_dpop_token_should_fail()
+    {
+        _mockPipeline.Options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
+        _mockPipeline.Options.DPoP.ClockSkew = TimeSpan.Zero;
+
+        var dpopToken = CreateDPoPProofToken();
+
+        {
+            var request = new ClientCredentialsTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client1",
+                ClientSecret = "secret",
+                Scope = "scope1",
+            };
+            request.Headers.Add("DPoP", dpopToken);
+
+            var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+            response.IsError.Should().BeFalse();
+            response.TokenType.Should().Be("DPoP");
+            var jkt = GetJKTFromAccessToken(response);
+            jkt.Should().Be(_JKT);
+        }
+
+        {
+            var request = new ClientCredentialsTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client1",
+                ClientSecret = "secret",
+                Scope = "scope1",
+            };
+            request.Headers.Add("DPoP", dpopToken);
+
+            var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+            response.IsError.Should().BeTrue();
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task dpop_options_should_affect_replay_cache_duration()
+    {
+        _mockPipeline.Options.DPoP.ProofTokenValidityDuration = TimeSpan.Zero;
+        _mockPipeline.Options.DPoP.ClockSkew = TimeSpan.Zero;
+
+        var dpopToken = CreateDPoPProofToken();
+
+        {
+            var request = new ClientCredentialsTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client1",
+                ClientSecret = "secret",
+                Scope = "scope1",
+            };
+            request.Headers.Add("DPoP", dpopToken);
+
+            var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+            response.IsError.Should().BeFalse();
+            response.TokenType.Should().Be("DPoP");
+            var jkt = GetJKTFromAccessToken(response);
+            jkt.Should().Be(_JKT);
+        }
+
+        {
+            var request = new ClientCredentialsTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client1",
+                ClientSecret = "secret",
+                Scope = "scope1",
+            };
+            request.Headers.Add("DPoP", dpopToken);
+
+            var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+            response.IsError.Should().BeFalse();
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task clock_skew_should_extend_replay_cache_duration()
+    {
+        _mockPipeline.Options.DPoP.ProofTokenValidityDuration = TimeSpan.Zero;
+        _mockPipeline.Options.DPoP.ClockSkew = TimeSpan.FromMinutes(1);
+
+        var dpopToken = CreateDPoPProofToken();
+
+        {
+            var request = new ClientCredentialsTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client1",
+                ClientSecret = "secret",
+                Scope = "scope1",
+            };
+            request.Headers.Add("DPoP", dpopToken);
+
+            var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+            response.IsError.Should().BeFalse();
+            response.TokenType.Should().Be("DPoP");
+            var jkt = GetJKTFromAccessToken(response);
+            jkt.Should().Be(_JKT);
+        }
+
+        {
+            var request = new ClientCredentialsTokenRequest
+            {
+                Address = IdentityServerPipeline.TokenEndpoint,
+                ClientId = "client1",
+                ClientSecret = "secret",
+                Scope = "scope1",
+            };
+            request.Headers.Add("DPoP", dpopToken);
+
+            var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+            response.IsError.Should().BeTrue();
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task invalid_dpop_request_should_fail()
     {
         var request = new ClientCredentialsTokenRequest
