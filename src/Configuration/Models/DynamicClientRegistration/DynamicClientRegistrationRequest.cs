@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using IdentityModel;
-using IdentityModel.Jwk;
 
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
@@ -36,7 +35,16 @@ public record DynamicClientRegistrationRequest
     [JsonPropertyName(OidcConstants.ClientMetadata.ClientUri)]
     public Uri? ClientUri { get; init; }
 
+    
+    /// <summary>
+    /// Requested Client Authentication method for the Token Endpoint. The
+    /// supported options are client_secret_post, client_secret_basic,
+    /// client_secret_jwt, private_key_jwt.
+    /// </summary>
     [JsonPropertyName(OidcConstants.ClientMetadata.TokenEndpointAuthenticationMethod)]
+    // Review - Should we try to validate that the auth method is one of the
+    // methods supported by the IdentityServer configuration? We could get that
+    // from discovery.
     public string? TokenEndpointAuthenticationMethod { get; init; }
 
     /// <summary>
@@ -48,6 +56,8 @@ public record DynamicClientRegistrationRequest
     /// the same request or response.
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.JwksUri)]
+    // Review - What should we do with JwksUri? Supporting it means
+    // IdentityServer needs to make http requests to untrusted urls
     public Uri? JwksUri { get; init; }
 
     /// <summary>

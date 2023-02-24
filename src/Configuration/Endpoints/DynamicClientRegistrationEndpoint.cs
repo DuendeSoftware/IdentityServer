@@ -84,9 +84,10 @@ public class DynamicClientRegistrationEndpoint
     }
 
     private static bool HasCorrectContentType(HttpRequest request) => 
-        // REVIEW: HasJsonContentType accepts content types like application/ld+json
-        // (really, anything in the form application/*-json). The spec technically only allows application/json for DCR.
-        // Do we care?
+        // Review: HasJsonContentType accepts content types like
+        // application/ld+json (really, anything in the form
+        // application/*-json). The spec technically only allows
+        // application/json for DCR. Do we care?
         request.HasJsonContentType();
 
     private void WriteContentTypeError(HttpResponse response)
