@@ -64,7 +64,7 @@ public record DynamicClientRegistrationRequest
     /// JWK Set document which contains the client's public keys.
     /// </summary>
     [JsonPropertyName(OidcConstants.ClientMetadata.Jwks)]
-    public DCR_JsonWebKeySet? Jwks { get; init; }
+    public KeySet? Jwks { get; init; }
 
     /// <summary>
     /// String containing a space-separated list of scope values that the client can use when requesting access tokens.
@@ -90,3 +90,6 @@ public record DynamicClientRegistrationRequest
     [JsonExtensionData]
     public IDictionary<string, object> Extensions { get; init; } = new Dictionary<string, object>(StringComparer.Ordinal);
 }
+
+
+public record KeySet(IEnumerable<object> Keys);

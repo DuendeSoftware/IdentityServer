@@ -180,6 +180,7 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
 
         if (request.Jwks is not null)
         {
+            
             var jsonOptions = new JsonSerializerOptions
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -187,10 +188,19 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
                 IgnoreReadOnlyProperties = true,
             };
 
-            foreach (var jwk in request.Jwks.Keys)
+            foreach (var key in request.Jwks.Keys)
             {
+                var jwk = JsonSerializer.Serialize(key, jsonOptions);
+                
+                // TODO - error handling for malformed jwk
+                
+                // We parse the jwk to ensure it is valid, but we utlimately
+                // write the original text that was passed to us (parsing can
+                // change it)
+                var parsedJwk = new IdentityModel.Jwk.JsonWebKey(jwk);
+
                 // TODO - Other HMAC hashing algorithms would also expect a private key
-                if (jwk.HasPrivateKey && jwk.Alg != SecurityAlgorithms.HmacSha256)
+                if (parsedJwk.HasPrivateKey && parsedJwk.Alg != SecurityAlgorithms.HmacSha256)
                 {
                     return new DynamicClientRegistrationValidationError(
                         DynamicClientRegistrationErrors.InvalidClientMetadata,
@@ -198,13 +208,10 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
                     );
                 }
 
-
-                var debug = JsonSerializer.Serialize(jwk, jsonOptions);
-
                 client.ClientSecrets.Add(new Secret
                 {
                     Type = IdentityServerConstants.SecretTypes.JsonWebKey,
-                    Value = JsonSerializer.Serialize(jwk, jsonOptions)
+                    Value = jwk
                 });
             }
         }
