@@ -239,9 +239,6 @@ public class DPoPTokenEndpointTests
     [Trait("Category", Category)]
     public async Task replayed_dpop_token_should_fail()
     {
-        _mockPipeline.Options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
-        _mockPipeline.Options.DPoP.ClockSkew = TimeSpan.Zero;
-
         var dpopToken = CreateDPoPProofToken();
 
         {
