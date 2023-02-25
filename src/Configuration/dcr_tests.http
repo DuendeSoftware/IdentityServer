@@ -98,6 +98,61 @@ Content-Type: application/json
     ]}
 }
 
+
+### private_key_jwt auth method without jwk
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["client_credentials", "authorization_code", "refresh_token"],
+    "client_name": "example",
+    "client_uri": "https://example.com",
+    "default_max_age": 10000,
+    "token_endpoint_auth_method": "private_key_jwt"
+}
+
+### Malformed jwks
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["client_credentials", "authorization_code", "refresh_token"],
+    "client_name": "example",
+    "client_uri": "https://example.com",
+    "token_endpoint_auth_method": "private_key_jwt",
+    "jwks": {"garbage": "nonsense"}
+}
+
+### Malformed jwks (null)
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["client_credentials", "authorization_code", "refresh_token"],
+    "client_name": "example",
+    "client_uri": "https://example.com",
+    "token_endpoint_auth_method": "private_key_jwt",
+    "jwks": {"keys": [null]}
+}
+
+
+### Malformed jwks (empty string)
+POST https://localhost:5001/connect/dcr
+Content-Type: application/json
+
+{
+    "redirect_uris": ["https://example.com/callback"],
+    "grant_types": ["client_credentials", "authorization_code", "refresh_token"],
+    "client_name": "example",
+    "client_uri": "https://example.com",
+    "token_endpoint_auth_method": "private_key_jwt",
+    "jwks": {"keys": [""]}
+}
+
+
 ##### Valid Requests #####
 ###
 POST https://localhost:5001/connect/dcr

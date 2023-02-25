@@ -178,9 +178,9 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
                 "Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
         }
 
-        if (request.Jwks is not null)
+        if (request.Jwks?.Keys is not null)
         {
-            
+
             var jsonOptions = new JsonSerializerOptions
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -191,20 +191,35 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
             foreach (var key in request.Jwks.Keys)
             {
                 var jwk = JsonSerializer.Serialize(key, jsonOptions);
-                
-                // TODO - error handling for malformed jwk
-                
+
                 // We parse the jwk to ensure it is valid, but we utlimately
                 // write the original text that was passed to us (parsing can
                 // change it)
-                var parsedJwk = new IdentityModel.Jwk.JsonWebKey(jwk);
+                try
+                {
+                    var parsedJwk = new IdentityModel.Jwk.JsonWebKey(jwk);
 
-                // TODO - Other HMAC hashing algorithms would also expect a private key
-                if (parsedJwk.HasPrivateKey && parsedJwk.Alg != SecurityAlgorithms.HmacSha256)
+                    // TODO - Other HMAC hashing algorithms would also expect a private key
+                    if (parsedJwk.HasPrivateKey && parsedJwk.Alg != SecurityAlgorithms.HmacSha256)
+                    {
+                        return new DynamicClientRegistrationValidationError(
+                            DynamicClientRegistrationErrors.InvalidClientMetadata,
+                            "unexpected private key in jwk"
+                        );
+                    }
+                }
+                catch (InvalidOperationException)
                 {
                     return new DynamicClientRegistrationValidationError(
                         DynamicClientRegistrationErrors.InvalidClientMetadata,
-                        "unexpected private key in jwk"
+                        "malformed jwk"
+                    );
+                }
+                catch (JsonException)
+                {
+                    return new DynamicClientRegistrationValidationError(
+                        DynamicClientRegistrationErrors.InvalidClientMetadata,
+                        "malformed jwk"
                     );
                 }
 
