@@ -27,6 +27,12 @@ internal class TokenResult : IEndpointResult
     {
         context.Response.SetNoCache();
 
+        if (Response.DPoPNonce.IsPresent())
+        {
+            // TODO: IdentityModel
+            context.Response.Headers["DPoP-Nonce"] = Response.DPoPNonce;
+        }
+
         var dto = new ResultDto
         {
             id_token = Response.IdentityToken,
