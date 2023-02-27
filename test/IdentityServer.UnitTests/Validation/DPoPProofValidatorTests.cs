@@ -48,7 +48,7 @@ public class DPoPProofValidatorTests
 
     public DPoPProofValidatorTests()
     {
-        _options.DPoP.ClockSkew = TimeSpan.Zero;
+        _options.DPoP.ServerClockSkew = TimeSpan.Zero;
 
         _clock.UtcNowFunc = () => UtcNow;
         _testReplayCache = new TestReplayCache(_clock);
@@ -132,7 +132,7 @@ public class DPoPProofValidatorTests
     public async Task clock_skew_should_allow_tokens_outside_normal_duration()
     {
         _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
-        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(5);
+        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(5);
 
         {
             // test 1: client behind server
@@ -162,7 +162,7 @@ public class DPoPProofValidatorTests
     public async Task clock_skew_should_extend_replay_cache()
     {
         _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
-        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(5);
+        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(5);
 
         {
             // test 1: client behind server
@@ -206,7 +206,7 @@ public class DPoPProofValidatorTests
     public async Task replayed_valid_dpop_jwt_should_fail_validation()
     {
         _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
-        _options.DPoP.ClockSkew = TimeSpan.Zero;
+        _options.DPoP.ServerClockSkew = TimeSpan.Zero;
         
         var token = CreateDPoPProofToken();
 
@@ -464,7 +464,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_old_within_clock_skew_iat_should_succeed()
     {
-        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(1);
+        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(59)).ToUnixTimeSeconds();
 
@@ -479,7 +479,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_old_past_clock_skew_iat_should_fail_validation()
     {
-        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(1);
+        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
 
@@ -495,7 +495,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_new_within_clock_skew_iat_should_succeed()
     {
-        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(1);
+        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(119)).ToUnixTimeSeconds();
 
@@ -510,7 +510,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_new_past_clock_skew_iat_should_fail_validation()
     {
-        _options.DPoP.ClockSkew = TimeSpan.FromMinutes(1);
+        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
 

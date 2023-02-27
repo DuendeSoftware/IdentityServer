@@ -127,6 +127,11 @@ public class Client
     public DPoPTokenExpirationValidationMode DPoPValidationMode { get; set; } = DPoPTokenExpirationValidationMode.Iat;
 
     /// <summary>
+    /// Clock skew used in validating the DPoP iat. Defaults to 5 minutes.
+    /// </summary>
+    public TimeSpan DPoPClockSkew { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// Specifies allowed URIs to return tokens or authorization codes to
     /// </summary>
     public ICollection<string> RedirectUris { get; set; } = new HashSet<string>();

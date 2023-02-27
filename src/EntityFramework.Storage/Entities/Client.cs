@@ -32,6 +32,7 @@ public class Client
     public bool AllowAccessTokensViaBrowser { get; set; }
     public bool RequireDPoP { get; set; }
     public DPoPTokenExpirationValidationMode DPoPValidationMode { get; set; }
+    public TimeSpan DPoPClockSkew { get; set; } = TimeSpan.FromMinutes(5);
     public List<ClientRedirectUri> RedirectUris { get; set; }
     public List<ClientPostLogoutRedirectUri> PostLogoutRedirectUris { get; set; }
     public string FrontChannelLogoutUri { get; set; }

@@ -322,7 +322,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
 
         // we do x2 here because client clock might be might be before or after, so we're making cache duration 
         // longer than the likelyhood of proof token expiration, which is done before replay
-        var skew = Options.DPoP.ClockSkew * 2;
+        var skew = Options.DPoP.ServerClockSkew * 2;
         var cacheDuration = Options.DPoP.ProofTokenValidityDuration + skew;
         await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, Clock.UtcNow.Add(cacheDuration));
     }
@@ -358,7 +358,8 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual Task ValidateIatAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        if (IsExpired(context, result, result.IssuedAt.Value))
+        // review: add tests for client clock skew value
+        if (IsExpired(context, result, context.Client.DPoPClockSkew, result.IssuedAt.Value))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'iat' value.";
@@ -377,24 +378,26 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         {
             result.IsError = true;
             result.ErrorDescription = "Missing 'nonce' value.";
-            result.ServerIssuedNonce = CreateNonce();
+            result.ServerIssuedNonce = CreateNonce(context, result);
             return;
         }
 
-        var time = await GetUnixTimeFromNonceAsync(result.Nonce);
+        var time = await GetUnixTimeFromNonceAsync(context, result);
         if (time <= 0)
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'nonce' value.";
-            result.ServerIssuedNonce = CreateNonce();
+            result.ServerIssuedNonce = CreateNonce(context, result);
             return;
         }
 
-        if (IsExpired(context, result, time))
+        if (IsExpired(context, result, Options.DPoP.ServerClockSkew, time))
         {
+            // review: emit log here @info that server clock times might be off, and look at server clock skew prop?
+
             result.IsError = true;
             result.ErrorDescription = "Invalid 'nonce' value.";
-            result.ServerIssuedNonce = CreateNonce();
+            result.ServerIssuedNonce = CreateNonce(context, result);
             return;
         }
     }
@@ -403,7 +406,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// Creates a nonce value to return to the client.
     /// </summary>
     /// <returns></returns>
-    protected virtual string CreateNonce()
+    protected virtual string CreateNonce(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
         var now = Clock.UtcNow.ToUnixTimeSeconds();
         return DataProtector.Protect(now.ToString());
@@ -413,11 +416,11 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// Reads the time the nonce was created.
     /// </summary>
     /// <returns></returns>
-    protected virtual ValueTask<long> GetUnixTimeFromNonceAsync(string nonce)
+    protected virtual ValueTask<long> GetUnixTimeFromNonceAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
         try
         {
-            var value = DataProtector.Unprotect(nonce);
+            var value = DataProtector.Unprotect(result.Nonce);
             if (Int64.TryParse(value, out long iat))
             {
                 return ValueTask.FromResult(iat);
@@ -435,14 +438,13 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// Validates the expiration of the DPoP proof.
     /// Returns true if the time is beyond the allowed limits, false otherwise.
     /// </summary>
-    protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, long unixTime)
+    protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, TimeSpan clockSkew, long unixTime)
     {
         var now = Clock.UtcNow;
-        var skew = Options.DPoP.ClockSkew;
-        var start = now.Subtract(skew).ToUnixTimeSeconds();
+        var start = now.Subtract(clockSkew).ToUnixTimeSeconds();
         
         var validityWindow = Options.DPoP.ProofTokenValidityDuration;
-        var end = now.Add(validityWindow + skew).ToUnixTimeSeconds();
+        var end = now.Add(validityWindow + clockSkew).ToUnixTimeSeconds();
         
         if (unixTime < start || unixTime > end)
         {

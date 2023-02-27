@@ -17,7 +17,7 @@ public class DPoPOptions
     public TimeSpan ProofTokenValidityDuration { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>
-    /// Clock skew used in validating the DPoP token expiration. Defaults to 5 minutes.
+    /// Clock skew used in validating the DPoP nonce. Defaults to zero.
     /// </summary>
-    public TimeSpan ClockSkew { get; set; } = TimeSpan.FromMinutes(5);
+    public TimeSpan ServerClockSkew { get; set; } = TimeSpan.FromMinutes(0);
 }
