@@ -1,5 +1,6 @@
 using Duende.IdentityServer.Configuration.Configuration;
 using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
+using IdentityModel.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -21,8 +22,14 @@ public static class ConfigurationServiceCollectionExtensions
         return services.AddIdentityServerConfiguration();
     }
 
-    public static IServiceCollection AddIdentityServerConfiguration(this IServiceCollection services)
+    private static IServiceCollection AddIdentityServerConfiguration(this IServiceCollection services)
     {
+        
+        services.AddSingleton(resolver =>
+        {
+            var options = resolver.GetRequiredService<IOptions<IdentityServerConfigurationOptions>>().Value;
+            return new DiscoveryCache(options.Authority);
+        });
         services.AddTransient<DynamicClientRegistrationEndpoint>();
         
         services.TryAddTransient<IDynamicClientRegistrationValidator, DefaultDynamicClientRegistrationValidator>();

@@ -4,23 +4,26 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Stores;
 using IdentityModel;
+using IdentityModel.Client;
 using IdentityModel.Jwk;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using DynamicClientRegistrationRequest = Duende.IdentityServer.Configuration.Models.DynamicClientRegistration.DynamicClientRegistrationRequest;
 
 namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
 public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrationValidator
 {
-    private readonly IResourceStore _resources;
+    private readonly DiscoveryCache _discoveryCache;
     private readonly ILogger<DefaultDynamicClientRegistrationValidator> _logger;
 
-    public DefaultDynamicClientRegistrationValidator(IResourceStore resources, ILogger<DefaultDynamicClientRegistrationValidator> logger)
+    public DefaultDynamicClientRegistrationValidator(
+        ILogger<DefaultDynamicClientRegistrationValidator> logger, 
+        DiscoveryCache discoveryCache)
     {
-        _resources = resources;
         _logger = logger;
+        _discoveryCache = discoveryCache;
     }
 
     // TODO - Add log messages throughout
@@ -133,17 +136,14 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
             // else
             //       offline_access scope is forbidden
 
-            var validApiScopes = await _resources.FindApiScopesByNameAsync(scopes);
-            var validIdentityResources = await _resources.FindIdentityResourcesByScopeNameAsync(scopes);
-
-            if (validApiScopes.Count() + validIdentityResources.Count() != scopes.Length)
+            var discovery = await _discoveryCache.GetAsync();
+            var unsupportedScopes = scopes.Except(discovery.ScopesSupported);
+            if(unsupportedScopes.Any())
             {
-                var validScopeNames = validApiScopes.Select(s => s.Name).Concat(validIdentityResources.Select(s => s.Name));
-                var invalidScopeNames = string.Join(" ", scopes.Except(validScopeNames));
-
+                var unsupportedScopeNames = string.Join(" ", unsupportedScopes);
                 return new DynamicClientRegistrationValidationError(
                     DynamicClientRegistrationErrors.InvalidClientMetadata,
-                    $"unsupported scope: {invalidScopeNames}"
+                    $"unsupported scope: {unsupportedScopeNames}"
                 );
             }
 
