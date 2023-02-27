@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using IdentityModel;
 using System.Collections.Generic;
 
 namespace Duende.IdentityServer.ResponseHandling;
@@ -56,6 +55,11 @@ public class TokenResponse
     /// The scope.
     /// </value>
     public string Scope { get; set; }
+
+    /// <summary>
+    /// The DPoP nonce header to emit.
+    /// </summary>
+    public string DPoPNonce { get; set; }
 
     /// <summary>
     /// Gets or sets the custom entries.

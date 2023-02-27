@@ -382,8 +382,7 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
 
         if (Options.Endpoints.EnableTokenEndpoint)
         {
-            // TODO: IdentityModel
-            entries.Add("dpop_signing_alg_values_supported", new[] { IdentityServerConstants.SupportedDPoPSigningAlgorithms });
+            entries.Add(OidcConstants.Discovery.DPoPSigningAlgorithmsSupported, new[] { IdentityServerConstants.SupportedDPoPSigningAlgorithms });
         }
 
         // custom entries

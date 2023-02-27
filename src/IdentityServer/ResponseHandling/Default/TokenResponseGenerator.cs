@@ -150,7 +150,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         var response = new TokenResponse
         {
             AccessToken = accessToken,
-            AccessTokenType = request.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType,
+            AccessTokenType = request.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType,
             AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
             Custom = request.CustomResponse,
             Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
@@ -243,7 +243,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         {
             IdentityToken = await CreateIdTokenFromRefreshTokenRequestAsync(request.ValidatedRequest, accessTokenString),
             AccessToken = accessTokenString,
-            AccessTokenType = request.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType, 
+            AccessTokenType = request.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType, 
             AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
             RefreshToken = handle,
             Custom = request.CustomResponse,
@@ -267,7 +267,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         var response = new TokenResponse
         {
             AccessToken = accessToken,
-            AccessTokenType = request.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType,
+            AccessTokenType = request.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType,
             AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
             Custom = request.CustomResponse,
             Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
@@ -330,7 +330,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         var response = new TokenResponse
         {
             AccessToken = accessToken,
-            AccessTokenType = request.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType,
+            AccessTokenType = request.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType,
             AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
             Custom = request.CustomResponse,
             Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
@@ -398,7 +398,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         var response = new TokenResponse
         {
             AccessToken = accessToken,
-            AccessTokenType = validationResult.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? "DPoP" : OidcConstants.TokenResponse.BearerTokenType,
+            AccessTokenType = validationResult.ValidatedRequest.DPoPKeyThumbprint.IsPresent() ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType,
             AccessTokenLifetime = validationResult.ValidatedRequest.AccessTokenLifetime,
             Custom = validationResult.CustomResponse,
             Scope = validationResult.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()

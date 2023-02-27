@@ -19,6 +19,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authentication;
 using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -171,21 +172,18 @@ internal class TokenRequestValidator : ITokenRequestValidator
         //////////////////////////////////////////////////////////
         // DPoP
         //////////////////////////////////////////////////////////
-        // TODO: IdentityModel
-        if (context.RequestHeaders.TryGetValues("DPoP", out var dpopHeader))
+        if (context.RequestHeaders.TryGetValues(OidcConstants.HttpHeaders.DPoP, out var dpopHeader))
         {
             if (_validatedRequest.Confirmation != null)
             {
                 LogError("Client already has a confirmation mechanism.");
-                // TODO: IdentityModel
-                return Invalid("invalid_dpop_proof", "Client already has a confirmation mechanism.");
+                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "Client already has a confirmation mechanism.");
             }
 
             if (dpopHeader.Count() > 1)
             {
                 LogError("Too many DPoP headers provided.");
-                // TODO: IdentityModel
-                return Invalid("invalid_dpop_proof", "Too many DPoP headers provided.");
+                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "Too many DPoP headers provided.");
             }
 
             var dpopContext = new DPoPProofValidatonContext
@@ -208,8 +206,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         else if (_validatedRequest.Client.RequireDPoP)
         {
             LogError("Client requires DPoP and a DPoP header value was not provided.");
-            // TODO: IdentityModel
-            return Invalid("invalid_dpop_proof", "Client requires DPoP and a DPoP header value was not provided.");
+            return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "Client requires DPoP and a DPoP header value was not provided.");
         }
 
         //////////////////////////////////////////////////////////
@@ -325,7 +322,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         if (authZcode.DPoPKeyThumbprint.IsPresent() && _validatedRequest.DPoPKeyThumbprint != authZcode.DPoPKeyThumbprint)
         {
             LogError("The DPoP proof token thumbprint in code exchange request does not match the original used on the authorize endpoint.");
-            return Invalid("invalid_dpop_proof", "The DPoP proof token thumbprint in code exchange request does not match the original used on the authorize endpoint.");
+            return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "The DPoP proof token thumbprint in code exchange request does not match the original used on the authorize endpoint.");
         }
 
         // remove code from store
@@ -653,7 +650,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
             if (_validatedRequest.DPoPKeyThumbprint != result.RefreshToken.DPoPKeyThumbprint)
             {
                 LogError("The DPoP proof token in the refresh token request does not match the original used.");
-                return Invalid("invalid_dpop_proof", "The DPoP proof token in the refresh token request does not match the original used.");
+                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "The DPoP proof token in the refresh token request does not match the original used.");
             }
         }
         else
@@ -661,7 +658,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
             if (result.RefreshToken.DPoPKeyThumbprint.IsPresent() && !_validatedRequest.Client.RequireClientSecret)
             {
                 LogError("DPoP proof token required.");
-                return Invalid("invalid_dpop_proof", "DPoP proof token required.");
+                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "DPoP proof token required.");
             }
 
             // this is for when clients authenticate to the token endpoint, and are not required to pass a new DPoP proof token
@@ -1187,8 +1184,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
         var values = new Dictionary<string, string>
         {
-            // TODO: IdentityModel
-            { "jkt", jkt }
+            { JwtClaimTypes.ConfirmationMethods.JwkThumbprint, jkt }
         };
         return JsonSerializer.Serialize(values);
     }

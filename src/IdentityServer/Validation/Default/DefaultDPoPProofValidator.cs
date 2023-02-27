@@ -119,8 +119,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         {
             if (result.IsError && result.Error.IsMissing())
             {
-                // TODO: IdentityModel
-                result.Error = "invalid_dpop_proof";
+                result.Error = OidcConstants.TokenErrors.InvalidDPoPProof;
             }
         }
 
