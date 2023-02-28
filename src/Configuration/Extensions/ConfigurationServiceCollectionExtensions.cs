@@ -24,11 +24,13 @@ public static class ConfigurationServiceCollectionExtensions
 
     private static IServiceCollection AddIdentityServerConfiguration(this IServiceCollection services)
     {
-        
+        services.AddHttpClient();
         services.AddSingleton(resolver =>
         {
             var options = resolver.GetRequiredService<IOptions<IdentityServerConfigurationOptions>>().Value;
-            return new DiscoveryCache(options.Authority);
+            var httpClientFactory = resolver.GetRequiredService<IHttpClientFactory>();
+            var http = httpClientFactory.CreateClient("discovery"); // TODO - rename or make more discoverable
+            return new DiscoveryCache(options.Authority, () => http);
         });
         services.AddTransient<DynamicClientRegistrationEndpoint>();
         

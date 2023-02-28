@@ -19,12 +19,12 @@ public class ConfigurationIntegrationTestBase
     public ConfigurationIntegrationTestBase()
     {
         var dbRoot = new InMemoryDatabaseRoot();
-        IdentityServerHost = new IdentityServerHost();
-        // TODO - Pass dbRoot in here
+        IdentityServerHost = new IdentityServerHost(dbRoot);
         IdentityServerHost.InitializeAsync().Wait();
 
         ConfigurationHost = new ConfigurationHost(
             authority: IdentityServerHost.Server!.BaseAddress.ToString(),
+            identityServerHttpClient: IdentityServerHost.HttpClient!,
             dbRoot);
         ConfigurationHost.InitializeAsync().Wait();
     }

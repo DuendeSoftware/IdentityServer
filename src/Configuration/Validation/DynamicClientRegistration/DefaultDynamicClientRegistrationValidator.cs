@@ -137,6 +137,10 @@ public class DefaultDynamicClientRegistrationValidator : IDynamicClientRegistrat
             //       offline_access scope is forbidden
 
             var discovery = await _discoveryCache.GetAsync();
+            if(discovery.IsError) 
+            {
+                throw new Exception("Discovery failed");
+            }
             var unsupportedScopes = scopes.Except(discovery.ScopesSupported);
             if(unsupportedScopes.Any())
             {

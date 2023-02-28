@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Configuration.EntityFramework;
 using Duende.IdentityServer.EntityFramework.DbContexts;
+using Duende.IdentityServer.EntityFramework.Interfaces;
+using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.EntityFramework.Storage;
 using Duende.IdentityServer.EntityFramework.Stores;
 using Duende.IdentityServer.Models;
@@ -9,6 +12,8 @@ using Duende.IdentityServer.Services;
 using IntegrationTests.TestFramework;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -20,10 +25,11 @@ namespace IntegrationTests.TestHosts;
 
 public class IdentityServerHost : GenericHost
 {
-    public IdentityServerHost(string baseAddress = "https://identityserver") 
+
+    public IdentityServerHost(InMemoryDatabaseRoot databaseRoot, string baseAddress = "https://identityserver") 
         : base(baseAddress)
     {
-        OnConfigureServices += ConfigureServices;
+        OnConfigureServices += (services) => ConfigureServices(services, databaseRoot);
         OnConfigure += Configure;
     }
 
@@ -36,7 +42,7 @@ public class IdentityServerHost : GenericHost
     };
     public List<ApiScope> ApiScopes { get; set; } = new List<ApiScope>();
 
-    private void ConfigureServices(IServiceCollection services)
+    private void ConfigureServices(IServiceCollection services, InMemoryDatabaseRoot databaseRoot)
     {
         services.AddRouting();
         services.AddAuthorization();
@@ -45,7 +51,9 @@ public class IdentityServerHost : GenericHost
             logging.AddFilter("Duende", LogLevel.Debug);
         });
 
-        services.AddConfigurationDbContext<ConfigurationDbContext>();
+        services.AddConfigurationDbContext<ConfigurationDbContext>(opt =>
+            opt.ConfigureDbContext = builder => 
+                builder.UseInMemoryDatabase("configurationDb", databaseRoot));
 
         services.AddIdentityServer(options=> 
         {
@@ -82,6 +90,14 @@ public class IdentityServerHost : GenericHost
                 context.Response.Redirect(signOutContext.PostLogoutRedirectUri);
             });
         });
+    }
+
+
+    public async Task<Client> GetClientAsync(string clientId)
+    {
+        var store = _appServices?.GetRequiredService<ClientStore>()
+            ?? throw new Exception("Failed to resolve ClientStore in test");
+        return await store.FindClientByIdAsync(clientId);
     }
 
     // public async Task CreateIdentityServerSessionCookieAsync(string sub, string sid = null)

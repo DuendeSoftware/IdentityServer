@@ -28,7 +28,7 @@ public class GenericHost
     }
 
     private readonly string _baseAddress;
-    private IServiceProvider? _appServices;
+    protected IServiceProvider? _appServices;
 
     public Assembly? HostAssembly { get; set; }
     public bool IsDevelopment { get; set; }
@@ -70,8 +70,6 @@ public class GenericHost
         {
             builder.Environment.ApplicationName = HostAssembly.GetName().Name ?? "";
         }
-
-      
 
         ConfigureServices(builder.Services);
         var app = builder.Build();

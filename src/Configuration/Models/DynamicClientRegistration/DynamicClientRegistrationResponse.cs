@@ -4,6 +4,9 @@ namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 public record DynamicClientRegistrationResponse : DynamicClientRegistrationRequest
 {
+    public DynamicClientRegistrationResponse()
+    {
+    }
 
     public DynamicClientRegistrationResponse(DynamicClientRegistrationRequest request)
     {

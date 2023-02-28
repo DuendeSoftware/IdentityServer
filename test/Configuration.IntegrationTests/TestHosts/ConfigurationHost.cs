@@ -12,6 +12,7 @@ using Duende.IdentityServer.EntityFramework.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Duende.IdentityServer.Services;
+using Duende.IdentityServer.EntityFramework.Options;
 
 namespace IntegrationTests.TestHosts;
 
@@ -21,16 +22,17 @@ public class ConfigurationHost : GenericHost
 
     public ConfigurationHost(
         string authority,
+        HttpClient identityServerHttpClient,
         InMemoryDatabaseRoot databaseRoot,
         string baseAddress = "https://configuration") 
             : base(baseAddress)
     {
-        OnConfigureServices += (services) => ConfigureServices(services, databaseRoot);
+        OnConfigureServices += (services) => ConfigureServices(services, databaseRoot, identityServerHttpClient);
         OnConfigure += Configure;
         _authority = authority;
     }
 
-    private void ConfigureServices(IServiceCollection services, InMemoryDatabaseRoot databaseRoot)
+    private void ConfigureServices(IServiceCollection services, InMemoryDatabaseRoot databaseRoot, HttpClient identityServerHttpClient)
     {
         services.AddRouting();
         services.AddAuthorization();
@@ -45,9 +47,14 @@ public class ConfigurationHost : GenericHost
             opt.Authority = _authority
         );
         services.AddClientConfigurationStore();
-
+        services.AddSingleton(new ConfigurationStoreOptions());
         services.AddDbContext<ConfigurationDbContext>(opt =>
-        opt.UseInMemoryDatabase("configurationDb", databaseRoot));
+            opt.UseInMemoryDatabase("configurationDb", databaseRoot));
+
+
+        services.AddSingleton<IHttpClientFactory>(sp => 
+            new CustomHttpClientFactory(identityServerHttpClient)
+        );
     }
 
     private void Configure(WebApplication app)
@@ -59,5 +66,24 @@ public class ConfigurationHost : GenericHost
 
         app.MapDynamicClientRegistration("/connect/dcr")
             .AllowAnonymous();
+    }
+}
+
+public class CustomHttpClientFactory : IHttpClientFactory
+{
+    private readonly HttpClient _discoClient;
+
+    public CustomHttpClientFactory(HttpClient discoClient)
+    {
+        _discoClient = discoClient;
+    }
+
+    public HttpClient CreateClient(string name)
+    {
+        if(name == "discovery") 
+        {
+            return _discoClient;
+        }
+        return new HttpClient();
     }
 }
