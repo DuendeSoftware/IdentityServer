@@ -227,18 +227,7 @@ public class DefaultTokenService : ITokenService
         {
             token.Confirmation = request.ValidatedRequest.Confirmation;
         }
-        else
-        {
-            if (Options.MutualTls.AlwaysEmitConfirmationClaim)
-            {
-                var clientCertificate = await ContextAccessor.HttpContext.Connection.GetClientCertificateAsync();
-                if (clientCertificate != null)
-                {
-                    token.Confirmation = clientCertificate.CreateThumbprintCnf();
-                }
-            }
-        }
-            
+
         return token;
     }
 

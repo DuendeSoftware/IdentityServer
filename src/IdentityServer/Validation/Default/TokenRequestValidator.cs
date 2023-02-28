@@ -19,7 +19,6 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authentication;
 using System.Text.Json;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -114,6 +113,14 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
 
         /////////////////////////////////////////////
+        // mTLS ephemeral client cert confirmation
+        /////////////////////////////////////////////
+        if (_options.MutualTls.AlwaysEmitConfirmationClaim && _validatedRequest.Confirmation.IsMissing() && context.ClientCertificate != null)
+        {
+            _validatedRequest.Confirmation = context.ClientCertificate.CreateThumbprintCnf();
+        }
+
+        /////////////////////////////////////////////
         // check client protocol type
         /////////////////////////////////////////////
         if (_validatedRequest.Client.ProtocolType != IdentityServerConstants.ProtocolTypes.OpenIdConnect)
@@ -172,7 +179,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         //////////////////////////////////////////////////////////
         // DPoP
         //////////////////////////////////////////////////////////
-        if (context.RequestHeaders.TryGetValues(OidcConstants.HttpHeaders.DPoP, out var dpopHeader))
+        if (context.DPoPProofToken.IsPresent())
         {
             if (_validatedRequest.Confirmation != null)
             {
@@ -180,16 +187,10 @@ internal class TokenRequestValidator : ITokenRequestValidator
                 return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "Client already has a confirmation mechanism.");
             }
 
-            if (dpopHeader.Count() > 1)
-            {
-                LogError("Too many DPoP headers provided.");
-                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "Too many DPoP headers provided.");
-            }
-
             var dpopContext = new DPoPProofValidatonContext
             {
                 Client = _validatedRequest.Client,
-                ProofToken = dpopHeader.Single(),
+                ProofToken = context.DPoPProofToken,
             };
             var dpopResult = await _dPoPProofValidator.ValidateAsync(dpopContext);
             if (dpopResult.IsError)

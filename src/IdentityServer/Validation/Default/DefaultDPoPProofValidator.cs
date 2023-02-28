@@ -167,12 +167,12 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return Task.CompletedTask;
         }
 
-        result.JsonWebKey = JsonSerializer.Serialize(jwkValues);
+        var jwkJson = JsonSerializer.Serialize(jwkValues);
 
-        Microsoft.IdentityModel.Tokens.JsonWebKey jwt;
+        Microsoft.IdentityModel.Tokens.JsonWebKey jwk;
         try
         {
-            jwt = new Microsoft.IdentityModel.Tokens.JsonWebKey(result.JsonWebKey);
+            jwk = new Microsoft.IdentityModel.Tokens.JsonWebKey(jwkJson);
         }
         catch (Exception ex)
         {
@@ -182,14 +182,15 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return Task.CompletedTask;
         }
 
-        if (jwt.HasPrivateKey)
+        if (jwk.HasPrivateKey)
         {
             result.IsError = true;
             result.ErrorDescription = "'jwk' value contains a private key.";
             return Task.CompletedTask;
         }
 
-        result.JsonWebKeyThumbprint = Base64Url.Encode(jwt.ComputeJwkThumbprint());
+        result.JsonWebKey = jwkJson;
+        result.JsonWebKeyThumbprint = Base64Url.Encode(jwk.ComputeJwkThumbprint());
 
         return Task.CompletedTask;
     }
@@ -320,9 +321,22 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return;
         }
 
-        // we do x2 here because client clock might be might be before or after, so we're making cache duration 
+        // get largest skew based on how client's freshness is validated
+        var validateIat = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
+        var validateNonce = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
+        var skew = TimeSpan.Zero;
+        if (validateIat && context.Client.DPoPClockSkew > skew)
+        {
+            skew = context.Client.DPoPClockSkew;
+        }
+        if (validateNonce && Options.DPoP.ServerClockSkew > skew)
+        {
+            skew = Options.DPoP.ServerClockSkew;
+        }
+
+        // we do x2 here because clock might be might be before or after, so we're making cache duration 
         // longer than the likelyhood of proof token expiration, which is done before replay
-        var skew = Options.DPoP.ServerClockSkew * 2;
+        skew *= 2;
         var cacheDuration = Options.DPoP.ProofTokenValidityDuration + skew;
         await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, Clock.UtcNow.Add(cacheDuration));
     }
@@ -385,6 +399,8 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         var time = await GetUnixTimeFromNonceAsync(context, result);
         if (time <= 0)
         {
+            Logger.LogDebug("Invalid time value read from the 'nonce' value");
+
             result.IsError = true;
             result.ErrorDescription = "Invalid 'nonce' value.";
             result.ServerIssuedNonce = CreateNonce(context, result);
@@ -393,7 +409,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
 
         if (IsExpired(context, result, Options.DPoP.ServerClockSkew, time))
         {
-            // review: emit log here @info that server clock times might be off, and look at server clock skew prop?
+            Logger.LogDebug("DPoP 'nonce' expiration failed. It's possible that the server farm clocks might not be closely synchronized, so consider setting the ServerClockSkew on the DPoPOptions on the IdentityServerOptions.");
 
             result.IsError = true;
             result.ErrorDescription = "Invalid 'nonce' value.";
