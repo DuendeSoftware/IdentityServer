@@ -10,6 +10,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -25,6 +26,7 @@ public class DPoPProofValidatorTests
     private IdentityServerOptions _options = new IdentityServerOptions();
     private StubClock _clock = new StubClock();
     private TestReplayCache _testReplayCache;
+    private StubDataProtectionProvider _stubDataProtectionProvider = new StubDataProtectionProvider();
 
     private DateTime _now = new DateTime(2020, 3, 10, 9, 0, 0, DateTimeKind.Utc);
     public DateTime UtcNow
@@ -36,7 +38,12 @@ public class DPoPProofValidatorTests
         }
     }
 
-    Client _client = new Client { ClientId = "client1" };
+    Client _client = new Client 
+    { 
+        ClientId = "client1", 
+        DPoPValidationMode = DPoPTokenExpirationValidationMode.Iat, 
+        DPoPClockSkew = TimeSpan.Zero 
+    };
 
     Dictionary<string, object> _header;
     Dictionary<string, object> _payload;
@@ -48,6 +55,7 @@ public class DPoPProofValidatorTests
 
     public DPoPProofValidatorTests()
     {
+        _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
         _options.DPoP.ServerClockSkew = TimeSpan.Zero;
 
         _clock.UtcNowFunc = () => UtcNow;
@@ -57,8 +65,8 @@ public class DPoPProofValidatorTests
             _options, 
             new MockServerUrls() { BasePath = "/", Origin = "https://identityserver" },
             _testReplayCache,
-            _clock, 
-            new StubDataProtectionProvider(),
+            _clock,
+            _stubDataProtectionProvider,
             new LoggerFactory().CreateLogger<DefaultDPoPProofValidator>());
 
         _payload = new Dictionary<string, object>
@@ -129,10 +137,90 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task clock_skew_should_allow_tokens_outside_normal_duration()
+    public async Task server_clock_skew_should_allow_tokens_outside_normal_duration()
     {
+        _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
         _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
         _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(5);
+
+        {
+            // test 1: client behind server
+            _payload["jti"] = Guid.NewGuid().ToString();
+            _payload["nonce"] = _stubDataProtectionProvider.Protect(new DateTimeOffset(_now).ToUnixTimeSeconds().ToString());
+            var token = CreateDPoPProofToken();
+            _now = _now.AddMinutes(5);
+
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var result = await _subject.ValidateAsync(ctx);
+            result.IsError.Should().BeFalse();
+        }
+
+        {
+            // test 2: client ahead of server
+            _payload["jti"] = Guid.NewGuid().ToString();
+            _payload["nonce"] = _stubDataProtectionProvider.Protect(new DateTimeOffset(_now).ToUnixTimeSeconds().ToString());
+            var token = CreateDPoPProofToken();
+            _now = _now.AddMinutes(-5);
+
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var result = await _subject.ValidateAsync(ctx);
+            result.IsError.Should().BeFalse();
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task server_clock_skew_should_extend_replay_cache()
+    {
+        _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
+        _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
+        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(5);
+
+        {
+            // test 1: client behind server
+            _payload["jti"] = Guid.NewGuid().ToString();
+            _payload["nonce"] = _stubDataProtectionProvider.Protect(new DateTimeOffset(_now).ToUnixTimeSeconds().ToString());
+            var token = CreateDPoPProofToken();
+            _now = _now.AddMinutes(5);
+
+            {
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var result = await _subject.ValidateAsync(ctx);
+                result.IsError.Should().BeFalse();
+            }
+            {
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var result = await _subject.ValidateAsync(ctx);
+                result.IsError.Should().BeTrue();
+            }
+        }
+
+        {
+            // test 2: client ahead of server
+            _payload["jti"] = Guid.NewGuid().ToString();
+            _payload["nonce"] = _stubDataProtectionProvider.Protect(new DateTimeOffset(_now).ToUnixTimeSeconds().ToString());
+            var token = CreateDPoPProofToken();
+            _now = _now.AddMinutes(-5);
+
+            {
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var result = await _subject.ValidateAsync(ctx);
+                result.IsError.Should().BeFalse();
+            }
+            {
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var result = await _subject.ValidateAsync(ctx);
+                result.IsError.Should().BeTrue();
+            }
+        }
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task client_clock_skew_should_allow_tokens_outside_normal_duration()
+    {
+        _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
+        _client.DPoPClockSkew = TimeSpan.FromMinutes(5);
 
         {
             // test 1: client behind server
@@ -159,10 +247,10 @@ public class DPoPProofValidatorTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task clock_skew_should_extend_replay_cache()
+    public async Task client_clock_skew_should_extend_replay_cache()
     {
         _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
-        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(5);
+        _client.DPoPClockSkew = TimeSpan.FromMinutes(5);
 
         {
             // test 1: client behind server
@@ -464,7 +552,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_old_within_clock_skew_iat_should_succeed()
     {
-        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(1);
+        _client.DPoPClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(59)).ToUnixTimeSeconds();
 
@@ -479,7 +567,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_old_past_clock_skew_iat_should_fail_validation()
     {
-        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(1);
+        _client.DPoPClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
 
@@ -495,7 +583,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_new_within_clock_skew_iat_should_succeed()
     {
-        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(1);
+        _client.DPoPClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(119)).ToUnixTimeSeconds();
 
@@ -510,7 +598,7 @@ public class DPoPProofValidatorTests
     [Trait("Category", Category)]
     public async Task too_new_past_clock_skew_iat_should_fail_validation()
     {
-        _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(1);
+        _client.DPoPClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
 
@@ -635,6 +723,4 @@ public class DPoPProofValidatorTests
         result.Error.Should().Be("invalid_dpop_proof");
         result.ServerIssuedNonce.Should().NotBeNullOrEmpty();
     }
-
-
 }
