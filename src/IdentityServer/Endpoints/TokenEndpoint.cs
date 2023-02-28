@@ -102,7 +102,6 @@ internal class TokenEndpoint : IEndpointHandler
         var form = (await context.Request.ReadFormAsync()).AsNameValueCollection();
         _logger.LogTrace("Calling into token request validator: {type}", _requestValidator.GetType().FullName);
 
-        // review: consider reading the proof token here and set as formal prop on the context
         var requestContext = new TokenRequestValidationContext
         {
             RequestParameters = form, 

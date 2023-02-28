@@ -372,7 +372,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual Task ValidateIatAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        // review: add tests for client clock skew value
         if (IsExpired(context, result, context.Client.DPoPClockSkew, result.IssuedAt.Value))
         {
             result.IsError = true;
