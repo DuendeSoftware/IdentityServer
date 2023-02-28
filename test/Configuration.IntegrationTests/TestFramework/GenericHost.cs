@@ -34,7 +34,6 @@ public class GenericHost
     public bool IsDevelopment { get; set; }
 
     public TestServer? Server { get; private set; }
-    // public TestBrowserClient? BrowserClient { get; set; }
     public HttpClient? HttpClient { get; set; }
 
     public TestLoggerProvider Logger { get; set; } = new TestLoggerProvider();
@@ -102,79 +101,5 @@ public class GenericHost
         _appServices = app.Services;
         
         OnConfigure(app);
-
-        ConfigureSignin(app);
-        ConfigureSignout(app);
     }
-
-    void ConfigureSignout(IApplicationBuilder app)
-    {
-        app.Use(async (ctx, next) =>
-        {
-            if (ctx.Request.Path == "/__signout")
-            {
-                await ctx.SignOutAsync();
-                ctx.Response.StatusCode = 204;
-                return;
-            }
-
-            await next();
-        });
-    }
-    // public async Task RevokeSessionCookieAsync()
-    // {
-    //     if(BrowserClient is null) 
-    //     {
-    //         throw new Exception("Attempt to use BrowserClient before it is initialized. Call InitializeAsync.");
-    //     }
-    //     var response = await BrowserClient.GetAsync(Url("__signout"));
-    //     response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-    // }
-
-
-    void ConfigureSignin(IApplicationBuilder app)
-    {
-        app.Use(async (ctx, next) =>
-        {
-            if (ctx.Request.Path == "/__signin")
-            {
-                if (_userToSignIn is not object)
-                {
-                    throw new Exception("No User Configured for SignIn");
-                }
-
-                var props = _propsToSignIn ?? new AuthenticationProperties();
-                await ctx.SignInAsync(_userToSignIn, props);
-                
-                _userToSignIn = null;
-                _propsToSignIn = null;
-
-                ctx.Response.StatusCode = 204;
-                return;
-            }
-
-            await next();
-        });
-    }
-    ClaimsPrincipal? _userToSignIn;
-    AuthenticationProperties? _propsToSignIn;
-    // public async Task IssueSessionCookieAsync(params Claim[] claims)
-    // {
-    //     if(BrowserClient is null) 
-    //     {
-    //         throw new Exception("Attempt to use BrowserClient before it is initialized. Call InitializeAsync.");
-    //     }
-    //     _userToSignIn = new ClaimsPrincipal(new ClaimsIdentity(claims, "test", "name", "role"));
-    //     var response = await BrowserClient.GetAsync(Url("__signin"));
-    //     response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-    // }
-    // public Task IssueSessionCookieAsync(AuthenticationProperties props, params Claim[] claims)
-    // {
-    //     _propsToSignIn = props;
-    //     return IssueSessionCookieAsync(claims);
-    // }
-    // public Task IssueSessionCookieAsync(string sub, params Claim[] claims)
-    // {
-    //     return IssueSessionCookieAsync(claims.Append(new Claim("sub", sub)).ToArray());
-    // }
 }

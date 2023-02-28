@@ -8,7 +8,7 @@ using Duende.IdentityServer.Models;
 
 namespace IntegrationTests;
 
-public class Stuff : ConfigurationIntegrationTestBase
+public class DynamicClientRegistrationTests : ConfigurationIntegrationTestBase
 {
     [Fact]
     public async Task valid_request_creates_new_client()
@@ -28,12 +28,14 @@ public class Stuff : ConfigurationIntegrationTestBase
 
         var response = await httpResponse.Content.ReadFromJsonAsync<DynamicClientRegistrationResponse>();
         response.Should().NotBeNull();
-        var newClient = await IdentityServerHost.GetClientAsync(response!.ClientId);
+        var newClient = await IdentityServerHost.GetClientAsync(response!.ClientId); // Not null already asserted
         newClient.Should().NotBeNull();
         newClient.ClientId.Should().Be(response.ClientId);
         newClient.AllowedGrantTypes.Should().BeEquivalentTo(request.GrantTypes);
         newClient.ClientName.Should().Be(request.ClientName);
         newClient.ClientUri.Should().Be(request.ClientUri.ToString());
         newClient.UserSsoLifetime.Should().Be(request.DefaultMaxAge);
+        newClient.ClientSecrets.Count.Should().Be(1);
+        newClient.ClientSecrets.Single().Value.Should().Be(response.ClientSecret.Sha256());
     }
 }

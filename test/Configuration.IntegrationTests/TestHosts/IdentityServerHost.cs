@@ -70,26 +70,6 @@ public class IdentityServerHost : GenericHost
 
         app.UseIdentityServer();
         app.UseAuthorization();
-
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapGet("/account/login", context =>
-            {
-                return Task.CompletedTask;
-            });
-            endpoints.MapGet("/account/logout", async context =>
-            {
-                // signout as if the user were prompted
-                await context.SignOutAsync();
-
-                var logoutId = context.Request.Query["logoutId"];
-                var interaction = context.RequestServices.GetRequiredService<IIdentityServerInteractionService>();
-
-                var signOutContext = await interaction.GetLogoutContextAsync(logoutId);
-                
-                context.Response.Redirect(signOutContext.PostLogoutRedirectUri);
-            });
-        });
     }
 
 
@@ -99,16 +79,4 @@ public class IdentityServerHost : GenericHost
             ?? throw new Exception("Failed to resolve ClientStore in test");
         return await store.FindClientByIdAsync(clientId);
     }
-
-    // public async Task CreateIdentityServerSessionCookieAsync(string sub, string sid = null)
-    // {
-    //     var props = new AuthenticationProperties();
-        
-    //     if (!String.IsNullOrWhiteSpace(sid))
-    //     {
-    //         props.Items.Add("session_id", sid);
-    //     }
-        
-    //     await IssueSessionCookieAsync(props, new Claim("sub", sub));
-    // }
 }

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Configuration.EntityFramework;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +21,8 @@ public class ConfigurationHost : GenericHost
 
     public ConfigurationHost(
         string authority,
-        HttpClient identityServerHttpClient,
-        InMemoryDatabaseRoot databaseRoot,
+        HttpClient identityServerHttpClient, // This client is used for making http requests to the IdentityServer host (such as discovery)
+        InMemoryDatabaseRoot databaseRoot, 
         string baseAddress = "https://configuration") 
             : base(baseAddress)
     {
@@ -60,10 +59,7 @@ public class ConfigurationHost : GenericHost
     private void Configure(WebApplication app)
     {
         app.UseRouting();
-
         app.UseAuthorization();
-
-
         app.MapDynamicClientRegistration("/connect/dcr")
             .AllowAnonymous();
     }
