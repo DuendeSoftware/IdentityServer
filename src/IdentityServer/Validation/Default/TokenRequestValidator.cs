@@ -113,7 +113,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
 
         /////////////////////////////////////////////
-        // mTLS ephemeral client cert confirmation
+        // mTLS ephemeral client cert processing
         /////////////////////////////////////////////
         if (_options.MutualTls.AlwaysEmitConfirmationClaim && _validatedRequest.Confirmation.IsMissing() && context.ClientCertificate != null)
         {
@@ -181,10 +181,10 @@ internal class TokenRequestValidator : ITokenRequestValidator
         //////////////////////////////////////////////////////////
         if (context.DPoPProofToken.IsPresent())
         {
-            if (_validatedRequest.Confirmation != null)
+            if (_validatedRequest.Confirmation.IsPresent())
             {
                 LogError("Client already has a confirmation mechanism.");
-                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "Client already has a confirmation mechanism.");
+                return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Client already has a confirmation mechanism.");
             }
 
             var dpopContext = new DPoPProofValidatonContext
@@ -648,21 +648,24 @@ internal class TokenRequestValidator : ITokenRequestValidator
         //////////////////////////////////////////////////////////
         if (_validatedRequest.DPoPKeyThumbprint.IsPresent())
         {
-            if (_validatedRequest.DPoPKeyThumbprint != result.RefreshToken.DPoPKeyThumbprint)
+            if (!_validatedRequest.Client.RequireClientSecret && _validatedRequest.DPoPKeyThumbprint != result.RefreshToken.DPoPKeyThumbprint)
             {
+                // public clients must use the same DPoP proof as last request
+                // confidential clients are allowed to pass a new DPoP proof
                 LogError("The DPoP proof token in the refresh token request does not match the original used.");
                 return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "The DPoP proof token in the refresh token request does not match the original used.");
             }
         }
-        else
+        else if (result.RefreshToken.DPoPKeyThumbprint.IsPresent())
         {
-            if (result.RefreshToken.DPoPKeyThumbprint.IsPresent() && !_validatedRequest.Client.RequireClientSecret)
+            if (!_validatedRequest.Client.RequireClientSecret)
             {
+                // public clients must use DPoP proof token on every renewal
                 LogError("DPoP proof token required.");
                 return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "DPoP proof token required.");
             }
 
-            // this is for when clients authenticate to the token endpoint, and are not required to pass a new DPoP proof token
+            // confidential clients are not required to pass a new DPoP proof, so we use the same values as the prior request
             _validatedRequest.DPoPKeyThumbprint = result.RefreshToken.DPoPKeyThumbprint;
             _validatedRequest.Confirmation = CreateCnfFromJkt(result.RefreshToken.DPoPKeyThumbprint);
         }

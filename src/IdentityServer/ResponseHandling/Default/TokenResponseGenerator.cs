@@ -227,6 +227,13 @@ public class TokenResponseGenerator : ITokenResponseGenerator
             // todo: do we want a new JTI?
             accessToken.CreationTime = Clock.UtcNow.UtcDateTime;
             accessToken.Lifetime = request.ValidatedRequest.AccessTokenLifetime;
+            // always take the current request confirmation values
+            if (request.ValidatedRequest.Confirmation.IsPresent() && accessToken.Confirmation != request.ValidatedRequest.Confirmation)
+            {
+                accessToken.Confirmation = request.ValidatedRequest.Confirmation;
+                request.ValidatedRequest.RefreshToken.DPoPKeyThumbprint = request.ValidatedRequest.DPoPKeyThumbprint;
+                mustUpdate = true; // to update the DB below
+            }
         }
 
         var accessTokenString = await TokenService.CreateSecurityTokenAsync(accessToken);

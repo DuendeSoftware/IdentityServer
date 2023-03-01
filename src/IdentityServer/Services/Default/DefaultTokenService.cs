@@ -28,6 +28,7 @@ public class DefaultTokenService : ITokenService
     /// </summary>
     protected readonly ILogger Logger;
 
+    // TODO: unused, so remove in 7.0?
     /// <summary>
     /// The HTTP context accessor
     /// </summary>
