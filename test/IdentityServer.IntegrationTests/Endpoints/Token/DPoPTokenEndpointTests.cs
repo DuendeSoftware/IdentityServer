@@ -384,7 +384,7 @@ public class DPoPTokenEndpointTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task when_client_requires_authentication_then_dpop_proof_should_be_optional_on_token_renewal()
+    public async Task confidential_client_dpop_proof_should_be_required_on_renewal()
     {
         await _mockPipeline.LoginAsync("bob");
 
@@ -429,14 +429,13 @@ public class DPoPTokenEndpointTests
         // no DPoP header passed here
 
         var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
-        rtResponse.IsError.Should().BeFalse();
-        rtResponse.TokenType.Should().Be("DPoP");
-        GetJKTFromAccessToken(rtResponse).Should().Be(_JKT);
+        rtResponse.IsError.Should().BeTrue();
+        rtResponse.Error.Should().Be("invalid_dpop_proof");
     }
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task when_client_does_not_require_authentication_then_dpop_proof_should_be_required_on_token_renewal()
+    public async Task public_client_dpop_proof_should_be_required_on_renewal()
     {
         _dpopClient.RequireClientSecret = false;
 

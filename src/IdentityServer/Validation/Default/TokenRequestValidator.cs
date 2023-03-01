@@ -658,16 +658,9 @@ internal class TokenRequestValidator : ITokenRequestValidator
         }
         else if (result.RefreshToken.DPoPKeyThumbprint.IsPresent())
         {
-            if (!_validatedRequest.Client.RequireClientSecret)
-            {
-                // public clients must use DPoP proof token on every renewal
-                LogError("DPoP proof token required.");
-                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "DPoP proof token required.");
-            }
-
-            // confidential clients are not required to pass a new DPoP proof, so we use the same values as the prior request
-            _validatedRequest.DPoPKeyThumbprint = result.RefreshToken.DPoPKeyThumbprint;
-            _validatedRequest.Confirmation = CreateCnfFromJkt(result.RefreshToken.DPoPKeyThumbprint);
+            // clients must use DPoP proof token on every renewal if they used one initially
+            LogError("DPoP proof token required.");
+            return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "DPoP proof token required.");
         }
 
         //////////////////////////////////////////////////////////
