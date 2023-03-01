@@ -4,8 +4,8 @@ namespace Duende.IdentityServer.Configuration.EntityFramework;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddClientConfigurationStore(this IServiceCollection services)
+    public static IServiceCollection AddClientConfigurationStore(this IIdentityServerConfigurationBuilder builder)
     {
-        return services.AddTransient<IClientConfigurationStore, ClientConfigurationStore>();
+        return builder.Services.AddTransient<IClientConfigurationStore, ClientConfigurationStore>();
     }
 }

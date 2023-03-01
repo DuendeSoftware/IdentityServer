@@ -1,4 +1,3 @@
-// Review: This namespace is ... something
 namespace Duende.IdentityServer.Configuration.Configuration;
 
 public class DynamicClientRegistrationOptions

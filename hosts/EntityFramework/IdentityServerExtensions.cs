@@ -43,13 +43,11 @@ internal static class IdentityServerExtensions
             //.AddConfigurationStoreCache()
             ;
 
-        // Review: Should we wrap AddIdentityServerConfiguration 
-        // and AddClientConfigurationStore in one call for convenience?
         builder.Services.AddIdentityServerConfiguration(opt =>
         {
-            // opt.DynamicClientRegistration.SecretLifetime = TimeSpan.FromHours(1);
-        });
-        builder.Services.AddClientConfigurationStore();
+                // opt.DynamicClientRegistration.SecretLifetime = TimeSpan.FromHours(1);
+        })
+            .AddClientConfigurationStore();
 
         return builder;
     }

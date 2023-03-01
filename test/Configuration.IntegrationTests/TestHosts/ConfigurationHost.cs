@@ -17,21 +17,16 @@ namespace IntegrationTests.TestHosts;
 
 public class ConfigurationHost : GenericHost
 {
-    private readonly string _authority;
-
     public ConfigurationHost(
-        string authority,
-        HttpClient identityServerHttpClient, // This client is used for making http requests to the IdentityServer host (such as discovery)
         InMemoryDatabaseRoot databaseRoot, 
         string baseAddress = "https://configuration") 
             : base(baseAddress)
     {
-        OnConfigureServices += (services) => ConfigureServices(services, databaseRoot, identityServerHttpClient);
+        OnConfigureServices += (services) => ConfigureServices(services, databaseRoot);
         OnConfigure += Configure;
-        _authority = authority;
     }
 
-    private void ConfigureServices(IServiceCollection services, InMemoryDatabaseRoot databaseRoot, HttpClient identityServerHttpClient)
+    private void ConfigureServices(IServiceCollection services, InMemoryDatabaseRoot databaseRoot)
     {
         services.AddRouting();
         services.AddAuthorization();
@@ -43,17 +38,13 @@ public class ConfigurationHost : GenericHost
         services.AddSingleton<ICancellationTokenProvider, MockCancellationTokenProvider>();
 
         services.AddIdentityServerConfiguration(opt =>
-            opt.Authority = _authority
-        );
-        services.AddClientConfigurationStore();
+            {
+                
+            })
+            .AddClientConfigurationStore();
         services.AddSingleton(new ConfigurationStoreOptions());
         services.AddDbContext<ConfigurationDbContext>(opt =>
             opt.UseInMemoryDatabase("configurationDb", databaseRoot));
-
-
-        services.AddSingleton<IHttpClientFactory>(sp => 
-            new CustomHttpClientFactory(identityServerHttpClient)
-        );
     }
 
     private void Configure(WebApplication app)
@@ -62,24 +53,5 @@ public class ConfigurationHost : GenericHost
         app.UseAuthorization();
         app.MapDynamicClientRegistration("/connect/dcr")
             .AllowAnonymous();
-    }
-}
-
-public class CustomHttpClientFactory : IHttpClientFactory
-{
-    private readonly HttpClient _discoClient;
-
-    public CustomHttpClientFactory(HttpClient discoClient)
-    {
-        _discoClient = discoClient;
-    }
-
-    public HttpClient CreateClient(string name)
-    {
-        if(name == "discovery") 
-        {
-            return _discoClient;
-        }
-        return new HttpClient();
     }
 }

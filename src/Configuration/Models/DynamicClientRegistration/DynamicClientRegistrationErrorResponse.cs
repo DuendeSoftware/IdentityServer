@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
-public class DynamicClientRegistrationErrorResponse
+public class DynamicClientRegistrationErrorResponse : IDynamicClientRegistrationResponse
 {
     [JsonPropertyName("error")]
     public string Error { get; set; } = string.Empty;

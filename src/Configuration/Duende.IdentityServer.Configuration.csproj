@@ -12,13 +12,11 @@
 
     <ItemGroup>
       <PackageReference Include="IdentityModel" Version="6.0.0" />
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.27.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
-
-      <!-- Review: Is it okay to reference IdentityServer? -->
-      <ProjectReference Include="..\IdentityServer\Duende.IdentityServer.csproj" />
     </ItemGroup>
 
 </Project>

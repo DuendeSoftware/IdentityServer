@@ -16,10 +16,7 @@ public class ConfigurationIntegrationTestBase
         IdentityServerHost = new IdentityServerHost(dbRoot);
         IdentityServerHost.InitializeAsync().Wait();
 
-        ConfigurationHost = new ConfigurationHost(
-            authority: IdentityServerHost.Server!.BaseAddress.ToString(),
-            identityServerHttpClient: IdentityServerHost.HttpClient!,
-            dbRoot);
+        ConfigurationHost = new ConfigurationHost(dbRoot);
         ConfigurationHost.InitializeAsync().Wait();
     }
 }
