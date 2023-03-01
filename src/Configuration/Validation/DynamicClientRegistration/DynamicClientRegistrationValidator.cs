@@ -24,55 +24,55 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         var client = new Client();
 
-        var result = await SetClientIdAsync(caller, request, client);
+        var result = await SetClientIdAsync(client, request, caller);
         if(result is ValidationStepFailure clientIdStep)
         {
             return clientIdStep.Error;
         }
 
-        result = await SetGrantTypesAsync(caller, request, client);
+        result = await SetGrantTypesAsync(client, request, caller);
         if(result is ValidationStepFailure grantTypeValidation)
         {
             return grantTypeValidation.Error;
         }
 
-        result = await SetRedirectUrisAsync(caller, request, client);
+        result = await SetRedirectUrisAsync(client, request, caller);
         if(result is ValidationStepFailure redirectUrisValidation)
         {
             return redirectUrisValidation.Error;
         }
 
-        result = await SetScopesAsync(caller, request, client);
+        result = await SetScopesAsync(client, request, caller);
         if(result is ValidationStepFailure scopeValidation)
         {
             return scopeValidation.Error;
         }
         
-        result = await SetSecretsAsync(caller, request, client);
+        result = await SetSecretsAsync(client, request, caller);
         if(result is ValidationStepFailure keySetValidation)
         {
             return keySetValidation.Error;
         }
 
-        result = await SetClientNameAsync(caller, request, client);
+        result = await SetClientNameAsync(client, request, caller);
         if(result is ValidationStepFailure nameValidation)
         {
             return nameValidation.Error;
         }
 
-        result = await SetClientUriAsync(caller, request, client);
+        result = await SetClientUriAsync(client, request, caller);
         if(result is ValidationStepFailure uriValidation)
         {
             return uriValidation.Error;
         }
 
-        result = await SetMaxAgeAsync(caller, request, client);
+        result = await SetMaxAgeAsync(client, request, caller);
         if(result is ValidationStepFailure maxAgeValidation)
         {
             return maxAgeValidation.Error;
         }
 
-        result = await ValidateSoftwareStatementAsync(caller, request, client);
+        result = await ValidateSoftwareStatementAsync(client, request, caller);
         if(result is ValidationStepFailure softwareStatementValidation)
         {
             return softwareStatementValidation.Error;
@@ -81,9 +81,10 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return new DynamicClientRegistrationValidatedRequest(client, request);
     }
 
-    protected virtual Task<ValidationStepResult> SetClientIdAsync(ClaimsPrincipal caller,
+    protected virtual Task<ValidationStepResult> SetClientIdAsync(
+        Client client,
         DynamicClientRegistrationRequest request,
-        Client client)
+        ClaimsPrincipal caller)
     {
         client.ClientId = CryptoRandom.CreateUniqueId();
         return Success();
@@ -91,9 +92,9 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
 
 
     protected virtual Task<ValidationStepResult> SetGrantTypesAsync(
-        ClaimsPrincipal caller,
+        Client client,
         DynamicClientRegistrationRequest request,
-        Client client)
+        ClaimsPrincipal caller)
     {
         if (request.GrantTypes.Count == 0)
         {
@@ -130,9 +131,9 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     protected virtual Task<ValidationStepResult> SetRedirectUrisAsync(
-        ClaimsPrincipal caller,
+        Client client,
         DynamicClientRegistrationRequest request,
-        Client client)
+        ClaimsPrincipal caller)
     {
         if (client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
         {
@@ -170,13 +171,13 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     protected virtual Task<ValidationStepResult> SetScopesAsync(
-        ClaimsPrincipal caller,
+        Client client,
         DynamicClientRegistrationRequest request,
-        Client client)
+        ClaimsPrincipal caller)
     {
         if (string.IsNullOrEmpty(request.Scope))
         {
-            return SetDefaultScopes(caller, request, client);
+            return SetDefaultScopes(client, request, caller);
         }
         else
         {
@@ -196,13 +197,19 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return Success();
     }
 
-    protected virtual Task<ValidationStepResult> SetDefaultScopes(ClaimsPrincipal caller, DynamicClientRegistrationRequest request, Client client)
+    protected virtual Task<ValidationStepResult> SetDefaultScopes(
+        Client client,
+        DynamicClientRegistrationRequest request,
+        ClaimsPrincipal caller)
     {
         // This default implementation sets no scopes.
         return Success();
     }
 
-    protected virtual Task<ValidationStepResult> SetSecretsAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request, Client client)
+    protected virtual Task<ValidationStepResult> SetSecretsAsync(
+        Client client,
+        DynamicClientRegistrationRequest request,
+        ClaimsPrincipal caller)
     {
         if (request.JwksUri is not null && request.Jwks is not null)
         {
@@ -266,7 +273,10 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
 
-    protected virtual Task<ValidationStepResult> SetClientNameAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request, Client client)
+    protected virtual Task<ValidationStepResult> SetClientNameAsync(
+        Client client,
+        DynamicClientRegistrationRequest request,
+        ClaimsPrincipal caller)
     {
         if (!string.IsNullOrWhiteSpace(request.ClientName))
         {
@@ -275,7 +285,10 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return Success();
     }
 
-    protected virtual Task<ValidationStepResult> SetClientUriAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request, Client client)
+    protected virtual Task<ValidationStepResult> SetClientUriAsync(
+        Client client,
+        DynamicClientRegistrationRequest request,
+        ClaimsPrincipal caller)
     {
         if (request.ClientUri != null)
         {
@@ -284,7 +297,10 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return Success();
     }
 
-    protected virtual Task<ValidationStepResult> SetMaxAgeAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request, Client client)
+    protected virtual Task<ValidationStepResult> SetMaxAgeAsync(
+        Client client,
+        DynamicClientRegistrationRequest request,
+        ClaimsPrincipal caller)
     {
         if (request.DefaultMaxAge.HasValue)
         {
@@ -297,7 +313,10 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return Success();
     }
 
-    protected virtual Task<ValidationStepResult> ValidateSoftwareStatementAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request, Client client)
+    protected virtual Task<ValidationStepResult> ValidateSoftwareStatementAsync(
+        Client client,
+        DynamicClientRegistrationRequest request,
+        ClaimsPrincipal caller)
     {
         return Success();
     }
