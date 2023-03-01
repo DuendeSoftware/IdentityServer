@@ -29,7 +29,7 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         // create client in configuration system
         await _store.AddAsync(validatedRequest.Client);
 
-        return new DynamicClientRegistrationResponse(validatedRequest.Original)
+        return new DynamicClientRegistrationResponse(validatedRequest.OriginalRequest)
         {
             ClientId = validatedRequest.Client.ClientId,
             ClientSecret = plainText,

@@ -90,6 +90,3 @@ public class DynamicClientRegistrationRequest
     [JsonExtensionData]
     public IDictionary<string, object> Extensions { get; set; } = new Dictionary<string, object>(StringComparer.Ordinal);
 }
-
-// TODO - Where should this live?
-public record KeySet(IEnumerable<object> Keys);
