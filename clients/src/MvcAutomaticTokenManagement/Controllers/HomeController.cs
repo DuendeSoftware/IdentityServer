@@ -4,6 +4,8 @@ using System.Text.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Clients;
+using Microsoft.AspNetCore.Authentication;
+using Duende.AccessTokenManagement.OpenIdConnect;
 
 namespace MvcCode.Controllers
 {
@@ -20,6 +22,12 @@ namespace MvcCode.Controllers
         public IActionResult Index() => View();
 
         public IActionResult Secure() => View();
+
+        public async Task<IActionResult> Renew()
+        {
+            await HttpContext.GetUserAccessTokenAsync(new UserTokenRequestParameters { ForceRenewal = true });
+            return RedirectToAction(nameof(Secure));
+        }
 
         public IActionResult Logout() => SignOut("oidc");
 
