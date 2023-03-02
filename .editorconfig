@@ -144,10 +144,6 @@ csharp_space_between_square_brackets=false
 csharp_preserve_single_line_blocks=true
 csharp_preserve_single_line_statements=true
 
-# Copyright Header
-file_header_template=Copyright (c) Duende Software. All rights reserved.\nSee LICENSE in the project root for license information.
-dotnet_diagnostic.IDE0073.severity=warning
-
 [*]
 charset=utf-8
 end_of_line=lf

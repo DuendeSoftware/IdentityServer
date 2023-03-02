@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
@@ -25,7 +28,7 @@ public class ClientConfigurationStore : IClientConfigurationStore
     protected readonly ILogger<ClientConfigurationStore> Logger;
 
     public ClientConfigurationStore(
-        ConfigurationDbContext dbContext, 
+        ConfigurationDbContext dbContext,
         ICancellationTokenProvider cancellationTokenProvider,
         ILogger<ClientConfigurationStore> logger)
     {
@@ -37,7 +40,7 @@ public class ClientConfigurationStore : IClientConfigurationStore
     public async Task AddAsync(Client client)
     {
         // TODO - nicer log message
-        Logger.LogDebug("Adding a client"); 
+        Logger.LogDebug("Adding a client");
         DbContext.Clients.Add(ClientMappers.ToEntity(client));
         await DbContext.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
     }
