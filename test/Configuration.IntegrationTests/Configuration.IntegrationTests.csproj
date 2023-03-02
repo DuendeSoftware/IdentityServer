@@ -41,7 +41,7 @@
     <ReportGenerator 
       ProjectDirectory="$(MSBuildProjectDirectory)" 
       ReportFiles="@(CoverageFiles)" 
-      TargetDirectory="coverage-reports" 
+      TargetDirectory="CoverageReports" 
       ReportTypes="Html" 
     />
   </Target>

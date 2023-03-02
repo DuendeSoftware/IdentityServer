@@ -214,4 +214,4 @@ src/IdentityServer4/host/identityserver.db
 tempkey.jwk
 keys
 *.key
-test/Configuration.IntegrationTests/coverage-reports
+test/Configuration.IntegrationTests/CoverageReports
