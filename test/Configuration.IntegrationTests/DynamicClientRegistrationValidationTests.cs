@@ -88,6 +88,23 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
         var error = await response.Content.ReadFromJsonAsync<DynamicClientRegistrationErrorResponse>();
         error?.Error.Should().Be("invalid_client_metadata");
     }
+
+    [Fact]
+    public async Task jwks_and_jwks_uri_used_together_should_fail()
+    {
+        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr",
+            new DynamicClientRegistrationRequest
+            {
+                GrantTypes = { "client_credentials" },
+                Jwks = new KeySet(Array.Empty<string>()),
+                JwksUri = new Uri("https://example.com")
+            }
+        );
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var error = await response.Content.ReadFromJsonAsync<DynamicClientRegistrationErrorResponse>();
+        error?.Error.Should().Be("invalid_client_metadata");
+    }
 }
 
 
