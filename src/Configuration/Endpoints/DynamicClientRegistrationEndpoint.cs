@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
@@ -10,7 +13,7 @@ namespace Duende.IdentityServer.Configuration;
 
 public class DynamicClientRegistrationEndpoint
 {
-    
+
     private readonly IDynamicClientRegistrationValidator _validator;
     private readonly IDynamicClientRegistrationRequestProcessor _processor;
     private readonly IDynamicClientRegistrationResponseGenerator _responseGenerator;
@@ -39,7 +42,7 @@ public class DynamicClientRegistrationEndpoint
 
         // Parse body
         var request = await TryParseAsync(context.Request);
-        if(request == null)
+        if (request == null)
         {
             await _responseGenerator.WriteBadRequestError(context);
             return;
@@ -74,7 +77,7 @@ public class DynamicClientRegistrationEndpoint
 
         return false;
     }
-        
+
     private void WriteContentTypeError(HttpResponse response)
     {
         _logger.LogDebug("Invalid content type in dynamic client registration request");
@@ -86,12 +89,12 @@ public class DynamicClientRegistrationEndpoint
         try
         {
             var document = await request.ReadFromJsonAsync<DynamicClientRegistrationRequest>();
-            if(document == null) 
+            if (document == null)
             {
                 _logger.LogDebug("Dynamic client registration request body cannot be null");
             }
             return document;
-        } 
+        }
         catch (JsonException ex)
         {
             _logger.LogDebug(ex, "Failed to parse dynamic client registration request body");

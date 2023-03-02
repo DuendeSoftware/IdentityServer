@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using System.Text.Json.Serialization;
 using IdentityModel;
 
@@ -35,7 +38,7 @@ public class DynamicClientRegistrationRequest
     [JsonPropertyName(OidcConstants.ClientMetadata.ClientUri)]
     public Uri? ClientUri { get; set; }
 
-    
+
     /// <summary>
     /// Requested Client Authentication method for the Token Endpoint. The
     /// supported options are client_secret_post, client_secret_basic,

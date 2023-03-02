@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
 
@@ -28,4 +31,3 @@ public class DynamicClientRegistrationValidatedRequest : DynamicClientRegistrati
     public Client Client { get; set; }
     public DynamicClientRegistrationRequest OriginalRequest { get; set; }
 }
-

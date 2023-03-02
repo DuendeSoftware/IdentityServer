@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using Duende.IdentityServer.Configuration.Configuration;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
@@ -53,7 +56,7 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         return null;
     }
 
-     public virtual Task<(Secret secret, string plainText)> GenerateSecret()
+    public virtual Task<(Secret secret, string plainText)> GenerateSecret()
     {
         var plainText = CryptoRandom.CreateUniqueId();
 
@@ -68,7 +71,3 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         return Task.FromResult((secret, plainText));
     }
 }
-
-
-
-    

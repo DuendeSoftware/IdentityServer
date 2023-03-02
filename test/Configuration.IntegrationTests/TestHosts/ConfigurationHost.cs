@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 using IntegrationTests.TestFramework;
@@ -18,8 +18,8 @@ namespace IntegrationTests.TestHosts;
 public class ConfigurationHost : GenericHost
 {
     public ConfigurationHost(
-        InMemoryDatabaseRoot databaseRoot, 
-        string baseAddress = "https://configuration") 
+        InMemoryDatabaseRoot databaseRoot,
+        string baseAddress = "https://configuration")
             : base(baseAddress)
     {
         OnConfigureServices += (services) => ConfigureServices(services, databaseRoot);
@@ -31,7 +31,8 @@ public class ConfigurationHost : GenericHost
         services.AddRouting();
         services.AddAuthorization();
 
-        services.AddLogging(logging => {
+        services.AddLogging(logging =>
+        {
             logging.AddFilter("Duende", LogLevel.Debug);
         });
 
@@ -39,7 +40,7 @@ public class ConfigurationHost : GenericHost
 
         services.AddIdentityServerConfiguration(opt =>
             {
-                
+
             })
             .AddClientConfigurationStore();
         services.AddSingleton(new ConfigurationStoreOptions());

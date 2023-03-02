@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 using FluentAssertions;
@@ -42,7 +42,7 @@ public class GenericHost
     public T Resolve<T>()
         where T : notnull
     {
-        if(_appServices == null) 
+        if (_appServices == null)
         {
             throw new Exception("Attempt to resolve services before service provider created. Call ConfigureApp first");
         }
@@ -73,7 +73,7 @@ public class GenericHost
         ConfigureServices(builder.Services);
         var app = builder.Build();
         ConfigureApp(app);
-        
+
         // Build and start the IHost
         await app.StartAsync();
 
@@ -99,7 +99,7 @@ public class GenericHost
     void ConfigureApp(WebApplication app)
     {
         _appServices = app.Services;
-        
+
         OnConfigure(app);
     }
 }

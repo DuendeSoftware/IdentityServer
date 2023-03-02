@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -24,55 +27,55 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         var client = new Client();
 
         var result = await SetClientIdAsync(client, request, caller);
-        if(result is ValidationStepFailure clientIdStep)
+        if (result is ValidationStepFailure clientIdStep)
         {
             return clientIdStep.Error;
         }
 
         result = await SetGrantTypesAsync(client, request, caller);
-        if(result is ValidationStepFailure grantTypeValidation)
+        if (result is ValidationStepFailure grantTypeValidation)
         {
             return grantTypeValidation.Error;
         }
 
         result = await SetRedirectUrisAsync(client, request, caller);
-        if(result is ValidationStepFailure redirectUrisValidation)
+        if (result is ValidationStepFailure redirectUrisValidation)
         {
             return redirectUrisValidation.Error;
         }
 
         result = await SetScopesAsync(client, request, caller);
-        if(result is ValidationStepFailure scopeValidation)
+        if (result is ValidationStepFailure scopeValidation)
         {
             return scopeValidation.Error;
         }
-        
+
         result = await SetSecretsAsync(client, request, caller);
-        if(result is ValidationStepFailure keySetValidation)
+        if (result is ValidationStepFailure keySetValidation)
         {
             return keySetValidation.Error;
         }
 
         result = await SetClientNameAsync(client, request, caller);
-        if(result is ValidationStepFailure nameValidation)
+        if (result is ValidationStepFailure nameValidation)
         {
             return nameValidation.Error;
         }
 
         result = await SetClientUriAsync(client, request, caller);
-        if(result is ValidationStepFailure uriValidation)
+        if (result is ValidationStepFailure uriValidation)
         {
             return uriValidation.Error;
         }
 
         result = await SetMaxAgeAsync(client, request, caller);
-        if(result is ValidationStepFailure maxAgeValidation)
+        if (result is ValidationStepFailure maxAgeValidation)
         {
             return maxAgeValidation.Error;
         }
 
         result = await ValidateSoftwareStatementAsync(client, request, caller);
-        if(result is ValidationStepFailure softwareStatementValidation)
+        if (result is ValidationStepFailure softwareStatementValidation)
         {
             return softwareStatementValidation.Error;
         }
@@ -88,7 +91,6 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         client.ClientId = CryptoRandom.CreateUniqueId();
         return ValidationStepSucceeded();
     }
-
 
     protected virtual Task<ValidationStepResult> SetGrantTypesAsync(
         Client client,
@@ -182,7 +184,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             var scopes = request.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            if(scopes.Contains("offline_access")) 
+            if (scopes.Contains("offline_access"))
             {
                 scopes = scopes.Where(s => s != "offline_access").ToArray();
                 _logger.LogDebug("offline_access should not be passed as a scope to dynamic client registration. Use the refresh_token grant_type instead.");
@@ -304,7 +306,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         if (request.DefaultMaxAge.HasValue)
         {
-            if(request.DefaultMaxAge <= 0)
+            if (request.DefaultMaxAge <= 0)
             {
                 return ValidationStepFailed("default_max_age must be greater than 0 if used");
             }
@@ -320,14 +322,14 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         return ValidationStepSucceeded();
     }
-    
-    protected Task<ValidationStepResult> ValidationStepFailed(string errorDescription, 
+
+    protected Task<ValidationStepResult> ValidationStepFailed(string errorDescription,
         string error = DynamicClientRegistrationErrors.InvalidClientMetadata) =>
             Task.FromResult<ValidationStepResult>(new ValidationStepFailure(
                     error,
                     errorDescription
                 ));
-    
+
     protected Task<ValidationStepResult> ValidationStepSucceeded() =>
         Task.FromResult<ValidationStepResult>(new ValidationStepSuccess());
 

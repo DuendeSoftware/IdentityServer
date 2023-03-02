@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Configuration.EntityFramework;
@@ -26,7 +26,7 @@ namespace IntegrationTests.TestHosts;
 public class IdentityServerHost : GenericHost
 {
 
-    public IdentityServerHost(InMemoryDatabaseRoot databaseRoot, string baseAddress = "https://identityserver") 
+    public IdentityServerHost(InMemoryDatabaseRoot databaseRoot, string baseAddress = "https://identityserver")
         : base(baseAddress)
     {
         OnConfigureServices += (services) => ConfigureServices(services, databaseRoot);
@@ -47,15 +47,16 @@ public class IdentityServerHost : GenericHost
         services.AddRouting();
         services.AddAuthorization();
 
-        services.AddLogging(logging => {
+        services.AddLogging(logging =>
+        {
             logging.AddFilter("Duende", LogLevel.Debug);
         });
 
         services.AddConfigurationDbContext<ConfigurationDbContext>(opt =>
-            opt.ConfigureDbContext = builder => 
+            opt.ConfigureDbContext = builder =>
                 builder.UseInMemoryDatabase("configurationDb", databaseRoot));
 
-        services.AddIdentityServer(options=> 
+        services.AddIdentityServer(options =>
         {
             options.EmitStaticAudienceClaim = true;
         })

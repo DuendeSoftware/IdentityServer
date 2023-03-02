@@ -1,4 +1,7 @@
-﻿using System.Net;
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+using System.Net;
 using FluentAssertions;
 using IntegrationTests.TestHosts;
 using Xunit;
@@ -30,8 +33,9 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
     [Fact]
     public async Task missing_grant_type_should_fail()
     {
-        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new {
-            redirect_uris = new [] { "https://example.com/callback" }
+        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new
+        {
+            redirect_uris = new[] { "https://example.com/callback" }
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -42,9 +46,10 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
     [Fact]
     public async Task unsupported_grant_type_should_fail()
     {
-        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new {
-            redirect_uris = new [] { "https://example.com/callback" },
-            grant_types = new [] { "password" }
+        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new
+        {
+            redirect_uris = new[] { "https://example.com/callback" },
+            grant_types = new[] { "password" }
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -55,9 +60,10 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
     [Fact]
     public async Task client_credentials_with_redirect_uri_should_fail()
     {
-        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new {
-            redirect_uris = new [] { "https://example.com/callback" },
-            grant_types = new [] { "client_credentials" }
+        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new
+        {
+            redirect_uris = new[] { "https://example.com/callback" },
+            grant_types = new[] { "client_credentials" }
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -68,8 +74,9 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
     [Fact]
     public async Task auth_code_without_redirect_uri_should_fail()
     {
-        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new {
-            grant_types = new [] { "authorization_code", "client_credentials" }
+        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new
+        {
+            grant_types = new[] { "authorization_code", "client_credentials" }
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -80,8 +87,9 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
     [Fact]
     public async Task client_credentials_and_refresh_token_should_fail()
     {
-        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new {
-            grant_types = new [] { "client_credentials", "refresh_token" }
+        var response = await ConfigurationHost.HttpClient!.PostAsJsonAsync("/connect/dcr", new
+        {
+            grant_types = new[] { "client_credentials", "refresh_token" }
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -106,7 +114,3 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
         error?.Error.Should().Be("invalid_client_metadata");
     }
 }
-
-
-
-
