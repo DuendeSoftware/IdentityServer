@@ -19,7 +19,6 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         _logger = logger;
     }
 
-    // TODO - Add log messages throughout
     public async Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request)
     {
         var client = new Client();
@@ -87,7 +86,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         ClaimsPrincipal caller)
     {
         client.ClientId = CryptoRandom.CreateUniqueId();
-        return Success();
+        return ValidationStepSucceeded();
     }
 
 
@@ -98,7 +97,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         if (request.GrantTypes.Count == 0)
         {
-            return Failure("grant type is required");
+            return ValidationStepFailed("grant type is required");
         }
 
         if (request.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
@@ -113,7 +112,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         // we only support the two above grant types
         if (client.AllowedGrantTypes.Count == 0)
         {
-            return Failure("unsupported grant type");
+            return ValidationStepFailed("unsupported grant type");
         }
 
         if (request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
@@ -121,13 +120,13 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             if (client.AllowedGrantTypes.Count == 1 &&
                 client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
             {
-                return Failure("client credentials does not support refresh tokens");
+                return ValidationStepFailed("client credentials does not support refresh tokens");
             }
 
             client.AllowOfflineAccess = true;
         }
 
-        return Success();
+        return ValidationStepSucceeded();
     }
 
     protected virtual Task<ValidationStepResult> SetRedirectUrisAsync(
@@ -147,14 +146,14 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                     }
                     else
                     {
-                        return Failure("malformed redirect URI", DynamicClientRegistrationErrors.InvalidRedirectUri);
+                        return ValidationStepFailed("malformed redirect URI", DynamicClientRegistrationErrors.InvalidRedirectUri);
                     }
                 }
             }
             else
             {
-                // TODO - When/If we implement PAR, this may no longer be an error for clients that use PAR
-                return Failure("redirect URI required for authorization_code grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
+                // TODO - When we implement PAR, this may no longer be an error for clients that use PAR
+                return ValidationStepFailed("redirect URI required for authorization_code grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
             }
         }
 
@@ -163,11 +162,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             if (request.RedirectUris.Any())
             {
-                return Failure("redirect URI not compatible with client_credentials grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
+                return ValidationStepFailed("redirect URI not compatible with client_credentials grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
             }
         }
 
-        return Success();
+        return ValidationStepSucceeded();
     }
 
     protected virtual Task<ValidationStepResult> SetScopesAsync(
@@ -194,7 +193,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 client.AllowedScopes.Add(scope);
             }
         }
-        return Success();
+        return ValidationStepSucceeded();
     }
 
     protected virtual Task<ValidationStepResult> SetDefaultScopes(
@@ -202,8 +201,9 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         DynamicClientRegistrationRequest request,
         ClaimsPrincipal caller)
     {
-        // This default implementation sets no scopes.
-        return Success();
+        // This default implementation sets no scopes and is intended as an extension point.
+        _logger.LogDebug("No scopes requested for dynamic client registration, and no default scope behavior implemented. To set default scopes, extend the DynamicClientRegistrationValidator and override the SetDefaultScopes method.");
+        return ValidationStepSucceeded();
     }
 
     protected virtual Task<ValidationStepResult> SetSecretsAsync(
@@ -213,17 +213,17 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         if (request.JwksUri is not null && request.Jwks is not null)
         {
-            return Failure("The jwks_uri and jwks parameters must not be used together");
+            return ValidationStepFailed("The jwks_uri and jwks parameters must not be used together");
         }
 
         if (request.Jwks is null && request.TokenEndpointAuthenticationMethod == OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
         {
-            return Failure("Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
+            return ValidationStepFailed("Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
         }
 
         if (request.Jwks is not null && request.TokenEndpointAuthenticationMethod != OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
         {
-            return Failure("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
+            return ValidationStepFailed("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
         }
 
         if (request.Jwks?.Keys is not null)
@@ -249,16 +249,16 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                     // TODO - Other HMAC hashing algorithms would also expect a private key
                     if (parsedJwk.HasPrivateKey && parsedJwk.Alg != SecurityAlgorithms.HmacSha256)
                     {
-                        return Failure("unexpected private key in jwk");
+                        return ValidationStepFailed("unexpected private key in jwk");
                     }
                 }
                 catch (InvalidOperationException)
                 {
-                    return Failure("malformed jwk");
+                    return ValidationStepFailed("malformed jwk");
                 }
                 catch (JsonException)
                 {
-                    return Failure("malformed jwk");
+                    return ValidationStepFailed("malformed jwk");
                 }
 
                 client.ClientSecrets.Add(new Secret
@@ -269,7 +269,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 });
             }
         }
-        return Success();
+        return ValidationStepSucceeded();
     }
 
 
@@ -282,7 +282,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             client.ClientName = request.ClientName;
         }
-        return Success();
+        return ValidationStepSucceeded();
     }
 
     protected virtual Task<ValidationStepResult> SetClientUriAsync(
@@ -294,7 +294,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             client.ClientUri = request.ClientUri.AbsoluteUri;
         }
-        return Success();
+        return ValidationStepSucceeded();
     }
 
     protected virtual Task<ValidationStepResult> SetMaxAgeAsync(
@@ -306,11 +306,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             if(request.DefaultMaxAge <= 0)
             {
-                return Failure("default_max_age must be greater than 0 if used");
+                return ValidationStepFailed("default_max_age must be greater than 0 if used");
             }
             client.UserSsoLifetime = request.DefaultMaxAge;
         }
-        return Success();
+        return ValidationStepSucceeded();
     }
 
     protected virtual Task<ValidationStepResult> ValidateSoftwareStatementAsync(
@@ -318,17 +318,17 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         DynamicClientRegistrationRequest request,
         ClaimsPrincipal caller)
     {
-        return Success();
+        return ValidationStepSucceeded();
     }
     
-    protected Task<ValidationStepResult> Failure(string errorDescription, 
+    protected Task<ValidationStepResult> ValidationStepFailed(string errorDescription, 
         string error = DynamicClientRegistrationErrors.InvalidClientMetadata) =>
             Task.FromResult<ValidationStepResult>(new ValidationStepFailure(
                     error,
                     errorDescription
                 ));
     
-    protected Task<ValidationStepResult> Success() =>
+    protected Task<ValidationStepResult> ValidationStepSucceeded() =>
         Task.FromResult<ValidationStepResult>(new ValidationStepSuccess());
 
     protected abstract class ValidationStepResult { }

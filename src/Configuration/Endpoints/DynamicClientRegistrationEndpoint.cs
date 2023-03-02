@@ -77,7 +77,7 @@ public class DynamicClientRegistrationEndpoint
         
     private void WriteContentTypeError(HttpResponse response)
     {
-        _logger.LogWarning("Invalid content type in dynamic client registration request");
+        _logger.LogDebug("Invalid content type in dynamic client registration request");
         response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
     }
 
@@ -88,13 +88,13 @@ public class DynamicClientRegistrationEndpoint
             var document = await request.ReadFromJsonAsync<DynamicClientRegistrationRequest>();
             if(document == null) 
             {
-                _logger.LogWarning("Dynamic client registration request body cannot be null");
+                _logger.LogDebug("Dynamic client registration request body cannot be null");
             }
             return document;
         } 
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Failed to parse dynamic client registration request body");
+            _logger.LogDebug(ex, "Failed to parse dynamic client registration request body");
             return default;
         }
     }

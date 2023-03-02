@@ -42,7 +42,7 @@ public class DynamicClientRegistrationRequest
     /// client_secret_jwt, private_key_jwt.
     /// </summary>
     [JsonPropertyName(OidcConstants.ClientMetadata.TokenEndpointAuthenticationMethod)]
-    // Review - Should we try to validate that the auth method is one of the
+    // REVIEW - Should we try to validate that the auth method is one of the
     // methods supported by the IdentityServer configuration? We could get that
     // from discovery.
     public string? TokenEndpointAuthenticationMethod { get; set; }
@@ -56,8 +56,6 @@ public class DynamicClientRegistrationRequest
     /// the same request or response.
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.JwksUri)]
-    // Review - What should we do with JwksUri? Supporting it means
-    // IdentityServer needs to make http requests to untrusted urls
     public Uri? JwksUri { get; set; }
 
     /// <summary>
@@ -83,6 +81,8 @@ public class DynamicClientRegistrationRequest
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.DefaultMaxAge)]
     public int? DefaultMaxAge { get; set; }
+
+    // TODO - Add SoftwareStatement (and consider SoftwareId, but I don't think we have anywhere to actually store it in IdentityServer)
 
     /// <summary>
     /// Custom client metadata fields to include in the serialization.
