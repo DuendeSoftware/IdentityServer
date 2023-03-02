@@ -31,7 +31,19 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="ReportGenerator" Version="5.1.18" />
   </ItemGroup>
 
+  <Target Name="Coverage">
+    <ItemGroup>
+      <CoverageFiles Include="TestResults\*\coverage.cobertura.xml" />
+    </ItemGroup>
+    <ReportGenerator 
+      ProjectDirectory="$(MSBuildProjectDirectory)" 
+      ReportFiles="@(CoverageFiles)" 
+      TargetDirectory="coverage-reports" 
+      ReportTypes="Html" 
+    />
+  </Target>
 
 </Project>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>lcov,cobertura</Format>          
+          <ExcludeByAttribute>Obsolete</ExcludeByAttribute>
+          <ExcludeByFile>**/src/IdentityServer/**/*.cs,**/src/Tracing/**/*.cs,**/src/EntityFramework.Storage/**/*.cs,**/src/Storage/**/*.cs,</ExcludeByFile>
+          <SingleHit>false</SingleHit>
+          <UseSourceLink>false</UseSourceLink>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <SkipAutoProps>true</SkipAutoProps>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
