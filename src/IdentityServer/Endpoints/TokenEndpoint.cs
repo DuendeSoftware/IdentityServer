@@ -104,26 +104,14 @@ internal class TokenEndpoint : IEndpointHandler
 
         var requestContext = new TokenRequestValidationContext
         {
-            RequestParameters = form, 
+            RequestParameters = form,
             ClientValidationResult = clientResult,
         };
-
-        // mTLS cert
-        var clientCertificate = await context.Connection.GetClientCertificateAsync();
-        if (clientCertificate != null)
+        
+        var error = await TryReadProofTokens(context, requestContext);
+        if (error != null)
         {
-            requestContext.ClientCertificate = clientCertificate;
-        }
-
-        // DPoP header value
-        if (context.Request.Headers.TryGetValue(OidcConstants.HttpHeaders.DPoP, out var dpopHeader))
-        {
-            if (dpopHeader.Count() > 1)
-            {
-                _logger.LogDebug("Too many DPoP headers provided.");
-                return Error(OidcConstants.TokenErrors.InvalidDPoPProof, "Too many DPoP headers provided.");
-            }
-            requestContext.DPoPProofToken = dpopHeader.First();
+            return error;
         }
 
         var requestResult = await _requestValidator.ValidateRequestAsync(requestContext);
@@ -145,6 +133,26 @@ internal class TokenEndpoint : IEndpointHandler
         // return result
         _logger.LogDebug("Token request success.");
         return new TokenResult(response);
+    }
+
+    private async Task<TokenErrorResult> TryReadProofTokens(HttpContext context, TokenRequestValidationContext tokenRequest)
+    {
+        // mTLS cert
+        tokenRequest.ClientCertificate = await context.Connection.GetClientCertificateAsync();
+
+        // DPoP header value
+        if (context.Request.Headers.TryGetValue(OidcConstants.HttpHeaders.DPoP, out var dpopHeader))
+        {
+            if (dpopHeader.Count() > 1)
+            {
+                _logger.LogDebug("Too many DPoP headers provided.");
+                return Error(OidcConstants.TokenErrors.InvalidDPoPProof, "Too many DPoP headers provided.");
+            }
+
+            tokenRequest.DPoPProofToken = dpopHeader.First();
+        }
+
+        return null;
     }
 
     private TokenErrorResult Error(string error, string errorDescription = null, Dictionary<string, object> custom = null)

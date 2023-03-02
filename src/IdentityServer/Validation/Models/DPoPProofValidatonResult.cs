@@ -20,6 +20,11 @@ public class DPoPProofValidatonResult : ValidationResult
     /// The JWK thumbprint from the validated DPoP proof token.
     /// </summary>
     public string JsonWebKeyThumbprint { get; set; }
+    
+    /// <summary>
+    /// The cnf value for the DPoP proof token 
+    /// </summary>
+    public string Confirmation { get; set; }
 
     /// <summary>
     /// The payload value of the DPoP proof token.

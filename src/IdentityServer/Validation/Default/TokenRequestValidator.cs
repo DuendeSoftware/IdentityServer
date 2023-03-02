@@ -18,7 +18,6 @@ using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authentication;
-using System.Text.Json;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -113,14 +112,6 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
 
         /////////////////////////////////////////////
-        // mTLS ephemeral client cert processing
-        /////////////////////////////////////////////
-        if (_options.MutualTls.AlwaysEmitConfirmationClaim && _validatedRequest.Confirmation.IsMissing() && context.ClientCertificate != null)
-        {
-            _validatedRequest.Confirmation = context.ClientCertificate.CreateThumbprintCnf();
-        }
-
-        /////////////////////////////////////////////
         // check client protocol type
         /////////////////////////////////////////////
         if (_validatedRequest.Client.ProtocolType != IdentityServerConstants.ProtocolTypes.OpenIdConnect)
@@ -177,37 +168,12 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _validatedRequest.RequestedResourceIndicator = resourceIndicators.SingleOrDefault();
 
         //////////////////////////////////////////////////////////
-        // DPoP
+        // proof token validation
         //////////////////////////////////////////////////////////
-        if (context.DPoPProofToken.IsPresent())
+        var proofResult = await ValidateProofToken(context);
+        if (proofResult.IsError)
         {
-            if (_validatedRequest.Confirmation.IsPresent())
-            {
-                LogError("Client already has a confirmation mechanism.");
-                return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Client already has a confirmation mechanism.");
-            }
-
-            var dpopContext = new DPoPProofValidatonContext
-            {
-                Client = _validatedRequest.Client,
-                ProofToken = context.DPoPProofToken,
-            };
-            var dpopResult = await _dPoPProofValidator.ValidateAsync(dpopContext);
-            if (dpopResult.IsError)
-            {
-                LogError(dpopResult.ErrorDescription ?? dpopResult.Error);
-                var err = Invalid(dpopResult.Error, dpopResult.ErrorDescription);
-                err.DPoPNonce = dpopResult.ServerIssuedNonce;
-                return err;
-            }
-
-            _validatedRequest.DPoPKeyThumbprint = dpopResult.JsonWebKeyThumbprint;
-            _validatedRequest.Confirmation = CreateCnfFromJkt(dpopResult.JsonWebKeyThumbprint);
-        }
-        else if (_validatedRequest.Client.RequireDPoP)
-        {
-            LogError("Client requires DPoP and a DPoP header value was not provided.");
-            return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "Client requires DPoP and a DPoP header value was not provided.");
+            return proofResult;
         }
 
         //////////////////////////////////////////////////////////
@@ -231,6 +197,57 @@ internal class TokenRequestValidator : ITokenRequestValidator
             default:
                 return await RunValidationAsync(ValidateExtensionGrantRequestAsync, parameters);
         }
+    }
+
+    private async Task<TokenRequestValidationResult> ValidateProofToken(TokenRequestValidationContext context)
+    {
+        // can't allow both both at once
+        if (context.ClientCertificate != null && context.DPoPProofToken.IsPresent())
+        {
+            LogError("Only one confirmation mechanism is allowed at a time.");
+            return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Only one confirmation mechanism is allowed at a time");
+        }
+
+        // mTLS client cert processing
+        if (context.ClientCertificate != null)
+        {
+            if (_options.MutualTls.AlwaysEmitConfirmationClaim && _validatedRequest.Confirmation.IsMissing())
+            {
+                // this would be an ephemeral client cert
+                _validatedRequest.Confirmation = context.ClientCertificate.CreateThumbprintCnf();
+            }
+            
+            // TODO
+            //_validatedRequest.ProofKeyThumbprint = context.ClientCertificate.GetSha256Thumbprint();
+        }
+
+        // DPoP
+        if (context.DPoPProofToken.IsPresent())
+        {
+            var dpopContext = new DPoPProofValidatonContext
+            {
+                Client = _validatedRequest.Client,
+                ProofToken = context.DPoPProofToken,
+            };
+            var dpopResult = await _dPoPProofValidator.ValidateAsync(dpopContext);
+            if (dpopResult.IsError)
+            {
+                LogError(dpopResult.ErrorDescription ?? dpopResult.Error);
+                var err = Invalid(dpopResult.Error, dpopResult.ErrorDescription);
+                err.DPoPNonce = dpopResult.ServerIssuedNonce;
+                return err;
+            }
+
+            _validatedRequest.Confirmation = dpopResult.Confirmation;
+            _validatedRequest.DPoPKeyThumbprint = dpopResult.JsonWebKeyThumbprint;
+        }
+        else if (_validatedRequest.Client.RequireDPoP)
+        {
+            LogError("Client requires DPoP and a DPoP header value was not provided.");
+            return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "Client requires DPoP and a DPoP header value was not provided.");
+        }
+
+        return Valid();
     }
 
     private async Task<TokenRequestValidationResult> RunValidationAsync(Func<NameValueCollection, Task<TokenRequestValidationResult>> validationFunc, NameValueCollection parameters)
@@ -1174,16 +1191,4 @@ internal class TokenRequestValidator : ITokenRequestValidator
     {
         return _events.RaiseAsync(new UserLoginFailureEvent(userName, error, interactive: false, clientId: clientId));
     }
-
-    private string CreateCnfFromJkt(string jkt)
-    {
-        if (String.IsNullOrWhiteSpace(jkt)) return String.Empty;
-
-        var values = new Dictionary<string, string>
-        {
-            { JwtClaimTypes.ConfirmationMethods.JwkThumbprint, jkt }
-        };
-        return JsonSerializer.Serialize(values);
-    }
-
 }

@@ -190,7 +190,10 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         }
 
         result.JsonWebKey = jwkJson;
-        result.JsonWebKeyThumbprint = Base64Url.Encode(jwk.ComputeJwkThumbprint());
+        
+        var jkt = Base64Url.Encode(jwk.ComputeJwkThumbprint());
+        result.JsonWebKeyThumbprint = jkt;
+        result.Confirmation = CreateCnfFromJkt(jkt);
 
         return Task.CompletedTask;
     }
@@ -467,5 +470,19 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Creates the cnf value from the jkt
+    /// </summary>
+    /// <param name="jkt"></param>
+    /// <returns></returns>
+    protected string CreateCnfFromJkt(string jkt)
+    {
+        var values = new Dictionary<string, string>
+        {
+            { JwtClaimTypes.ConfirmationMethods.JwkThumbprint, jkt }
+        };
+        return JsonSerializer.Serialize(values);
     }
 }

@@ -16,12 +16,12 @@ namespace Duende.IdentityServer.Validation;
 public class TokenRequestValidationContext
 {
     /// <summary>
-    /// The request form parameters.
+    /// The request form parameters
     /// </summary>
     public NameValueCollection RequestParameters { get; set; }
 
     /// <summary>
-    /// The validaiton result of client authentication.
+    /// The validaiton result of client authentication
     /// </summary>
     public ClientSecretValidationResult ClientValidationResult { get; set; }
 
@@ -31,7 +31,7 @@ public class TokenRequestValidationContext
     public X509Certificate2 ClientCertificate { get; set; }
 
     /// <summary>
-    /// The DPoP header value containing the proof token presented on the request.
+    /// The header value containing the DPoP proof token presented on the request
     /// </summary>
     public string DPoPProofToken { get; set; }
 }

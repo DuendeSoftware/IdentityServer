@@ -22,13 +22,22 @@ public static class X509CertificateExtensions
     /// <returns></returns>
     public static string CreateThumbprintCnf(this X509Certificate2 certificate)
     {
-        var hash = certificate.GetCertHash(HashAlgorithmName.SHA256);
+        var hash = certificate.GetSha256Thumbprint();
                             
         var values = new Dictionary<string, string>
         {
-            { "x5t#S256", Base64Url.Encode(hash) }
+            { "x5t#S256", hash }
         };
 
         return JsonSerializer.Serialize(values);
+    }
+
+    /// <summary>
+    /// Returns the SHA256 thumbprint of the certificate as a base64url encoded string
+    /// </summary>
+    /// <returns></returns>
+    public static string GetSha256Thumbprint(this X509Certificate2 certificate)
+    {
+        return Base64Url.Encode(certificate.GetCertHash(HashAlgorithmName.SHA256));
     }
 }
