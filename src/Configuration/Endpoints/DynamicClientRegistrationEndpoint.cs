@@ -4,6 +4,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
+using Duende.IdentityServer.Configuration.RequestProcessing;
 using Duende.IdentityServer.Configuration.ResponseGeneration;
 using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 using Microsoft.AspNetCore.Http;
@@ -11,14 +12,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Configuration;
 
+/// <summary>
+/// The dynamic client registration endpoint
+/// </summary>
 public class DynamicClientRegistrationEndpoint
 {
-
     private readonly IDynamicClientRegistrationValidator _validator;
     private readonly IDynamicClientRegistrationRequestProcessor _processor;
     private readonly IDynamicClientRegistrationResponseGenerator _responseGenerator;
     private readonly ILogger<DynamicClientRegistrationEndpoint> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DynamicClientRegistrationEndpoint" /> class.
+    /// </summary>
     public DynamicClientRegistrationEndpoint(
         IDynamicClientRegistrationValidator validator,
         IDynamicClientRegistrationRequestProcessor processor,
@@ -31,12 +37,15 @@ public class DynamicClientRegistrationEndpoint
         _responseGenerator = responseGenerator;
     }
 
+    /// <summary>
+    /// Processes requests to the dynamic client registration endpoint
+    /// </summary>
     public async Task Process(HttpContext context)
     {
         // Check content type
         if (!HasCorrectContentType(context.Request))
         {
-            WriteContentTypeError(context.Response);
+            await _responseGenerator.WriteContentTypeError(context.Response);
             return;
         }
 
@@ -76,12 +85,6 @@ public class DynamicClientRegistrationEndpoint
         }
 
         return false;
-    }
-
-    private void WriteContentTypeError(HttpResponse response)
-    {
-        _logger.LogDebug("Invalid content type in dynamic client registration request");
-        response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
     }
 
     private async Task<DynamicClientRegistrationRequest?> TryParseAsync(HttpRequest request)

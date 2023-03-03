@@ -4,6 +4,9 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Description>Configuration system for Duende IdentityServer</Description>
+        <AssemblyName>Duende.IdentityServer.Configuration</AssemblyName>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

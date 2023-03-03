@@ -6,7 +6,20 @@ using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
+/// <summary>
+/// Validates a dynamic client registration request.
+/// </summary>
 public interface IDynamicClientRegistrationValidator
 {
+    /// <summary>
+    /// Validates a dynamic client registration request. 
+    /// </summary>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <returns>A task that returns a <see
+    /// cref="DynamicClientRegistrationValidationResult"/>, which is either a
+    /// model of the validated request or a validation error.</returns>
     Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request);
 }

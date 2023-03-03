@@ -3,7 +3,13 @@
 
 namespace Duende.IdentityServer.Configuration.Configuration;
 
+/// <summary>
+/// Top level options for IdentityServer.Configuration.
+/// </summary>
 public class IdentityServerConfigurationOptions
 {
+    /// <summary>
+    /// Options for Dynamic Client Registration
+    /// </summary>
     public DynamicClientRegistrationOptions DynamicClientRegistration { get; set; } = new DynamicClientRegistrationOptions();
 }

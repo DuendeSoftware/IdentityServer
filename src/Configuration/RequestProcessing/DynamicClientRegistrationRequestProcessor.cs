@@ -7,13 +7,19 @@ using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 
-namespace Duende.IdentityServer.Configuration;
+namespace Duende.IdentityServer.Configuration.RequestProcessing;
 
+/// <inheritdoc />
 public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrationRequestProcessor
 {
     private readonly IdentityServerConfigurationOptions _options;
     private readonly IClientConfigurationStore _store;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DynamicClientRegistrationRequestProcessor"/> class.
+    /// </summary>
+    /// <param name="options">The IdentityServer.Configuration options.</param>
+    /// <param name="store">The client configuration store.</param>
     public DynamicClientRegistrationRequestProcessor(IdentityServerConfigurationOptions options, IClientConfigurationStore store)
     {
         _options = options;
@@ -21,6 +27,7 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     }
 
 
+    /// <inheritdoc />
     public virtual async Task<DynamicClientRegistrationResponse> ProcessAsync(DynamicClientRegistrationValidatedRequest validatedRequest)
     {
         var (secret, plainText) = await AddClientSecret(validatedRequest) switch
@@ -45,7 +52,12 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         };
     }
 
-    public virtual async Task<(Secret secret, string plainText)?> AddClientSecret(DynamicClientRegistrationValidatedRequest validatedRequest)
+    /// <summary>
+    /// Adds a client secret to a dynamic client registration request.
+    /// </summary>
+    /// <param name="validatedRequest">The validated dynamic client registration request.</param>
+    /// <returns>A tuple containing the added secret and its plaintext representation, or null if no secret was added.</returns>
+    protected virtual async Task<(Secret secret, string plainText)?> AddClientSecret(DynamicClientRegistrationValidatedRequest validatedRequest)
     {
         if (!validatedRequest.Client.ClientSecrets.Any())
         {
@@ -56,7 +68,12 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         return null;
     }
 
-    public virtual Task<(Secret secret, string plainText)> GenerateSecret()
+
+    /// <summary>
+    /// Generates a secret for a dynamic client registration request.
+    /// </summary>
+    /// <returns>A tuple containing the generated secret and its plaintext representation.</returns>
+    protected virtual Task<(Secret secret, string plainText)> GenerateSecret()
     {
         var plainText = CryptoRandom.CreateUniqueId();
 

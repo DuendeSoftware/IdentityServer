@@ -8,20 +8,25 @@ using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using DynamicClientRegistrationRequest = Duende.IdentityServer.Configuration.Models.DynamicClientRegistration.DynamicClientRegistrationRequest;
+using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
+/// <inheritdoc/>
 public class DynamicClientRegistrationValidator : IDynamicClientRegistrationValidator
 {
     private readonly ILogger<DynamicClientRegistrationValidator> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DynamicClientRegistrationValidator"/> class.
+    /// </summary>
     public DynamicClientRegistrationValidator(
         ILogger<DynamicClientRegistrationValidator> logger)
     {
         _logger = logger;
     }
 
+    /// <inheritdoc/>
     public async Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request)
     {
         var client = new Client();
@@ -83,7 +88,8 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return new DynamicClientRegistrationValidatedRequest(client, request);
     }
 
-    protected virtual Task<ValidationStepResult> SetClientIdAsync(
+    // TODO - This isn't validating anything, so move it to the request processor
+    private Task<ValidationStepResult> SetClientIdAsync(
         Client client,
         DynamicClientRegistrationRequest request,
         ClaimsPrincipal caller)
@@ -92,6 +98,18 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
+    /// <summary>
+    /// Validates requested grant types and uses them to set the allowed grant
+    /// types of the client.
+    /// </summary>
+    /// <param name="client">The client that will have its allowed grant types
+    /// set.</param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetGrantTypesAsync(
         Client client,
         DynamicClientRegistrationRequest request,
@@ -131,6 +149,18 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
+    /// <summary>
+    /// Validates requested redirect uris and uses them to set the redirect uris
+    /// of the client.
+    /// </summary>
+    /// <param name="client">The client that will have its redirect uris set.
+    /// </param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetRedirectUrisAsync(
         Client client,
         DynamicClientRegistrationRequest request,
@@ -171,6 +201,18 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
+    /// <summary>
+    /// Validates requested scopes and uses them to set the scopes of the
+    /// client.
+    /// </summary>
+    /// <param name="client">The client that will have its scopes set.
+    /// </param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetScopesAsync(
         Client client,
         DynamicClientRegistrationRequest request,
@@ -198,16 +240,38 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
+    /// <summary>
+    /// Sets scopes on the client when no scopes are requested. This default
+    /// implementation sets no scopes and is intended as an extension point.
+    /// </summary>
+    /// <param name="client">The client that will have its scopes set.
+    /// </param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetDefaultScopes(
         Client client,
         DynamicClientRegistrationRequest request,
         ClaimsPrincipal caller)
     {
-        // This default implementation sets no scopes and is intended as an extension point.
         _logger.LogDebug("No scopes requested for dynamic client registration, and no default scope behavior implemented. To set default scopes, extend the DynamicClientRegistrationValidator and override the SetDefaultScopes method.");
         return ValidationStepSucceeded();
     }
 
+    /// <summary>
+    /// Validates the requested jwks to set the secrets of the client.  
+    /// </summary>
+    /// <param name="client">The client that will have its secrets set.
+    /// </param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetSecretsAsync(
         Client client,
         DynamicClientRegistrationRequest request,
@@ -274,7 +338,17 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
-
+    /// <summary>
+    /// Validates the requested client name uses it to set the redirect uris of
+    /// the client.
+    /// </summary>
+    /// <param name="client">The client that will have its name set. </param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetClientNameAsync(
         Client client,
         DynamicClientRegistrationRequest request,
@@ -287,6 +361,19 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
+
+    /// <summary>
+    /// Validates the requested client uri and uses it to set the client uri of
+    /// the client.
+    /// </summary>
+    /// <param name="client">The client that will have its client uri set.
+    /// </param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetClientUriAsync(
         Client client,
         DynamicClientRegistrationRequest request,
@@ -299,6 +386,18 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
+    /// <summary>
+    /// Validates the requested default max age and uses it to set the user sso
+    /// lifetime of the client.
+    /// </summary>
+    /// <param name="client">The client that will have its max age set.
+    /// </param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetMaxAgeAsync(
         Client client,
         DynamicClientRegistrationRequest request,
@@ -315,6 +414,18 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
+    /// <summary>
+    /// Validates the software statement of the request. This default
+    /// implementation does nothing, and is included as an extension point.
+    /// </summary>
+    /// <param name="client">The client.
+    /// </param>
+    /// <param name="request">The dynamic client registration request to be
+    /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> ValidateSoftwareStatementAsync(
         Client client,
         DynamicClientRegistrationRequest request,
@@ -323,32 +434,13 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
-    protected Task<ValidationStepResult> ValidationStepFailed(string errorDescription,
+    private static Task<ValidationStepResult> ValidationStepFailed(string errorDescription,
         string error = DynamicClientRegistrationErrors.InvalidClientMetadata) =>
             Task.FromResult<ValidationStepResult>(new ValidationStepFailure(
                     error,
                     errorDescription
                 ));
 
-    protected Task<ValidationStepResult> ValidationStepSucceeded() =>
+    private static Task<ValidationStepResult> ValidationStepSucceeded() =>
         Task.FromResult<ValidationStepResult>(new ValidationStepSuccess());
-
-    protected abstract class ValidationStepResult { }
-
-    protected class ValidationStepFailure : ValidationStepResult
-    {
-        public DynamicClientRegistrationValidationError Error { get; set; }
-
-        public ValidationStepFailure(string error, string errorDescription)
-            : this(new DynamicClientRegistrationValidationError(error, errorDescription))
-        {
-        }
-
-        public ValidationStepFailure(DynamicClientRegistrationValidationError error)
-        {
-            Error = error;
-        }
-    }
-
-    protected class ValidationStepSuccess : ValidationStepResult { }
 }

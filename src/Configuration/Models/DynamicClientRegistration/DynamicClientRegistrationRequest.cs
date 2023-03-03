@@ -6,6 +6,9 @@ using IdentityModel;
 
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
+/// <summary>
+/// Represents a dynamic client registration request.
+/// </summary>
 public class DynamicClientRegistrationRequest
 {
     /// <summary>
@@ -45,9 +48,7 @@ public class DynamicClientRegistrationRequest
     /// client_secret_jwt, private_key_jwt.
     /// </summary>
     [JsonPropertyName(OidcConstants.ClientMetadata.TokenEndpointAuthenticationMethod)]
-    // REVIEW - Should we try to validate that the auth method is one of the
-    // methods supported by the IdentityServer configuration? We could get that
-    // from discovery.
+    
     public string? TokenEndpointAuthenticationMethod { get; set; }
 
     /// <summary>
@@ -85,7 +86,20 @@ public class DynamicClientRegistrationRequest
     [JsonPropertyName(OidcConstants.ClientMetadata.DefaultMaxAge)]
     public int? DefaultMaxAge { get; set; }
 
-    // TODO - Add SoftwareStatement (and consider SoftwareId, but I don't think we have anywhere to actually store it in IdentityServer)
+    /// <summary>
+    /// A software statement containing client metadata values about the client
+    /// software as claims.  This is a string value containing the entire signed
+    /// JWT.
+    /// </summary>
+    /// <remark>
+    /// The default configuration endpoints do not use the software statement.
+    /// It is included in this model to facilitate extensions to the
+    /// configuration system.
+    /// </remark>
+    // TODO - Add constant to IdentityModel
+    // [JsonPropertyName(OidcConstants.ClientMetadata.SoftwareStatement)]
+    [JsonPropertyName("software_statement")]
+    public string? SoftwareStatement { get; set; }
 
     /// <summary>
     /// Custom client metadata fields to include in the serialization.

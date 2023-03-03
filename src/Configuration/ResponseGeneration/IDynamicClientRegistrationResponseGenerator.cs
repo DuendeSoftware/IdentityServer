@@ -7,11 +7,46 @@ using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.Configuration.ResponseGeneration;
 
+/// <summary>
+/// Generates dynamic client registration responses.
+/// </summary>
 public interface IDynamicClientRegistrationResponseGenerator
 {
-    Task WriteBadRequestError(HttpContext context);
+    /// <summary>
+    /// Writes a response object to the HTTP context with the given status code.
+    /// </summary>
+    /// <typeparam name="T">The type of the response object that implements the <see cref="IDynamicClientRegistrationResponse"/> interface.</typeparam>
+    /// <param name="context">The HTTP context to write the response to.</param>
+    /// <param name="statusCode">The status code to set in the response.</param>
+    /// <param name="response">The response object to write to the response.</param>
     Task WriteResponse<T>(HttpContext context, int statusCode, T response)
         where T : IDynamicClientRegistrationResponse;
+
+    /// <summary>
+    /// Writes a content type error to the HTTP response.
+    /// </summary>
+    /// <param name="response">The HTTP response to write the error to.</param>
+    // TODO - Convert response to HttpContext
+    Task WriteContentTypeError(HttpResponse response);
+
+    /// <summary>
+    /// Writes a bad request error to the HTTP context.
+    /// </summary>
+    /// <param name="context">The HTTP context to write the error to.</param>
+    // TODO - this is for requests that don't parse. Rename to make that obvious.
+    Task WriteBadRequestError(HttpContext context);
+
+    /// <summary>
+    /// Writes a success response to the HTTP context.
+    /// </summary>
+    /// <param name="context">The HTTP context to write the response to.</param>
+    /// <param name="response">The dynamic client registration response.</param>
     Task WriteSuccessResponse(HttpContext context, DynamicClientRegistrationResponse response);
+
+    /// <summary>
+    /// Writes a validation error to the HTTP context.
+    /// </summary>
+    /// <param name="context">The HTTP context to write the error to.</param>
+    /// <param name="error">The dynamic client registration validation error.</param>
     Task WriteValidationError(HttpContext context, DynamicClientRegistrationValidationError error);
 }
