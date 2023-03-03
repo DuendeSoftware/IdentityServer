@@ -6,7 +6,7 @@ using Duende.IdentityServer.Models;
 namespace Duende.IdentityServer.Configuration;
 
 /// <summary>
-/// Interface for communication with the client configuration store.
+/// Interface for communication with the client configuration data store.
 /// </summary>
 public interface IClientConfigurationStore
 {

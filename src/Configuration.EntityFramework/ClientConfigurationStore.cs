@@ -9,6 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Configuration;
 
+/// <summary>
+/// Communicates with the client configuration data store using entity
+/// framework. 
+/// </summary>
 public class ClientConfigurationStore : IClientConfigurationStore
 {
     /// <summary>
@@ -26,6 +30,10 @@ public class ClientConfigurationStore : IClientConfigurationStore
     /// </summary>
     protected readonly ILogger<ClientConfigurationStore> Logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ClientConfigurationStore"/>
+    /// class.
+    /// </summary>
     public ClientConfigurationStore(
         ConfigurationDbContext dbContext,
         ICancellationTokenProvider cancellationTokenProvider,
@@ -36,6 +44,7 @@ public class ClientConfigurationStore : IClientConfigurationStore
         Logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task AddAsync(Client client)
     {
         // TODO - nicer log message
