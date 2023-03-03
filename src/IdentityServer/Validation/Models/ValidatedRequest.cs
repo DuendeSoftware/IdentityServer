@@ -106,6 +106,11 @@ public class ValidatedRequest
     public string Confirmation { get; set; }
 
     /// <summary>
+    /// The type of proof for the request
+    /// </summary>
+    public ProofType ProofType { get; set; }
+
+    /// <summary>
     /// Gets or sets the client ID that should be used for the current request (this is useful for token exchange scenarios)
     /// </summary>
     /// <value>

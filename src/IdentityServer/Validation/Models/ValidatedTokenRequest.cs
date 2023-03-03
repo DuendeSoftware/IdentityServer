@@ -3,7 +3,6 @@
 
 
 using Duende.IdentityServer.Models;
-using System;
 using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Validation;
@@ -99,7 +98,7 @@ public class ValidatedTokenRequest : ValidatedRequest
     public BackChannelAuthenticationRequest BackChannelAuthenticationRequest { get; set; }
 
     /// <summary>
-    /// The thumbprint of the associated DPoP proof key, if one was used.
+    /// The thumbprint of the associated proof key, if one was used.
     /// </summary>
-    public string DPoPKeyThumbprint { get; set; }
+    public string ProofKeyThumbprint { get; set; }
 }

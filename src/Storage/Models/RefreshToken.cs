@@ -140,7 +140,7 @@ public class RefreshToken
     public IEnumerable<string> AuthorizedResourceIndicators { get; set; }
 
     /// <summary>
-    /// The thumbprint of the associated DPoP proof key, if one was used.
+    /// The type of proof used for the refresh token. Null indicates refresh tokens created prior to this property being added.
     /// </summary>
-    public string DPoPKeyThumbprint { get; set; }
+    public ProofType? ProofType { get; set; }
 }

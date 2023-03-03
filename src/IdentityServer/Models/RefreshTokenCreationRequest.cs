@@ -49,9 +49,9 @@ public class RefreshTokenCreationRequest
     public Token AccessToken { get; set; }
 
     /// <summary>
-    /// The thumbprint of the associated DPoP proof key, if one was used.
+    /// The proof type used.
     /// </summary>
-    public string DPoPKeyThumbprint { get; set; }
+    public ProofType ProofType { get; set; }
 
     /// <summary>
     /// Called to validate the <see cref="RefreshTokenCreationRequest"/> before it is processed.

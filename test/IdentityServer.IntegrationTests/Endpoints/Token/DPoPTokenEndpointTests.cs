@@ -430,7 +430,7 @@ public class DPoPTokenEndpointTests
 
         var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
         rtResponse.IsError.Should().BeTrue();
-        rtResponse.Error.Should().Be("invalid_dpop_proof");
+        rtResponse.Error.Should().Be("invalid_request");
     }
 
     [Fact]
@@ -483,7 +483,59 @@ public class DPoPTokenEndpointTests
 
         var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
         rtResponse.IsError.Should().BeTrue();
-        rtResponse.Error.Should().Be("invalid_dpop_proof");
+        rtResponse.Error.Should().Be("invalid_request");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task no_dpop_should_not_be_able_to_start_on_renewal()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            responseMode: "query",
+            scope: "openid scope1 offline_access",
+            redirectUri: "https://client1/callback");
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+
+        var authorization = new AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeFalse();
+
+        var codeRequest = new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = authorization.Code,
+            RedirectUri = "https://client1/callback",
+        };
+        
+        // no dpop here
+
+        var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
+        codeResponse.IsError.Should().BeFalse();
+
+        var rtRequest = new RefreshTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            RefreshToken = codeResponse.RefreshToken
+        };
+
+        CreateNewDPoPKey();
+        // now start dpop here
+        rtRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
+        rtResponse.IsError.Should().BeTrue();
     }
 
     [Fact]

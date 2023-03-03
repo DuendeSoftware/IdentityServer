@@ -12,6 +12,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Validation;
 
 namespace Duende.IdentityServer.Extensions;
 
@@ -159,5 +160,44 @@ public static class TokenExtensions
         }
 
         return claim.Value;
+    }
+
+    internal static ProofKeyThumbprint[] GetProofKeyThumbprints(this RefreshToken refresh)
+    {
+        var cnfs = refresh.AccessTokens.Select(x => x.Value.Confirmation).Distinct();
+        return cnfs.Select(x => GetProofKeyThumbprint(x)).ToArray();
+    }
+
+    internal static ProofKeyThumbprint GetProofKeyThumbprint(string cnf)
+    {
+        try
+        {
+            if (cnf.IsPresent())
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(cnf);
+
+                if (data.TryGetValue(JwtClaimTypes.ConfirmationMethods.JwkThumbprint, out var jkt))
+                {
+                    var thumbprint = jkt as string;
+                    if (thumbprint.IsPresent())
+                    {
+                        return new ProofKeyThumbprint { Type = ProofType.DPoP, Thumbprint = thumbprint };
+                    }
+                }
+
+                if (data.TryGetValue("x5t#S256", out var x5t))
+                {
+                    var thumbprint = x5t as string;
+                    if (thumbprint.IsPresent())
+                    {
+                        return new ProofKeyThumbprint { Type = ProofType.ClientCertificate, Thumbprint = thumbprint };
+                    }
+                }
+            }
+        }
+        catch
+        { }
+        
+        return new ProofKeyThumbprint { Type = ProofType.None };
     }
 }
