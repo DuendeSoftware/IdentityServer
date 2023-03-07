@@ -162,6 +162,11 @@ public static class TokenExtensions
         return claim.Value;
     }
 
+    internal static bool ContainsCnfValues(this RefreshToken refresh)
+    {
+        return refresh.AccessTokens?.Any(x => x.Value.Confirmation.IsPresent()) == true;
+    }
+
     internal static ProofKeyThumbprint[] GetProofKeyThumbprints(this RefreshToken refresh)
     {
         var cnfs = refresh.AccessTokens.Select(x => x.Value.Confirmation).Distinct();

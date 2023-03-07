@@ -674,10 +674,12 @@ internal class TokenRequestValidator : ITokenRequestValidator
         //////////////////////////////////////////////////////////
         // proof of possession
         //////////////////////////////////////////////////////////
-        ProofType priorProofType;
-        if (result.RefreshToken.ProofType == null)
+        var priorProofType = result.RefreshToken.ProofType ?? ProofType.None;
+
+        // legacy record check (pre-6.3 before ProofType was added to the RefreshToken)
+        if (result.RefreshToken.ProofType == null && result.RefreshToken.ContainsCnfValues())
         {
-            // legacy data check
+            // we need to extract the certificate / confirmation data from the tokens
             var proofs = result.RefreshToken.GetProofKeyThumbprints();
             if (proofs.Any())
             {
@@ -685,29 +687,23 @@ internal class TokenRequestValidator : ITokenRequestValidator
                 var numberOfTypes = proofs.Select(x => x.Type).Distinct().Count();
                 if (numberOfTypes > 1)
                 {
-                    // error? or treat them all as not having used pop?
+                    LogError("Mixing different confirmation methods for a refresh token is not allowed.");
+                    return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Mixing different confirmation methods for a refresh token is not allowed.");
                 }
 
-                // we now assume for public clients that all proof keys have been the same.
+                // we require for public clients that all proof keys have been the same.
                 if (!_validatedRequest.Client.RequireClientSecret)
                 {
                     var numberOfThumbprints = proofs.Select(x => x.Thumbprint).Distinct().Count();
                     if (numberOfThumbprints > 1)
                     {
-                        // error? or treat them all as not having used pop?
+                        LogError("Mixing different confirmation keys for a refresh token is not allowed.");
+                        return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Mixing different confirmation keys for a refresh token is not allowed.");
                     }
                 }
 
                 priorProofType = proofs.First().Type;
             }
-            else
-            {
-                priorProofType = ProofType.None;
-            }
-        }
-        else
-        {
-            priorProofType = result.RefreshToken.ProofType.Value;
         }
 
         if (priorProofType != ProofType.None && _validatedRequest.ProofType == ProofType.None)
