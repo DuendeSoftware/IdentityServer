@@ -5,20 +5,23 @@ using System.Threading.Tasks;
 
 namespace MvcDPoP;
 
-public class DPoPProofTokenMessageHandler : DelegatingHandler
+public class DPoPProofTokenEndpointMessageHandler : DelegatingHandler
 {
     private HttpContextAccessor _http;
 
-    public DPoPProofTokenMessageHandler() : base(new HttpClientHandler())
+    public DPoPProofTokenEndpointMessageHandler() : base(new HttpClientHandler())
     {
+        // unfortunate work around for this being designed as the
+        // BackchannelHttpHandler property on the OpenIdConnectOptions
         _http = new HttpContextAccessor();
     }
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (_http.HttpContext?.Items.TryGetValue("dpop_proof_token", out var dpopToken) is true)
+        var proofToken = _http.HttpContext?.GetOutboundProofToken();
+        if (proofToken != null)
         {
-            request.Headers.Add("DPoP", dpopToken.ToString());
+            request.Headers.Add("DPoP", proofToken);
         }
 
         return base.SendAsync(request, cancellationToken);

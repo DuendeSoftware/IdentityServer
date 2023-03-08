@@ -19,12 +19,8 @@ public class DPoPUserTokenEndpointService : IUserTokenEndpointService
 
     public async Task<UserToken> RefreshAccessTokenAsync(string refreshToken, UserTokenRequestParameters parameters, CancellationToken cancellationToken = default)
     {
-        // get dpop key from session
-        var key = await _http.HttpContext.GetProofKey();
-        
-        // create proof token for token endpoint
-        var proofToken = key.CreateProofToken("POST", $"{Constants.Authority}/connect/token");
-        _http.HttpContext.SetOutboundProofToken(proofToken);
+        // create and send proof token for all subsequent token endpoint requests
+        await _http.HttpContext.CreateOutboundProofTokenAsync("POST", $"{Constants.Authority}/connect/token");
         
         return await _inner.RefreshAccessTokenAsync(refreshToken, parameters, cancellationToken);
     }

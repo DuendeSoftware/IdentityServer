@@ -67,7 +67,7 @@ namespace MvcDPoP
                         RoleClaimType = "role"
                     };
 
-                    options.BackchannelHttpHandler = new DPoPProofTokenMessageHandler();
+                    options.BackchannelHttpHandler = new DPoPProofTokenEndpointMessageHandler();
                     options.EventsType = typeof(DPoPOpenIdConnectEvents);
                 });
 
@@ -80,7 +80,9 @@ namespace MvcDPoP
             services.AddUserAccessTokenHttpClient("client", configureClient: client =>
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
-            });
+            }).AddHttpMessageHandler<DPoPProofApiMessageHandler>();
+            
+            services.AddTransient<DPoPProofApiMessageHandler>();
 
             // decorator
             services.AddTransient<UserTokenEndpointService>();

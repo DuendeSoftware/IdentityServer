@@ -8,8 +8,10 @@ public class DPoPOpenIdConnectEvents : OpenIdConnectEvents
 {
     public override Task RedirectToIdentityProvider(RedirectContext context)
     {
-        // create and store the dpop key
+        // create the dpop key
         var key = DPoPProof.CreateProofKey();
+        
+        // we store the proof key here to avoid server side and load balancing storage issues
         context.Properties.SetProofKey(key);
         
         // pass jkt to authorize endpoint
@@ -20,7 +22,7 @@ public class DPoPOpenIdConnectEvents : OpenIdConnectEvents
 
     public override async Task AuthorizationCodeReceived(AuthorizationCodeReceivedContext context)
     {
-        // get key from store
+        // get key from storage
         var key = context.Properties.GetProofKey();
 
         // create proof token for token endpoint

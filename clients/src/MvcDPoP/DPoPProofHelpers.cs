@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
 
 namespace MvcDPoP;
 
@@ -69,7 +70,7 @@ public static class DPoPProof
         var key = new JsonWebKey(dpop_jwks);
         return key;
     }
-    public static async Task<JsonWebKey> GetProofKey(this HttpContext context)
+    public static async Task<JsonWebKey> GetProofKeyAsync(this HttpContext context)
     {
         var authn = await context.AuthenticateAsync();
         return authn.Properties.GetProofKey();
@@ -83,5 +84,15 @@ public static class DPoPProof
     {
         var token = context.Items["dpop_proof_token"] as string;
         return token;
+    }
+
+    public static async Task CreateOutboundProofTokenAsync(this HttpContext context, string method, string url)
+    {
+        // get dpop key from session
+        var key = await context.GetProofKeyAsync();
+
+        // create proof token for token endpoint
+        var proofToken = key.CreateProofToken(method, url);
+        context.SetOutboundProofToken(proofToken);
     }
 }
