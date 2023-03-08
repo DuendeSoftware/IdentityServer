@@ -169,11 +169,12 @@ public static class TokenExtensions
 
     internal static ProofKeyThumbprint[] GetProofKeyThumbprints(this RefreshToken refresh)
     {
+        // get distinct list of conf values first to avoid parsing same cnf multiple times
         var cnfs = refresh.AccessTokens.Select(x => x.Value.Confirmation).Distinct();
         return cnfs.Select(x => GetProofKeyThumbprint(x)).ToArray();
     }
 
-    internal static ProofKeyThumbprint GetProofKeyThumbprint(string cnf)
+    private static ProofKeyThumbprint GetProofKeyThumbprint(string cnf)
     {
         try
         {
