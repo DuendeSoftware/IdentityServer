@@ -29,8 +29,7 @@ internal class TokenResult : IEndpointResult
 
         if (Response.DPoPNonce.IsPresent())
         {
-            // TODO: IdentityModel
-            context.Response.Headers["DPoP-Nonce"] = Response.DPoPNonce;
+            context.Response.Headers[OidcConstants.HttpHeaders.DPoPNonce] = Response.DPoPNonce;
         }
 
         var dto = new ResultDto

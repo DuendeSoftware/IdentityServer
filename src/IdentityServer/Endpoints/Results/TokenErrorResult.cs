@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
@@ -31,8 +32,7 @@ internal class TokenErrorResult : IEndpointResult
 
         if (Response.DPoPNonce.IsPresent())
         {
-            // TODO: IdentityModel
-            context.Response.Headers["DPoP-Nonce"] = Response.DPoPNonce;
+            context.Response.Headers[OidcConstants.HttpHeaders.DPoPNonce] = Response.DPoPNonce;
         }
 
         var dto = new ResultDto
