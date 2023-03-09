@@ -1,3 +1,4 @@
+using IdentityModel;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using System.Threading;
@@ -21,7 +22,7 @@ public class DPoPProofTokenEndpointMessageHandler : DelegatingHandler
         var proofToken = _http.HttpContext?.GetOutboundProofToken();
         if (proofToken != null)
         {
-            request.Headers.Add("DPoP", proofToken);
+            request.Headers.Add(OidcConstants.HttpHeaders.DPoP, proofToken);
         }
 
         return base.SendAsync(request, cancellationToken);

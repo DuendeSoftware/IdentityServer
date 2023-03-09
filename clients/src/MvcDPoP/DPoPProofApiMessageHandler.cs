@@ -1,3 +1,4 @@
+using IdentityModel;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using System.Threading;
@@ -20,7 +21,7 @@ public class DPoPProofApiMessageHandler : DelegatingHandler
         if (proofKey != null)
         {
             var proofToken = proofKey.CreateProofToken(request.Method.ToString(), request.RequestUri.ToString());
-            request.Headers.Add("DPoP", proofToken);
+            request.Headers.Add(OidcConstants.HttpHeaders.DPoP, proofToken);
         }
 
         return await base.SendAsync(request, cancellationToken);

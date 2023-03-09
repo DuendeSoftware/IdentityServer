@@ -1,4 +1,5 @@
 using Clients;
+using IdentityModel;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ public class DPoPOpenIdConnectEvents : OpenIdConnectEvents
         context.Properties.SetProofKey(key);
         
         // pass jkt to authorize endpoint
-        context.ProtocolMessage.Parameters["dpop_jkt"] = key.CreateJkt();
+        context.ProtocolMessage.Parameters[OidcConstants.AuthorizeRequest.DPoPKeyThumbprint] = key.CreateJkt();
 
         return base.RedirectToIdentityProvider(context);
     }

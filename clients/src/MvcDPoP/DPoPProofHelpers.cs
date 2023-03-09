@@ -1,3 +1,4 @@
+using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -7,7 +8,6 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
 
 namespace MvcDPoP;
 
@@ -27,20 +27,20 @@ public static class DPoPProof
     {
         var payload = new Dictionary<string, object>
         {
-            { "jti", Guid.NewGuid().ToString() },
-            { "htm", method },
-            { "htu", url },
-            { "iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds() },
+            { JwtClaimTypes.JwtId, Guid.NewGuid().ToString() },
+            { JwtClaimTypes.DPoPHttpMethod, method },
+            { JwtClaimTypes.DPoPHttpUrl, url },
+            { JwtClaimTypes.IssuedAt, DateTimeOffset.UtcNow.ToUnixTimeSeconds() },
         };
 
         var header = new Dictionary<string, object>()
         {
             //{ "alg", "RS265" }, // JsonWebTokenHandler requires adding this itself
             {
-                "typ", "dpop+jwk"
+                "typ", JwtClaimTypes.JwtTypes.DPoPProofToken
             },
             {
-                "jwk", new
+                JwtClaimTypes.JsonWebKey, new
                        {
                          kty = key.Kty,
                          e = key.E,
