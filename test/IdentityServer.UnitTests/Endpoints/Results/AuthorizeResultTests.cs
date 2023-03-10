@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Xunit;
 using Duende.IdentityServer.Services;
+using Duende.IdentityServer;
 
 namespace UnitTests.Endpoints.Results;
 
@@ -214,9 +215,9 @@ public class AuthorizeResultTests
         _context.Response.Headers["Cache-Control"].First().Should().Contain("no-cache");
         _context.Response.Headers["Cache-Control"].First().Should().Contain("max-age=0");
         _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("default-src 'none';");
-        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("script-src 'sha256-orD0/VhH8hLqrLxKHD/HUEMdwqX6/0ve7c5hspX5VJ8='");
+        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src '{IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript}'");
         _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("default-src 'none';");
-        _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("script-src 'sha256-orD0/VhH8hLqrLxKHD/HUEMdwqX6/0ve7c5hspX5VJ8='");
+        _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain($"script-src '{IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript}'");
         _context.Response.Body.Seek(0, SeekOrigin.Begin);
         using (var rdr = new StreamReader(_context.Response.Body))
         {
@@ -242,8 +243,8 @@ public class AuthorizeResultTests
 
         await _subject.ExecuteAsync(_context);
 
-        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("script-src 'unsafe-inline' 'sha256-orD0/VhH8hLqrLxKHD/HUEMdwqX6/0ve7c5hspX5VJ8='");
-        _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("script-src 'unsafe-inline' 'sha256-orD0/VhH8hLqrLxKHD/HUEMdwqX6/0ve7c5hspX5VJ8='");
+        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src 'unsafe-inline' '{IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript}'");
+        _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain($"script-src 'unsafe-inline' '{IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript}'");
     }
 
     [Fact]
@@ -261,7 +262,7 @@ public class AuthorizeResultTests
 
         await _subject.ExecuteAsync(_context);
 
-        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("script-src 'sha256-orD0/VhH8hLqrLxKHD/HUEMdwqX6/0ve7c5hspX5VJ8='");
+        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src '{IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript}'");
         _context.Response.Headers["X-Content-Security-Policy"].Should().BeEmpty();
     }
 }
