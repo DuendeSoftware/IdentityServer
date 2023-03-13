@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
@@ -28,6 +29,11 @@ internal class TokenErrorResult : IEndpointResult
     {
         context.Response.StatusCode = 400;
         context.Response.SetNoCache();
+
+        if (Response.DPoPNonce.IsPresent())
+        {
+            context.Response.Headers[OidcConstants.HttpHeaders.DPoPNonce] = Response.DPoPNonce;
+        }
 
         var dto = new ResultDto
         {

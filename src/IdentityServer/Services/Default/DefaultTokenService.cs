@@ -28,6 +28,7 @@ public class DefaultTokenService : ITokenService
     /// </summary>
     protected readonly ILogger Logger;
 
+    // TODO: unused, so remove in 7.0?
     /// <summary>
     /// The HTTP context accessor
     /// </summary>
@@ -227,18 +228,7 @@ public class DefaultTokenService : ITokenService
         {
             token.Confirmation = request.ValidatedRequest.Confirmation;
         }
-        else
-        {
-            if (Options.MutualTls.AlwaysEmitConfirmationClaim)
-            {
-                var clientCertificate = await ContextAccessor.HttpContext.Connection.GetClientCertificateAsync();
-                if (clientCertificate != null)
-                {
-                    token.Confirmation = clientCertificate.CreateThumbprintCnf();
-                }
-            }
-        }
-            
+
         return token;
     }
 

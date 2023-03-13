@@ -9,6 +9,6 @@ namespace UnitTests.Common;
 
 internal class StubClock : ISystemClock
 {
-    public Func<DateTime> UtcNowFunc = () => DateTime.UtcNow;
+    public Func<DateTime> UtcNowFunc { get; set; } = () => DateTime.UtcNow;
     public DateTimeOffset UtcNow => new DateTimeOffset(UtcNowFunc());
 }

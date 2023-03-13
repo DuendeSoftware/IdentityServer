@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -27,13 +27,18 @@ internal class TokenResult : IEndpointResult
     {
         context.Response.SetNoCache();
 
+        if (Response.DPoPNonce.IsPresent())
+        {
+            context.Response.Headers[OidcConstants.HttpHeaders.DPoPNonce] = Response.DPoPNonce;
+        }
+
         var dto = new ResultDto
         {
             id_token = Response.IdentityToken,
             access_token = Response.AccessToken,
             refresh_token = Response.RefreshToken,
             expires_in = Response.AccessTokenLifetime,
-            token_type = OidcConstants.TokenResponse.BearerTokenType,
+            token_type = Response.AccessTokenType,
             scope = Response.Scope,
                 
             Custom = Response.Custom

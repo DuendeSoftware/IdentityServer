@@ -909,6 +909,15 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             request.SessionId = ""; // empty string for anonymous users
         }
 
+        //////////////////////////////////////////////////////////
+        // DPoP
+        //////////////////////////////////////////////////////////
+        var dpop_jwk = request.Raw.Get(OidcConstants.AuthorizeRequest.DPoPKeyThumbprint);
+        if (dpop_jwk.IsPresent())
+        {
+            request.DPoPKeyThumbprint = dpop_jwk;
+        }
+
         return Valid(request);
     }
 

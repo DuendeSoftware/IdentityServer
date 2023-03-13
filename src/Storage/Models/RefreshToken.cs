@@ -138,4 +138,9 @@ public class RefreshToken
     /// Non-null means there was an authorization step, and subsequent requested resource indicators must be in the original list.
     /// </summary>
     public IEnumerable<string> AuthorizedResourceIndicators { get; set; }
+
+    /// <summary>
+    /// The type of proof used for the refresh token. Null indicates refresh tokens created prior to this property being added.
+    /// </summary>
+    public ProofType? ProofType { get; set; }
 }

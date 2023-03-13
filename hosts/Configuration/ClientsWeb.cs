@@ -100,6 +100,34 @@ public static class ClientsWeb
 
                 AllowedScopes = allowedScopes
             },
+
+            ///////////////////////////////////////////
+            // MVC DPoP Sample
+            //////////////////////////////////////////
+            new Client
+            {
+                ClientId = "mvc.dpop",
+                ClientName = "MVC DPoP Client",
+                ClientUri = "http://identityserver.io",
+
+                ClientSecrets =
+                {
+                    new Secret("secret".Sha256())
+                },
+
+                RequireConsent = false,
+                AllowedGrantTypes = GrantTypes.Code,
+                
+                RequireDPoP = true,
+
+                RedirectUris = { "https://localhost:44310/signin-oidc" },
+                FrontChannelLogoutUri = "https://localhost:44310/signout-oidc",
+                PostLogoutRedirectUris = { "https://localhost:44310/signout-callback-oidc" },
+
+                AllowOfflineAccess = true,
+
+                AllowedScopes = allowedScopes
+            },
                 
             ///////////////////////////////////////////
             // MVC Hybrid Flow Sample (Back Channel logout)
