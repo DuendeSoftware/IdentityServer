@@ -96,4 +96,9 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// The backchannel authentication request.
     /// </value>
     public BackChannelAuthenticationRequest BackChannelAuthenticationRequest { get; set; }
+
+    /// <summary>
+    /// The thumbprint of the associated proof key, if one was used.
+    /// </summary>
+    public string ProofKeyThumbprint { get; set; }
 }

@@ -31,6 +31,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
     private readonly IResourceValidator _resourceValidator;
     private readonly IResourceStore _resourceStore;
     private readonly IRefreshTokenService _refreshTokenService;
+    private readonly IDPoPProofValidator _dPoPProofValidator;
     private readonly IEventService _events;
     private readonly IResourceOwnerPasswordValidator _resourceOwnerValidator;
     private readonly IProfileService _profile;
@@ -44,18 +45,19 @@ internal class TokenRequestValidator : ITokenRequestValidator
     public TokenRequestValidator(
         IdentityServerOptions options,
         IIssuerNameService issuerNameService,
-        IAuthorizationCodeStore authorizationCodeStore, 
-        IResourceOwnerPasswordValidator resourceOwnerValidator, 
-        IProfileService profile, 
+        IAuthorizationCodeStore authorizationCodeStore,
+        IResourceOwnerPasswordValidator resourceOwnerValidator,
+        IProfileService profile,
         IDeviceCodeValidator deviceCodeValidator,
         IBackchannelAuthenticationRequestIdValidator backchannelAuthenticationRequestIdValidator,
-        ExtensionGrantValidator extensionGrantValidator, 
+        ExtensionGrantValidator extensionGrantValidator,
         ICustomTokenRequestValidator customRequestValidator,
         IResourceValidator resourceValidator,
         IResourceStore resourceStore,
         IRefreshTokenService refreshTokenService,
-        IEventService events, 
-        ISystemClock clock, 
+        IDPoPProofValidator dPoPProofValidator,
+        IEventService events,
+        ISystemClock clock,
         ILogger<TokenRequestValidator> logger)
     {
         _logger = logger;
@@ -72,34 +74,41 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _resourceValidator = resourceValidator;
         _resourceStore = resourceStore;
         _refreshTokenService = refreshTokenService;
+        _dPoPProofValidator = dPoPProofValidator;
         _events = events;
     }
 
-    /// <summary>
-    /// Validates the request.
-    /// </summary>
-    /// <param name="parameters">The parameters.</param>
-    /// <param name="clientValidationResult">The client validation result.</param>
-    /// <returns></returns>
-    /// <exception cref="System.ArgumentNullException">
-    /// parameters
-    /// or
-    /// client
-    /// </exception>
-    public async Task<TokenRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
+    // only here for legacy unit tests
+    // maybe at some point we clean up the unit tests?
+    internal Task<TokenRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
+    {
+        return ValidateRequestAsync(new TokenRequestValidationContext
+        {
+            RequestParameters = parameters,
+            ClientValidationResult = clientValidationResult
+        });
+    }
+
+    /// <inheritdoc/>
+    public async Task<TokenRequestValidationResult> ValidateRequestAsync(TokenRequestValidationContext context)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity("TokenRequestValidator.ValidateRequest");
-        
+
         _logger.LogDebug("Start token request validation");
+
+        if (context == null) throw new ArgumentNullException(nameof(context));
+
+        var parameters = context.RequestParameters;
+        var clientValidationResult = context.ClientValidationResult;
 
         _validatedRequest = new ValidatedTokenRequest
         {
             IssuerName = await _issuerNameService.GetCurrentAsync(),
-            Raw = parameters ?? throw new ArgumentNullException(nameof(parameters)),
+            Raw = parameters ?? throw new ArgumentNullException(nameof(context.RequestParameters)),
             Options = _options
         };
 
-        if (clientValidationResult == null) throw new ArgumentNullException(nameof(clientValidationResult));
+        if (clientValidationResult == null) throw new ArgumentNullException(nameof(context.ClientValidationResult));
 
         _validatedRequest.SetClient(clientValidationResult.Client, clientValidationResult.Secret, clientValidationResult.Confirmation);
 
@@ -151,7 +160,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         {
             return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Invalid resource indicator format");
         }
-            
+
         if (resourceIndicators.Count() > 1)
         {
             return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Multiple resource indicators not supported on token endpoint.");
@@ -159,6 +168,14 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
         _validatedRequest.RequestedResourceIndicator = resourceIndicators.SingleOrDefault();
 
+        //////////////////////////////////////////////////////////
+        // proof token validation
+        //////////////////////////////////////////////////////////
+        var proofResult = await ValidateProofToken(context);
+        if (proofResult.IsError)
+        {
+            return proofResult;
+        }
 
         //////////////////////////////////////////////////////////
         // run specific logic for grants
@@ -181,6 +198,58 @@ internal class TokenRequestValidator : ITokenRequestValidator
             default:
                 return await RunValidationAsync(ValidateExtensionGrantRequestAsync, parameters);
         }
+    }
+
+    private async Task<TokenRequestValidationResult> ValidateProofToken(TokenRequestValidationContext context)
+    {
+        // can't allow both both at once
+        if (context.ClientCertificate != null && context.DPoPProofToken.IsPresent())
+        {
+            LogError("Only one confirmation mechanism is allowed at a time.");
+            return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Only one confirmation mechanism is allowed at a time");
+        }
+
+        // mTLS client cert processing
+        if (context.ClientCertificate != null)
+        {
+            if (_options.MutualTls.AlwaysEmitConfirmationClaim && _validatedRequest.Confirmation.IsMissing())
+            {
+                // this would be an ephemeral client cert, so not already assigned previosuly via client authentication
+                _validatedRequest.Confirmation = context.ClientCertificate.CreateThumbprintCnf();
+            }
+
+            _validatedRequest.ProofType = ProofType.ClientCertificate;
+            _validatedRequest.ProofKeyThumbprint = context.ClientCertificate.GetSha256Thumbprint();
+        }
+
+        // DPoP
+        if (context.DPoPProofToken.IsPresent())
+        {
+            var dpopContext = new DPoPProofValidatonContext
+            {
+                Client = _validatedRequest.Client,
+                ProofToken = context.DPoPProofToken,
+            };
+            var dpopResult = await _dPoPProofValidator.ValidateAsync(dpopContext);
+            if (dpopResult.IsError)
+            {
+                LogError(dpopResult.ErrorDescription ?? dpopResult.Error);
+                var err = Invalid(dpopResult.Error, dpopResult.ErrorDescription);
+                err.DPoPNonce = dpopResult.ServerIssuedNonce;
+                return err;
+            }
+
+            _validatedRequest.Confirmation = dpopResult.Confirmation;
+            _validatedRequest.ProofType = ProofType.DPoP;
+            _validatedRequest.ProofKeyThumbprint = dpopResult.JsonWebKeyThumbprint;
+        }
+        else if (_validatedRequest.Client.RequireDPoP)
+        {
+            LogError("Client requires DPoP and a DPoP header value was not provided.");
+            return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "Client requires DPoP and a DPoP header value was not provided.");
+        }
+
+        return Valid();
     }
 
     private async Task<TokenRequestValidationResult> RunValidationAsync(Func<NameValueCollection, Task<TokenRequestValidationResult>> validationFunc, NameValueCollection parameters)
@@ -257,7 +326,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
             LogError("Invalid authorization code", new { code });
             return Invalid(OidcConstants.TokenErrors.InvalidGrant);
         }
-            
+
         /////////////////////////////////////////////
         // validate client binding
         /////////////////////////////////////////////
@@ -265,6 +334,24 @@ internal class TokenRequestValidator : ITokenRequestValidator
         {
             LogError("Client is trying to use a code from a different client", new { clientId = _validatedRequest.Client.ClientId, codeClient = authZcode.ClientId });
             return Invalid(OidcConstants.TokenErrors.InvalidGrant);
+        }
+
+        //////////////////////////////////////////////////////////
+        // DPoP
+        //////////////////////////////////////////////////////////
+        if (authZcode.DPoPKeyThumbprint.IsPresent())
+        {
+            if (_validatedRequest.ProofType != ProofType.DPoP)
+            {
+                LogError("DPoP must be used on the token endpoint when a DPoP key thumbprint is used on the authorize endpoint.");
+                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "DPoP must be used on the token endpoint when a DPoP key thumbprint is used on the authorize endpoint.");
+            }
+
+            if (_validatedRequest.ProofKeyThumbprint != authZcode.DPoPKeyThumbprint)
+            {
+                LogError("The DPoP proof token used on the token endpoint does not match the original used on the authorize endpoint.");
+                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "The DPoP proof token used on the token endpoint does not match the original used on the authorize endpoint.");
+            }
         }
 
         // remove code from store
@@ -336,7 +423,8 @@ internal class TokenRequestValidator : ITokenRequestValidator
         //////////////////////////////////////////////////////////
         // resource and scope validation 
         //////////////////////////////////////////////////////////
-        var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest { 
+        var validatedResources = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+        {
             Client = _validatedRequest.Client,
             Scopes = _validatedRequest.AuthorizationCode.RequestedScopes,
             ResourceIndicators = _validatedRequest.AuthorizationCode.RequestedResourceIndicators,
@@ -585,6 +673,79 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _validatedRequest.SessionId = result.RefreshToken.SessionId;
 
         //////////////////////////////////////////////////////////
+        // proof of possession
+        //////////////////////////////////////////////////////////
+        var priorProofType = result.RefreshToken.ProofType ?? ProofType.None;
+
+        // legacy record check (pre-6.3 before ProofType was added to the RefreshToken)
+        if (result.RefreshToken.ProofType == null && result.RefreshToken.ContainsCnfValues())
+        {
+            // we need to extract the certificate / confirmation data from the tokens
+            var proofs = result.RefreshToken.GetProofKeyThumbprints();
+            if (proofs.Any())
+            {
+                // many different access tokens using diff pop mechanisms. the assumption is that they are all the same
+                var numberOfTypes = proofs.Select(x => x.Type).Distinct().Count();
+                if (numberOfTypes > 1)
+                {
+                    LogError("Mixing different confirmation methods for a refresh token is not allowed.");
+                    return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Mixing different confirmation methods for a refresh token is not allowed.");
+                }
+
+                // we require for public clients that all proof keys have been the same.
+                if (!_validatedRequest.Client.RequireClientSecret)
+                {
+                    var numberOfThumbprints = proofs.Select(x => x.Thumbprint).Distinct().Count();
+                    if (numberOfThumbprints > 1)
+                    {
+                        LogError("Mixing different confirmation keys for a refresh token is not allowed.");
+                        return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Mixing different confirmation keys for a refresh token is not allowed.");
+                    }
+                }
+
+                priorProofType = proofs.First().Type;
+            }
+        }
+
+        if (priorProofType != ProofType.None && _validatedRequest.ProofType == ProofType.None)
+        {
+            LogError("Proof of possession was used to obtain the initial refresh token and is required for subsequent token requests.");
+            return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Proof of possession was used to obtain the initial refresh token and is required for subsequent token requests.");
+        }
+        if (priorProofType == ProofType.None && _validatedRequest.ProofType != ProofType.None)
+        {
+            LogError("Proof of possession can't be used on subsequent token requests unless used when requesting the initial refresh token.");
+            return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Proof of possession can't be used on subsequent token requests unless used when requesting the initial refresh token.");
+        }
+        if (priorProofType != _validatedRequest.ProofType)
+        {
+            LogError("Different proof of possession styles can't be mixed.");
+            return Invalid(OidcConstants.TokenErrors.InvalidRequest, "Different proof of possession styles can't be mixed.");
+        }
+
+        // public clients must use the same proof as last request
+        // confidential clients are allowed to pass a new DPoP proof
+        if (priorProofType != ProofType.None && !_validatedRequest.Client.RequireClientSecret)
+        {
+            var proofs = result.RefreshToken.GetProofKeyThumbprints();
+
+            var thumbprint = proofs.First().Thumbprint;
+            if (_validatedRequest.ProofKeyThumbprint != thumbprint)
+            {
+                if (_validatedRequest.ProofType == ProofType.ClientCertificate)
+                {
+                    LogError("The client certificate in the refresh token request does not match the original used.");
+                    return Invalid(OidcConstants.TokenErrors.InvalidRequest, "The client certificate in the refresh token request does not match the original used.");
+                }
+                if (_validatedRequest.ProofType == ProofType.DPoP)
+                {
+                    LogError("The DPoP proof token in the refresh token request does not match the original used.");
+                    return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "The DPoP proof token in the refresh token request does not match the original used.");
+                }
+            }
+        }
+
+        //////////////////////////////////////////////////////////
         // resource indicator
         //////////////////////////////////////////////////////////
         var resourceIndicators = _validatedRequest.RefreshToken.AuthorizedResourceIndicators;
@@ -629,7 +790,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
         _logger.LogDebug("Validation of refresh token request success");
         // todo: more logging - similar to TokenValidator before
-            
+
         return Valid();
     }
 
@@ -748,7 +909,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         /////////////////////////////////////////////
         var validationContext = new BackchannelAuthenticationRequestIdValidationContext
         {
-            AuthenticationRequestId = authRequestId, 
+            AuthenticationRequestId = authRequestId,
             Request = _validatedRequest
         };
         await _backchannelAuthenticationRequestIdValidator.ValidateAsync(validationContext);
@@ -767,7 +928,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         {
             return Invalid(OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicator does not match any resource indicator in the original backchannel authentication request.");
         }
-            
+
         //////////////////////////////////////////////////////////
         // resource and scope validation 
         //////////////////////////////////////////////////////////
@@ -939,11 +1100,12 @@ internal class TokenRequestValidator : ITokenRequestValidator
         }
 
 
-        var resourceIndicators = _validatedRequest.RequestedResourceIndicator == null ? 
-            Enumerable.Empty<string>() : 
+        var resourceIndicators = _validatedRequest.RequestedResourceIndicator == null ?
+            Enumerable.Empty<string>() :
             new[] { _validatedRequest.RequestedResourceIndicator };
 
-        var resourceValidationResult = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest { 
+        var resourceValidationResult = await _resourceValidator.ValidateRequestedResourcesAsync(new ResourceValidationRequest
+        {
             Client = _validatedRequest.Client,
             Scopes = requestedScopes,
             ResourceIndicators = resourceIndicators,
@@ -968,12 +1130,12 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
             return OidcConstants.TokenErrors.InvalidScope;
         }
-            
+
         _validatedRequest.RequestedScopes = requestedScopes;
 
         LicenseValidator.ValidateResourceIndicators(_validatedRequest.RequestedResourceIndicator);
         _validatedRequest.ValidatedResources = resourceValidationResult.FilterByResourceIndicator(_validatedRequest.RequestedResourceIndicator);
-            
+
         return null;
     }
 

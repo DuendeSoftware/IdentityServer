@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -27,6 +27,11 @@ public class TokenErrorResponse
     /// The error description.
     /// </value>
     public string ErrorDescription { get; set; }
+
+    /// <summary>
+    /// The DPoP nonce header to emit.
+    /// </summary>
+    public string DPoPNonce { get; set; }
 
     /// <summary>
     /// Gets or sets the custom entries.
