@@ -74,12 +74,21 @@ namespace MvcDPoP
             services.AddTransient<DPoPOpenIdConnectEvents>();
 
             // add automatic token management
-            services.AddOpenIdConnectAccessTokenManagement();
+            services.AddOpenIdConnectAccessTokenManagement(options => { 
+                // options.UseDPoP = true;
+            })
+                // .AddDPoPKey(...)
+                // or
+                // .AddSessionDPopKey() // => assumes something more about where key is
+                // or
+                // .AddDPoPKeyStore<T>()
+            ;
 
             // add HTTP client to call protected API
             services.AddUserAccessTokenHttpClient("client", configureClient: client =>
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
+                // somehow allow this HttpClient to override the scheme (because it might be a legacy API still using Bearer)
             }).AddHttpMessageHandler<DPoPProofApiMessageHandler>();
             
             services.AddTransient<DPoPProofApiMessageHandler>();
