@@ -78,8 +78,9 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _events = events;
     }
 
-    /// <inheritdoc/>
-    public Task<TokenRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
+    // only here for legacy unit tests
+    // maybe at some point we clean up the unit tests?
+    internal Task<TokenRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
     {
         return ValidateRequestAsync(new TokenRequestValidationContext
         {
@@ -724,7 +725,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
         // public clients must use the same proof as last request
         // confidential clients are allowed to pass a new DPoP proof
-        if (!_validatedRequest.Client.RequireClientSecret)
+        if (priorProofType != ProofType.None && !_validatedRequest.Client.RequireClientSecret)
         {
             var proofs = result.RefreshToken.GetProofKeyThumbprints();
 
