@@ -1066,7 +1066,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
                 }
                 else
                 {
-                    _logger.Log(logLevel, message + "{@values}, details: {@details}", values, details);
+                    _logger.Log(logLevel, message + " {@values}, details: {@details}", values, details);
                 }
 
             }
