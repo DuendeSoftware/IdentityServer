@@ -8,7 +8,16 @@ namespace Duende.IdentityServer.Configuration.Validation;
 /// <summary>
 /// Represents the result of a step in the dynamic client registration validator.
 /// </summary>
-public abstract class ValidationStepResult { }
+public class ValidationStepResult 
+{
+
+    private static readonly ValidationStepResult _success = new();
+    
+    /// <summary>
+    /// Represents a successful validation step.
+    /// </summary>
+    public static ValidationStepResult Success { get => _success; }
+}
 
 /// <summary>
 /// Represents a failed validation step.
@@ -34,8 +43,3 @@ public class ValidationStepFailure : ValidationStepResult
         Error = new DynamicClientRegistrationValidationError(error, errorDescription);
     }
 }
-
-/// <summary>
-/// Represents a successful validation step.
-/// </summary>
-public class ValidationStepSuccess : ValidationStepResult { }

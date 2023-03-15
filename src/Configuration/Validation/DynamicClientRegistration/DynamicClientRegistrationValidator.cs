@@ -441,5 +441,5 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 ));
 
     private static Task<ValidationStepResult> ValidationStepSucceeded() =>
-        Task.FromResult<ValidationStepResult>(new ValidationStepSuccess());
+        Task.FromResult(ValidationStepResult.Success);
 }
