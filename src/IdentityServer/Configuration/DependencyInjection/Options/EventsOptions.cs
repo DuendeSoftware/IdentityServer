@@ -40,4 +40,9 @@ public class EventsOptions
     ///   <c>true</c> if error events should be raised; otherwise, <c>false</c>.
     /// </value>
     public bool RaiseErrorEvents { get; set; } = false;
+
+    /// <summary>
+    /// Options for windows event logs
+    /// </summary>
+    public WindowsEventLogOptions WindowsEventLog { get; set; } = new WindowsEventLogOptions();
 }

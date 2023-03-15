@@ -19,6 +19,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
@@ -353,6 +355,23 @@ public static class IdentityServerBuilderExtensionsCore
 
         return builder;
     }
+    
+    
+    /// <summary>
+    /// Adds the default secret parsers.
+    /// </summary>
+    /// <param name="builder">The builder.</param>
+    /// <returns></returns>
+    public static IIdentityServerBuilder AddWindowsEventLog(this IIdentityServerBuilder builder)
+    {
+        var isWindows = RuntimeInformation
+            .IsOSPlatform(OSPlatform.Windows);
+        if (isWindows)
+        {
+            builder.Services.AddTransient<IEventSink, EventLogEventSink>();
+        }
+        return builder;
+    }
 
     internal static void AddTransientDecorator<TService, TImplementation>(this IServiceCollection services)
         where TService : class
@@ -399,3 +418,4 @@ public static class IdentityServerBuilderExtensionsCore
         }
     }
 }
+

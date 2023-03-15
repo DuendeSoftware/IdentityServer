@@ -3,7 +3,9 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
@@ -27,11 +29,11 @@ public class DefaultEventService : IEventService
     /// The context
     /// </summary>
     protected readonly IHttpContextAccessor Context;
-
+    
     /// <summary>
-    /// The sink
+    /// The list of available sinks
     /// </summary>
-    protected readonly IEventSink Sink;
+    protected readonly IEnumerable<IEventSink> Sinks;
 
     /// <summary>
     /// The clock
@@ -43,13 +45,13 @@ public class DefaultEventService : IEventService
     /// </summary>
     /// <param name="options">The options.</param>
     /// <param name="context">The context.</param>
-    /// <param name="sink">The sink.</param>
+    /// <param name="sinks">The sinks.</param>
     /// <param name="clock">The clock.</param>
-    public DefaultEventService(IdentityServerOptions options, IHttpContextAccessor context, IEventSink sink, ISystemClock clock)
+    public DefaultEventService(IdentityServerOptions options, IHttpContextAccessor context, IEnumerable<IEventSink> sinks, ISystemClock clock)
     {
         Options = options;
         Context = context;
-        Sink = sink;
+        Sinks = sinks;
         Clock = clock;
     }
 
@@ -66,7 +68,8 @@ public class DefaultEventService : IEventService
         if (CanRaiseEvent(evt))
         {
             await PrepareEventAsync(evt);
-            await Sink.PersistAsync(evt);
+            var sinkWriteOperations = Sinks.Select(sink => sink.PersistAsync(evt)).ToList();
+            await Task.WhenAll(sinkWriteOperations);
         }
     }
 
