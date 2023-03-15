@@ -228,12 +228,6 @@ public class TokenResponseGenerator : ITokenResponseGenerator
             accessToken.CreationTime = Clock.UtcNow.UtcDateTime;
             accessToken.Lifetime = request.ValidatedRequest.AccessTokenLifetime;
             
-            // update legacy data record with proof type
-            if (request.ValidatedRequest.RefreshToken.ProofType == null)
-            {
-                request.ValidatedRequest.RefreshToken.ProofType = request.ValidatedRequest.ProofType;
-                mustUpdate = true; // to update the DB below
-            }
             // always take the current request confirmation values (this would be because the proof token changed from last time)
             if (request.ValidatedRequest.Confirmation.IsPresent() && accessToken.Confirmation != request.ValidatedRequest.Confirmation)
             {
