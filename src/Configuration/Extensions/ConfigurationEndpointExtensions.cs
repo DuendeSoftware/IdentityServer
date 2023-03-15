@@ -15,9 +15,7 @@ public static class ConfigurationEndpointExtensions
     /// <summary>
     /// Maps the dynamic client registration endpoint.
     /// </summary>
-    // TODO - Have a default value for path
-    // TODO - Consider adding path to discovery if hosted with IdentityServer
-    public static IEndpointConventionBuilder MapDynamicClientRegistration(this IEndpointRouteBuilder endpoints, string path)
+    public static IEndpointConventionBuilder MapDynamicClientRegistration(this IEndpointRouteBuilder endpoints, string path = "/connect/dcr")
     {
         return endpoints.MapPost(path, (DynamicClientRegistrationEndpoint endpoint, HttpContext context) => endpoint.Process(context));
     }
