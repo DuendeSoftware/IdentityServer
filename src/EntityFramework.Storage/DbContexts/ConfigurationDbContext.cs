@@ -50,7 +50,7 @@ public class ConfigurationDbContext<TContext> : DbContext, IConfigurationDbConte
     /// </summary>
     /// <param name="options">The options.</param>
     /// <exception cref="ArgumentNullException">storeOptions</exception>
-    public ConfigurationDbContext(DbContextOptions<TContext> options)
+    public ConfigurationDbContext(DbContextOptions options)
         : base(options)
     {
     }
