@@ -7,7 +7,6 @@ using System.Text.Json.Serialization;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
@@ -313,7 +312,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                     var parsedJwk = new IdentityModel.Jwk.JsonWebKey(jwk);
 
                     // TODO - Other HMAC hashing algorithms would also expect a private key
-                    if (parsedJwk.HasPrivateKey && parsedJwk.Alg != SecurityAlgorithms.HmacSha256)
+                    if (parsedJwk.HasPrivateKey && parsedJwk.Alg != "HS256")
                     {
                         return ValidationStepFailed("unexpected private key in jwk");
                     }

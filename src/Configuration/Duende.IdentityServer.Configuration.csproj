@@ -15,7 +15,6 @@
 
     <ItemGroup>
       <PackageReference Include="IdentityModel" />
-      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.27.0" />
     </ItemGroup>
 
     <ItemGroup>
