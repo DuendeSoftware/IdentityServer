@@ -38,10 +38,10 @@ public class DynamicClientRegistrationResponseGenerator : IDynamicClientRegistra
     }
 
     /// <inheritdoc/>
-    public virtual Task WriteContentTypeError(HttpResponse response)
+    public virtual Task WriteContentTypeError(HttpContext context)
     {
         _logger.LogDebug("Invalid content type in dynamic client registration request");
-        response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+        context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
         return Task.CompletedTask;
     }
 

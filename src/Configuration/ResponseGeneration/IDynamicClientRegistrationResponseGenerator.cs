@@ -25,9 +25,8 @@ public interface IDynamicClientRegistrationResponseGenerator
     /// <summary>
     /// Writes a content type error to the HTTP response.
     /// </summary>
-    /// <param name="response">The HTTP response to write the error to.</param>
-    // TODO - Convert response to HttpContext
-    Task WriteContentTypeError(HttpResponse response);
+    /// <param name="response">The HTTP context to write the error to.</param>
+    Task WriteContentTypeError(HttpContext response);
 
     /// <summary>
     /// Writes a bad request error to the HTTP context.
