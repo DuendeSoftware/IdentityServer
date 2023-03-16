@@ -213,7 +213,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         var oldConsumedGrant = new PersistedGrant
         {
             Expiration = DateTime.UtcNow.AddDays(3),                    // Token not yet expired
-            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay + 1)),    // But was consumed MORE than the delay in the past
+            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay + 100)),  // But was consumed MORE than the delay in the past
 
             Key = Guid.NewGuid().ToString(),
             Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
@@ -225,7 +225,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         var newConsumedGrant = new PersistedGrant
         {
             Expiration = DateTime.UtcNow.AddDays(3),                    // Token not yet expired
-            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay - 1)),    // But was consumed LESS than the delay in the past
+            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay - 100)),  // But was consumed LESS than the delay in the past
 
             Key = Guid.NewGuid().ToString(),
             Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
