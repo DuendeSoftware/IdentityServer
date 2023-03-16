@@ -13,6 +13,7 @@ using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -60,7 +61,7 @@ public class PrivateKeyJwtSecretValidator : ISecretValidator
         var fail = new SecretValidationResult { Success = false };
         var success = new SecretValidationResult { Success = true };
 
-        if (parsedSecret.Type != IdentityServerConstants.ParsedSecretTypes.JwtBearer)
+        if (parsedSecret.Type != ParsedSecretTypes.JwtBearer)
         {
             return fail;
         }
@@ -91,13 +92,13 @@ public class PrivateKeyJwtSecretValidator : ISecretValidator
         var validAudiences = new[]
         {
             // token endpoint URL
-            string.Concat(_urls.BaseUrl.EnsureTrailingSlash(), Constants.ProtocolRoutePaths.Token),
+            string.Concat(_urls.BaseUrl.EnsureTrailingSlash(), ProtocolRoutePaths.Token),
             // issuer URL + token (legacy support)
-            string.Concat((await _issuerNameService.GetCurrentAsync()).EnsureTrailingSlash(), Constants.ProtocolRoutePaths.Token),
+            string.Concat((await _issuerNameService.GetCurrentAsync()).EnsureTrailingSlash(), ProtocolRoutePaths.Token),
             // issuer URL
             await _issuerNameService.GetCurrentAsync(),
             // CIBA endpoint: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#auth_request
-            string.Concat(_urls.BaseUrl.EnsureTrailingSlash(), Constants.ProtocolRoutePaths.BackchannelAuthentication),
+            string.Concat(_urls.BaseUrl.EnsureTrailingSlash(), ProtocolRoutePaths.BackchannelAuthentication),
             // TODO: PAR once added
         }.Distinct();
 
