@@ -30,10 +30,10 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         var context = new DynamicClientRegistrationValidationContext(request, caller);
 
-        var result = await SetClientIdAsync(context);
-        if (result is ValidationStepFailure clientIdStep)
+        var result = await ValidateSoftwareStatementAsync(context);
+        if (result is ValidationStepFailure softwareStatementValidation)
         {
-            return clientIdStep.Error;
+            return softwareStatementValidation.Error;
         }
 
         result = await SetGrantTypesAsync(context);
@@ -76,12 +76,6 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         if (result is ValidationStepFailure maxAgeValidation)
         {
             return maxAgeValidation.Error;
-        }
-
-        result = await ValidateSoftwareStatementAsync(context);
-        if (result is ValidationStepFailure softwareStatementValidation)
-        {
-            return softwareStatementValidation.Error;
         }
 
         return new DynamicClientRegistrationValidatedRequest(context.Client, request);
