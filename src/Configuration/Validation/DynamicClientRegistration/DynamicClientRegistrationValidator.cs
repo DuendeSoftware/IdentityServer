@@ -81,13 +81,6 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return new DynamicClientRegistrationValidatedRequest(context.Client, request);
     }
 
-    // TODO - This isn't validating anything, so move it to the request processor
-    private Task<ValidationStepResult> SetClientIdAsync(DynamicClientRegistrationValidationContext context)
-    {
-        context.Client.ClientId = CryptoRandom.CreateUniqueId();
-        return ValidationStepSucceeded();
-    }
-
     /// <summary>
     /// Validates requested grant types and uses them to set the allowed grant
     /// types of the client.
