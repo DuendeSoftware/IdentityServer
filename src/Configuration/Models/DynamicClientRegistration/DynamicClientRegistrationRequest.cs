@@ -96,9 +96,7 @@ public class DynamicClientRegistrationRequest
     /// It is included in this model to facilitate extensions to the
     /// configuration system.
     /// </remark>
-    // TODO - Add constant to IdentityModel
-    // [JsonPropertyName(OidcConstants.ClientMetadata.SoftwareStatement)]
-    [JsonPropertyName("software_statement")]
+    [JsonPropertyName(OidcConstants.ClientMetadata.SoftwareStatement)]
     public string? SoftwareStatement { get; set; }
 
     /// <summary>
