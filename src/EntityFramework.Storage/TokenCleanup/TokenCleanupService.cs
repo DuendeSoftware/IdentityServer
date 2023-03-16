@@ -45,7 +45,7 @@ public class TokenCleanupService : ITokenCleanupService
     }
 
     /// <inheritdoc/>
-    public async Task RemoveExpiredGrantsAsync(CancellationToken cancellationToken = default)
+    public async Task CleanupGrantsAsync(CancellationToken cancellationToken = default)
     {
         try
         {

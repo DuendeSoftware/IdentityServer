@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.EntityFramework;
 
 /// <summary>
-/// Service that cleans up stale persisted grants and device codes.
+/// Service that cleans up persisted grants and device codes that are no longer
+/// needed.
 /// </summary>
 public interface ITokenCleanupService
 {
@@ -19,5 +20,5 @@ public interface ITokenCleanupService
     /// <param name="cancellationToken">A token that propagates notification
     /// that the cleanup operation should be canceled.</param>
     /// <returns></returns>
-    Task RemoveExpiredGrantsAsync(CancellationToken cancellationToken = default);
+    Task CleanupGrantsAsync(CancellationToken cancellationToken = default);
 }
