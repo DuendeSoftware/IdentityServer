@@ -275,7 +275,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         services.AddTransient<IPersistedGrantStore, PersistedGrantStore>();
         services.AddTransient<IDeviceFlowStore, DeviceFlowStore>();
             
-        services.AddTransient<TokenCleanupService>();
+        services.AddTransient<ITokenCleanupService, TokenCleanupService>();
         services.AddSingleton(StoreOptions);
 
         return services.BuildServiceProvider().GetRequiredService<TokenCleanupService>();

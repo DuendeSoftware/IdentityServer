@@ -116,7 +116,7 @@ public class TokenCleanupHost : IHostedService
         {
             using (var serviceScope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                var tokenCleanupService = serviceScope.ServiceProvider.GetRequiredService<TokenCleanupService>();
+                var tokenCleanupService = serviceScope.ServiceProvider.GetRequiredService<ITokenCleanupService>();
                 await tokenCleanupService.RemoveExpiredGrantsAsync(cancellationToken);
             }
         }

@@ -14,10 +14,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.EntityFramework;
 
-/// <summary>
-/// Helper to cleanup stale persisted grants and device codes.
-/// </summary>
-public class TokenCleanupService
+/// <inheritdoc/>
+public class TokenCleanupService : ITokenCleanupService
 {
     private readonly OperationalStoreOptions _options;
     private readonly IPersistedGrantDbContext _persistedGrantDbContext;
@@ -33,7 +31,7 @@ public class TokenCleanupService
     /// <param name="logger"></param>
     public TokenCleanupService(
         OperationalStoreOptions options,
-        IPersistedGrantDbContext persistedGrantDbContext, 
+        IPersistedGrantDbContext persistedGrantDbContext,
         ILogger<TokenCleanupService> logger,
         IOperationalStoreNotification operationalStoreNotification = null)
     {
@@ -46,10 +44,7 @@ public class TokenCleanupService
         _operationalStoreNotification = operationalStoreNotification;
     }
 
-    /// <summary>
-    /// Method to clear expired persisted grants.
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task RemoveExpiredGrantsAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -175,7 +170,7 @@ public class TokenCleanupService
                 _logger.LogInformation("Removing {deviceCodeCount} device flow codes", found);
 
                 _persistedGrantDbContext.DeviceFlowCodes.RemoveRange(expiredCodes);
-                
+
                 var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.DeviceFlowCodes>(_logger, cancellationToken);
                 expiredCodes = expiredCodes.Except(list).ToArray();
 
