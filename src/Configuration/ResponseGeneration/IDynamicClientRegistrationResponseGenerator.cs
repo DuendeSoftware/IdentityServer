@@ -32,7 +32,6 @@ public interface IDynamicClientRegistrationResponseGenerator
     /// Writes a bad request error to the HTTP context.
     /// </summary>
     /// <param name="context">The HTTP context to write the error to.</param>
-    // TODO - this is for requests that don't parse. Rename to make that obvious.
     Task WriteBadRequestError(HttpContext context);
 
     /// <summary>
