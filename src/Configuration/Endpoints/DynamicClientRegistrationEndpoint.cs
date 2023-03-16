@@ -45,7 +45,7 @@ public class DynamicClientRegistrationEndpoint
         // Check content type
         if (!HasCorrectContentType(context.Request))
         {
-            await _responseGenerator.WriteContentTypeError(context.Response);
+            await _responseGenerator.WriteContentTypeError(context);
             return;
         }
 
