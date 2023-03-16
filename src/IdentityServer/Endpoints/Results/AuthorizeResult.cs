@@ -133,7 +133,7 @@ internal class AuthorizeResult : IEndpointResult
 
     private void AddSecurityHeaders(HttpContext context)
     {
-        context.Response.AddScriptCspHeaders(_options.Csp, "sha256-orD0/VhH8hLqrLxKHD/HUEMdwqX6/0ve7c5hspX5VJ8=");
+        context.Response.AddScriptCspHeaders(_options.Csp, IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript);
 
         var referrer_policy = "no-referrer";
         if (!context.Response.Headers.ContainsKey("Referrer-Policy"))
