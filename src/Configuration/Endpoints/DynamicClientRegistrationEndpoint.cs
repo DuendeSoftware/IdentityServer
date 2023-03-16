@@ -58,7 +58,7 @@ public class DynamicClientRegistrationEndpoint
         }
 
         // Validate request values 
-        var result = await _validator.ValidateAsync(context.User, request);
+        var result = await _validator.ValidateAsync(request, context.User);
 
         if (result is DynamicClientRegistrationValidationError validationError)
         {

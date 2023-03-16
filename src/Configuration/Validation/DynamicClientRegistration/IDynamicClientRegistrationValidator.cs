@@ -14,12 +14,12 @@ public interface IDynamicClientRegistrationValidator
     /// <summary>
     /// Validates a dynamic client registration request. 
     /// </summary>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
     /// <param name="request">The dynamic client registration request to be
     /// validated.</param>
+    /// <param name="caller">The claims principal of the caller making the
+    /// request.</param>
     /// <returns>A task that returns a <see
     /// cref="DynamicClientRegistrationValidationResult"/>, which is either a
     /// model of the validated request or a validation error.</returns>
-    Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request);
+    Task<DynamicClientRegistrationValidationResult> ValidateAsync(DynamicClientRegistrationRequest request, ClaimsPrincipal caller);
 }

@@ -26,74 +26,71 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <inheritdoc/>
-    public async Task<DynamicClientRegistrationValidationResult> ValidateAsync(ClaimsPrincipal caller, DynamicClientRegistrationRequest request)
+    public async Task<DynamicClientRegistrationValidationResult> ValidateAsync(DynamicClientRegistrationRequest request, ClaimsPrincipal caller)
     {
-        var client = new Client();
+        var context = new DynamicClientRegistrationValidationContext(request, caller);
 
-        var result = await SetClientIdAsync(client, request, caller);
+        var result = await SetClientIdAsync(context);
         if (result is ValidationStepFailure clientIdStep)
         {
             return clientIdStep.Error;
         }
 
-        result = await SetGrantTypesAsync(client, request, caller);
+        result = await SetGrantTypesAsync(context);
         if (result is ValidationStepFailure grantTypeValidation)
         {
             return grantTypeValidation.Error;
         }
 
-        result = await SetRedirectUrisAsync(client, request, caller);
+        result = await SetRedirectUrisAsync(context);
         if (result is ValidationStepFailure redirectUrisValidation)
         {
             return redirectUrisValidation.Error;
         }
 
-        result = await SetScopesAsync(client, request, caller);
+        result = await SetScopesAsync(context);
         if (result is ValidationStepFailure scopeValidation)
         {
             return scopeValidation.Error;
         }
 
-        result = await SetSecretsAsync(client, request, caller);
+        result = await SetSecretsAsync(context);
         if (result is ValidationStepFailure keySetValidation)
         {
             return keySetValidation.Error;
         }
 
-        result = await SetClientNameAsync(client, request, caller);
+        result = await SetClientNameAsync(context);
         if (result is ValidationStepFailure nameValidation)
         {
             return nameValidation.Error;
         }
 
-        result = await SetClientUriAsync(client, request, caller);
+        result = await SetClientUriAsync(context);
         if (result is ValidationStepFailure uriValidation)
         {
             return uriValidation.Error;
         }
 
-        result = await SetMaxAgeAsync(client, request, caller);
+        result = await SetMaxAgeAsync(context);
         if (result is ValidationStepFailure maxAgeValidation)
         {
             return maxAgeValidation.Error;
         }
 
-        result = await ValidateSoftwareStatementAsync(client, request, caller);
+        result = await ValidateSoftwareStatementAsync(context);
         if (result is ValidationStepFailure softwareStatementValidation)
         {
             return softwareStatementValidation.Error;
         }
 
-        return new DynamicClientRegistrationValidatedRequest(client, request);
+        return new DynamicClientRegistrationValidatedRequest(context.Client, request);
     }
 
     // TODO - This isn't validating anything, so move it to the request processor
-    private Task<ValidationStepResult> SetClientIdAsync(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    private Task<ValidationStepResult> SetClientIdAsync(DynamicClientRegistrationValidationContext context)
     {
-        client.ClientId = CryptoRandom.CreateUniqueId();
+        context.Client.ClientId = CryptoRandom.CreateUniqueId();
         return ValidationStepSucceeded();
     }
 
@@ -101,48 +98,43 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// Validates requested grant types and uses them to set the allowed grant
     /// types of the client.
     /// </summary>
-    /// <param name="client">The client that will have its allowed grant types
-    /// set.</param>
-    /// <param name="request">The dynamic client registration request to be
-    /// validated.</param>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its allowed grant types set, the DCR request, and
+    /// other contextual information.
+    /// </param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetGrantTypesAsync(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    protected virtual Task<ValidationStepResult> SetGrantTypesAsync(DynamicClientRegistrationValidationContext context)
     {
-        if (request.GrantTypes.Count == 0)
+        if (context.Request.GrantTypes.Count == 0)
         {
             return ValidationStepFailed("grant type is required");
         }
 
-        if (request.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
+        if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
         {
-            client.AllowedGrantTypes.Add(GrantType.ClientCredentials);
+            context.Client.AllowedGrantTypes.Add(GrantType.ClientCredentials);
         }
-        if (request.GrantTypes.Contains(OidcConstants.GrantTypes.AuthorizationCode))
+        if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.AuthorizationCode))
         {
-            client.AllowedGrantTypes.Add(GrantType.AuthorizationCode);
+            context.Client.AllowedGrantTypes.Add(GrantType.AuthorizationCode);
         }
 
         // we only support the two above grant types
-        if (client.AllowedGrantTypes.Count == 0)
+        if (context.Client.AllowedGrantTypes.Count == 0)
         {
             return ValidationStepFailed("unsupported grant type");
         }
 
-        if (request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
+        if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
         {
-            if (client.AllowedGrantTypes.Count == 1 &&
-                client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
+            if (context.Client.AllowedGrantTypes.Count == 1 &&
+                context.Client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
             {
                 return ValidationStepFailed("client credentials does not support refresh tokens");
             }
 
-            client.AllowOfflineAccess = true;
+            context.Client.AllowOfflineAccess = true;
         }
 
         return ValidationStepSucceeded();
@@ -152,28 +144,23 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// Validates requested redirect uris and uses them to set the redirect uris
     /// of the client.
     /// </summary>
-    /// <param name="client">The client that will have its redirect uris set.
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its redirect uri set, the DCR request, and other
+    /// contextual information.
     /// </param>
-    /// <param name="request">The dynamic client registration request to be
-    /// validated.</param>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetRedirectUrisAsync(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    protected virtual Task<ValidationStepResult> SetRedirectUrisAsync(DynamicClientRegistrationValidationContext context)
     {
-        if (client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
+        if (context.Client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
         {
-            if (request.RedirectUris.Any())
+            if (context.Request.RedirectUris.Any())
             {
-                foreach (var requestRedirectUri in request.RedirectUris)
+                foreach (var requestRedirectUri in context.Request.RedirectUris)
                 {
                     if (requestRedirectUri.IsAbsoluteUri)
                     {
-                        client.RedirectUris.Add(requestRedirectUri.AbsoluteUri);
+                        context.Client.RedirectUris.Add(requestRedirectUri.AbsoluteUri);
                     }
                     else
                     {
@@ -188,10 +175,10 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             }
         }
 
-        if (client.AllowedGrantTypes.Count == 1 &&
-            client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
+        if (context.Client.AllowedGrantTypes.Count == 1 &&
+            context.Client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
         {
-            if (request.RedirectUris.Any())
+            if (context.Request.RedirectUris.Any())
             {
                 return ValidationStepFailed("redirect URI not compatible with client_credentials grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
             }
@@ -204,26 +191,21 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// Validates requested scopes and uses them to set the scopes of the
     /// client.
     /// </summary>
-    /// <param name="client">The client that will have its scopes set.
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its scopes set, the DCR request, and other
+    /// contextual information.
     /// </param>
-    /// <param name="request">The dynamic client registration request to be
-    /// validated.</param>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetScopesAsync(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    protected virtual Task<ValidationStepResult> SetScopesAsync(DynamicClientRegistrationValidationContext context)
     {
-        if (string.IsNullOrEmpty(request.Scope))
+        if (string.IsNullOrEmpty(context.Request.Scope))
         {
-            return SetDefaultScopes(client, request, caller);
+            return SetDefaultScopes(context);
         }
         else
         {
-            var scopes = request.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var scopes = context.Request.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             if (scopes.Contains("offline_access"))
             {
@@ -233,7 +215,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
 
             foreach (var scope in scopes)
             {
-                client.AllowedScopes.Add(scope);
+                context.Client.AllowedScopes.Add(scope);
             }
         }
         return ValidationStepSucceeded();
@@ -243,18 +225,13 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// Sets scopes on the client when no scopes are requested. This default
     /// implementation sets no scopes and is intended as an extension point.
     /// </summary>
-    /// <param name="client">The client that will have its scopes set.
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its scopes set, the DCR request, and other
+    /// contextual information.
     /// </param>
-    /// <param name="request">The dynamic client registration request to be
-    /// validated.</param>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetDefaultScopes(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    protected virtual Task<ValidationStepResult> SetDefaultScopes(DynamicClientRegistrationValidationContext context)
     {
         _logger.LogDebug("No scopes requested for dynamic client registration, and no default scope behavior implemented. To set default scopes, extend the DynamicClientRegistrationValidator and override the SetDefaultScopes method.");
         return ValidationStepSucceeded();
@@ -263,35 +240,30 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// <summary>
     /// Validates the requested jwks to set the secrets of the client.  
     /// </summary>
-    /// <param name="client">The client that will have its secrets set.
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its secrets set, the DCR request, and other
+    /// contextual information.
     /// </param>
-    /// <param name="request">The dynamic client registration request to be
-    /// validated.</param>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetSecretsAsync(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    protected virtual Task<ValidationStepResult> SetSecretsAsync(DynamicClientRegistrationValidationContext context)
     {
-        if (request.JwksUri is not null && request.Jwks is not null)
+        if (context.Request.JwksUri is not null && context.Request.Jwks is not null)
         {
             return ValidationStepFailed("The jwks_uri and jwks parameters must not be used together");
         }
 
-        if (request.Jwks is null && request.TokenEndpointAuthenticationMethod == OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
+        if (context.Request.Jwks is null && context.Request.TokenEndpointAuthenticationMethod == OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
         {
             return ValidationStepFailed("Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
         }
 
-        if (request.Jwks is not null && request.TokenEndpointAuthenticationMethod != OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
+        if (context.Request.Jwks is not null && context.Request.TokenEndpointAuthenticationMethod != OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
         {
             return ValidationStepFailed("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
         }
 
-        if (request.Jwks?.Keys is not null)
+        if (context.Request.Jwks?.Keys is not null)
         {
             var jsonOptions = new JsonSerializerOptions
             {
@@ -300,7 +272,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 IgnoreReadOnlyProperties = true,
             };
 
-            foreach (var key in request.Jwks.Keys)
+            foreach (var key in context.Request.Jwks.Keys)
             {
                 var jwk = JsonSerializer.Serialize(key, jsonOptions);
 
@@ -326,7 +298,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                     return ValidationStepFailed("malformed jwk");
                 }
 
-                client.ClientSecrets.Add(new Secret
+                context.Client.ClientSecrets.Add(new Secret
                 {
                     // TODO - Define this constant
                     Type = "JWK", //IdentityServerConstants.SecretTypes.JsonWebKey,
@@ -341,21 +313,17 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// Validates the requested client name uses it to set the redirect uris of
     /// the client.
     /// </summary>
-    /// <param name="client">The client that will have its name set. </param>
-    /// <param name="request">The dynamic client registration request to be
-    /// validated.</param>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its name set, the DCR request, and other contextual
+    /// information.
+    /// </param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetClientNameAsync(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    protected virtual Task<ValidationStepResult> SetClientNameAsync(DynamicClientRegistrationValidationContext context)
     {
-        if (!string.IsNullOrWhiteSpace(request.ClientName))
+        if (!string.IsNullOrWhiteSpace(context.Request.ClientName))
         {
-            client.ClientName = request.ClientName;
+            context.Client.ClientName = context.Request.ClientName;
         }
         return ValidationStepSucceeded();
     }
@@ -365,22 +333,17 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// Validates the requested client uri and uses it to set the client uri of
     /// the client.
     /// </summary>
-    /// <param name="client">The client that will have its client uri set.
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its client uri set, the DCR request, and other
+    /// contextual information.
     /// </param>
-    /// <param name="request">The dynamic client registration request to be
-    /// validated.</param>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetClientUriAsync(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    protected virtual Task<ValidationStepResult> SetClientUriAsync(DynamicClientRegistrationValidationContext context)
     {
-        if (request.ClientUri != null)
+        if (context.Request.ClientUri != null)
         {
-            client.ClientUri = request.ClientUri.AbsoluteUri;
+            context.Client.ClientUri = context.Request.ClientUri.AbsoluteUri;
         }
         return ValidationStepSucceeded();
     }
@@ -389,26 +352,21 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// Validates the requested default max age and uses it to set the user sso
     /// lifetime of the client.
     /// </summary>
-    /// <param name="client">The client that will have its max age set.
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its max age set, the DCR request, and other
+    /// contextual information.
     /// </param>
-    /// <param name="request">The dynamic client registration request to be
-    /// validated.</param>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetMaxAgeAsync(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    protected virtual Task<ValidationStepResult> SetMaxAgeAsync(DynamicClientRegistrationValidationContext context)
     {
-        if (request.DefaultMaxAge.HasValue)
+        if (context.Request.DefaultMaxAge.HasValue)
         {
-            if (request.DefaultMaxAge <= 0)
+            if (context.Request.DefaultMaxAge <= 0)
             {
                 return ValidationStepFailed("default_max_age must be greater than 0 if used");
             }
-            client.UserSsoLifetime = request.DefaultMaxAge;
+            context.Client.UserSsoLifetime = context.Request.DefaultMaxAge;
         }
         return ValidationStepSucceeded();
     }
@@ -417,18 +375,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// Validates the software statement of the request. This default
     /// implementation does nothing, and is included as an extension point.
     /// </summary>
-    /// <param name="client">The client.
-    /// </param>
-    /// <param name="request">The dynamic client registration request to be
-    /// validated.</param>
-    /// <param name="caller">The claims principal of the caller making the
-    /// request.</param>
+    /// <param name="context">The validation context, which includes the client
+    /// model that is being built up, the DCR request, and other contextual
+    /// information.</param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> ValidateSoftwareStatementAsync(
-        Client client,
-        DynamicClientRegistrationRequest request,
-        ClaimsPrincipal caller)
+    protected virtual Task<ValidationStepResult> ValidateSoftwareStatementAsync(DynamicClientRegistrationValidationContext context)
     {
         return ValidationStepSucceeded();
     }
