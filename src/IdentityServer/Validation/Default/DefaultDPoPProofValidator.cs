@@ -14,7 +14,7 @@ using System.Text.Json;
 using IdentityModel;
 using System.Linq;
 using Duende.IdentityServer.Services;
-using static Duende.IdentityServer.Constants;
+using static Duende.IdentityServer.IdentityServerConstants;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 
