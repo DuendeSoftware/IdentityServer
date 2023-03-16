@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
-using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -23,7 +22,6 @@ public class TokenCleanupService
     private readonly OperationalStoreOptions _options;
     private readonly IPersistedGrantDbContext _persistedGrantDbContext;
     private readonly IOperationalStoreNotification _operationalStoreNotification;
-    private readonly IServerSideSessionsMarker _sideSessionsMarker;
     private readonly ILogger<TokenCleanupService> _logger;
 
     /// <summary>
@@ -33,12 +31,10 @@ public class TokenCleanupService
     /// <param name="persistedGrantDbContext"></param>
     /// <param name="operationalStoreNotification"></param>
     /// <param name="logger"></param>
-    /// <param name="serverSideSessionsMarker"></param>
     public TokenCleanupService(
         OperationalStoreOptions options,
         IPersistedGrantDbContext persistedGrantDbContext, 
         ILogger<TokenCleanupService> logger,
-        IServerSideSessionsMarker serverSideSessionsMarker = null,
         IOperationalStoreNotification operationalStoreNotification = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -48,7 +44,6 @@ public class TokenCleanupService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _operationalStoreNotification = operationalStoreNotification;
-        _sideSessionsMarker = serverSideSessionsMarker;
     }
 
     /// <summary>
