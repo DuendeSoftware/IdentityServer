@@ -115,6 +115,8 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
 
         if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
         {
+            // TODO - make it more explicit which grant types support refresh
+            // tokens (make this a positive check, for robustness).
             if (context.Client.AllowedGrantTypes.Count == 1 &&
                 context.Client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
             {
@@ -371,6 +373,9 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         return ValidationStepSucceeded();
     }
+
+    // TODO Add a method for validating things like logo uri and other stuff
+    // that isn't really controlling the protocols, just describes the client.
 
     private static Task<ValidationStepResult> ValidationStepFailed(string errorDescription,
         string error = DynamicClientRegistrationErrors.InvalidClientMetadata) =>
