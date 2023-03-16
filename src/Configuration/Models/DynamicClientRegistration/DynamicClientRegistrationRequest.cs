@@ -7,7 +7,10 @@ using IdentityModel;
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 /// <summary>
-/// Represents a dynamic client registration request.
+/// Represents a dynamic client registration request. The parameters that are
+/// supported include a subset of the parameters defined by IANA
+/// (https://www.iana.org/assignments/oauth-parameters/oauth-parameters.xhtml#client-metadata),
+/// and custom properties needed by IdentityServer.
 /// </summary>
 public class DynamicClientRegistrationRequest
 {
