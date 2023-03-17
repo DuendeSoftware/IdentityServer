@@ -116,6 +116,18 @@ public static class IdentityServerBuilderExtensionsInMemory
     }
 
     /// <summary>
+    /// Adds in memory clients using an ICollection. This allows Dynamic Client
+    /// Registration to use in memory clients for demos and testing.
+    /// </summary>
+    /// <param name="builder">The builder.</param>
+    /// <param name="clients">The clients.</param>
+    public static IIdentityServerBuilder AddInMemoryClients(this IIdentityServerBuilder builder, ICollection<Client> clients)
+    {
+        builder.Services.AddSingleton(clients);
+        return AddInMemoryClients(builder, (IEnumerable<Client>)clients);
+    }
+
+    /// <summary>
     /// Adds the in memory clients.
     /// </summary>
     /// <param name="builder">The builder.</param>

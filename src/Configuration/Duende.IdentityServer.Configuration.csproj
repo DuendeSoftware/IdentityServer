@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Description>Configuration system for Duende IdentityServer</Description>
+        <AssemblyName>Duende.IdentityServer.Configuration</AssemblyName>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="IdentityModel" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
+    </ItemGroup>
+
+</Project>
