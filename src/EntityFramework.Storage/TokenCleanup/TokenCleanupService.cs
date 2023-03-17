@@ -9,21 +9,17 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
-using Duende.IdentityServer.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.EntityFramework;
 
-/// <summary>
-/// Helper to cleanup stale persisted grants and device codes.
-/// </summary>
-public class TokenCleanupService
+/// <inheritdoc/>
+public class TokenCleanupService : ITokenCleanupService
 {
     private readonly OperationalStoreOptions _options;
     private readonly IPersistedGrantDbContext _persistedGrantDbContext;
     private readonly IOperationalStoreNotification _operationalStoreNotification;
-    private readonly IServerSideSessionsMarker _sideSessionsMarker;
     private readonly ILogger<TokenCleanupService> _logger;
 
     /// <summary>
@@ -33,12 +29,10 @@ public class TokenCleanupService
     /// <param name="persistedGrantDbContext"></param>
     /// <param name="operationalStoreNotification"></param>
     /// <param name="logger"></param>
-    /// <param name="serverSideSessionsMarker"></param>
     public TokenCleanupService(
         OperationalStoreOptions options,
-        IPersistedGrantDbContext persistedGrantDbContext, 
+        IPersistedGrantDbContext persistedGrantDbContext,
         ILogger<TokenCleanupService> logger,
-        IServerSideSessionsMarker serverSideSessionsMarker = null,
         IOperationalStoreNotification operationalStoreNotification = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -48,14 +42,10 @@ public class TokenCleanupService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _operationalStoreNotification = operationalStoreNotification;
-        _sideSessionsMarker = serverSideSessionsMarker;
     }
 
-    /// <summary>
-    /// Method to clear expired persisted grants.
-    /// </summary>
-    /// <returns></returns>
-    public async Task RemoveExpiredGrantsAsync(CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task CleanupGrantsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -180,7 +170,7 @@ public class TokenCleanupService
                 _logger.LogInformation("Removing {deviceCodeCount} device flow codes", found);
 
                 _persistedGrantDbContext.DeviceFlowCodes.RemoveRange(expiredCodes);
-                
+
                 var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.DeviceFlowCodes>(_logger, cancellationToken);
                 expiredCodes = expiredCodes.Except(list).ToArray();
 
