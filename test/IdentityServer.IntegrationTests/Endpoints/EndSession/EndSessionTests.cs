@@ -655,7 +655,7 @@ public class EndSessionTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task back_channel_logout_should_not_effect_end_session_callback()
+    public async Task back_channel_logout_should_not_affect_end_session_callback()
     {
         _mockPipeline.BackChannelMessageHandler.OnInvoke = req => throw new Exception("boom!");
 
