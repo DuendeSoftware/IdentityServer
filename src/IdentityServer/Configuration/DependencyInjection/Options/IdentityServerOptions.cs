@@ -195,4 +195,9 @@ public class IdentityServerOptions
     /// Options for server-side sessions.
     /// </summary>
     public ServerSideSessionOptions ServerSideSessions { get; set; } = new ServerSideSessionOptions();
+
+    /// <summary>
+    /// Options for backchannel logout for upstream IdPs.
+    /// </summary>
+    public BackchannelLogoutOptions BackchannelLogout { get; set; } = new BackchannelLogoutOptions();
 }

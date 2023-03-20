@@ -37,6 +37,8 @@ public static class IdentityServerApplicationBuilderExtensions
 
         app.UseMiddleware<BaseUrlMiddleware>();
 
+        app.UseMiddleware<BackChannelLogoutMiddleware>();
+
         app.ConfigureCors();
 
         app.UseMiddleware<DynamicSchemeAuthenticationMiddleware>();
