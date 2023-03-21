@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DPoPApi.Controllers
 {
@@ -20,7 +22,8 @@ namespace DPoPApi.Controllers
             var claims = User.Claims.Select(c => new { c.Type, c.Value });
             _logger.LogInformation("claims: {claims}", claims);
 
-            return new JsonResult(claims);
+            var scheme = Request.Headers.Authorization.First().Split(' ', System.StringSplitOptions.RemoveEmptyEntries)[0];
+            return new JsonResult(new { scheme, claims });
         }
     }
 }
