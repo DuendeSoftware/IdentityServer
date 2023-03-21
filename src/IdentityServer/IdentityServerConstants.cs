@@ -193,6 +193,13 @@ public static class IdentityServerConstants
     public static class ClaimTypes
     {
         public const string Tenant = "tenant";
+        public const string BackChannelLogoutReason = "logout_reason";
+    }
+    public static class BackChannelLogoutReasons
+    {
+        public const string UserLogout = "user_logout";
+        public const string SessionExpiration = "session_expiration";
+        public const string Terminated = "terminated";
     }
 
     public static class Tracing

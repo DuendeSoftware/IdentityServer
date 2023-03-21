@@ -552,6 +552,7 @@ public class EndSessionTests
             payload["iat"].Should().NotBeNull();
             payload["jti"].Should().NotBeNull();
             payload["sid"].Should().NotBeNull();
+            payload["logout_reason"].Should().Be("user_logout");
             payload["events"].ValueKind.Should().Be(JsonValueKind.Object);
             payload["events"].EnumerateObject().Single().Name.Should()
                 .Be("http://schemas.openid.net/event/backchannel-logout");
