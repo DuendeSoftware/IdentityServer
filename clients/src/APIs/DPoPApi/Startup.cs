@@ -31,7 +31,7 @@ namespace DPoPApi
                         {
                             if (context.Principal.HasClaim(x => x.Type == JwtClaimTypes.Confirmation))
                             {
-                                context.Fail("Must not use DPoP when using a token with a 'cnf' claim");
+                                context.Fail("Must use DPoP when using a token with a 'cnf' claim");
                             }
                             return Task.CompletedTask;
                         }
