@@ -1,6 +1,8 @@
 using Clients;
+using IdentityModel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 namespace DPoPApi
 {
@@ -22,6 +24,18 @@ namespace DPoPApi
                     options.MapInboundClaims = false;
 
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
+
+                    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+                    {
+                        OnTokenValidated = context =>
+                        {
+                            if (context.Principal.HasClaim(x => x.Type == JwtClaimTypes.Confirmation))
+                            {
+                                context.Fail("Must not use DPoP when using a token with a 'cnf' claim");
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 })
                 .AddJwtBearer("dpop", options =>
                 {
@@ -39,8 +53,10 @@ namespace DPoPApi
             services.AddDistributedMemoryCache();
             services.AddTransient<IReplayCache, DefaultReplayCache>();
 
-            services.AddAuthorization(options => {
-                options.AddPolicy("token", policy => {
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("token", policy =>
+                {
                     policy.AddAuthenticationSchemes("bearer", "dpop");
                     policy.RequireAuthenticatedUser();
                 });

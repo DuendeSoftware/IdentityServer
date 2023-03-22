@@ -15,6 +15,7 @@ namespace MvcDPoP
                 .MinimumLevel.Override("IdentityModel", LogEventLevel.Debug)
                 .MinimumLevel.Override("System.Net.Http", LogEventLevel.Information)
                 .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information)
+                .MinimumLevel.Override("MvcDPoP", LogEventLevel.Debug)
                 .Enrich.FromLogContext()
                 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}")
                 .CreateLogger();
