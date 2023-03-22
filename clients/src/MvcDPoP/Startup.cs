@@ -1,12 +1,14 @@
 using Clients;
-using Duende.AccessTokenManagement.OpenIdConnect;
+using Duende.AccessTokenManagement;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Threading.Tasks;
+using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace MvcDPoP
 {
@@ -66,36 +68,28 @@ namespace MvcDPoP
                         NameClaimType = "name",
                         RoleClaimType = "role"
                     };
-
-                    options.BackchannelHttpHandler = new DPoPProofTokenEndpointMessageHandler();
-                    options.EventsType = typeof(DPoPOpenIdConnectEvents);
                 });
 
-            services.AddTransient<DPoPOpenIdConnectEvents>();
+            services.AddTransient<IDPoPProofService, CustomProofService>();
 
             // add automatic token management
-            services.AddOpenIdConnectAccessTokenManagement(options => { 
-                // options.UseDPoP = true;
-            })
-                // .AddDPoPKey(...)
-                // or
-                // .AddSessionDPopKey() // => assumes something more about where key is
-                // or
-                // .AddDPoPKeyStore<T>()
-            ;
+            services.AddOpenIdConnectAccessTokenManagement(options =>
+            {
+                // add option to opt-in to jkt on authZ ep
+                // create and configure a DPoP JWK
+                var rsaKey = new RsaSecurityKey(RSA.Create(2048));
+                var jwk = JsonWebKeyConverter.ConvertFromSecurityKey(rsaKey);
+                jwk.Alg = "RS256";
+                options.DPoPJsonWebKey = JsonSerializer.Serialize(jwk);
+            });
 
             // add HTTP client to call protected API
             services.AddUserAccessTokenHttpClient("client", configureClient: client =>
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
                 // somehow allow this HttpClient to override the scheme (because it might be a legacy API still using Bearer)
-            }).AddHttpMessageHandler<DPoPProofApiMessageHandler>();
-            
-            services.AddTransient<DPoPProofApiMessageHandler>();
-
-            // decorator
-            services.AddTransient<UserTokenEndpointService>();
-            services.AddTransient<IUserTokenEndpointService, DPoPUserTokenEndpointService>();
+            }).AddHttpMessageHandler<TestHandler>();
+            services.AddTransient<TestHandler>();
         }
 
         public void Configure(IApplicationBuilder app)
