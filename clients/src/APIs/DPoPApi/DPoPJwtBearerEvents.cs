@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
@@ -486,14 +487,20 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
     protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, TimeSpan clockSkew, long issuedAtTime)
     {
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-        var start = issuedAtTime - (int)clockSkew.TotalSeconds;
-        var end = issuedAtTime + (int)ProofTokenValidityDuration.TotalSeconds + (int)clockSkew.TotalSeconds;
-
-        if (now < start || now > end)
+        var start = now + (int) clockSkew.TotalSeconds;
+        if (start < issuedAtTime)
         {
-            var diff = now - issuedAtTime;
-            Logger.LogDebug("Expiration check failed. Time to check was at {iat}, clock is now {now}. The time difference is {diff}", issuedAtTime, now, diff);
+            var diff = issuedAtTime - now;
+            Logger.LogDebug("Expiration check failed. Creation time was too far in the future. The time being checked was {iat}, and clock is now {now}. The time difference is {diff}", issuedAtTime, now, diff);
+            return true;
+        }
+
+        var expiration = issuedAtTime + (int) ProofTokenValidityDuration.TotalSeconds;
+        var end = now - (int) clockSkew.TotalSeconds;
+        if (expiration < end)
+        {
+            var diff = now - expiration;
+            Logger.LogDebug("Expiration check failed. Expiration has already happened. The expiration was at {exp}, and clock is now {now}. The time difference is {diff}", expiration, now, diff);
             return true;
         }
 

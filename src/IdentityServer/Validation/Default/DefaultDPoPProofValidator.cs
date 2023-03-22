@@ -454,16 +454,23 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// Validates the expiration of the DPoP proof.
     /// Returns true if the time is beyond the allowed limits, false otherwise.
     /// </summary>
-    protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, TimeSpan clockSkew, long unixTime)
+    protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, TimeSpan clockSkew, long issuedAtTime)
     {
-        var now = Clock.UtcNow;
-        var start = now.Subtract(clockSkew).ToUnixTimeSeconds();
-        
-        var validityWindow = Options.DPoP.ProofTokenValidityDuration;
-        var end = now.Add(validityWindow + clockSkew).ToUnixTimeSeconds();
-        
-        if (unixTime < start || unixTime > end)
+        var now = Clock.UtcNow.ToUnixTimeSeconds();
+        var start = now + (int) clockSkew.TotalSeconds;
+        if (start < issuedAtTime)
         {
+            var diff = issuedAtTime - now;
+            Logger.LogDebug("Expiration check failed. Creation time was too far in the future. The time being checked was {iat}, and clock is now {now}. The time difference is {diff}", issuedAtTime, now, diff);
+            return true;
+        }
+
+        var expiration = issuedAtTime + (int) Options.DPoP.ProofTokenValidityDuration.TotalSeconds;
+        var end = now - (int) clockSkew.TotalSeconds;
+        if (expiration < end)
+        {
+            var diff = now - expiration;
+            Logger.LogDebug("Expiration check failed. Expiration has already happened. The expiration was at {exp}, and clock is now {now}. The time difference is {diff}", expiration, now, diff);
             return true;
         }
 
