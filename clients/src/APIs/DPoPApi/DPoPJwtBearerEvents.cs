@@ -10,18 +10,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DPoPApi;
 
 public class DPoPJwtBearerEvents : JwtBearerEvents
 {
-    static TimeSpan ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
+    static TimeSpan ProofTokenValidityDuration = TimeSpan.FromSeconds(1);
     static TimeSpan ClientClockSkew = TimeSpan.FromMinutes(0);
     static TimeSpan ServerClockSkew = TimeSpan.FromMinutes(5);
 
     const bool ValidateIat = true;
-    const bool ValidateNonce = true;
+    const bool ValidateNonce = false;
 
     const string ReplayCachePurpose = "DPoPJwtBearerEvents-DPoPReplay-jti-";
     const string DataProtectorPurpose = "DPoPJwtBearerEvents-DPoPProofValidation-nonce";
@@ -482,18 +483,17 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
     /// Validates the expiration of the DPoP proof.
     /// Returns true if the time is beyond the allowed limits, false otherwise.
     /// </summary>
-    protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, TimeSpan clockSkew, long unixTime)
+    protected virtual bool IsExpired(DPoPProofValidatonContext context, DPoPProofValidatonResult result, TimeSpan clockSkew, long issuedAtTime)
     {
-        var now = DateTimeOffset.UtcNow;
-        var start = now.Subtract(clockSkew).ToUnixTimeSeconds();
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        var validityWindow = TimeSpan.FromMinutes(1);
-        var end = now.Add(validityWindow + clockSkew).ToUnixTimeSeconds();
+        var start = issuedAtTime - (int)clockSkew.TotalSeconds;
+        var end = issuedAtTime + (int)ProofTokenValidityDuration.TotalSeconds + (int)clockSkew.TotalSeconds;
 
-        if (unixTime < start || unixTime > end)
+        if (now < start || now > end)
         {
-            var diff = now.ToUnixTimeSeconds() - unixTime;
-            Logger.LogDebug("Proof token issued at {iat}, clock is now {now}. diff is {diff}", unixTime, now.ToUnixTimeSeconds(), diff);
+            var diff = now - issuedAtTime;
+            Logger.LogDebug("Expiration check failed. Time to check was at {iat}, clock is now {now}. The time difference is {diff}", issuedAtTime, now, diff);
             return true;
         }
 
