@@ -12,12 +12,12 @@ namespace Duende.IdentityServer.Configuration;
 public class DPoPOptions
 {
     /// <summary>
-    /// Default DPoP proof token validity duration. Defaults to 1 minute.
+    /// Duration that DPoP proof tokens are considered valid. Defaults to 1 minute.
     /// </summary>
     public TimeSpan ProofTokenValidityDuration { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>
-    /// Clock skew used in validating the DPoP nonce. Defaults to zero.
+    /// Clock skew used in validating DPoP proof token expiration using a server-senerated nonce value. Defaults to zero.
     /// </summary>
     public TimeSpan ServerClockSkew { get; set; } = TimeSpan.FromMinutes(0);
 }
