@@ -78,6 +78,9 @@ namespace build
                 Run("dotnet", $"pack ./src/EntityFramework.Storage/Duende.IdentityServer.EntityFramework.Storage.csproj -c Release -o {directory} --no-build --nologo");
                 Run("dotnet", $"pack ./src/EntityFramework/Duende.IdentityServer.EntityFramework.csproj -c Release -o {directory} --no-build --nologo");
                 
+                Run("dotnet", $"pack ./src/Configuration/Duende.IdentityServer.Configuration.csproj -c Release -o {directory} --no-build --nologo");
+                Run("dotnet", $"pack ./src/Configuration.EntityFramework/Duende.IdentityServer.Configuration.EntityFramework.csproj -c Release -o {directory} --no-build --nologo");
+
                 Run("dotnet", $"pack ./src/AspNetIdentity/Duende.IdentityServer.AspNetIdentity.csproj -c Release -o {directory} --no-build --nologo");
             });
 
