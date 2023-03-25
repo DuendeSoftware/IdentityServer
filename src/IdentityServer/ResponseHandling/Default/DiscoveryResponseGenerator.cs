@@ -383,7 +383,7 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
 
         if (Options.Endpoints.EnableTokenEndpoint)
         {
-            entries.Add(OidcConstants.Discovery.DPoPSigningAlgorithmsSupported, new[] { SupportedDPoPSigningAlgorithms });
+            entries.Add(OidcConstants.Discovery.DPoPSigningAlgorithmsSupported, SupportedDPoPSigningAlgorithms );
         }
 
         // custom entries
