@@ -177,7 +177,7 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<string>("typ", out var typ) || typ != "dpop+jwk")
+        if (!token.TryGetHeaderValue<string>("typ", out var typ) || typ != "dpop+jwt")
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'typ' value.";
