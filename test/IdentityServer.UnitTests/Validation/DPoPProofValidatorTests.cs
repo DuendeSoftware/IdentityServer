@@ -110,7 +110,7 @@ public class DPoPProofValidatorTests
         _header = new Dictionary<string, object>()
         {
             //{ "alg", "RS265" }, // JsonWebTokenHandler requires adding this itself
-            { "typ", "dpop+jwk" },
+            { "typ", "dpop+jwt" },
             { "jwk", jwkValues },
         };
     }
