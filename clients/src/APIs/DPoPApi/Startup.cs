@@ -24,18 +24,6 @@ namespace DPoPApi
                     options.MapInboundClaims = false;
 
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
-
-                    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
-                    {
-                        OnTokenValidated = context =>
-                        {
-                            if (context.Principal.HasClaim(x => x.Type == JwtClaimTypes.Confirmation))
-                            {
-                                context.Fail("Must use DPoP when using a token with a 'cnf' claim");
-                            }
-                            return Task.CompletedTask;
-                        }
-                    };
                 })
                 .AddJwtBearer("dpop", options =>
                 {
@@ -44,14 +32,12 @@ namespace DPoPApi
                     options.MapInboundClaims = false;
 
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
-
-                    options.Challenge = "DPoP";
-                    options.EventsType = typeof(DPoPJwtBearerEvents);
                 });
 
-            services.AddTransient<DPoPJwtBearerEvents>();
-            services.AddDistributedMemoryCache();
-            services.AddTransient<IReplayCache, DefaultReplayCache>();
+            // TODO: maybe there's a way to collapse these so that only one AddJwtBearer is needed above?
+            // e.g.: SupportDPoPProofTokens("scheme", Mode.DPoPOnly | Mode.BearerAndDPoP)
+            services.RequireDPoPTokensForScheme("dpop");
+            services.PreventDPoPTokensForScheme("bearer");
 
             services.AddAuthorization(options =>
             {
