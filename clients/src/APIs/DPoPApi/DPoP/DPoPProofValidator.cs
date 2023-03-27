@@ -1,22 +1,17 @@
-using IdentityModel;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using IdentityModel;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Claims;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace DPoPApi;
 
-public class DPoPJwtBearerEvents : JwtBearerEvents
+public class DPoPProofValidator
 {
     static TimeSpan ProofTokenValidityDuration = TimeSpan.FromSeconds(1);
     static TimeSpan ClientClockSkew = TimeSpan.FromMinutes(0);
@@ -27,71 +22,6 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
 
     const string ReplayCachePurpose = "DPoPJwtBearerEvents-DPoPReplay-jti-";
     const string DataProtectorPurpose = "DPoPJwtBearerEvents-DPoPProofValidation-nonce";
-
-    protected readonly IDataProtector DataProtector;
-    protected readonly IReplayCache ReplayCache;
-    protected readonly ILogger<DPoPJwtBearerEvents> Logger;
-
-    public DPoPJwtBearerEvents(IDataProtectionProvider dataProtectionProvider, IReplayCache replayCache, ILogger<DPoPJwtBearerEvents> logger)
-    {
-        DataProtector = dataProtectionProvider.CreateProtector(DataProtectorPurpose);
-        ReplayCache = replayCache;
-        Logger = logger;
-    }
-
-    public override Task MessageReceived(MessageReceivedContext context)
-    {
-        var authz = context.HttpContext.Request.Headers.Authorization.FirstOrDefault();
-        if (authz.StartsWith(OidcConstants.AuthenticationSchemes.AuthorizationHeaderDPoP + " "))
-        {
-            var value = authz.Substring((OidcConstants.AuthenticationSchemes.AuthorizationHeaderDPoP + " ").Length).Trim();
-            context.Token = value;
-        }
-        else
-        {
-            // this rejects the attempt for this handler
-            context.NoResult();
-        }
-
-        return Task.CompletedTask;
-    }
-    public override async Task TokenValidated(TokenValidatedContext context)
-    {
-        var dpopProofToken = context.HttpContext.Request.Headers[OidcConstants.HttpHeaders.DPoP].FirstOrDefault();
-
-        var result = await ValidateAsync(new DPoPProofValidatonContext
-        {
-            ProofToken = dpopProofToken,
-            AccessTokenClaims = context.Principal.Claims,
-            Method = context.HttpContext.Request.Method,
-            Url = context.HttpContext.Request.Scheme + "://" + context.HttpContext.Request.Host + context.HttpContext.Request.PathBase + context.HttpContext.Request.Path
-        });
-
-        if (result.IsError)
-        {
-            if (result.ServerIssuedNonce != null)
-            {
-                context.HttpContext.Items["DPoP-Nonce"] = result.ServerIssuedNonce;
-            }
-            context.HttpContext.Items["DPoP-Error"] = result.Error;
-            // fails the result
-            context.Fail(result.ErrorDescription);
-        }
-    }
-    public override Task Challenge(JwtBearerChallengeContext context)
-    {
-        if (context.HttpContext.Items.ContainsKey("DPoP-Error"))
-        {
-            var error = context.HttpContext.Items["DPoP-Error"] as string;
-            context.Error = error;
-        }
-        if (context.HttpContext.Items.ContainsKey("DPoP-Nonce"))
-        {
-            var nonce = context.HttpContext.Items["DPoP-Nonce"] as string;
-            context.Response.Headers["DPoP-Nonce"] = nonce;
-        }
-        return Task.CompletedTask;
-    }
 
     public readonly static IEnumerable<string> SupportedDPoPSigningAlgorithms = new[]
     {
@@ -107,6 +37,18 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
         SecurityAlgorithms.EcdsaSha384,
         SecurityAlgorithms.EcdsaSha512
     };
+
+    protected readonly IDataProtector DataProtector;
+    protected readonly IReplayCache ReplayCache;
+    protected readonly ILogger<DPoPJwtBearerEvents> Logger;
+
+    public DPoPProofValidator(IDataProtectionProvider dataProtectionProvider, IReplayCache replayCache, ILogger<DPoPJwtBearerEvents> logger)
+    {
+        DataProtector = dataProtectionProvider.CreateProtector(DataProtectorPurpose);
+        ReplayCache = replayCache;
+        Logger = logger;
+    }
+
 
     /// <inheritdoc/>
     public async Task<DPoPProofValidatonResult> ValidateAsync(DPoPProofValidatonContext context)
@@ -177,7 +119,7 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<string>("typ", out var typ) || typ != "dpop+jwt")
+        if (!token.TryGetHeaderValue<string>("typ", out var typ) || typ != JwtClaimTypes.JwtTypes.DPoPProofToken)
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'typ' value.";
@@ -191,7 +133,7 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<IDictionary<string, object>>("jwk", out var jwkValues))
+        if (!token.TryGetHeaderValue<IDictionary<string, object>>(JwtClaimTypes.JsonWebKey, out var jwkValues))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'jwk' value.";
@@ -286,21 +228,21 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
             return;
         }
 
-        if (!result.Payload.TryGetValue("htm", out var htm) || !context.Method.Equals(htm))
+        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpMethod, out var htm) || !context.Method.Equals(htm))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htm' value.";
             return;
         }
 
-        if (!result.Payload.TryGetValue("htu", out var htu) || !context.Url.Equals(htu))
+        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpUrl, out var htu) || !context.Url.Equals(htu))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htu' value.";
             return;
         }
 
-        if (result.Payload.TryGetValue("iat", out var iat))
+        if (result.Payload.TryGetValue(JwtClaimTypes.IssuedAt, out var iat))
         {
             if (iat is int)
             {
@@ -319,7 +261,7 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
             return;
         }
 
-        if (result.Payload.TryGetValue("nonce", out var nonce))
+        if (result.Payload.TryGetValue(JwtClaimTypes.Nonce, out var nonce))
         {
             result.Nonce = nonce as string;
         }
@@ -505,153 +447,5 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
         }
 
         return false;
-    }
-}
-
-public class DPoPProofValidatonContext
-{
-    public string Url { get; set; }
-    public string Method { get; set; }
-
-    /// <summary>
-    /// The DPoP proof token to validate
-    /// </summary>
-    public string ProofToken { get; set; }
-
-    /// <summary>
-    /// The validated claims from the access token
-    /// </summary>
-    public IEnumerable<Claim> AccessTokenClaims { get; set; }
-}
-
-public class DPoPProofValidatonResult
-{
-    public static DPoPProofValidatonResult Success = new DPoPProofValidatonResult { IsError = false };
-
-    public bool IsError { get; set; }
-    public string Error { get; set; }
-    public string ErrorDescription { get; set; }
-
-    /// <summary>
-    /// The serialized JWK from the validated DPoP proof token.
-    /// </summary>
-    public string JsonWebKey { get; set; }
-
-    /// <summary>
-    /// The JWK thumbprint from the validated DPoP proof token.
-    /// </summary>
-    public string JsonWebKeyThumbprint { get; set; }
-
-    /// <summary>
-    /// The cnf value for the DPoP proof token 
-    /// </summary>
-    public string Confirmation { get; set; }
-
-    /// <summary>
-    /// The payload value of the DPoP proof token.
-    /// </summary>
-    public IDictionary<string, object> Payload { get; internal set; }
-
-    /// <summary>
-    /// The jti value read from the payload.
-    /// </summary>
-    public string TokenId { get; set; }
-
-    /// <summary>
-    /// The nonce value read from the payload.
-    /// </summary>
-    public string Nonce { get; set; }
-
-    /// <summary>
-    /// The iat value read from the payload.
-    /// </summary>
-    public long? IssuedAt { get; set; }
-
-    /// <summary>
-    /// The nonce value issued by the server.
-    /// </summary>
-    public string ServerIssuedNonce { get; set; }
-}
-
-/// <summary>
-/// Extensions methods for JsonWebKey
-/// </summary>
-static class JsonWebKeyExtensions
-{
-    /// <summary>
-    /// Create the value of a thumbprint-based cnf claim
-    /// </summary>
-    public static string CreateThumbprintCnf(this JsonWebKey jwk)
-    {
-        var jkt = jwk.CreateThumbprint();
-        var values = new Dictionary<string, string>
-        {
-            { JwtClaimTypes.ConfirmationMethods.JwkThumbprint, jkt }
-        };
-        return JsonSerializer.Serialize(values);
-    }
-    /// <summary>
-    /// Create the value of a thumbprint
-    /// </summary>
-    public static string CreateThumbprint(this JsonWebKey jwk)
-    {
-        var jkt = Base64Url.Encode(jwk.ComputeJwkThumbprint());
-        return jkt;
-    }
-}
-
-public interface IReplayCache
-{
-    /// <summary>
-    /// Adds a handle to the cache 
-    /// </summary>
-    /// <param name="purpose"></param>
-    /// <param name="handle"></param>
-    /// <param name="expiration"></param>
-    /// <returns></returns>
-    Task AddAsync(string purpose, string handle, DateTimeOffset expiration);
-
-
-    /// <summary>
-    /// Checks if a cached handle exists 
-    /// </summary>
-    /// <param name="purpose"></param>
-    /// <param name="handle"></param>
-    /// <returns></returns>
-    Task<bool> ExistsAsync(string purpose, string handle);
-}
-/// <summary>
-/// Default implementation of the replay cache using IDistributedCache
-/// </summary>
-public class DefaultReplayCache : IReplayCache
-{
-    private const string Prefix = nameof(DefaultReplayCache) + "-";
-
-    private readonly IDistributedCache _cache;
-
-    /// <summary>
-    /// ctor
-    /// </summary>
-    /// <param name="cache"></param>
-    public DefaultReplayCache(IDistributedCache cache)
-    {
-        _cache = cache;
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(string purpose, string handle, DateTimeOffset expiration)
-    {
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpiration = expiration
-        };
-
-        await _cache.SetAsync(Prefix + purpose + handle, new byte[] { }, options);
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> ExistsAsync(string purpose, string handle)
-    {
-        return (await _cache.GetAsync(Prefix + purpose + handle, default)) != null;
     }
 }

@@ -146,7 +146,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<string>("typ", out var typ) || typ != "dpop+jwt")
+        if (!token.TryGetHeaderValue<string>("typ", out var typ) || typ != JwtClaimTypes.JwtTypes.DPoPProofToken)
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'typ' value.";
@@ -160,7 +160,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<IDictionary<string, object>>("jwk", out var jwkValues))
+        if (!token.TryGetHeaderValue<IDictionary<string, object>>(JwtClaimTypes.JsonWebKey, out var jwkValues))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'jwk' value.";
@@ -255,7 +255,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return;
         }
 
-        if (!result.Payload.TryGetValue("htm", out var htm) || !"POST".Equals(htm))
+        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpMethod, out var htm) || !"POST".Equals(htm))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htm' value.";
@@ -263,14 +263,14 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         }
 
         var tokenUrl = ServerUrls.BaseUrl.EnsureTrailingSlash() + ProtocolRoutePaths.Token;
-        if (!result.Payload.TryGetValue("htu", out var htu) || !tokenUrl.Equals(htu))
+        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpUrl, out var htu) || !tokenUrl.Equals(htu))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htu' value.";
             return;
         }
 
-        if (result.Payload.TryGetValue("iat", out var iat))
+        if (result.Payload.TryGetValue(JwtClaimTypes.IssuedAt, out var iat))
         {
             if (iat is int)
             {
@@ -289,7 +289,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return;
         }
 
-        if (result.Payload.TryGetValue("nonce", out var nonce))
+        if (result.Payload.TryGetValue(JwtClaimTypes.Nonce, out var nonce))
         {
             result.Nonce = nonce as string;
         }
