@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace DPoPApi;
 
@@ -6,8 +6,19 @@ public class DPoPProofValidatonResult
 {
     public static DPoPProofValidatonResult Success = new DPoPProofValidatonResult { IsError = false };
 
+    /// <summary>
+    /// Indicates if the result was successful or not
+    /// </summary>
     public bool IsError { get; set; }
+
+    /// <summary>
+    /// The error code for the validation result
+    /// </summary>
     public string Error { get; set; }
+
+    /// <summary>
+    /// The error description code for the validation result
+    /// </summary>
     public string ErrorDescription { get; set; }
 
     /// <summary>
