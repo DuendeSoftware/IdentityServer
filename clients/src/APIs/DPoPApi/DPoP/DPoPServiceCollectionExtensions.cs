@@ -1,36 +1,30 @@
-using IdentityModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using System;
 
 namespace DPoPApi;
 
 static class DPoPServiceCollectionExtensions
 {
-    public static IServiceCollection RequireDPoPTokensForScheme(this IServiceCollection services, string scheme)
+    public static IServiceCollection ConfigureDPoPTokensForScheme(this IServiceCollection services, string scheme)
     {
+        services.AddOptions<DPoPOptions>();
+
         services.AddTransient<DPoPJwtBearerEvents>();
         services.AddTransient<DPoPProofValidator>();
         services.AddDistributedMemoryCache();
         services.AddTransient<IReplayCache, DefaultReplayCache>();
 
-        services.Configure<JwtBearerOptions>(scheme, options =>
-        {
-            options.Challenge = OidcConstants.AuthenticationSchemes.AuthorizationHeaderDPoP;
-            options.EventsType = typeof(DPoPJwtBearerEvents);
-        });
+        services.AddSingleton<IPostConfigureOptions<JwtBearerOptions>>(new ConfigureJwtBearerOptions(scheme));
+        
 
         return services;
     }
-    
-    public static IServiceCollection PreventDPoPTokensForScheme(this IServiceCollection services, string scheme)
+
+    public static IServiceCollection ConfigureDPoPTokensForScheme(this IServiceCollection services, string scheme, Action<DPoPOptions> configure)
     {
-        services.AddTransient<RequireCnfJwtBearerEvents>();
-
-        services.Configure<JwtBearerOptions>(scheme, options =>
-        {
-            options.EventsType = typeof(RequireCnfJwtBearerEvents);
-        });
-
-        return services;
+        services.Configure(scheme, configure);
+        return services.ConfigureDPoPTokensForScheme(scheme);
     }
 }

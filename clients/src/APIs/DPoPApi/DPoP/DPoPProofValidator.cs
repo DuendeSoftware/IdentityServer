@@ -1,6 +1,7 @@
-﻿using IdentityModel;
+using IdentityModel;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -13,13 +14,6 @@ namespace DPoPApi;
 
 public class DPoPProofValidator
 {
-    static TimeSpan ProofTokenValidityDuration = TimeSpan.FromSeconds(1);
-    static TimeSpan ClientClockSkew = TimeSpan.FromMinutes(0);
-    static TimeSpan ServerClockSkew = TimeSpan.FromMinutes(5);
-
-    const bool ValidateIat = true;
-    const bool ValidateNonce = false;
-
     const string ReplayCachePurpose = "DPoPJwtBearerEvents-DPoPReplay-jti-";
     const string DataProtectorPurpose = "DPoPJwtBearerEvents-DPoPProofValidation-nonce";
 
@@ -38,17 +32,18 @@ public class DPoPProofValidator
         SecurityAlgorithms.EcdsaSha512
     };
 
+    protected readonly IOptionsMonitor<DPoPOptions> OptionsMonitor;
     protected readonly IDataProtector DataProtector;
     protected readonly IReplayCache ReplayCache;
     protected readonly ILogger<DPoPJwtBearerEvents> Logger;
 
-    public DPoPProofValidator(IDataProtectionProvider dataProtectionProvider, IReplayCache replayCache, ILogger<DPoPJwtBearerEvents> logger)
+    public DPoPProofValidator(IOptionsMonitor<DPoPOptions> optionsMonitor, IDataProtectionProvider dataProtectionProvider, IReplayCache replayCache, ILogger<DPoPJwtBearerEvents> logger)
     {
+        OptionsMonitor = optionsMonitor;
         DataProtector = dataProtectionProvider.CreateProtector(DataProtectorPurpose);
         ReplayCache = replayCache;
         Logger = logger;
     }
-
 
     /// <inheritdoc/>
     public async Task<DPoPProofValidatonResult> ValidateAsync(DPoPProofValidatonContext context)
@@ -142,10 +137,10 @@ public class DPoPProofValidator
 
         var jwkJson = JsonSerializer.Serialize(jwkValues);
 
-        Microsoft.IdentityModel.Tokens.JsonWebKey jwk;
+        JsonWebKey jwk;
         try
         {
-            jwk = new Microsoft.IdentityModel.Tokens.JsonWebKey(jwkJson);
+            jwk = new JsonWebKey(jwkJson);
         }
         catch (Exception ex)
         {
@@ -174,12 +169,12 @@ public class DPoPProofValidator
     /// </summary>
     protected virtual Task ValidateSignatureAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        Microsoft.IdentityModel.Tokens.TokenValidationResult tokenValidationResult;
+        TokenValidationResult tokenValidationResult;
 
         try
         {
-            var key = new Microsoft.IdentityModel.Tokens.JsonWebKey(result.JsonWebKey);
-            var tvp = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            var key = new JsonWebKey(result.JsonWebKey);
+            var tvp = new TokenValidationParameters
             {
                 ValidateAudience = false,
                 ValidateIssuer = false,
@@ -287,6 +282,8 @@ public class DPoPProofValidator
     /// </summary>
     protected virtual async Task ValidateReplayAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
+        var dpopOptions = OptionsMonitor.Get(context.Scheme);
+
         if (await ReplayCache.ExistsAsync(ReplayCachePurpose, result.TokenId))
         {
             result.IsError = true;
@@ -295,22 +292,22 @@ public class DPoPProofValidator
         }
 
         // get largest skew based on how client's freshness is validated
-        var validateIat = ValidateIat;
-        var validateNonce = ValidateNonce;
+        var validateIat = dpopOptions.ValidateIat;
+        var validateNonce = dpopOptions.ValidateNonce;
         var skew = TimeSpan.Zero;
-        if (validateIat && ClientClockSkew > skew)
+        if (validateIat && dpopOptions.ClientClockSkew > skew)
         {
-            skew = ClientClockSkew;
+            skew = dpopOptions.ClientClockSkew;
         }
-        if (validateNonce && ServerClockSkew > skew)
+        if (validateNonce && dpopOptions.ServerClockSkew > skew)
         {
-            skew = ServerClockSkew;
+            skew = dpopOptions.ServerClockSkew;
         }
 
         // we do x2 here because clock might be might be before or after, so we're making cache duration 
         // longer than the likelyhood of proof token expiration, which is done before replay
         skew *= 2;
-        var cacheDuration = ProofTokenValidityDuration + skew;
+        var cacheDuration = dpopOptions.ProofTokenValidityDuration + skew;
         await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, DateTimeOffset.UtcNow.Add(cacheDuration));
     }
 
@@ -319,7 +316,9 @@ public class DPoPProofValidator
     /// </summary>
     protected virtual async Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        var validateIat = ValidateIat;
+        var dpopOptions = OptionsMonitor.Get(context.Scheme);
+
+        var validateIat = dpopOptions.ValidateIat;
         if (validateIat)
         {
             await ValidateIatAsync(context, result);
@@ -329,7 +328,7 @@ public class DPoPProofValidator
             }
         }
 
-        var validateNonce = ValidateNonce;
+        var validateNonce = dpopOptions.ValidateNonce;
         if (validateNonce)
         {
             await ValidateNonceAsync(context, result);
@@ -345,7 +344,9 @@ public class DPoPProofValidator
     /// </summary>
     protected virtual Task ValidateIatAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        if (IsExpired(context, result, ClientClockSkew, result.IssuedAt.Value))
+        var dpopOptions = OptionsMonitor.Get(context.Scheme);
+
+        if (IsExpired(context, result, dpopOptions.ClientClockSkew, result.IssuedAt.Value))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'iat' value.";
@@ -379,7 +380,9 @@ public class DPoPProofValidator
             return;
         }
 
-        if (IsExpired(context, result, ServerClockSkew, time))
+        var dpopOptions = OptionsMonitor.Get(context.Scheme);
+
+        if (IsExpired(context, result, dpopOptions.ServerClockSkew, time))
         {
             Logger.LogDebug("DPoP 'nonce' expiration failed. It's possible that the server farm clocks might not be closely synchronized, so consider setting the ServerClockSkew on the DPoPOptions on the IdentityServerOptions.");
 
@@ -437,7 +440,8 @@ public class DPoPProofValidator
             return true;
         }
 
-        var expiration = issuedAtTime + (int) ProofTokenValidityDuration.TotalSeconds;
+        var dpopOptions = OptionsMonitor.Get(context.Scheme);
+        var expiration = issuedAtTime + (int) dpopOptions.ProofTokenValidityDuration.TotalSeconds;
         var end = now - (int) clockSkew.TotalSeconds;
         if (expiration < end)
         {
