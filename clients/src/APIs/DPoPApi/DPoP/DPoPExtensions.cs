@@ -1,4 +1,5 @@
 using IdentityModel;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ static class DPoPExtensions
     public static bool IsDPoPAuthorizationScheme(this HttpRequest request)
     {
         var authz = request.Headers.Authorization.FirstOrDefault();
-        return authz.StartsWith(DPoPPrefix, System.StringComparison.Ordinal);
+        return authz?.StartsWith(DPoPPrefix, System.StringComparison.Ordinal) == true;
     }
 
     public static bool TryGetDPoPAccessToken(this HttpRequest request, out string token)
@@ -25,7 +26,7 @@ static class DPoPExtensions
         token = null;
 
         var authz = request.Headers.Authorization.FirstOrDefault();
-        if (authz.StartsWith(DPoPPrefix, System.StringComparison.Ordinal))
+        if (authz?.StartsWith(DPoPPrefix, System.StringComparison.Ordinal) == true)
         {
             token = authz[DPoPPrefix.Length..].Trim();
             return true;
@@ -36,6 +37,19 @@ static class DPoPExtensions
     public static string GetDPoPProofToken(this HttpRequest request)
     {
         return request.Headers[OidcConstants.HttpHeaders.DPoP].FirstOrDefault();
+    }
+
+    public static string GetDPoPNonce(this AuthenticationProperties props)
+    {
+        if (props.Items.ContainsKey("DPoP-Nonce"))
+        {
+            return props.Items["DPoP-Nonce"] as string;
+        }
+        return null;
+    }
+    public static void SetDPoPNonce(this AuthenticationProperties props, string nonce)
+    {
+        props.Items["DPoP-Nonce"] = nonce;
     }
 
     /// <summary>

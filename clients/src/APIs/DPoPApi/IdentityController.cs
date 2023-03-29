@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
@@ -24,6 +26,17 @@ namespace DPoPApi.Controllers
             var proofToken = Request.GetDPoPProofToken();
 
             return new JsonResult(new { scheme, proofToken, claims });
+        }
+
+        [HttpGet("TestNonce")]
+        [AllowAnonymous]
+        public ActionResult TestNonce()
+        {
+            var x = Request.GetDPoPProofToken();
+            var props = new AuthenticationProperties();
+            props.SetDPoPNonce("custom-nonce");
+
+            return Challenge(props);
         }
     }
 }

@@ -132,6 +132,14 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
             var nonce = context.HttpContext.Items["DPoP-Nonce"] as string;
             context.Response.Headers[HttpHeaders.DPoPNonce] = nonce;
         }
+        else
+        {
+            var nonce = context.Properties.GetDPoPNonce();
+            if (nonce != null)
+            {
+                context.Response.Headers[HttpHeaders.DPoPNonce] = nonce;
+            }
+        }
 
         return Task.CompletedTask;
     }
