@@ -313,20 +313,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         filter ??= new();
 
-        // these are the ids of first and last items in the prior results
-        // stored as "x,y" in the filter.ResultsToken.
-        var first = 0;
-        var last = 0;
-
-        if (filter.ResultsToken != null)
-        {
-            var parts = filter.ResultsToken.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            if (parts != null && parts.Length == 2)
-            {
-                Int32.TryParse(parts[0], out first);
-                Int32.TryParse(parts[1], out last);
-            }
-        }
+        var (first, last) = ParseResultsToken(filter);
 
         var countRequested = filter.CountRequested;
         if (countRequested <= 0) countRequested = 25;
@@ -470,4 +457,24 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         return result;
     }
+    
+    private static (int First, int Last) ParseResultsToken(SessionQuery filter)
+    {
+        // these are the ids of first and last items in the prior results
+        // stored as "x,y" in the filter.ResultsToken.
+        var first = 0;
+        var last = 0;
+        if (filter.ResultsToken != null)
+        {
+            var parts = filter.ResultsToken.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            if (parts != null && parts.Length == 2)
+            {
+                Int32.TryParse(parts[0], out first);
+                Int32.TryParse(parts[1], out last);
+            }
+        }
+
+        return (first, last);
+    }
+
 }
