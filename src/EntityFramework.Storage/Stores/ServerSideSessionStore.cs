@@ -315,13 +315,17 @@ public class ServerSideSessionStore : IServerSideSessionStore
         filter ??= new();
 
         var query = Context.ServerSideSessions.AsNoTracking().AsQueryable();
-        ApplyFilter(query, filter);
+        query = ApplyFilter(query, filter);
 
         var (first, last) = ParseResultsToken(filter);
+        var countRequested = filter.CountRequested;
+        if (countRequested <= 0) countRequested = 25;
+        var totalCount = await query.CountAsync(cancellationToken);
         var pagination = new SessionPaginationContext
         {
-            CountRequested = filter.CountRequested,
-            TotalCount = await query.CountAsync(cancellationToken),
+            CountRequested = countRequested,
+            TotalCount = totalCount,
+            TotalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0))),
             First = first,
             Last = last,
         };
@@ -489,7 +493,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
     /// filter, they must all be fulfilled. This method (or an override of it)
     /// is not intended to apply pagination.
     /// </summary>
-    protected virtual void ApplyFilter(IQueryable<Entities.ServerSideSession> query, SessionQuery filter)
+    protected virtual IQueryable<Entities.ServerSideSession> ApplyFilter(IQueryable<Entities.ServerSideSession> query, SessionQuery filter)
     {
         if (!String.IsNullOrWhiteSpace(filter.DisplayName) ||
             !String.IsNullOrWhiteSpace(filter.SubjectId) ||
@@ -501,6 +505,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
                 (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
             );
         }
+        return query;
     }
 
     private class SessionPaginationContext
@@ -513,13 +518,6 @@ public class ServerSideSessionStore : IServerSideSessionStore
         public int CurrentPage { get; set; } = 1;
         public bool HasNext { get; set; } = false;
         public bool HasPrev { get; set; } = false;
-
-        public SessionPaginationContext()
-        {
-            TotalPages = (int) Math.Max(1, Math.Ceiling(TotalCount / (CountRequested * 1.0)));
-            if (CountRequested <= 0) CountRequested = 25;
-        }
-
         public Entities.ServerSideSession[] Items { get; set; } = Array.Empty<Entities.ServerSideSession>();
     }
 }
