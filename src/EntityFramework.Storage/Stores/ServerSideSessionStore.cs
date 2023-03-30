@@ -319,18 +319,7 @@ public class ServerSideSessionStore : IServerSideSessionStore
         if (countRequested <= 0) countRequested = 25;
 
         var query = Context.ServerSideSessions.AsNoTracking().AsQueryable();
-
-        if (!String.IsNullOrWhiteSpace(filter.DisplayName) ||
-            !String.IsNullOrWhiteSpace(filter.SubjectId) ||
-            !String.IsNullOrWhiteSpace(filter.SessionId))
-        {
-            query = query.Where(x =>
-                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) &&
-                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId)) &&
-                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
-            );
-        }
-
+        ApplyFilter(query, filter);
         var totalCount = await query.CountAsync(cancellationToken);
         var totalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0)));
         
@@ -477,4 +466,22 @@ public class ServerSideSessionStore : IServerSideSessionStore
         return (first, last);
     }
 
+    /// <summary>
+    /// Applies the SessionQuery.
+    /// </summary>
+    /// <param name="query"></param>
+    /// <param name="filter"></param>
+    public virtual void ApplyFilter(IQueryable<Entities.ServerSideSession> query, SessionQuery filter)
+    {
+        if (!String.IsNullOrWhiteSpace(filter.DisplayName) ||
+            !String.IsNullOrWhiteSpace(filter.SubjectId) ||
+            !String.IsNullOrWhiteSpace(filter.SessionId))
+        {
+            query = query.Where(x =>
+                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) &&
+                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId)) &&
+                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
+            );
+        }
+    }
 }
