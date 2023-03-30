@@ -103,6 +103,7 @@ public class LogoutNotificationService : ILogoutNotificationService
                         SessionId = context.SessionId,
                         SessionIdRequired = client.BackChannelLogoutSessionRequired,
                         Issuer = context.Issuer,
+                        LogoutReason = context.LogoutReason,
                     };
 
                     backChannelLogouts.Add(back);

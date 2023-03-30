@@ -121,6 +121,7 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
                 SessionId = session.SessionId,
                 ClientIds = session.ClientIds,
                 Issuer = session.Issuer,
+                LogoutReason = LogoutNotificationReason.UserLogout
             });
         }
     }
@@ -178,6 +179,7 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
                     SessionId = session.SessionId,
                     Issuer = session.Issuer,
                     ClientIds = clientsToContact,
+                    LogoutReason = LogoutNotificationReason.SessionExpiration,
                 });
             }
         }

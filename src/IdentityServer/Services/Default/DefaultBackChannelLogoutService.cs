@@ -188,6 +188,18 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
             claims.Add(new Claim(JwtClaimTypes.SessionId, request.SessionId));
         }
 
+        var reason = request.LogoutReason switch
+        {
+            LogoutNotificationReason.UserLogout => IdentityServerConstants.BackChannelLogoutReasons.UserLogout,
+            LogoutNotificationReason.SessionExpiration => IdentityServerConstants.BackChannelLogoutReasons.SessionExpiration,
+            LogoutNotificationReason.Terminated => IdentityServerConstants.BackChannelLogoutReasons.Terminated,
+            _ => null,
+        };
+        if (reason != null)
+        {
+            claims.Add(new Claim(IdentityServerConstants.ClaimTypes.BackChannelLogoutReason, reason));
+        }
+
         return Task.FromResult(claims.AsEnumerable());
     }
 }

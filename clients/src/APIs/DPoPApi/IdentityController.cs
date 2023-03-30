@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 
@@ -20,7 +20,9 @@ namespace DPoPApi.Controllers
             var claims = User.Claims.Select(c => new { c.Type, c.Value });
             _logger.LogInformation("claims: {claims}", claims);
 
-            return new JsonResult(claims);
+            var scheme = Request.Headers.Authorization.First().Split(' ', System.StringSplitOptions.RemoveEmptyEntries)[0];
+            var proofToken = Request.Headers["DPoP"].First();
+            return new JsonResult(new { scheme, proofToken, claims });
         }
     }
 }

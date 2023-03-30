@@ -60,4 +60,8 @@ public class BackChannelLogoutRequest
     /// </summary>
     public string Issuer { get; set; }
 
+    /// <summary>
+    /// Indicates why the user's session ended.
+    /// </summary>
+    public LogoutNotificationReason? LogoutReason { get; set; }
 }

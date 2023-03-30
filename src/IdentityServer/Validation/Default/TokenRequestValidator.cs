@@ -676,12 +676,13 @@ internal class TokenRequestValidator : ITokenRequestValidator
         // proof of possession
         //////////////////////////////////////////////////////////
         var priorProofType = result.RefreshToken.ProofType ?? ProofType.None;
+        ProofKeyThumbprint[] proofs = null;
 
         // legacy record check (pre-6.3 before ProofType was added to the RefreshToken)
         if (result.RefreshToken.ProofType == null && result.RefreshToken.ContainsCnfValues())
         {
             // we need to extract the certificate / confirmation data from the tokens
-            var proofs = result.RefreshToken.GetProofKeyThumbprints();
+            proofs ??= result.RefreshToken.GetProofKeyThumbprints();
             if (proofs.Any())
             {
                 // many different access tokens using diff pop mechanisms. the assumption is that they are all the same
@@ -727,20 +728,22 @@ internal class TokenRequestValidator : ITokenRequestValidator
         // confidential clients are allowed to pass a new DPoP proof
         if (priorProofType != ProofType.None && !_validatedRequest.Client.RequireClientSecret)
         {
-            var proofs = result.RefreshToken.GetProofKeyThumbprints();
-
-            var thumbprint = proofs.First().Thumbprint;
-            if (_validatedRequest.ProofKeyThumbprint != thumbprint)
+            proofs ??= result.RefreshToken.GetProofKeyThumbprints();
+            if (proofs.Any())
             {
-                if (_validatedRequest.ProofType == ProofType.ClientCertificate)
+                var thumbprint = proofs.First().Thumbprint;
+                if (_validatedRequest.ProofKeyThumbprint != thumbprint)
                 {
-                    LogError("The client certificate in the refresh token request does not match the original used.");
-                    return Invalid(OidcConstants.TokenErrors.InvalidRequest, "The client certificate in the refresh token request does not match the original used.");
-                }
-                if (_validatedRequest.ProofType == ProofType.DPoP)
-                {
-                    LogError("The DPoP proof token in the refresh token request does not match the original used.");
-                    return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "The DPoP proof token in the refresh token request does not match the original used.");
+                    if (_validatedRequest.ProofType == ProofType.ClientCertificate)
+                    {
+                        LogError("The client certificate in the refresh token request does not match the original used.");
+                        return Invalid(OidcConstants.TokenErrors.InvalidRequest, "The client certificate in the refresh token request does not match the original used.");
+                    }
+                    if (_validatedRequest.ProofType == ProofType.DPoP)
+                    {
+                        LogError("The DPoP proof token in the refresh token request does not match the original used.");
+                        return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "The DPoP proof token in the refresh token request does not match the original used.");
+                    }
                 }
             }
         }

@@ -193,6 +193,13 @@ public static class IdentityServerConstants
     public static class ClaimTypes
     {
         public const string Tenant = "tenant";
+        public const string BackChannelLogoutReason = "logout_reason";
+    }
+    public static class BackChannelLogoutReasons
+    {
+        public const string UserLogout = "user_logout";
+        public const string SessionExpiration = "session_expiration";
+        public const string Terminated = "terminated";
     }
 
     public static class Tracing
@@ -237,5 +244,39 @@ public static class IdentityServerConstants
         /// The hash of the inline script used on the check session endpoint. 
         /// </summary>
         public const string CheckSessionScript = "sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI=";
+    }
+
+    public static class ProtocolRoutePaths
+    {
+        public const string ConnectPathPrefix       = "connect";
+
+        public const string Authorize                   = ConnectPathPrefix + "/authorize";
+        public const string AuthorizeCallback           = Authorize + "/callback";
+        public const string DiscoveryConfiguration      = ".well-known/openid-configuration";
+        public const string DiscoveryWebKeys            = DiscoveryConfiguration + "/jwks";
+        public const string BackchannelAuthentication   = ConnectPathPrefix + "/ciba";
+        public const string Token                       = ConnectPathPrefix + "/token";
+        public const string Revocation                  = ConnectPathPrefix + "/revocation";
+        public const string UserInfo                    = ConnectPathPrefix + "/userinfo";
+        public const string Introspection               = ConnectPathPrefix + "/introspect";
+        public const string EndSession                  = ConnectPathPrefix + "/endsession";
+        public const string EndSessionCallback          = EndSession + "/callback";
+        public const string CheckSession                = ConnectPathPrefix + "/checksession";
+        public const string DeviceAuthorization         = ConnectPathPrefix + "/deviceauthorization";
+
+        public const string MtlsPathPrefix              = ConnectPathPrefix + "/mtls";
+        public const string MtlsToken                   = MtlsPathPrefix + "/token";
+        public const string MtlsRevocation              = MtlsPathPrefix + "/revocation";
+        public const string MtlsIntrospection           = MtlsPathPrefix + "/introspect";
+        public const string MtlsDeviceAuthorization     = MtlsPathPrefix + "/deviceauthorization";
+
+        public static readonly string[] CorsPaths =
+        {
+            DiscoveryConfiguration,
+            DiscoveryWebKeys,
+            Token,
+            UserInfo,
+            Revocation
+        };
     }
 }

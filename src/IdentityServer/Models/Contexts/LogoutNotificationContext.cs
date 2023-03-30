@@ -29,4 +29,9 @@ public class LogoutNotificationContext
     /// The list of client Ids that the user has authenticated to.
     /// </summary>
     public IEnumerable<string> ClientIds { get; set; }
+
+    /// <summary>
+    /// Indicates why the user's session ended, if known.
+    /// </summary>
+    public LogoutNotificationReason? LogoutReason { get; set; }
 }

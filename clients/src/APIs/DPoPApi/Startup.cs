@@ -1,7 +1,8 @@
-using System.IdentityModel.Tokens.Jwt;
 using Clients;
+using IdentityModel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 namespace DPoPApi
 {
@@ -16,18 +17,45 @@ namespace DPoPApi
 
             // this API will accept any access token from the authority
             services.AddAuthentication("token")
-                .AddJwtBearer("token", options =>
+                .AddJwtBearer("bearer", options =>
                 {
                     options.Authority = Constants.Authority;
                     options.TokenValidationParameters.ValidateAudience = false;
                     options.MapInboundClaims = false;
-                    
+
+                    options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
+                })
+                .AddJwtBearer("dpop", options =>
+                {
+                    options.Authority = Constants.Authority;
+                    options.TokenValidationParameters.ValidateAudience = false;
+                    options.MapInboundClaims = false;
+
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
                 });
+
+            // TODO: maybe there's a way to collapse these so that only one AddJwtBearer is needed above?
+            // e.g.: SupportDPoPProofTokens("scheme", Mode.DPoPOnly | Mode.BearerAndDPoP)
+            services.RequireDPoPTokensForScheme("dpop");
+            services.PreventDPoPTokensForScheme("bearer");
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("token", policy =>
+                {
+                    policy.AddAuthenticationSchemes("bearer", "dpop");
+                    policy.RequireAuthenticatedUser();
+                });
+            });
         }
 
         public void Configure(IApplicationBuilder app)
         {
+            app.Use(async (ctx, next) =>
+            {
+                await next();
+            });
+
             app.UseCors(policy =>
             {
                 policy.WithOrigins(
@@ -44,7 +72,7 @@ namespace DPoPApi
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers().RequireAuthorization();
+                endpoints.MapControllers().RequireAuthorization("token");
             });
         }
     }

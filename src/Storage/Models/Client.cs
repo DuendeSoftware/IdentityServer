@@ -122,12 +122,14 @@ public class Client
     public bool RequireDPoP { get; set; }
 
     /// <summary>
-    /// DPoP token expiration validity mode. Defaults to using the iat value.
+    /// Enum setting to control validation for the DPoP proof token expiration.
+    /// This supports both the client generated 'iat' value and/or the server generated 'nonce' value. 
+    /// Defaults to only using the 'iat' value.
     /// </summary>
     public DPoPTokenExpirationValidationMode DPoPValidationMode { get; set; } = DPoPTokenExpirationValidationMode.Iat;
 
     /// <summary>
-    /// Clock skew used in validating the DPoP iat. Defaults to 5 minutes.
+    /// Clock skew used in validating the client's DPoP proof token 'iat' claim value. Defaults to 5 minutes.
     /// </summary>
     public TimeSpan DPoPClockSkew { get; set; } = TimeSpan.FromMinutes(5);
 

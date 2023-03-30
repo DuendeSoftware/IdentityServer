@@ -37,6 +37,7 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "Unhandled exception");
+    Console.ReadLine();
 }
 finally
 {
