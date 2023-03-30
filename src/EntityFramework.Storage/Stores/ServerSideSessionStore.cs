@@ -463,11 +463,12 @@ public class ServerSideSessionStore : IServerSideSessionStore
     }
 
     /// <summary>
-    /// Applies the SessionQuery.
+    /// Applies the SessionQuery filter. The base implementation filters by
+    /// DisplayName, sub, and sid, and if more than one criteria exist on the
+    /// filter, they must all be fulfilled. This method (or an override of it)
+    /// is not intended to apply pagination.
     /// </summary>
-    /// <param name="query"></param>
-    /// <param name="filter"></param>
-    public virtual void ApplyFilter(IQueryable<Entities.ServerSideSession> query, SessionQuery filter)
+    protected virtual void ApplyFilter(IQueryable<Entities.ServerSideSession> query, SessionQuery filter)
     {
         if (!String.IsNullOrWhiteSpace(filter.DisplayName) ||
             !String.IsNullOrWhiteSpace(filter.SubjectId) ||
