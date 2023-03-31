@@ -305,7 +305,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         await ValidateReplayAsync(context, result);
         if (result.IsError)
         {
-            Logger.LogDebug("Detected replay of DPoP token");
+            result.ErrorDescription = "Detected replay of DPoP proof token.";
             return;
         }
     }
@@ -317,8 +317,8 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     {
         if (await ReplayCache.ExistsAsync(ReplayCachePurpose, result.TokenId))
         {
+            Logger.LogDebug("Detected DPoP proof token replay for jti {jti}", result.TokenId);
             result.IsError = true;
-            result.ErrorDescription = "Detected DPoP proof token replay.";
             return;
         }
 
@@ -339,6 +339,9 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         // longer than the likelyhood of proof token expiration, which is done before replay
         skew *= 2;
         var cacheDuration = Options.DPoP.ProofTokenValidityDuration + skew;
+        
+        Logger.LogDebug("Adding proof token with jti {jti} to replay cache for duration {cacheDuration}", result.TokenId, cacheDuration);
+
         await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, Clock.UtcNow.Add(cacheDuration));
     }
 

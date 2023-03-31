@@ -26,6 +26,8 @@ using Duende.IdentityServer.Services;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text;
+using IdentityModel.Jwk;
 
 namespace IntegrationTests.Endpoints.Token;
 
@@ -121,7 +123,7 @@ public class DPoPTokenEndpointTests
         CreateHeaderValuesFromPublicKey();
     }
 
-    void CreateNewDPoPKey()
+    void CreateNewRSAKey()
     {
         var key = CryptoHelper.CreateRsaSecurityKey();
         var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
@@ -136,10 +138,26 @@ public class DPoPTokenEndpointTests
 
         CreateHeaderValuesFromPublicKey();
     }
-
-    void CreateHeaderValuesFromPublicKey()
+    void CreateNewECKey()
     {
-        var jwk = JsonSerializer.Deserialize<JsonElement>(_publicJWK);
+        var key = CryptoHelper.CreateECDsaSecurityKey();
+        var jwk = JsonWebKeyConverter.ConvertFromECDsaSecurityKey(key);
+        _JKT = Base64UrlEncoder.Encode(key.ComputeJwkThumbprint());
+        _privateJWK = JsonSerializer.Serialize(jwk);
+        _publicJWK = JsonSerializer.Serialize(new
+        {
+            kty = jwk.Kty,
+            x = jwk.X,
+            y = jwk.Y,
+            crv = jwk.Crv
+        });
+
+        CreateHeaderValuesFromPublicKey();
+    }
+
+    void CreateHeaderValuesFromPublicKey(string publicJwk = null)
+    {
+        var jwk = JsonSerializer.Deserialize<JsonElement>(publicJwk ?? _publicJWK);
         var jwkValues = new Dictionary<string, object>();
         foreach (var item in jwk.EnumerateObject())
         {
@@ -516,7 +534,7 @@ public class DPoPTokenEndpointTests
             Code = authorization.Code,
             RedirectUri = "https://client1/callback",
         };
-        
+
         // no dpop here
 
         var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
@@ -530,7 +548,7 @@ public class DPoPTokenEndpointTests
             RefreshToken = codeResponse.RefreshToken
         };
 
-        CreateNewDPoPKey();
+        CreateNewRSAKey();
         // now start dpop here
         rtRequest.Headers.Add("DPoP", CreateDPoPProofToken());
 
@@ -583,7 +601,7 @@ public class DPoPTokenEndpointTests
             RefreshToken = codeResponse.RefreshToken
         };
 
-        CreateNewDPoPKey();
+        CreateNewRSAKey();
         rtRequest.Headers.Add("DPoP", CreateDPoPProofToken());
 
         var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
@@ -643,7 +661,7 @@ public class DPoPTokenEndpointTests
         var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
         _privateJWK = JsonSerializer.Serialize(jwk);
 
-        CreateNewDPoPKey();
+        CreateNewRSAKey();
         rtRequest.Headers.Add("DPoP", CreateDPoPProofToken());
 
         var rtResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(rtRequest);
@@ -958,4 +976,61 @@ public class DPoPTokenEndpointTests
             await base.ValidateFreshnessAsync(context, result);
         }
     }
+
+
+    [Theory]
+    [InlineData("RS256")]
+    [InlineData("RS384")]
+    [InlineData("RS512")]
+    [InlineData("PS256")]
+    [InlineData("PS384")]
+    [InlineData("PS512")]
+    [Trait("Category", Category)]
+    public async Task different_rsa_proof_tokens_should_work(string alg)
+    {
+        CreateNewRSAKey();
+        var proofToken = CreateDPoPProofToken(alg);
+
+        var request = new ClientCredentialsTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Scope = "scope1",
+        };
+        request.Headers.Add("DPoP", proofToken);
+
+        var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+        response.IsError.Should().BeFalse();
+        response.TokenType.Should().Be("DPoP");
+        var jkt = GetJKTFromAccessToken(response);
+        jkt.Should().Be(_JKT);
+    }
+
+    [Theory]
+    [InlineData("ES256")]
+    [InlineData("ES384")]
+    [InlineData("ES512")]
+    [Trait("Category", Category)]
+    public async Task different_ps_proof_tokens_should_work(string alg)
+    {
+        CreateNewECKey();
+        var proofToken = CreateDPoPProofToken(alg);
+
+        var request = new ClientCredentialsTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Scope = "scope1",
+        };
+        request.Headers.Add("DPoP", proofToken);
+
+        var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+        response.IsError.Should().BeFalse();
+        response.TokenType.Should().Be("DPoP");
+        var jkt = GetJKTFromAccessToken(response);
+        jkt.Should().Be(_JKT);
+    }
+
 }
