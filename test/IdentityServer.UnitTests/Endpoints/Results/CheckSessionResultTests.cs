@@ -5,6 +5,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
 using Duende.IdentityServer.Models;
@@ -41,9 +42,9 @@ public class CheckSessionResultTests
         _context.Response.StatusCode.Should().Be(200);
         _context.Response.ContentType.Should().StartWith("text/html");
         _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("default-src 'none';");
-        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("script-src 'sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI='");
+        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src '{IdentityServerConstants.ContentSecurityPolicyHashes.CheckSessionScript}'");
         _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("default-src 'none';");
-        _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("script-src 'sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI='");
+        _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain($"script-src '{IdentityServerConstants.ContentSecurityPolicyHashes.CheckSessionScript}'");
         _context.Response.Body.Seek(0, SeekOrigin.Begin);
         using (var rdr = new StreamReader(_context.Response.Body))
         {
@@ -59,8 +60,8 @@ public class CheckSessionResultTests
 
         await _subject.ExecuteAsync(_context);
 
-        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("script-src 'unsafe-inline' 'sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI='");
-        _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("script-src 'unsafe-inline' 'sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI='");
+        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src 'unsafe-inline' '{IdentityServerConstants.ContentSecurityPolicyHashes.CheckSessionScript}'");
+        _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain($"script-src 'unsafe-inline' '{IdentityServerConstants.ContentSecurityPolicyHashes.CheckSessionScript}'");
     }
 
     [Fact]
@@ -70,7 +71,7 @@ public class CheckSessionResultTests
 
         await _subject.ExecuteAsync(_context);
 
-        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("script-src 'sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI='");
+        _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src '{IdentityServerConstants.ContentSecurityPolicyHashes.CheckSessionScript}'");
         _context.Response.Headers["X-Content-Security-Policy"].Should().BeEmpty();
     }
 

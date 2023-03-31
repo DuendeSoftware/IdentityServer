@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Duende.IdentityServer.Services;
+using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
@@ -58,7 +59,7 @@ public abstract class AuthorizeInteractionPageResult : IEndpointResult
     {
         Init(context);
 
-        var returnUrl = _urls.BasePath.EnsureTrailingSlash() + Constants.ProtocolRoutePaths.AuthorizeCallback;
+        var returnUrl = _urls.BasePath.EnsureTrailingSlash() + ProtocolRoutePaths.AuthorizeCallback;
 
         if (_authorizationParametersMessageStore != null)
         {

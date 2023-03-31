@@ -56,4 +56,10 @@ public class TokenRequestValidationResult : ValidationResult
     /// The custom response.
     /// </value>
     public Dictionary<string, object> CustomResponse { get; set; }
+
+    /// <summary>
+    /// The DPoP nonce value issued by the server.
+    /// </summary>
+    public string DPoPNonce { get; set; }
+
 }

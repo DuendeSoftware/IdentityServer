@@ -205,6 +205,13 @@ public class TokenResponseGenerator : ITokenResponseGenerator
             // todo: do we want a new JTI?
             accessToken.CreationTime = Clock.UtcNow.UtcDateTime;
             accessToken.Lifetime = request.ValidatedRequest.AccessTokenLifetime;
+            
+            // always take the current request confirmation values (this would be because the proof token changed from last time)
+            if (request.ValidatedRequest.Confirmation.IsPresent() && accessToken.Confirmation != request.ValidatedRequest.Confirmation)
+            {
+                accessToken.Confirmation = request.ValidatedRequest.Confirmation;
+                mustUpdate = true; // to update the DB below
+            }
         }
 
         var accessTokenString = await TokenService.CreateSecurityTokenAsync(accessToken);
@@ -221,6 +228,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         {
             IdentityToken = await CreateIdTokenFromRefreshTokenRequestAsync(request.ValidatedRequest, accessTokenString),
             AccessToken = accessTokenString,
+            AccessTokenType = request.ValidatedRequest.ProofType == ProofType.DPoP ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType, 
             AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
             RefreshToken = handle,
             Custom = request.CustomResponse,
@@ -329,6 +337,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
         var response = new TokenResponse
         {
             AccessToken = accessToken,
+            AccessTokenType = validationResult.ValidatedRequest.ProofType == ProofType.DPoP ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType,
             AccessTokenLifetime = validationResult.ValidatedRequest.AccessTokenLifetime,
             Custom = validationResult.CustomResponse,
             Scope = validationResult.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
@@ -440,6 +449,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
                 AuthorizedResourceIndicators = authorizedResourceIndicators,
                 AccessToken = at,
                 RequestedResourceIndicator = request.RequestedResourceIndicator,
+                ProofType = request.ProofType
             };
             var refreshToken = await RefreshTokenService.CreateRefreshTokenAsync(rtRequest);
             return (accessToken, refreshToken);

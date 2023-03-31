@@ -49,6 +49,11 @@ public class RefreshTokenCreationRequest
     public Token AccessToken { get; set; }
 
     /// <summary>
+    /// The proof type used.
+    /// </summary>
+    public ProofType ProofType { get; set; }
+
+    /// <summary>
     /// Called to validate the <see cref="RefreshTokenCreationRequest"/> before it is processed.
     /// </summary>
     public void Validate()

@@ -103,7 +103,8 @@ public class DefaultSessionManagementService : ISessionManagementService
                     SubjectId = session.SubjectId,
                     SessionId = session.SessionId,
                     Issuer = session.Issuer,
-                    ClientIds = session.ClientIds.Where(x => context.ClientIds == null || context.ClientIds.Contains(x))
+                    ClientIds = session.ClientIds.Where(x => context.ClientIds == null || context.ClientIds.Contains(x)),
+                    LogoutReason = LogoutNotificationReason.Terminated
                 });
             }
         }

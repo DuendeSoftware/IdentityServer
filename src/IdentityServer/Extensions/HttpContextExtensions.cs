@@ -12,6 +12,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication;
+using static Duende.IdentityServer.IdentityServerConstants;
 
 #pragma warning disable 1591
 
@@ -183,7 +184,7 @@ public static class HttpContextExtensions
             var id = await endSessionMessageStore.WriteAsync(msg);
 
             var urls = context.RequestServices.GetRequiredService<IServerUrls>();
-            var signoutIframeUrl = urls.BaseUrl.EnsureTrailingSlash() + Constants.ProtocolRoutePaths.EndSessionCallback;
+            var signoutIframeUrl = urls.BaseUrl.EnsureTrailingSlash() + ProtocolRoutePaths.EndSessionCallback;
             signoutIframeUrl = signoutIframeUrl.AddQueryString(Constants.UIConstants.DefaultRoutePathParams.EndSessionCallback, id);
 
             return signoutIframeUrl;

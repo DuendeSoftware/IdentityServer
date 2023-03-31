@@ -162,7 +162,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
         }
 
         services.AddScoped<IPersistedGrantDbContext>(svcs => svcs.GetRequiredService<TContext>());
-        services.AddTransient<TokenCleanupService>();
+        services.AddTransient<ITokenCleanupService, TokenCleanupService>();
 
         return services;
     }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -11,6 +11,11 @@ namespace Duende.IdentityServer.ResponseHandling;
 /// </summary>
 public class TokenResponse
 {
+    /// <summary>
+    /// The type of access token, used to populate the token_type response parameter.
+    /// </summary>
+    public string AccessTokenType { get; set; }
+
     /// <summary>
     /// Gets or sets the identity token.
     /// </summary>
@@ -50,6 +55,11 @@ public class TokenResponse
     /// The scope.
     /// </value>
     public string Scope { get; set; }
+
+    /// <summary>
+    /// The DPoP nonce header to emit.
+    /// </summary>
+    public string DPoPNonce { get; set; }
 
     /// <summary>
     /// Gets or sets the custom entries.

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.352
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{187AC294-0420-4726-808B-ED49148C0632}"
 EndProject
@@ -67,7 +67,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceIndicators",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcJarUriJwt", "src\MvcJarUriJwt\MvcJarUriJwt.csproj", "{0BC37D8C-5A67-4A4E-A562-AEBCC97A31D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleCibaClient", "src\ConsoleCibaClient\ConsoleCibaClient.csproj", "{5B89FD38-A096-4C9B-B39F-1FD6C591EE3D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleCibaClient", "src\ConsoleCibaClient\ConsoleCibaClient.csproj", "{5B89FD38-A096-4C9B-B39F-1FD6C591EE3D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcDPoP", "src\MvcDPoP\MvcDPoP.csproj", "{68ACBCA3-3466-4AFB-9986-E8C8D840E0CD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DPoPApi", "src\APIs\DPoPApi\DPoPApi.csproj", "{8F1405C7-CF4D-4780-BDE1-852E743987C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleDcrClient", "src\ConsoleDcrClient\ConsoleDcrClient.csproj", "{D3FF035B-354A-45B9-B610-31BF2C13B360}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -187,6 +193,18 @@ Global
 		{5B89FD38-A096-4C9B-B39F-1FD6C591EE3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B89FD38-A096-4C9B-B39F-1FD6C591EE3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B89FD38-A096-4C9B-B39F-1FD6C591EE3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3FF035B-354A-45B9-B610-31BF2C13B360}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3FF035B-354A-45B9-B610-31BF2C13B360}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3FF035B-354A-45B9-B610-31BF2C13B360}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3FF035B-354A-45B9-B610-31BF2C13B360}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68ACBCA3-3466-4AFB-9986-E8C8D840E0CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68ACBCA3-3466-4AFB-9986-E8C8D840E0CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68ACBCA3-3466-4AFB-9986-E8C8D840E0CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68ACBCA3-3466-4AFB-9986-E8C8D840E0CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F1405C7-CF4D-4780-BDE1-852E743987C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F1405C7-CF4D-4780-BDE1-852E743987C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F1405C7-CF4D-4780-BDE1-852E743987C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F1405C7-CF4D-4780-BDE1-852E743987C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -223,6 +241,9 @@ Global
 		{C07E9414-8AFF-4B71-8B28-76DA6250B94C} = {D027D36B-262B-450A-B444-5B7893B5142E}
 		{0BC37D8C-5A67-4A4E-A562-AEBCC97A31D9} = {158628D7-8B68-451E-AF22-B64F473C5943}
 		{5B89FD38-A096-4C9B-B39F-1FD6C591EE3D} = {D027D36B-262B-450A-B444-5B7893B5142E}
+		{D3FF035B-354A-45B9-B610-31BF2C13B360} = {D027D36B-262B-450A-B444-5B7893B5142E}
+		{68ACBCA3-3466-4AFB-9986-E8C8D840E0CD} = {158628D7-8B68-451E-AF22-B64F473C5943}
+		{8F1405C7-CF4D-4780-BDE1-852E743987C6} = {AFE7085F-051E-4829-955F-3426FE643BDD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BAD78470-3D66-466E-9C17-2A67F0905B18}

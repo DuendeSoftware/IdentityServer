@@ -9,6 +9,7 @@ using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Hosting;
 
@@ -70,13 +71,13 @@ public class MutualTlsEndpointMiddleware
                 }
             }
             // path based MTLS
-            else if (context.Request.Path.StartsWithSegments(Constants.ProtocolRoutePaths.MtlsPathPrefix.EnsureLeadingSlash(), out var subPath))
+            else if (context.Request.Path.StartsWithSegments(ProtocolRoutePaths.MtlsPathPrefix.EnsureLeadingSlash(), out var subPath))
             {
                 var result = await TriggerCertificateAuthentication(context);
 
                 if (result.Succeeded)
                 {
-                    var path = Constants.ProtocolRoutePaths.ConnectPathPrefix +
+                    var path = ProtocolRoutePaths.ConnectPathPrefix +
                                subPath.ToString().EnsureLeadingSlash();
                     path = path.EnsureLeadingSlash();
 

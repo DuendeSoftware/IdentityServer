@@ -124,6 +124,11 @@ public class AuthorizationCode
     public string CodeChallengeMethod { get; set; }
 
     /// <summary>
+    /// The thumbprint of the associated DPoP proof key, if one was used.
+    /// </summary>
+    public string DPoPKeyThumbprint { get; set; }
+
+    /// <summary>
     /// Gets the description the user assigned to the device being authorized.
     /// </summary>
     /// <value>

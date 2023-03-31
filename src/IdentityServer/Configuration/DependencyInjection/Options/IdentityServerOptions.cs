@@ -177,6 +177,11 @@ public class IdentityServerOptions
     public PersistentGrantOptions PersistentGrants { get; set; } = new PersistentGrantOptions();
 
     /// <summary>
+    /// Options for DPoP.
+    /// </summary>
+    public DPoPOptions DPoP { get; set; } = new DPoPOptions();
+
+    /// <summary>
     /// Gets or sets the license key.
     /// </summary>
     public string LicenseKey { get; set; }

@@ -95,7 +95,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
                 AuthorizationError.InteractionRequired => OidcConstants.AuthorizeErrors.InteractionRequired,
                 AuthorizationError.LoginRequired => OidcConstants.AuthorizeErrors.LoginRequired,
                 AuthorizationError.TemporarilyUnavailable => OidcConstants.AuthorizeErrors.TemporarilyUnavailable,
-                AuthorizationError.UnmetAuthenticationRequirements => "unmet_authentication_requirements", // TODO: update once IdentityModel updated
+                AuthorizationError.UnmetAuthenticationRequirements => OidcConstants.AuthorizeErrors.UnmetAuthenticationRequirements,
                 _ => OidcConstants.AuthorizeErrors.AccessDenied
             };
                 
@@ -350,7 +350,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
                         AuthorizationError.InteractionRequired => OidcConstants.AuthorizeErrors.InteractionRequired,
                         AuthorizationError.LoginRequired => OidcConstants.AuthorizeErrors.LoginRequired,
                         AuthorizationError.TemporarilyUnavailable => OidcConstants.AuthorizeErrors.TemporarilyUnavailable,
-                        AuthorizationError.UnmetAuthenticationRequirements => "unmet_authentication_requirements", // TODO: update once IdentityModel updated
+                        AuthorizationError.UnmetAuthenticationRequirements => OidcConstants.AuthorizeErrors.UnmetAuthenticationRequirements,
                         _ => OidcConstants.AuthorizeErrors.AccessDenied
                     };
                         

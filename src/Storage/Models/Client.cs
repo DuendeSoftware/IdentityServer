@@ -117,6 +117,23 @@ public class Client
     public bool AllowAccessTokensViaBrowser { get; set; } = false;
 
     /// <summary>
+    /// Specifies whether a DPoP (Demonstrating Proof-of-Possession) token is requied to be used by this client (defaults to <c>false</c>).
+    /// </summary>
+    public bool RequireDPoP { get; set; }
+
+    /// <summary>
+    /// Enum setting to control validation for the DPoP proof token expiration.
+    /// This supports both the client generated 'iat' value and/or the server generated 'nonce' value. 
+    /// Defaults to only using the 'iat' value.
+    /// </summary>
+    public DPoPTokenExpirationValidationMode DPoPValidationMode { get; set; } = DPoPTokenExpirationValidationMode.Iat;
+
+    /// <summary>
+    /// Clock skew used in validating the client's DPoP proof token 'iat' claim value. Defaults to 5 minutes.
+    /// </summary>
+    public TimeSpan DPoPClockSkew { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// Specifies allowed URIs to return tokens or authorization codes to
     /// </summary>
     public ICollection<string> RedirectUris { get; set; } = new HashSet<string>();
@@ -449,4 +466,31 @@ public class Client
             return _inner.GetEnumerator();
         }
     }
+}
+
+/// <summary>
+/// Models how the client's DPoP token expiation should be validated.
+/// </summary>
+[Flags]
+public enum DPoPTokenExpirationValidationMode
+{
+    // TODO: do we allow this custom/none?
+
+    /// <summary>
+    /// No built-in expiration validation.
+    /// </summary>
+    Custom  = 0b_0000_0000,  // 0
+    /// <summary>
+    /// Validate the iat value
+    /// </summary>
+    Iat     = 0b_0000_0001,  // 1
+    /// <summary>
+    /// Validate the nonce value
+    /// </summary>
+    Nonce   = 0b_0000_0010,  // 2
+    
+    /// <summary>
+    /// Validate both the iat and nonce values
+    /// </summary>
+    IatAndNonce = Iat | Nonce
 }

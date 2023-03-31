@@ -336,7 +336,6 @@ public static class IdentityServerBuilderExtensionsAdditional
     /// <returns></returns>
     public static IIdentityServerBuilder AddJwtBearerClientAuthentication(this IIdentityServerBuilder builder)
     {
-        builder.Services.TryAddTransient<IReplayCache, DefaultReplayCache>();
         builder.AddSecretParser<JwtBearerClientAssertionSecretParser>();
         builder.AddSecretValidator<PrivateKeyJwtSecretValidator>();
 

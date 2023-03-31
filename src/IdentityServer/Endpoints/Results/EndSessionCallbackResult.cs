@@ -75,7 +75,7 @@ internal class EndSessionCallbackResult : IEndpointResult
             }
 
             // the hash matches the embedded style element being used below
-            context.Response.AddStyleCspHeaders(_options.Csp, "sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4=", sb.ToString());
+            context.Response.AddStyleCspHeaders(_options.Csp, IdentityServerConstants.ContentSecurityPolicyHashes.EndSessionStyle, sb.ToString());
         }
     }
 

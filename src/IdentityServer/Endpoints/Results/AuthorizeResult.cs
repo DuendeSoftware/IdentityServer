@@ -84,8 +84,7 @@ internal class AuthorizeResult : IEndpointResult
             Response.Error == OidcConstants.AuthorizeErrors.ConsentRequired ||
             Response.Error == OidcConstants.AuthorizeErrors.InteractionRequired ||
             Response.Error == OidcConstants.AuthorizeErrors.TemporarilyUnavailable ||
-            Response.Error == "unmet_authentication_requirements"; // TODO: update once IdentityModel updated
-
+            Response.Error == OidcConstants.AuthorizeErrors.UnmetAuthenticationRequirements;
         if (isSafeError)
         {
             // this scenario we can return back to the client
@@ -133,7 +132,7 @@ internal class AuthorizeResult : IEndpointResult
 
     private void AddSecurityHeaders(HttpContext context)
     {
-        context.Response.AddScriptCspHeaders(_options.Csp, "sha256-orD0/VhH8hLqrLxKHD/HUEMdwqX6/0ve7c5hspX5VJ8=");
+        context.Response.AddScriptCspHeaders(_options.Csp, IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript);
 
         var referrer_policy = "no-referrer";
         if (!context.Response.Headers.ContainsKey("Referrer-Policy"))

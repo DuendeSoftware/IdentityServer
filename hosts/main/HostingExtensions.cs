@@ -3,6 +3,7 @@
 
 using System.Security.Claims;
 using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
 using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;

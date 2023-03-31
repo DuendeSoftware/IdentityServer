@@ -213,6 +213,7 @@ public class DefaultRefreshTokenService : IRefreshTokenService
             Description = request.Description,
             AuthorizedScopes = request.AuthorizedScopes,
             AuthorizedResourceIndicators = request.AuthorizedResourceIndicators,
+            ProofType = request.ProofType,
 
             CreationTime = Clock.UtcNow.UtcDateTime,
             Lifetime = lifetime,

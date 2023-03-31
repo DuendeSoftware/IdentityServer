@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
 using IdentityServerHost.Pages.Admin.ApiScopes;
 using IdentityServerHost.Pages.Admin.Clients;
 using IdentityServerHost.Pages.Admin.IdentityScopes;
@@ -137,6 +138,9 @@ internal static class HostingExtensions
 
         app.MapRazorPages()
             .RequireAuthorization();
+
+        app.MapDynamicClientRegistration()
+            .AllowAnonymous();
 
         return app;
     }

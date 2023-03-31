@@ -44,7 +44,7 @@ internal class CheckSessionResult : IEndpointResult
 
     private void AddCspHeaders(HttpContext context)
     {
-        context.Response.AddScriptCspHeaders(_options.Csp, "sha256-fa5rxHhZ799izGRP38+h4ud5QXNT0SFaFlh4eqDumBI=");
+        context.Response.AddScriptCspHeaders(_options.Csp, IdentityServerConstants.ContentSecurityPolicyHashes.CheckSessionScript);
     }
     private string GetHtml(string cookieName)
     {

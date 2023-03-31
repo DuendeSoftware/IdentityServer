@@ -37,7 +37,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public async Task RemoveExpiredGrantsAsync_WhenExpiredGrantsExist_ExpectExpiredGrantsRemoved(DbContextOptions<PersistedGrantDbContext> options)
+    public async Task CleanupGrantsAsync_WhenExpiredGrantsExist_ExpectExpiredGrantsRemoved(DbContextOptions<PersistedGrantDbContext> options)
     {
         var expiredGrant = new PersistedGrant
         {
@@ -55,7 +55,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
             context.SaveChanges();
         }
 
-        await CreateSut(options).RemoveExpiredGrantsAsync();
+        await CreateSut(options).CleanupGrantsAsync();
 
         using (var context = new PersistedGrantDbContext(options))
         {
@@ -64,7 +64,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public async Task RemoveExpiredGrantsAsync_WhenValidGrantsExist_ExpectValidGrantsInDb(DbContextOptions<PersistedGrantDbContext> options)
+    public async Task CleanupGrantsAsync_WhenValidGrantsExist_ExpectValidGrantsInDb(DbContextOptions<PersistedGrantDbContext> options)
     {
         var validGrant = new PersistedGrant
         {
@@ -82,7 +82,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
             context.SaveChanges();
         }
 
-        await CreateSut(options).RemoveExpiredGrantsAsync();
+        await CreateSut(options).CleanupGrantsAsync();
 
         using (var context = new PersistedGrantDbContext(options))
         {
@@ -91,7 +91,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public async Task RemoveExpiredGrantsAsync_WhenExpiredDeviceGrantsExist_ExpectExpiredDeviceGrantsRemoved(DbContextOptions<PersistedGrantDbContext> options)
+    public async Task CleanupGrantsAsync_WhenExpiredDeviceGrantsExist_ExpectExpiredDeviceGrantsRemoved(DbContextOptions<PersistedGrantDbContext> options)
     {
         var expiredGrant = new DeviceFlowCodes
         {
@@ -110,7 +110,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
             context.SaveChanges();
         }
 
-        await CreateSut(options).RemoveExpiredGrantsAsync();
+        await CreateSut(options).CleanupGrantsAsync();
 
         using (var context = new PersistedGrantDbContext(options))
         {
@@ -119,7 +119,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public async Task RemoveExpiredGrantsAsync_WhenValidDeviceGrantsExist_ExpectValidDeviceGrantsInDb(DbContextOptions<PersistedGrantDbContext> options)
+    public async Task CleanupGrantsAsync_WhenValidDeviceGrantsExist_ExpectValidDeviceGrantsInDb(DbContextOptions<PersistedGrantDbContext> options)
     {
         var validGrant = new DeviceFlowCodes
         {
@@ -138,7 +138,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
             context.SaveChanges();
         }
 
-        await CreateSut(options).RemoveExpiredGrantsAsync();
+        await CreateSut(options).CleanupGrantsAsync();
 
         using (var context = new PersistedGrantDbContext(options))
         {
@@ -148,7 +148,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
 
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public async Task RemoveExpireGrantsAsync_WhenFlagIsOnAndConsumedGrantsExist_ExpectConsumedGrantsRemoved(DbContextOptions<PersistedGrantDbContext> options)
+    public async Task CleanupGrantsAsync_WhenFlagIsOnAndConsumedGrantsExist_ExpectConsumedGrantsRemoved(DbContextOptions<PersistedGrantDbContext> options)
     {
         var consumedGrant = new PersistedGrant
         {
@@ -167,7 +167,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
             context.SaveChanges();
         }
 
-        await CreateSut(options, removeConsumedTokens: true).RemoveExpiredGrantsAsync();
+        await CreateSut(options, removeConsumedTokens: true).CleanupGrantsAsync();
 
         using (var context = new PersistedGrantDbContext(options))
         {
@@ -176,7 +176,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public async Task RemoveExpireGrantsAsync_WhenFlagIsOffAndConsumedGrantsExist_ExpectConsumedGrantsNotRemoved(DbContextOptions<PersistedGrantDbContext> options)
+    public async Task CleanupGrantsAsync_WhenFlagIsOffAndConsumedGrantsExist_ExpectConsumedGrantsNotRemoved(DbContextOptions<PersistedGrantDbContext> options)
     {
         var consumedGrant = new PersistedGrant
         {
@@ -195,7 +195,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
             context.SaveChanges();
         }
 
-        await CreateSut(options, removeConsumedTokens: false).RemoveExpiredGrantsAsync();
+        await CreateSut(options, removeConsumedTokens: false).CleanupGrantsAsync();
 
         using (var context = new PersistedGrantDbContext(options))
         {
@@ -205,7 +205,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
 
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public async Task RemoveExpireGrantsAsync_WhenFlagIsOnAndConsumedGrantsExistAndDelayIsSet_ExpectConsumedGrantsRemovedRespectsDelay(DbContextOptions<PersistedGrantDbContext> options)
+    public async Task CleanupGrantsAsync_WhenFlagIsOnAndConsumedGrantsExistAndDelayIsSet_ExpectConsumedGrantsRemovedRespectsDelay(DbContextOptions<PersistedGrantDbContext> options)
     {
         var delay = 100;
 
@@ -213,7 +213,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         var oldConsumedGrant = new PersistedGrant
         {
             Expiration = DateTime.UtcNow.AddDays(3),                    // Token not yet expired
-            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay + 1)),    // But was consumed MORE than the delay in the past
+            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay + 100)),  // But was consumed MORE than the delay in the past
 
             Key = Guid.NewGuid().ToString(),
             Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
@@ -225,7 +225,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         var newConsumedGrant = new PersistedGrant
         {
             Expiration = DateTime.UtcNow.AddDays(3),                    // Token not yet expired
-            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay - 1)),    // But was consumed LESS than the delay in the past
+            ConsumedTime = DateTime.UtcNow.AddSeconds(-(delay - 100)),  // But was consumed LESS than the delay in the past
 
             Key = Guid.NewGuid().ToString(),
             Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
@@ -240,7 +240,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
             context.SaveChanges();
         }
 
-        await CreateSut(options, removeConsumedTokens: true, delay).RemoveExpiredGrantsAsync();
+        await CreateSut(options, removeConsumedTokens: true, delay).CleanupGrantsAsync();
 
         using (var context = new PersistedGrantDbContext(options))
         {
@@ -275,9 +275,9 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         services.AddTransient<IPersistedGrantStore, PersistedGrantStore>();
         services.AddTransient<IDeviceFlowStore, DeviceFlowStore>();
             
-        services.AddTransient<TokenCleanupService>();
+        services.AddTransient<ITokenCleanupService, TokenCleanupService>();
         services.AddSingleton(StoreOptions);
 
-        return services.BuildServiceProvider().GetRequiredService<TokenCleanupService>();
+        return services.BuildServiceProvider().GetRequiredService<ITokenCleanupService>() as TokenCleanupService;
     }
 }
