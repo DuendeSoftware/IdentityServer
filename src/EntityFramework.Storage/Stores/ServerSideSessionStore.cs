@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Extensions;
@@ -303,9 +304,9 @@ public class ServerSideSessionStore : IServerSideSessionStore
     public virtual async Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("ServerSideSessionStore.QuerySessions");
-        
+
         cancellationToken = cancellationToken == CancellationToken.None ? CancellationTokenProvider.CancellationToken : cancellationToken;
-        
+
         // it's possible that this implementation could have been done differently (e.g. use the page number for the token)
         // but it was done deliberately in such a way to allow document databases to mimic the logic
         // and omit features not supported (such as total count, total pages, and current page)
@@ -313,77 +314,27 @@ public class ServerSideSessionStore : IServerSideSessionStore
 
         filter ??= new();
 
-        // these are the ids of first and last items in the prior results
-        // stored as "x,y" in the filter.ResultsToken.
-        var first = 0;
-        var last = 0;
+        var query = Context.ServerSideSessions.AsNoTracking().AsQueryable();
+        query = ApplyFilter(query, filter);
 
-        if (filter.ResultsToken != null)
-        {
-            var parts = filter.ResultsToken.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            if (parts != null && parts.Length == 2)
-            {
-                Int32.TryParse(parts[0], out first);
-                Int32.TryParse(parts[1], out last);
-            }
-        }
-
+        var (first, last) = ParseResultsToken(filter);
         var countRequested = filter.CountRequested;
         if (countRequested <= 0) countRequested = 25;
-
-        var query = Context.ServerSideSessions.AsNoTracking().AsQueryable();
-
-        if (!String.IsNullOrWhiteSpace(filter.DisplayName) ||
-            !String.IsNullOrWhiteSpace(filter.SubjectId) ||
-            !String.IsNullOrWhiteSpace(filter.SessionId))
-        {
-            query = query.Where(x =>
-                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) &&
-                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId)) &&
-                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
-            );
-        }
-
         var totalCount = await query.CountAsync(cancellationToken);
-        var totalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0)));
-        
-        var currPage = 1;
-
-        var hasNext = false;
-        var hasPrev = false;
-        Entities.ServerSideSession[] items = null;
+        var pagination = new SessionPaginationContext
+        {
+            CountRequested = countRequested,
+            TotalCount = totalCount,
+            TotalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0))),
+            First = first,
+            Last = last,
+        };
 
         if (filter.RequestPriorResults)
         {
-            // sets query at the prior record from the last results, but in reverse order
-            items = await query.OrderByDescending(x => x.Id)
-                .Where(x => x.Id < first)
-                // and we +1 to see if there's a prev page
-                .Take(countRequested + 1)
-                .ToArrayAsync(cancellationToken);
+            await PreviousPage(query, first, pagination, cancellationToken);
 
-            // put them back into ID order
-            items = items.OrderBy(x => x.Id).ToArray(); 
-
-            // if we have the one extra, we have a prev page
-            hasPrev = items.Length > countRequested;
-
-            if (hasPrev)
-            {
-                // omit prev results entry
-                items = items.Skip(1).ToArray();
-            }
-
-            // how many are to the right of these results?
-            if (items.Any())
-            {
-                var postCountId = items[items.Length - 1].Id;
-                var postCount = await query.CountAsync(x => x.Id > postCountId, cancellationToken);
-                hasNext = postCount > 0;
-                currPage = totalPages - (int) Math.Ceiling((1.0 * postCount) / countRequested);
-            }
-
-            if (currPage == 1 && hasNext && items.Length < countRequested)
+            if (AtStartWithDeletedItems(pagination))
             {
                 // this handles when we went back and are now at the beginning but items were deleted.
                 // we need to start over and re-query from the beginning.
@@ -394,55 +345,57 @@ public class ServerSideSessionStore : IServerSideSessionStore
         }
         else
         {
-            items = await query.OrderBy(x => x.Id)
-                // if lastResultsId is zero, then this will just start at beginning
-                .Where(x => x.Id > last)
-                // and we +1 to see if there's a next page
-                .Take(countRequested + 1)
-                .ToArrayAsync(cancellationToken);
-
-            // if we have the one extra, we have a next page
-            hasNext = items.Length > countRequested;
-
-            if (hasNext)
-            {
-                // omit next results entry
-                items = items.SkipLast(1).ToArray();
-            }
-
-            // how many are to the left of these results?
-            if (items.Any())
-            {
-                var priorCountId = items[0].Id;
-                var priorCount = await query.CountAsync(x => x.Id < last, cancellationToken);
-                hasPrev = priorCount > 0;
-                currPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / countRequested);
-            }
+            await NextPage(query, last, pagination, cancellationToken);
         }
 
         // this handles prior entries being deleted since paging begun
-        if (currPage <= 1)
+        if (pagination.CurrentPage <= 1)
         {
-            currPage = 1;
-            hasPrev = false;
+            pagination.CurrentPage = 1;
+            pagination.HasPrev = false;
         }
 
         string resultsToken = null;
-        if (items.Length > 0)
+        if (pagination.Items.Length > 0)
         {
-            resultsToken = $"{items[0].Id},{items[items.Length - 1].Id}";
+            resultsToken = $"{pagination.Items[0].Id},{pagination.Items[pagination.Items.Length - 1].Id}";
         }
         else
         {
             // no results, so we're out of bounds
-            hasPrev = false;
-            hasNext = false;
-            totalCount = 0;
-            totalPages = 0;
-            currPage = 0;
+            pagination.HasPrev = false;
+            pagination.HasNext = false;
+            pagination.TotalCount = 0;
+            pagination.TotalPages = 0;
+            pagination.CurrentPage = 0;
         }
 
-        var results = items.Select(entity => new ServerSideSession
+        var models = MapEntitiesToModels(pagination.Items);
+
+        var result = new QueryResult<ServerSideSession>
+        {
+            ResultsToken = resultsToken,
+            HasNextResults = pagination.HasNext,
+            HasPrevResults = pagination.HasPrev,
+            TotalCount = pagination.TotalCount,
+            TotalPages = pagination.TotalPages,
+            CurrentPage = pagination.CurrentPage,
+            Results = models
+        };
+
+        Logger.LogDebug("Found {serverSideSessionCount} server-side sessions in database", models.Length);
+
+        return result;
+    }
+
+    private static bool AtStartWithDeletedItems(SessionPaginationContext pagination)
+    {
+        return pagination.CurrentPage == 1 && pagination.HasNext && pagination.Items.Length < pagination.CountRequested;
+    }
+
+    private static ServerSideSession[] MapEntitiesToModels(Entities.ServerSideSession[] items)
+    {
+        return items.Select(entity => new ServerSideSession
         {
             Key = entity.Key,
             Scheme = entity.Scheme,
@@ -454,88 +407,117 @@ public class ServerSideSessionStore : IServerSideSessionStore
             Expires = entity.Expires,
             Ticket = entity.Data,
         }).ToArray();
-
-        var result = new QueryResult<ServerSideSession>
-        {
-            ResultsToken = resultsToken,
-            HasNextResults = hasNext,
-            HasPrevResults = hasPrev,
-            TotalCount = totalCount,
-            TotalPages = totalPages,
-            CurrentPage = currPage,
-            Results = results
-        };
-
-        Logger.LogDebug("Found {serverSideSessionCount} server-side sessions in database", results.Length);
-
-        return result;
     }
-}
 
-/*
+    private static async Task NextPage(IQueryable<Entities.ServerSideSession> query, int last, SessionPaginationContext pagination, CancellationToken cancellationToken)
+    {
+        pagination.Items = await query.OrderBy(x => x.Id)
+            // if lastResultsId is zero, then this will just start at beginning
+            .Where(x => x.Id > last)
+            // and we +1 to see if there's a next page
+            .Take(pagination.CountRequested + 1)
+            .ToArrayAsync(cancellationToken);
 
+        // if we have the one extra, we have a next page
+        pagination.HasNext = pagination.Items.Length > pagination.CountRequested;
 
-        filter ??= new();
+        if (pagination.HasNext)
+        {
+            // omit next results entry
+            pagination.Items = pagination.Items.SkipLast(1).ToArray();
+        }
 
-        Int32.TryParse(filter.ResultsToken, out var lastPageNumber);
-        if (lastPageNumber < 0) lastPageNumber = 0;
+        // how many are to the left of these results?
+        if (pagination.Items.Any())
+        {
+            var priorCountId = pagination.Items[0].Id;
+            var priorCount = await query.CountAsync(x => x.Id < last, cancellationToken);
+            pagination.HasPrev = priorCount > 0;
+            pagination.CurrentPage = 1 + (int) Math.Ceiling((1.0 * priorCount) / pagination.CountRequested);
+        }
+    }
 
-        var countRequested = filter.CountRequested;
-        if (countRequested <= 0) countRequested = 25;
+    private static async Task PreviousPage(IQueryable<Entities.ServerSideSession> query, int first, SessionPaginationContext pagination, CancellationToken cancellationToken)
+    {
+        // sets query at the prior record from the last results, but in reverse order
+        pagination.Items = await query.OrderByDescending(x => x.Id)
+            .Where(x => x.Id < first)
+            // and we +1 to see if there's a prev page
+            .Take(pagination.CountRequested + 1)
+            .ToArrayAsync(cancellationToken);
 
-        var query = _store.Values.AsQueryable();
-        
-        if (!String.IsNullOrWhiteSpace(filter.DisplayName) || 
+        // put them back into ID order
+        pagination.Items = pagination.Items.OrderBy(x => x.Id).ToArray();
+
+        // if we have the one extra, we have a prev page
+        pagination.HasPrev = pagination.Items.Length > pagination.CountRequested;
+
+        if (pagination.HasPrev)
+        {
+            // omit prev results entry
+            pagination.Items = pagination.Items.Skip(1).ToArray();
+        }
+
+        // how many are to the right of these results?
+        if (pagination.Items.Any())
+        {
+            var postCountId = pagination.Items[pagination.Items.Length - 1].Id;
+            var postCount = await query.CountAsync(x => x.Id > postCountId, cancellationToken);
+            pagination.HasNext = postCount > 0;
+            pagination.CurrentPage = pagination.TotalPages - (int) Math.Ceiling((1.0 * postCount) / pagination.CountRequested);
+        }
+    }
+
+    private static (int First, int Last) ParseResultsToken(SessionQuery filter)
+    {
+        // these are the ids of first and last items in the prior results
+        // stored as "x,y" in the filter.ResultsToken.
+        var first = 0;
+        var last = 0;
+        if (filter.ResultsToken != null)
+        {
+            var parts = filter.ResultsToken.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            if (parts != null && parts.Length == 2)
+            {
+                Int32.TryParse(parts[0], out first);
+                Int32.TryParse(parts[1], out last);
+            }
+        }
+
+        return (first, last);
+    }
+
+    /// <summary>
+    /// Applies the SessionQuery filter. The base implementation filters by
+    /// DisplayName, sub, and sid, and if more than one criteria exist on the
+    /// filter, they must all be fulfilled. This method (or an override of it)
+    /// is not intended to apply pagination.
+    /// </summary>
+    protected virtual IQueryable<Entities.ServerSideSession> ApplyFilter(IQueryable<Entities.ServerSideSession> query, SessionQuery filter)
+    {
+        if (!String.IsNullOrWhiteSpace(filter.DisplayName) ||
             !String.IsNullOrWhiteSpace(filter.SubjectId) ||
             !String.IsNullOrWhiteSpace(filter.SessionId))
         {
             query = query.Where(x =>
-                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId, StringComparison.OrdinalIgnoreCase)) ||
-                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId, StringComparison.OrdinalIgnoreCase)) ||
-                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName, StringComparison.OrdinalIgnoreCase) == true))
+                (filter.SubjectId == null || x.SubjectId.Contains(filter.SubjectId)) &&
+                (filter.SessionId == null || x.SessionId.Contains(filter.SessionId)) &&
+                (filter.DisplayName == null || (x.DisplayName != null && x.DisplayName.Contains(filter.DisplayName) == true))
             );
         }
-        
-        var totalCount = query.Count();
-        var totalPages = (int) Math.Max(1, Math.Ceiling(totalCount / (countRequested * 1.0)));
+        return query;
+    }
 
-        var ordered = query = query.OrderBy(x => x.Key);
-        if (filter.RequestPriorResults)
-        {
-            // sets query at the prior block from the last page
-            if (lastPageNumber > 1)
-            {
-                query = ordered.Skip((lastPageNumber - 1) * countRequested);
-                lastPageNumber--;
-            }
-            else
-            {
-                // nothing if you ask for stuff before page 1
-                query = Enumerable.Empty<ServerSideSession>().AsQueryable();
-            }
-        }
-        else
-        {
-            // this skips the last results
-            query = ordered.Skip(lastPageNumber * countRequested);
-            lastPageNumber++;
-        }
-
-        var results = query.Take(countRequested)
-            .Select(x => x.Clone())
-            .ToArray();
-
-        var token = lastPageNumber.ToString();
-        if (lastPageNumber < 1) token = null;
-        if (lastPageNumber > totalPages) token = null;
-        
-        var result = new QueryResult<ServerSideSession>
-        {
-            ResultsToken = token,
-            TotalCount = totalCount,
-            TotalPages = totalPages,
-            Results = results
-        };
-
-
-*/
+    private class SessionPaginationContext
+    {
+        public int TotalCount { get; set; }
+        public int CountRequested { get; set; }
+        public int TotalPages { get; set; }
+        public int First { get; init; }
+        public int Last { get; init; }
+        public int CurrentPage { get; set; } = 1;
+        public bool HasNext { get; set; } = false;
+        public bool HasPrev { get; set; } = false;
+        public Entities.ServerSideSession[] Items { get; set; } = Array.Empty<Entities.ServerSideSession>();
+    }
+}

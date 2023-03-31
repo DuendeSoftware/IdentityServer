@@ -1,7 +1,5 @@
 @page
 @model IdentityServerHost.Pages.ServerSideSessions.IndexModel
-@{
-}
 
     <div class="users-page">
         <div class="row">
@@ -16,23 +14,46 @@
                     @if (Model.UserSessions != null)
                     {
                         <div class="row">
-                            <div class="col text-center">
+                            <div class="col-1 text-center">
                                 @if (Model.UserSessions.HasPrevResults)
                                 {
-                                    <a class="btn btn-primary" asp-page="/ServerSideSessions/Index" asp-route-prev="true" asp-route-filter="@Model.Filter" asp-route-token="@Model.UserSessions.ResultsToken">Prev</a>
+                                    <a class="btn btn-primary" asp-page="/ServerSideSessions/Index"
+                                         asp-route-prev="true" 
+                                         asp-route-token="@Model.UserSessions.ResultsToken"
+                                         asp-route-DisplayNameFilter="@Model.DisplayNameFilter"
+                                         asp-route-SubjectIdFilter="@Model.SubjectIdFilter"
+                                         asp-route-SessionIdFilter="@Model.SessionIdFilter"
+                                    >Prev</a>
                                 }
                             </div>
-                            <form class="col">
-                                <div class="form-inline">
-                                    <label asp-for="@Model.Filter">Filter:</label>
-                                    <input type="search" asp-for="@Model.Filter" class="form-control" autofocus />
-                                    <button type="submit" class="form-control btn btn-success">Search</button>
-                                </div>
-                            </form>
-                            <div class="col text-center">
+                            <div class="col">
+                                <form class="form">
+                                    <div class="form-group row">
+                                        <label asp-for="@Model.DisplayNameFilter" class="col-2 col-form-label">Name:</label>
+                                        <input type="search" asp-for="@Model.DisplayNameFilter" class="col form-control" autofocus />
+                                    </div>
+                                    <div class="form-group row">
+                                        <label asp-for="@Model.SessionIdFilter" class="col-2 col-form-label">Session Id:</label>
+                                        <input type="search" asp-for="@Model.SessionIdFilter" class="col form-control" autofocus />
+                                    </div>
+                                    <div class="form-group row">
+                                        <label asp-for="@Model.SubjectIdFilter" class="col-2 col-form-label">Subject Id:</label>
+                                        <input type="search" asp-for="@Model.SubjectIdFilter" class="col form-control" autofocus />
+                                    </div>
+                                    <div class="form-group row justify-content-end">
+                                        <button type="submit" class="form-control btn btn-success col-1">Filter</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-1 text-center">
                                 @if (Model.UserSessions.HasNextResults)
                                 {
-                                    <a class="btn btn-primary" asp-page="/ServerSideSessions/Index" asp-route-filter="@Model.Filter" asp-route-token="@Model.UserSessions.ResultsToken">Next</a>
+                                    <a class="btn btn-primary" asp-page="/ServerSideSessions/Index"
+                                         asp-route-token="@Model.UserSessions.ResultsToken"
+                                         asp-route-DisplayNameFilter="@Model.DisplayNameFilter"
+                                         asp-route-SubjectIdFilter="@Model.SubjectIdFilter"
+                                         asp-route-SessionIdFilter="@Model.SessionIdFilter"
+                                    >Next</a>
                                 }
                             </div>
                         </div>

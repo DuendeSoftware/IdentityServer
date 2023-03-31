@@ -113,7 +113,7 @@ public class DefaultSessionCoordinationService : ISessionCoordinationService
 
             Logger.LogDebug("Due to user logout, invoking backchannel logout for subject id {subjectId} and session id {sessionId}", session.SubjectId, session.SessionId);
             
-            // this uses all the clientIds since that's how logout worked before session coorindation existed
+            // this uses all the clientIds since that's how logout worked before session coordination existed
             // IOW, we know we're not using the clientsToCoordinate list here, also because it's active logout
             await BackChannelLogoutService.SendLogoutNotificationsAsync(new LogoutNotificationContext
             {
