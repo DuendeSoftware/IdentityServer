@@ -118,12 +118,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for client credentials request");
 
-        #pragma warning disable CS0618
-        // Using a deprecated function until it is removed to avoid a breaking
-        // change earlier than intended.
         return ProcessTokenRequestAsync(request);
-        #pragma warning restore CS0618
-
     }
 
     /// <summary>
@@ -135,11 +130,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for password request");
 
-        #pragma warning disable CS0618
-        // Using a deprecated function until it is removed to avoid a breaking
-        // change earlier than intended.
         return ProcessTokenRequestAsync(request);
-        #pragma warning restore CS0618
     }
 
     /// <summary>
@@ -152,7 +143,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for authorization code request");
 
-        var response = await CreateResponseAsync(request);
+        var response = await ProcessTokenRequestAsync(request);
 
         if (request.ValidatedRequest.AuthorizationCode.IsOpenId)
         {
@@ -246,7 +237,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for device code request");
 
-        var response = await CreateResponseAsync(request);
+        var response = await ProcessTokenRequestAsync(request);
 
         if (request.ValidatedRequest.DeviceCode.IsOpenId)
         {
@@ -287,7 +278,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for CIBA request");
 
-        var response = await CreateResponseAsync(request);
+        var response = await ProcessTokenRequestAsync(request);
 
         // load the client that belongs to the device code
         Client client = null;
@@ -325,34 +316,14 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for extension grant request");
 
-        #pragma warning disable CS0618
-        // Using a deprecated function until it is removed to avoid a breaking
-        // change earlier than intended.
         return ProcessTokenRequestAsync(request);
-        #pragma warning restore CS0618
     }
 
     /// <summary>
-    /// <para>
-    /// This function is deprecated and will be removed in a future version.
-    /// Use <c>CreateResponseAsync</c> instead.
-    /// </para>
-    /// Creates the response for a token request.
+    /// Creates a response for a token request containing an access token and a
+    /// refresh token if requested.
     /// </summary>
-    /// <param name="validationResult">The validation result.</param>
-    /// <returns></returns>
-    [Obsolete("Use CreateResponseAsync instead.")]
     protected virtual async Task<TokenResponse> ProcessTokenRequestAsync(TokenRequestValidationResult validationResult)
-    {
-        return await CreateResponseAsync(validationResult);
-    }
-
-    /// <summary>
-    /// Creates a response for a token request containing an access token and a refresh token if requested.
-    /// </summary>
-    /// <param name="validationResult">The validation result.</param>
-    /// <returns></returns>
-    protected virtual async Task<TokenResponse> CreateResponseAsync(TokenRequestValidationResult validationResult)
     {
         (var accessToken, var refreshToken) = await CreateAccessTokenAsync(validationResult.ValidatedRequest);
         var response = new TokenResponse
