@@ -143,30 +143,8 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for authorization code request");
 
-        //////////////////////////
-        // access token
-        /////////////////////////
-        var (accessToken, refreshToken) = await CreateAccessTokenAsync(request.ValidatedRequest);
-        var response = new TokenResponse
-        {
-            AccessToken = accessToken,
-            AccessTokenType = request.ValidatedRequest.ProofType == ProofType.DPoP ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType,
-            AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
-            Custom = request.CustomResponse,
-            Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
-        };
+        var response = await ProcessTokenRequestAsync(request);
 
-        //////////////////////////
-        // refresh token
-        /////////////////////////
-        if (refreshToken.IsPresent())
-        {
-            response.RefreshToken = refreshToken;
-        }
-
-        //////////////////////////
-        // id token
-        /////////////////////////
         if (request.ValidatedRequest.AuthorizationCode.IsOpenId)
         {
             // load the client that belongs to the authorization code
@@ -267,30 +245,8 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for device code request");
 
-        //////////////////////////
-        // access token
-        /////////////////////////
-        var (accessToken, refreshToken) = await CreateAccessTokenAsync(request.ValidatedRequest);
-        var response = new TokenResponse
-        {
-            AccessToken = accessToken,
-            AccessTokenType = request.ValidatedRequest.ProofType == ProofType.DPoP ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType,
-            AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
-            Custom = request.CustomResponse,
-            Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
-        };
+        var response = await ProcessTokenRequestAsync(request);
 
-        //////////////////////////
-        // refresh token
-        /////////////////////////
-        if (refreshToken.IsPresent())
-        {
-            response.RefreshToken = refreshToken;
-        }
-
-        //////////////////////////
-        // id token
-        /////////////////////////
         if (request.ValidatedRequest.DeviceCode.IsOpenId)
         {
             // load the client that belongs to the device code
@@ -330,31 +286,8 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     {
         Logger.LogTrace("Creating response for CIBA request");
 
-        //////////////////////////
-        // access token
-        /////////////////////////
-        var (accessToken, refreshToken) = await CreateAccessTokenAsync(request.ValidatedRequest);
-        var response = new TokenResponse
-        {
-            AccessToken = accessToken,
-            AccessTokenType = request.ValidatedRequest.ProofType == ProofType.DPoP ? OidcConstants.TokenResponse.DPoPTokenType : OidcConstants.TokenResponse.BearerTokenType,
-            AccessTokenLifetime = request.ValidatedRequest.AccessTokenLifetime,
-            Custom = request.CustomResponse,
-            Scope = request.ValidatedRequest.ValidatedResources.RawScopeValues.ToSpaceSeparatedString()
-        };
+        var response = await ProcessTokenRequestAsync(request);
 
-        //////////////////////////
-        // refresh token
-        /////////////////////////
-        if (refreshToken.IsPresent())
-        {
-            response.RefreshToken = refreshToken;
-        }
-
-        //////////////////////////
-        // id token
-        /////////////////////////
-            
         // load the client that belongs to the device code
         Client client = null;
         if (request.ValidatedRequest.BackChannelAuthenticationRequest.ClientId != null)
@@ -395,10 +328,9 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     }
 
     /// <summary>
-    /// Creates the response for a token request.
+    /// Creates a response for a token request containing an access token and a
+    /// refresh token if requested.
     /// </summary>
-    /// <param name="validationResult">The validation result.</param>
-    /// <returns></returns>
     protected virtual async Task<TokenResponse> ProcessTokenRequestAsync(TokenRequestValidationResult validationResult)
     {
         (var accessToken, var refreshToken) = await CreateAccessTokenAsync(validationResult.ValidatedRequest);
@@ -418,6 +350,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
 
         return response;
     }
+
 
     /// <summary>
     /// Creates the access/refresh token.
