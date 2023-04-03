@@ -20,9 +20,9 @@ namespace Duende.IdentityServer.EntityFramework.Services;
 public class CorsPolicyService : ICorsPolicyService
 {
     /// <summary>
-    /// The IServiceProvider.
+    /// The DbContext.
     /// </summary>
-    protected readonly IServiceProvider Provider;
+    protected readonly IConfigurationDbContext DbContext;
 
     /// <summary>
     /// The CancellationToken provider.
@@ -33,17 +33,18 @@ public class CorsPolicyService : ICorsPolicyService
     /// The logger.
     /// </summary>
     protected readonly ILogger<CorsPolicyService> Logger;
+    
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CorsPolicyService"/> class.
     /// </summary>
-    /// <param name="provider">The provider.</param>
+    /// <param name="dbContext">The DbContext</param>
     /// <param name="logger">The logger.</param>
     /// <param name="cancellationTokenProvider"></param>
     /// <exception cref="ArgumentNullException">context</exception>
-    public CorsPolicyService(IServiceProvider provider, ILogger<CorsPolicyService> logger, ICancellationTokenProvider cancellationTokenProvider)
+    public CorsPolicyService(IConfigurationDbContext dbContext, ILogger<CorsPolicyService> logger, ICancellationTokenProvider cancellationTokenProvider)
     {
-        Provider = provider;
+        DbContext = dbContext;
         Logger = logger;
         CancellationTokenProvider = cancellationTokenProvider;
     }
@@ -57,10 +58,7 @@ public class CorsPolicyService : ICorsPolicyService
     {
         origin = origin.ToLowerInvariant();
 
-        // doing this here and not in the ctor because: https://github.com/aspnet/CORS/issues/105
-        var dbContext = Provider.GetRequiredService<IConfigurationDbContext>();
-
-        var query = from o in dbContext.ClientCorsOrigins
+        var query = from o in DbContext.ClientCorsOrigins
             where o.Origin == origin
             select o;
 
