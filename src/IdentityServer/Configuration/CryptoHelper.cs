@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using IdentityModel;
 using Microsoft.IdentityModel.Tokens;
@@ -114,7 +115,7 @@ public static class CryptoHelper
     /// <summary>
     /// Returns the matching curve name for signing algorithm.
     /// </summary>
-    internal static string GetCurveNameFromSigningAlgorithm(string alg)
+    internal static string? GetCurveNameFromSigningAlgorithm(string alg)
     {
         return alg switch
         {
@@ -185,9 +186,9 @@ public static class CryptoHelper
         };
     }
 
-    internal static X509Certificate2 FindCertificate(string name, StoreLocation location, NameType nameType)
+    internal static X509Certificate2? FindCertificate(string name, StoreLocation location, NameType nameType)
     {
-        X509Certificate2 certificate = null;
+        X509Certificate2? certificate = null;
 
         if (location == StoreLocation.LocalMachine)
         {
