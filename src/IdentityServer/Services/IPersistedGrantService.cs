@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -27,5 +28,5 @@ public interface IPersistedGrantService
     /// <param name="clientId">The client identifier (optional).</param>
     /// <param name="sessionId">The session id (optional).</param>
     /// <returns></returns>
-    Task RemoveAllGrantsAsync(string subjectId, string clientId = null, string sessionId = null);
+    Task RemoveAllGrantsAsync(string subjectId, string? clientId = null, string? sessionId = null);
 }
