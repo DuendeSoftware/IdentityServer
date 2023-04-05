@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,17 +22,17 @@ public interface IBackChannelAuthenticationRequestStore
     /// <summary>
     /// Gets the requests.
     /// </summary>
-    Task<IEnumerable<BackChannelAuthenticationRequest>> GetLoginsForUserAsync(string subjectId, string clientId = null);
+    Task<IEnumerable<BackChannelAuthenticationRequest>> GetLoginsForUserAsync(string subjectId, string? clientId = null);
 
     /// <summary>
     /// Gets the request.
     /// </summary>
-    Task<BackChannelAuthenticationRequest> GetByAuthenticationRequestIdAsync(string requestId);
+    Task<BackChannelAuthenticationRequest?> GetByAuthenticationRequestIdAsync(string requestId);
         
     /// <summary>
     /// Gets the request.
     /// </summary>
-    Task<BackChannelAuthenticationRequest> GetByInternalIdAsync(string id);
+    Task<BackChannelAuthenticationRequest?> GetByInternalIdAsync(string id);
 
     /// <summary>
     /// Removes the request.
