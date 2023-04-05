@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 
@@ -14,7 +15,7 @@ public class ServerSideSessionOptions
     /// <summary>
     /// The claim type used for the user's display name.
     /// </summary>
-    public string UserDisplayNameClaimType { get; set; }
+    public string? UserDisplayNameClaimType { get; set; }
 
     /// <summary>
     /// If enabled, will perodically cleanup expired sessions.

@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -55,7 +56,7 @@ public class DynamicProviderOptions
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    public DynamicProviderType FindProviderType(string type)
+    public DynamicProviderType? FindProviderType(string type)
     {
         return _providers.ContainsKey(type) ? _providers[type] : null;
     }
@@ -68,14 +69,14 @@ public class DynamicProviderOptions
         /// <summary>
         /// The type of the handler.
         /// </summary>
-        public Type HandlerType { get; set; }
+        public Type HandlerType { get; set; } = default!;
         /// <summary>
         /// The type of the options.
         /// </summary>
-        public Type OptionsType { get; set; }
+        public Type OptionsType { get; set; } = default!;
         /// <summary>
         /// The identity provider protocol type.
         /// </summary>
-        public Type IdentityProviderType { get; set; }
+        public Type IdentityProviderType { get; set; } = default!;
     }
 }

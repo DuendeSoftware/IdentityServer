@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 namespace Duende.IdentityServer.Configuration;
 
@@ -24,7 +25,7 @@ public class MutualTlsOptions
     /// If the string does not contain any dots, a subdomain is assumed - e.g. main domain: identityserver.local, MTLS domain: mtls.identityserver.local
     /// If the string contains dots, a completely separate domain is assumend, e.g. main domain: identity.app.com, MTLS domain: mtls.app.com. In this case you must set a static issuer name on the options.
     /// </summary>
-    public string DomainName { get; set; }
+    public string? DomainName { get; set; }
 
     /// <summary>
     /// Specifies whether a cnf claim gets emitted for access tokens if a client certificate was present.

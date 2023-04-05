@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Stores.Serialization;
 
@@ -18,7 +19,7 @@ public class IdentityServerOptions
     /// <value>
     /// Unique name of this server instance, e.g. https://myissuer.com
     /// </value>
-    public string IssuerUri { get; set; }
+    public string? IssuerUri { get; set; }
 
     /// <summary>
     /// Set to false to preserve the original casing of the IssuerUri. Defaults to true.
@@ -184,7 +185,7 @@ public class IdentityServerOptions
     /// <summary>
     /// Gets or sets the license key.
     /// </summary>
-    public string LicenseKey { get; set; }
+    public string? LicenseKey { get; set; }
 
     /// <summary>
     /// Options for dynamic external providers.
