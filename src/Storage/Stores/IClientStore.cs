@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
@@ -17,5 +18,5 @@ public interface IClientStore
     /// </summary>
     /// <param name="clientId">The client id</param>
     /// <returns>The client</returns>
-    Task<Client> FindClientByIdAsync(string clientId);
+    Task<Client?> FindClientByIdAsync(string clientId);
 }
