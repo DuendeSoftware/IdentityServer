@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 using System;
@@ -23,7 +24,7 @@ public interface IBackchannelAuthenticationInteractionService
     /// <summary>
     /// Returns the login request for the id.
     /// </summary>
-    Task<BackchannelUserLoginRequest> GetLoginRequestByInternalIdAsync(string id);
+    Task<BackchannelUserLoginRequest?> GetLoginRequestByInternalIdAsync(string id);
 
     /// <summary>
     /// Completes the login request with the provided response for the current user or the subject passed.
@@ -54,23 +55,23 @@ public class CompleteBackchannelLoginRequest
     /// Setting any scopes grants the login request.
     /// Leaving the scopes null or empty denies the request.
     /// </summary>
-    public IEnumerable<string> ScopesValuesConsented { get; set; }
+    public IEnumerable<string>? ScopesValuesConsented { get; set; }
 
     /// <summary>
     /// Gets or sets the optional description to associate with the consent.
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// The subject for which the completion is being made.
     /// This allows more claims to be associated with the request that was identified on the backchannel authentication request.
     /// If not provided, then the IUserSession service will be consulting to obtain the current subject.
     /// </summary>
-    public ClaimsPrincipal Subject { get; set; }
+    public ClaimsPrincipal? Subject { get; set; }
 
     /// <summary>
     /// The session id to associate with the completion request if the Subject is provided.
     /// If the Subject is not provided, then this property is ignored in favor of the session id provided by the IUserSession service.
     /// </summary>
-    public string SessionId { get; set; }
+    public string? SessionId { get; set; }
 }

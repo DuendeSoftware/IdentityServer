@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -24,7 +25,7 @@ public class ValidatedRequest
     /// <value>
     /// The raw.
     /// </value>
-    public NameValueCollection Raw { get; set; }
+    public NameValueCollection Raw { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the client.
@@ -32,12 +33,12 @@ public class ValidatedRequest
     /// <value>
     /// The client.
     /// </value>
-    public Client Client { get; set; }
+    public Client Client { get; set; } = default!;
 
     /// <summary>
     /// The name of the issuer for the current request
     /// </summary>
-    public string IssuerName { get; set; }
+    public string IssuerName { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the secret used to authenticate the client.
@@ -45,7 +46,7 @@ public class ValidatedRequest
     /// <value>
     /// The parsed secret.
     /// </value>
-    public ParsedSecret Secret { get; set; }
+    public ParsedSecret? Secret { get; set; }
 
     /// <summary>
     /// Gets or sets the effective access token lifetime for the current request.
@@ -71,7 +72,7 @@ public class ValidatedRequest
     /// <value>
     /// The subject.
     /// </value>
-    public ClaimsPrincipal Subject { get; set; }
+    public ClaimsPrincipal? Subject { get; set; }
 
     /// <summary>
     /// Gets or sets the session identifier.
@@ -79,15 +80,15 @@ public class ValidatedRequest
     /// <value>
     /// The session identifier.
     /// </value>
-    public string SessionId { get; set; }
-        
+    public string? SessionId { get; set; }
+
     /// <summary>
     /// Gets or sets the identity server options.
     /// </summary>
     /// <value>
     /// The options.
     /// </value>
-    public IdentityServerOptions Options { get; set; }
+    public IdentityServerOptions Options { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the validated resources for the request.
@@ -103,7 +104,7 @@ public class ValidatedRequest
     /// <value>
     /// The confirmation.
     /// </value>
-    public string Confirmation { get; set; }
+    public string? Confirmation { get; set; }
 
     /// <summary>
     /// The type of proof for the request
@@ -116,7 +117,7 @@ public class ValidatedRequest
     /// <value>
     /// The client ID
     /// </value>
-    public string ClientId { get; set; }
+    public string ClientId { get; set; } = default!;
 
     /// <summary>
     /// Sets the client and the appropriate request specific settings.
@@ -125,7 +126,7 @@ public class ValidatedRequest
     /// <param name="secret">The client secret (optional).</param>
     /// <param name="confirmation">The confirmation.</param>
     /// <exception cref="ArgumentNullException">client</exception>
-    public void SetClient(Client client, ParsedSecret secret = null, string confirmation = "")
+    public void SetClient(Client client, ParsedSecret? secret = null, string confirmation = "")
     {
         Client = client ?? throw new ArgumentNullException(nameof(client));
         Secret = secret;
