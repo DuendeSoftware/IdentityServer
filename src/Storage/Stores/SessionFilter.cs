@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using System;
 
 namespace Duende.IdentityServer.Stores;
@@ -13,12 +15,12 @@ public class SessionFilter
     /// <summary>
     /// The subject ID
     /// </summary>
-    public string SubjectId { get; init; }
+    public string? SubjectId { get; init; }
 
     /// <summary>
     /// The session ID
     /// </summary>
-    public string SessionId { get; init; }
+    public string? SessionId { get; init; }
 
     /// <summary>
     /// Validates

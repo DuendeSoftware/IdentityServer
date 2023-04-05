@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using System;
 
 namespace Duende.IdentityServer.Models;
@@ -33,7 +35,7 @@ public class ServerSideSession
     /// <summary>
     /// The display name for the user
     /// </summary>
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
 
     /// <summary>
     /// The creation time

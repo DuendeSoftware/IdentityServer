@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using Duende.IdentityServer.Models;
 using System.Collections.Generic;
 using System.Threading;
@@ -16,7 +18,7 @@ public interface IServerSideSessionStore
     /// <summary>
     /// Retrieves a session
     /// </summary>
-    Task<ServerSideSession> GetSessionAsync(string key, CancellationToken cancellationToken = default);
+    Task<ServerSideSession?> GetSessionAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a session
@@ -54,5 +56,5 @@ public interface IServerSideSessionStore
     /// <summary>
     /// Queries sessions based on filter
     /// </summary>
-    Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default);
+    Task<QueryResult<ServerSideSession>> QuerySessionsAsync(SessionQuery? filter = null, CancellationToken cancellationToken = default);
 }
