@@ -133,7 +133,7 @@ public class Token
     /// <value>
     /// The subject identifier.
     /// </value>
-    public string SubjectId => Claims.Where(x => x.Type == JwtClaimTypes.Subject).Select(x => x.Value).Single();
+    public string? SubjectId => Claims.Where(x => x.Type == JwtClaimTypes.Subject).Select(x => x.Value).SingleOrDefault();
 
     /// <summary>
     /// Gets the session identifier.
@@ -141,7 +141,7 @@ public class Token
     /// <value>
     /// The session identifier.
     /// </value>
-    public string SessionId => Claims.Where(x => x.Type == JwtClaimTypes.SessionId).Select(x => x.Value).Single();
+    public string? SessionId => Claims.Where(x => x.Type == JwtClaimTypes.SessionId).Select(x => x.Value).SingleOrDefault();
 
     /// <summary>
     /// Gets the scopes.

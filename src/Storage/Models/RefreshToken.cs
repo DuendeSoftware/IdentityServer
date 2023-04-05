@@ -108,7 +108,7 @@ public class RefreshToken
     /// <value>
     /// The subject identifier.
     /// </value>
-    public string SubjectId => Subject.FindFirst(JwtClaimTypes.Subject)!.Value;
+    public string? SubjectId => Subject?.FindFirst(JwtClaimTypes.Subject)?.Value;
 
     /// <summary>
     /// Gets the session identifier.
@@ -116,7 +116,7 @@ public class RefreshToken
     /// <value>
     /// The session identifier.
     /// </value>
-    public string SessionId { get; set; } = default!;
+    public string? SessionId { get; set; }
 
     /// <summary>
     /// Gets the description the user assigned to the device being authorized.
