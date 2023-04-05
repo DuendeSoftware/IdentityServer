@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The type of the grant.
     /// </value>
-    public string GrantType { get; set; }
+    public string GrantType { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the scopes.
@@ -26,12 +27,12 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The scopes.
     /// </value>
-    public IEnumerable<string> RequestedScopes { get; set; }
+    public IEnumerable<string>? RequestedScopes { get; set; }
         
     /// <summary>
     /// Gets or sets the resource indicator.
     /// </summary>
-    public string RequestedResourceIndicator { get; set; }
+    public string? RequestedResourceIndicator { get; set; }
 
     /// <summary>
     /// Gets or sets the username used in the request.
@@ -39,7 +40,7 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The name of the user.
     /// </value>
-    public string UserName { get; set; }
+    public string? UserName { get; set; }
         
     /// <summary>
     /// Gets or sets the refresh token.
@@ -47,7 +48,7 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The refresh token.
     /// </value>
-    public RefreshToken RefreshToken { get; set; }
+    public RefreshToken? RefreshToken { get; set; }
         
     /// <summary>
     /// Gets or sets the refresh token handle.
@@ -55,7 +56,7 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The refresh token handle.
     /// </value>
-    public string RefreshTokenHandle { get; set; }
+    public string? RefreshTokenHandle { get; set; }
 
     /// <summary>
     /// Gets or sets the authorization code.
@@ -63,7 +64,7 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The authorization code.
     /// </value>
-    public AuthorizationCode AuthorizationCode { get; set; }
+    public AuthorizationCode? AuthorizationCode { get; set; }
 
     /// <summary>
     /// Gets or sets the authorization code handle.
@@ -71,7 +72,7 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The authorization code handle.
     /// </value>
-    public string AuthorizationCodeHandle { get; set; }
+    public string? AuthorizationCodeHandle { get; set; }
 
     /// <summary>
     /// Gets or sets the code verifier.
@@ -79,7 +80,7 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The code verifier.
     /// </value>
-    public string CodeVerifier { get; set; }
+    public string? CodeVerifier { get; set; }
 
     /// <summary>
     /// Gets or sets the device code.
@@ -87,7 +88,7 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The device code.
     /// </value>
-    public DeviceCode DeviceCode { get; set; }
+    public DeviceCode? DeviceCode { get; set; }
 
     /// <summary>
     /// Gets or sets the backchannel authentication request.
@@ -95,10 +96,10 @@ public class ValidatedTokenRequest : ValidatedRequest
     /// <value>
     /// The backchannel authentication request.
     /// </value>
-    public BackChannelAuthenticationRequest BackChannelAuthenticationRequest { get; set; }
+    public BackChannelAuthenticationRequest? BackChannelAuthenticationRequest { get; set; }
 
     /// <summary>
     /// The thumbprint of the associated proof key, if one was used.
     /// </summary>
-    public string ProofKeyThumbprint { get; set; }
+    public string? ProofKeyThumbprint { get; set; }
 }
