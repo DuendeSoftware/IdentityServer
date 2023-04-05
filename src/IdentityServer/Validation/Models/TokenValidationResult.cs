@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ public class TokenValidationResult : ValidationResult
     /// <value>
     /// The claims.
     /// </value>
-    public IEnumerable<Claim> Claims { get; set; }
+    public IEnumerable<Claim>? Claims { get; set; }
         
     /// <summary>
     /// Gets or sets the JWT.
@@ -27,7 +28,7 @@ public class TokenValidationResult : ValidationResult
     /// <value>
     /// The JWT.
     /// </value>
-    public string Jwt { get; set; }
+    public string? Jwt { get; set; }
 
     /// <summary>
     /// Gets or sets the reference token (in case of access token validation).
@@ -35,7 +36,7 @@ public class TokenValidationResult : ValidationResult
     /// <value>
     /// The reference token.
     /// </value>
-    public Token ReferenceToken { get; set; }
+    public Token? ReferenceToken { get; set; }
 
     /// <summary>
     /// Gets or sets the reference token identifier (in case of access token validation).
@@ -43,7 +44,7 @@ public class TokenValidationResult : ValidationResult
     /// <value>
     /// The reference token identifier.
     /// </value>
-    public string ReferenceTokenId { get; set; }
+    public string? ReferenceTokenId { get; set; }
 
     /// <summary>
     /// Gets or sets the refresh token (in case of refresh token validation).
@@ -51,7 +52,7 @@ public class TokenValidationResult : ValidationResult
     /// <value>
     /// The reference token identifier.
     /// </value>
-    public RefreshToken RefreshToken { get; set; }
+    public RefreshToken? RefreshToken { get; set; }
 
     /// <summary>
     /// Gets or sets the client.
@@ -59,5 +60,5 @@ public class TokenValidationResult : ValidationResult
     /// <value>
     /// The client.
     /// </value>
-    public Client Client { get; set; }
+    public Client? Client { get; set; }
 }
