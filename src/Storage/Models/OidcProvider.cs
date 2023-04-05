@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +31,7 @@ public class OidcProvider : IdentityProvider
     /// <summary>
     /// The base address of the OIDC provider.
     /// </summary>
-    public string Authority
+    public string? Authority
     {
         get => this["Authority"];
         set => this["Authority"] = value;
@@ -45,7 +47,7 @@ public class OidcProvider : IdentityProvider
     /// <summary>
     /// The client id.
     /// </summary>
-    public string ClientId 
+    public string? ClientId 
     {
         get => this["ClientId"];
         set => this["ClientId"] = value;
@@ -53,7 +55,7 @@ public class OidcProvider : IdentityProvider
     /// <summary>
     /// The client secret. By default this is the plaintext client secret and great consideration should be taken if this value is to be stored as plaintext in the store.
     /// </summary>
-    public string ClientSecret 
+    public string? ClientSecret 
     {
         get => this["ClientSecret"];
         set => this["ClientSecret"] = value;

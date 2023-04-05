@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using System.Security.Claims;
@@ -15,12 +16,12 @@ public class ClientClaim
     /// <summary>
     /// The claim type
     /// </summary>
-    public string Type { get; set; }
+    public string Type { get; set; } = default!;
         
     /// <summary>
     /// The claim value
     /// </summary>
-    public string Value { get; set; }
+    public string Value { get; set; } = default!;
 
     /// <summary>
     /// The claim value type
@@ -73,7 +74,7 @@ public class ClientClaim
     }
 
     /// <inheritdoc/>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is null) return false;
         if (obj is ClientClaim c)
