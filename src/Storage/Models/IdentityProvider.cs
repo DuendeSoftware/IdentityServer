@@ -21,7 +21,7 @@ public class IdentityProviderName
     /// <summary>
     /// Display name for the provider.
     /// </summary>
-    public string DisplayName { get; set; } = default!;
+    public string? DisplayName { get; set; }
 
     /// <summary>
     /// Flag that indicates if the provider should be used.
@@ -65,7 +65,7 @@ public class IdentityProvider
     /// <summary>
     /// Display name for the provider.
     /// </summary>
-    public string DisplayName { get; set; } = default!;
+    public string? DisplayName { get; set; }
 
     /// <summary>
     /// Flag that indicates if the provider should be used.
