@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 namespace Duende.IdentityServer.Validation;
 
@@ -23,5 +24,5 @@ public class SecretValidationResult : ValidationResult
     /// <value>
     /// The confirmation.
     /// </value>
-    public string Confirmation { get; set; }
+    public string? Confirmation { get; set; }
 }

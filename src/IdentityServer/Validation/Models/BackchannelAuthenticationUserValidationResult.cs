@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using System.Security.Claims;
@@ -20,15 +21,15 @@ public class BackchannelAuthenticationUserValidationResult
     /// <summary>
     /// Gets or sets the error.
     /// </summary>
-    public string Error { get; set; }
+    public string? Error { get; set; }
         
     /// <summary>
     /// Gets or sets the error description.
     /// </summary>
-    public string ErrorDescription { get; set; }
+    public string? ErrorDescription { get; set; }
 
     /// <summary>
     /// Gets or sets the subject based upon the provided hint.
     /// </summary>
-    public ClaimsPrincipal Subject { get; set; }
+    public ClaimsPrincipal? Subject { get; set; }
 }

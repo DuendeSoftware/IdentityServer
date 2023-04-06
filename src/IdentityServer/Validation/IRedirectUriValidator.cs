@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 using System.Collections.Generic;
@@ -63,20 +64,20 @@ public class RedirectUriValidationContext
     /// <summary>
     /// The URI to validate for the client
     /// </summary>
-    public string RequestedUri { get; set; }
+    public string RequestedUri { get; set; } = default!;
 
     /// <summary>
     /// The client
     /// </summary>
-    public Client Client { get; set; }
+    public Client Client { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the request parameters
     /// </summary>
-    public NameValueCollection RequestParameters { get; set; }
+    public NameValueCollection RequestParameters { get; set; } = default!;
 
     /// <summary>
     /// Validated request object values
     /// </summary>
-    public IEnumerable<Claim> RequestObjectValues { get; set; }
+    public IEnumerable<Claim>? RequestObjectValues { get; set; }
 }

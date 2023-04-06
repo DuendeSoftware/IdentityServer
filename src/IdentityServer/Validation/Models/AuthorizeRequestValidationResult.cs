@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 namespace Duende.IdentityServer.Validation;
 
@@ -25,7 +26,7 @@ public class AuthorizeRequestValidationResult : ValidationResult
     /// <param name="request">The request.</param>
     /// <param name="error">The error.</param>
     /// <param name="errorDescription">The error description.</param>
-    public AuthorizeRequestValidationResult(ValidatedAuthorizeRequest request, string error, string errorDescription = null)
+    public AuthorizeRequestValidationResult(ValidatedAuthorizeRequest request, string error, string? errorDescription = null)
     {
         ValidatedRequest = request;
         IsError = true;
