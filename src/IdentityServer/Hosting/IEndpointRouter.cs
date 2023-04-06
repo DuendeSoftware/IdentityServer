@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Microsoft.AspNetCore.Http;
 
@@ -16,5 +17,5 @@ public interface IEndpointRouter
     /// </summary>
     /// <param name="context">The HTTP context.</param>
     /// <returns></returns>
-    IEndpointHandler Find(HttpContext context);
+    IEndpointHandler? Find(HttpContext context);
 }
