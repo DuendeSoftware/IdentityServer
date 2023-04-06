@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
@@ -18,5 +19,5 @@ public interface IJwtRequestUriHttpClient
     /// <param name="url"></param>
     /// <param name="client"></param>
     /// <returns></returns>
-    Task<string> GetJwtAsync(string url, Client client);
+    Task<string?> GetJwtAsync(string url, Client client);
 }

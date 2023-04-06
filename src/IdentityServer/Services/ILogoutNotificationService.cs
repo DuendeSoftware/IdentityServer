@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
@@ -33,22 +35,22 @@ public class BackChannelLogoutRequest
     /// <summary>
     /// Gets or sets the client identifier.
     /// </summary>
-    public string ClientId { get; set; }
+    public string ClientId { get; set; } = default!;
 
     /// <summary>
     /// Gets the subject identifier.
     /// </summary>
-    public string SubjectId { get; set; }
+    public string? SubjectId { get; set; }
 
     /// <summary>
     /// Gets or sets the session identifier.
     /// </summary>
-    public string SessionId { get; set; }
+    public string? SessionId { get; set; }
 
     /// <summary>
     /// Gets or sets the back channel logout URI.
     /// </summary>
-    public string LogoutUri { get; set; }
+    public string LogoutUri { get; set; } = default!;
 
     /// <summary>
     /// Gets a value indicating whether the session identifier is required.
@@ -58,7 +60,7 @@ public class BackChannelLogoutRequest
     /// <summary>
     /// The issuer for the back-channel logout
     /// </summary>
-    public string Issuer { get; set; }
+    public string? Issuer { get; set; }
 
     /// <summary>
     /// Indicates why the user's session ended.

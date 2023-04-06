@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
@@ -24,13 +25,13 @@ public interface IDeviceFlowCodeService
     /// </summary>
     /// <param name="userCode">The user code.</param>
     /// <returns></returns>
-    Task<DeviceCode> FindByUserCodeAsync(string userCode);
+    Task<DeviceCode?> FindByUserCodeAsync(string userCode);
 
     /// <summary>
     /// Finds device authorization by device code.
     /// </summary>
     /// <param name="deviceCode">The device code.</param>
-    Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode);
+    Task<DeviceCode?> FindByDeviceCodeAsync(string deviceCode);
 
     /// <summary>
     /// Updates device authorization, searching by user code.

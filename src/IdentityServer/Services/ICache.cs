@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ public interface ICache<T>
     /// </summary>
     /// <param name="key">The key.</param>
     /// <returns>The cached item, or <c>null</c> if no item matches the key.</returns>
-    Task<T> GetAsync(string key);
+    Task<T?> GetAsync(string key);
 
     /// <summary>
     /// Gets the cached data based upon a key index.
