@@ -107,6 +107,25 @@ internal class License
                 break;
         }
 
+        DCRFeature = claims.HasClaim("feature", "dcr");
+        switch (Edition)
+        {
+            case LicenseEdition.Enterprise:
+            case LicenseEdition.Business:
+            case LicenseEdition.Community:
+                DCRFeature = true;
+                break;
+        }
+
+        DPoPFeature = claims.HasClaim("feature", "dpop");
+        switch (Edition)
+        {
+            case LicenseEdition.Enterprise:
+            case LicenseEdition.Community:
+                DPoPFeature = true;
+                break;
+        }
+
         BffFeature = claims.HasClaim("feature", "bff");
         switch (Edition)
         {
@@ -207,6 +226,8 @@ internal class License
     public bool BffFeature { get; set; }
     public bool CibaFeature { get; set; }
     public bool ServerSideSessionsFeature { get; set; }
+    public bool DCRFeature { get; set; }
+    public bool DPoPFeature { get; set; }
 
     public string Extras { get; set; }
 

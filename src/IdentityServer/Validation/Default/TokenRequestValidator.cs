@@ -225,6 +225,8 @@ internal class TokenRequestValidator : ITokenRequestValidator
         // DPoP
         if (context.DPoPProofToken.IsPresent())
         {
+            LicenseValidator.ValidateDPoP();
+
             var dpopContext = new DPoPProofValidatonContext
             {
                 Client = _validatedRequest.Client,
