@@ -167,12 +167,20 @@ internal class LicenseValidator
             }
         }
     }
-    
+
     public static void ValidateServerSideSessions()
     {
         if (_license != null && !_license.ServerSideSessionsFeature)
         {
             _errorLog.Invoke("You have configured server-side sessions. Your license for Duende IdentityServer does not include that feature.", Array.Empty<object>());
+        }
+    }
+
+    public static void ValidateDPoP()
+    {
+        if (_license != null && !_license.DPoPFeature)
+        {
+            _errorLog.Invoke("A request was made using DPoP. Your license for Duende IdentityServer does not include the DPoP feature.", Array.Empty<object>());
         }
     }
 

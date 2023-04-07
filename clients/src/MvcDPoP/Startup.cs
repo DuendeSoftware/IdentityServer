@@ -79,7 +79,7 @@ namespace MvcDPoP
                 // create and configure a DPoP JWK
                 var rsaKey = new RsaSecurityKey(RSA.Create(2048));
                 var jwk = JsonWebKeyConverter.ConvertFromSecurityKey(rsaKey);
-                jwk.Alg = "RS256";
+                jwk.Alg = "PS256";
                 options.DPoPJsonWebKey = JsonSerializer.Serialize(jwk);
             });
 
