@@ -20,6 +20,7 @@ public class PostConfigureApplicationCookieTicketStore : IPostConfigureOptions<C
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly string _scheme;
+    private readonly ILogger<PostConfigureApplicationCookieTicketStore> _logger;
 
     /// <summary>
     /// ctor
@@ -27,9 +28,15 @@ public class PostConfigureApplicationCookieTicketStore : IPostConfigureOptions<C
     /// <param name="httpContextAccessor"></param>
     /// <param name="identityServerOptions"></param>
     /// <param name="options"></param>
-    public PostConfigureApplicationCookieTicketStore(IHttpContextAccessor httpContextAccessor, IdentityServerOptions identityServerOptions, IOptions<Microsoft.AspNetCore.Authentication.AuthenticationOptions> options)
+    /// <param name="logger"></param>
+    public PostConfigureApplicationCookieTicketStore(
+        IHttpContextAccessor httpContextAccessor,
+        IdentityServerOptions identityServerOptions,
+        IOptions<Microsoft.AspNetCore.Authentication.AuthenticationOptions> options,
+        ILogger<PostConfigureApplicationCookieTicketStore> logger)
     {
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
 
         _scheme = identityServerOptions.Authentication.CookieAuthenticationScheme ??
              options.Value.DefaultAuthenticateScheme ??
@@ -52,6 +59,12 @@ public class PostConfigureApplicationCookieTicketStore : IPostConfigureOptions<C
     {
         if (name == _scheme)
         {
+            if(_httpContextAccessor.HttpContext == null)
+            {
+                _logger.LogDebug("Failed to configure server side sessions for the authentication cookie scheme \"{scheme}\" because there is no current HTTP request");
+                return;
+            }
+
             LicenseValidator.ValidateServerSideSessions();
 
             var sessionStore = _httpContextAccessor.HttpContext!.RequestServices.GetService<IServerSideSessionStore>();
