@@ -38,7 +38,8 @@ public class LoggingOptions
             OidcConstants.TokenRequest.Password,
             OidcConstants.TokenRequest.ClientAssertion,
             OidcConstants.TokenRequest.RefreshToken,
-            OidcConstants.TokenRequest.DeviceCode
+            OidcConstants.TokenRequest.DeviceCode,
+            OidcConstants.TokenRequest.Code
         };
 
     /// <summary>
