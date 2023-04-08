@@ -6,6 +6,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ public class CachingIdentityProviderStore<T> : IIdentityProviderStore
     private readonly ICache<IEnumerable<IdentityProviderName>> _allCache;
     private readonly IdentityServerOptions _options;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<CachingIdentityProviderStore<T>> _logger;
 
     /// <summary>
     /// Ctor
@@ -33,17 +35,20 @@ public class CachingIdentityProviderStore<T> : IIdentityProviderStore
     /// <param name="allCache"></param>
     /// <param name="options"></param>
     /// <param name="httpContextAccessor"></param>
-    public CachingIdentityProviderStore(T inner, 
+    /// <param name="logger"></param>
+    public CachingIdentityProviderStore(T inner,
         ICache<IdentityProvider> cache,
         ICache<IEnumerable<IdentityProviderName>> allCache,
         IdentityServerOptions options,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<CachingIdentityProviderStore<T>> logger)
     {
         _inner = inner;
         _cache = cache;
         _allCache = allCache;
         _options = options;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -66,6 +71,15 @@ public class CachingIdentityProviderStore<T> : IIdentityProviderStore
             _options.Caching.IdentityProviderCacheDuration,
             async () =>
             {
+                // We check for a missing http context here, because if it is
+                // absent we won't subsequently be able to invalidate the
+                // IOptionsMonitorCache.
+                if(_httpContextAccessor == null)
+                {
+                    _logger.LogDebug("Failed to retrieve the dynamic authentication scheme \"{scheme}\" because there is no current HTTP request", scheme);
+                    return null;
+                }
+                
                 var item = await _inner.GetBySchemeAsync(scheme);
                 RemoveCacheEntry(item);
                 return item;
@@ -85,6 +99,7 @@ public class CachingIdentityProviderStore<T> : IIdentityProviderStore
             {
                 var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
                 // need to resolve the provide type dynamically, thus the need for the http context accessor
+                // this will throw if attempted outside an http request, but that is checked in the caller
                 var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
                 if (optionsCache != null)
                 {
