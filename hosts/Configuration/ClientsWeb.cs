@@ -98,7 +98,8 @@ public static class ClientsWeb
 
                 AllowOfflineAccess = true,
 
-                AllowedScopes = allowedScopes
+                AllowedScopes = allowedScopes,
+                InitiateLoginUri = "https://localhost:44302/initiate-login" 
             },
 
             ///////////////////////////////////////////

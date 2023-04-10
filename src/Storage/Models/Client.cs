@@ -341,6 +341,13 @@ public class Client
     public ICollection<string> AllowedCorsOrigins { get; set; } = new HashSet<string>();
 
     /// <summary>
+    /// Gets of sets a URI that can be used to initiate login from the
+    /// IdentityServer host or a third party. See
+    /// https://openid.net/specs/openid-connect-core-1_0.html#ThirdPartyInitiatedLogin
+    /// </summary>
+    public string InitiateLoginUri { get; set; }
+
+    /// <summary>
     /// Gets or sets the custom properties for the client.
     /// </summary>
     /// <value>
