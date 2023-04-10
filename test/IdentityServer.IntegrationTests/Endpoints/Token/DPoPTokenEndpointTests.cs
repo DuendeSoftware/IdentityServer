@@ -255,6 +255,26 @@ public class DPoPTokenEndpointTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task dpop_proof_token_too_long_should_fail()
+    {
+        _payload.Add("foo", new string('x', 3000));
+
+        var dpopToken = CreateDPoPProofToken();
+        var request = new ClientCredentialsTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Scope = "scope1",
+        };
+        request.Headers.Add("DPoP", dpopToken);
+
+        var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+        response.IsError.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task replayed_dpop_token_should_fail()
     {
         var dpopToken = CreateDPoPProofToken();
@@ -854,6 +874,29 @@ public class DPoPTokenEndpointTests
         var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
         codeResponse.IsError.Should().BeFalse();
         GetJKTFromAccessToken(codeResponse).Should().Be(_JKT);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task dpop_key_thumbprint_too_long_should_fail()
+    {
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = true;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            responseMode: "query",
+            scope: "openid scope1 offline_access",
+            redirectUri: "https://client1/callback",
+            extra: new
+            {
+                dpop_jkt = new string('x', 101)
+            });
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        
+        _mockPipeline.ErrorWasCalled.Should().BeTrue();
     }
 
     [Fact]
