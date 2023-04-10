@@ -155,6 +155,15 @@ public class InputLengthRestrictions
     /// </summary>
     public int AuthenticationRequestId { get; set; } = Default;
 
+    /// <summary>
+    /// Max length for dpop_jkt
+    /// </summary>
+    public int DPoPKeyThumbprint { get; set; } = Default;
+
+    /// <summary>
+    /// Max length for DPoP proof token
+    /// </summary>
+    public int DPoPProofToken { get; set; } = 4000;
 
     //// todo: review this default
     ///// <summary>
