@@ -47,6 +47,11 @@ public class NonCachingIdentityProviderStore<T> : IIdentityProviderStore
     /// <inheritdoc/>
     public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
     {
+        if(_httpContextAccessor.HttpContext == null)
+        {
+            _logger.LogDebug("Failed to retrieve the dynamic authentication scheme \"{scheme}\" because there is no current HTTP request", scheme);
+            return null;
+        }
         var item = await _inner.GetBySchemeAsync(scheme);
         RemoveCacheEntry(item);
         return item;
@@ -64,6 +69,7 @@ public class NonCachingIdentityProviderStore<T> : IIdentityProviderStore
             {
                 var optionsMonitorType = typeof(IOptionsMonitorCache<>).MakeGenericType(provider.OptionsType);
                 // need to resolve the provide type dynamically, thus the need for the http context accessor
+                // this will throw if attempted outside an http request, but that is checked in the caller
                 var optionsCache = _httpContextAccessor.HttpContext.RequestServices.GetService(optionsMonitorType);
                 if (optionsCache != null)
                 {

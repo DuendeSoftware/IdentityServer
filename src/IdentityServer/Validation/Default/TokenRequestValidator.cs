@@ -225,6 +225,14 @@ internal class TokenRequestValidator : ITokenRequestValidator
         // DPoP
         if (context.DPoPProofToken.IsPresent())
         {
+            LicenseValidator.ValidateDPoP();
+
+            if (context.DPoPProofToken.Length > _options.InputLengthRestrictions.DPoPProofToken)
+            {
+                LogError("DPoP proof token is too long");
+                return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof);
+            }
+
             var dpopContext = new DPoPProofValidatonContext
             {
                 Client = _validatedRequest.Client,

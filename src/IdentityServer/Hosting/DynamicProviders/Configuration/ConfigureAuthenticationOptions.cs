@@ -8,6 +8,7 @@ using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Duende.IdentityServer.Hosting.DynamicProviders;
@@ -22,20 +23,27 @@ public abstract class ConfigureAuthenticationOptions<TAuthenticationOptions, TId
     where TIdentityProvider : IdentityProvider
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<ConfigureAuthenticationOptions<TAuthenticationOptions, TIdentityProvider>> _logger;
 
     /// <summary>
     /// Ctor
     /// </summary>
     /// <param name="httpContextAccessor"></param>
-    public ConfigureAuthenticationOptions(IHttpContextAccessor httpContextAccessor)
+    /// <param name="logger"></param>
+    public ConfigureAuthenticationOptions(IHttpContextAccessor httpContextAccessor, ILogger<ConfigureAuthenticationOptions<TAuthenticationOptions, TIdentityProvider>> logger)
     {
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
     public void Configure(string? name, TAuthenticationOptions options)
     {
-        if (_httpContextAccessor.HttpContext == null) return;
+        if (_httpContextAccessor.HttpContext == null)
+        {
+            _logger.LogDebug("Failed to configure the dynamic authentication scheme \"{scheme}\" because there is no current HTTP request.", name);
+            return;
+        }
 
         // we have to resolve these here due to DI lifetime issues
         var providerOptions = _httpContextAccessor.HttpContext.RequestServices.GetRequiredService<DynamicProviderOptions>();

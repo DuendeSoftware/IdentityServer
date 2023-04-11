@@ -5,12 +5,13 @@ using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Hosting.DynamicProviders;
 
 class OidcConfigureOptions : ConfigureAuthenticationOptions<OpenIdConnectOptions, OidcProvider>
 {
-    public OidcConfigureOptions(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+    public OidcConfigureOptions(IHttpContextAccessor httpContextAccessor, ILogger<OidcConfigureOptions> logger) : base(httpContextAccessor, logger)
     {
     }
 

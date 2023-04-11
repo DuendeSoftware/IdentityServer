@@ -101,6 +101,12 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
             context.ErrorDescription = description;
         }
 
+        if (context.HttpContext.Request.IsDPoPAuthorizationScheme())
+        {
+            // if we are challening due to dpop, then don't allow bearer www-auth to emit an error
+            context.Error = null;
+        }
+
         // now we always want to add our WWW-Authenticate for DPoP
         // For example:
         // WWW-Authenticate: DPoP error="invalid_dpop_proof", error_description="Invalid 'iat' value."
