@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 namespace Duende.IdentityServer.Validation;
 
@@ -23,7 +24,7 @@ public class ValidationResult
     /// <value>
     /// The error.
     /// </value>
-    public string Error { get; set; }
+    public string? Error { get; set; }
 
     /// <summary>
     /// Gets or sets the error description.
@@ -31,5 +32,5 @@ public class ValidationResult
     /// <value>
     /// The error description.
     /// </value>
-    public string ErrorDescription { get; set; }
+    public string? ErrorDescription { get; set; }
 }

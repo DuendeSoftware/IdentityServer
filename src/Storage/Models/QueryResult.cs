@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+ #nullable enable
 
 using System.Collections.Generic;
 
@@ -15,7 +16,7 @@ public class QueryResult<T>
     /// The token that indicates these results. This is used for more results in subsequent queries.
     /// If null, then there were no more results.
     /// </summary>
-    public string ResultsToken { get; init; }
+    public string ResultsToken { get; init; } = default!;
 
     /// <summary>
     /// True if there is a previous set of results.

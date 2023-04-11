@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
@@ -17,7 +18,7 @@ public interface IDeviceFlowInteractionService
     /// </summary>
     /// <param name="userCode">The user code.</param>
     /// <returns></returns>
-    Task<DeviceFlowAuthorizationRequest> GetAuthorizationContextAsync(string userCode);
+    Task<DeviceFlowAuthorizationRequest?> GetAuthorizationContextAsync(string userCode);
 
     /// <summary>
     /// Handles the request asynchronous.

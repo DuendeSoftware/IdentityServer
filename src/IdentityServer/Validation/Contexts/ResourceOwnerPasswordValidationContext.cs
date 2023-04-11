@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 
@@ -17,7 +18,7 @@ public class ResourceOwnerPasswordValidationContext
     /// <value>
     /// The name of the user.
     /// </value>
-    public string UserName { get; set; }
+    public string UserName { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the password.
@@ -25,7 +26,7 @@ public class ResourceOwnerPasswordValidationContext
     /// <value>
     /// The password.
     /// </value>
-    public string Password { get; set; }
+    public string Password { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the request.
@@ -33,7 +34,7 @@ public class ResourceOwnerPasswordValidationContext
     /// <value>
     /// The request.
     /// </value>
-    public ValidatedTokenRequest Request { get; set; }
+    public ValidatedTokenRequest Request { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the result.

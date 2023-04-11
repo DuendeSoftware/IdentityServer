@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
@@ -32,7 +33,7 @@ public interface IRefreshTokenStore
     /// </summary>
     /// <param name="refreshTokenHandle">The refresh token handle.</param>
     /// <returns></returns>
-    Task<RefreshToken> GetRefreshTokenAsync(string refreshTokenHandle);
+    Task<RefreshToken?> GetRefreshTokenAsync(string refreshTokenHandle);
 
     /// <summary>
     /// Removes the refresh token.

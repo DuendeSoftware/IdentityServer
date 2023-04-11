@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
@@ -25,7 +26,7 @@ public interface IUserConsentStore
     /// <param name="subjectId">The subject identifier.</param>
     /// <param name="clientId">The client identifier.</param>
     /// <returns></returns>
-    Task<Consent> GetUserConsentAsync(string subjectId, string clientId);
+    Task<Consent?> GetUserConsentAsync(string subjectId, string clientId);
 
     /// <summary>
     /// Removes the user consent.

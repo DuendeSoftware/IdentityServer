@@ -1,9 +1,9 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using IdentityModel;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -21,7 +21,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The type of the response.
     /// </value>
-    public string ResponseType { get; set; }
+    public string ResponseType { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the response mode.
@@ -29,7 +29,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The response mode.
     /// </value>
-    public string ResponseMode { get; set; }
+    public string ResponseMode { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the grant type.
@@ -37,7 +37,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The grant type.
     /// </value>
-    public string GrantType { get; set; }
+    public string GrantType { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the redirect URI.
@@ -45,7 +45,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The redirect URI.
     /// </value>
-    public string RedirectUri { get; set; }
+    public string RedirectUri { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the requested scopes.
@@ -54,13 +54,13 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// The requested scopes.
     /// </value>
     // todo: consider replacing with extension method to access Raw collection; would need to be done wholesale for all props.
-    public List<string> RequestedScopes { get; set; }
+    public List<string> RequestedScopes { get; set; } = default!;
 
     // TODO: typo
     /// <summary>
     /// Gets or sets the requested resource indicators.
     /// </summary>
-    public IEnumerable<string> RequestedResourceIndiators { get; set; }
+    public IEnumerable<string>? RequestedResourceIndiators { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether consent was shown.
@@ -76,7 +76,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The description.
     /// </value>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Gets or sets the state.
@@ -84,7 +84,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The state.
     /// </value>
-    public string State { get; set; }
+    public string? State { get; set; }
 
     /// <summary>
     /// Gets or sets the UI locales.
@@ -92,7 +92,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The UI locales.
     /// </value>
-    public string UiLocales { get; set; }
+    public string? UiLocales { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the request was an OpenID Connect request.
@@ -116,7 +116,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The nonce.
     /// </value>
-    public string Nonce { get; set; }
+    public string? Nonce { get; set; }
 
     /// <summary>
     /// Gets or sets the authentication context reference classes.
@@ -124,7 +124,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The authentication context reference classes.
     /// </value>
-    public List<string> AuthenticationContextReferenceClasses { get; set; }
+    public List<string>? AuthenticationContextReferenceClasses { get; set; }
 
     /// <summary>
     /// Gets or sets the display mode.
@@ -132,7 +132,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The display mode.
     /// </value>
-    public string DisplayMode { get; set; }
+    public string? DisplayMode { get; set; }
 
     /// <summary>
     /// Gets or sets the collection of prompt modes.
@@ -172,7 +172,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The login hint.
     /// </value>
-    public string LoginHint { get; set; }
+    public string? LoginHint { get; set; }
 
     /// <summary>
     /// Gets or sets the code challenge
@@ -180,7 +180,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The code challenge
     /// </value>
-    public string CodeChallenge { get; set; }
+    public string? CodeChallenge { get; set; }
 
     /// <summary>
     /// Gets or sets the code challenge method
@@ -188,7 +188,7 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The code challenge method
     /// </value>
-    public string CodeChallengeMethod { get; set; }
+    public string? CodeChallengeMethod { get; set; }
 
     /// <summary>
     /// Gets or sets the validated contents of the request object (if present)
@@ -204,12 +204,12 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <value>
     /// The request object
     /// </value>
-    public string RequestObject { get; set; }
+    public string? RequestObject { get; set; }
 
     /// <summary>
     /// The thumbprint of the associated DPoP proof key, if one was used.
     /// </summary>
-    public string DPoPKeyThumbprint { get; set; }
+    public string? DPoPKeyThumbprint { get; set; }
     
     /// <summary>
     /// Gets a value indicating whether an access token was requested.

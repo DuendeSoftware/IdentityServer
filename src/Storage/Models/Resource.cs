@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,17 +24,17 @@ public abstract class Resource
     /// <summary>
     /// The unique name of the resource.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = default!;
 
     /// <summary>
     /// Display name of the resource.
     /// </summary>
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
         
     /// <summary>
     /// Description of the resource.
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Specifies whether this scope is shown in the discovery document. Defaults to true.

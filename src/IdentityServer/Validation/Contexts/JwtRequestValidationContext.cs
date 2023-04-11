@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 
@@ -14,12 +15,12 @@ public class JwtRequestValidationContext
     /// <summary>
     /// The Client for which the validation is being performed.
     /// </summary>
-    public Client Client { get; set; }
+    public Client Client { get; set; } = default!;
 
     /// <summary>
     /// The JWT request object string.
     /// </summary>
-    public string JwtTokenString { get; set; }
+    public string JwtTokenString { get; set; } = default!;
 
     /// <summary>
     /// Specifies whether the JWT typ and content-type for JWT secured authorization requests is checked according to IETF spec.

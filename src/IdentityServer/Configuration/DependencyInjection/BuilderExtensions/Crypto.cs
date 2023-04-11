@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
@@ -161,7 +162,7 @@ public static class IdentityServerBuilderExtensionsCrypto
     public static IIdentityServerBuilder AddDeveloperSigningCredential(
         this IIdentityServerBuilder builder,
         bool persistKey = true,
-        string filename = null,
+        string? filename = null,
         IdentityServerConstants.RsaSigningAlgorithm signingAlgorithm = IdentityServerConstants.RsaSigningAlgorithm.RS256)
     {
         if (filename == null)

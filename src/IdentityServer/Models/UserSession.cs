@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using Microsoft.AspNetCore.Authentication;
 using System;
 using System.Collections.Generic;
@@ -25,7 +27,7 @@ public class UserSession
     /// <summary>
     /// The display name for the user
     /// </summary>
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
 
     /// <summary>
     /// The creation time
@@ -45,7 +47,7 @@ public class UserSession
     /// <summary>
     /// The issuer of the token service at login time.
     /// </summary>
-    public string Issuer { get; set; }
+    public string? Issuer { get; set; }
 
     /// <summary>
     /// The client ids for the session

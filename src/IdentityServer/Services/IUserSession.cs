@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Microsoft.AspNetCore.Authentication;
 using System.Collections.Generic;
@@ -22,13 +23,13 @@ public interface IUserSession
     /// <summary>
     /// Gets the current authenticated user.
     /// </summary>
-    Task<ClaimsPrincipal> GetUserAsync();
+    Task<ClaimsPrincipal?> GetUserAsync();
 
     /// <summary>
     /// Gets the current session identifier.
     /// </summary>
     /// <returns></returns>
-    Task<string> GetSessionIdAsync();
+    Task<string?> GetSessionIdAsync();
 
     /// <summary>
     /// Ensures the session identifier cookie asynchronous.

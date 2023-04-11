@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ public class AuthorizationRequest
     /// <summary>
     /// The client.
     /// </summary>
-    public Client Client { get; set; }
+    public Client Client { get; set; } = default!;
 
     /// <summary>
     /// The display mode passed from the authorization request.
@@ -27,7 +28,7 @@ public class AuthorizationRequest
     /// <value>
     /// The display mode.
     /// </value>
-    public string DisplayMode { get; set; }
+    public string? DisplayMode { get; set; }
 
     /// <summary>
     /// Gets or sets the redirect URI.
@@ -35,7 +36,7 @@ public class AuthorizationRequest
     /// <value>
     /// The redirect URI.
     /// </value>
-    public string RedirectUri { get; set; }
+    public string RedirectUri { get; set; } = default!;
 
     /// <summary>
     /// The UI locales passed from the authorization request.
@@ -43,7 +44,7 @@ public class AuthorizationRequest
     /// <value>
     /// The UI locales.
     /// </value>
-    public string UiLocales { get; set; }
+    public string? UiLocales { get; set; }
 
     /// <summary>
     /// The external identity provider requested. This is used to bypass home realm 
@@ -53,7 +54,7 @@ public class AuthorizationRequest
     /// <value>
     /// The external identity provider identifier.
     /// </value>
-    public string IdP { get; set; }
+    public string? IdP { get; set; }
 
     /// <summary>
     /// The tenant requested. This is provided via the <c>"tenant:"</c> prefix to 
@@ -62,7 +63,7 @@ public class AuthorizationRequest
     /// <value>
     /// The tenant.
     /// </value>
-    public string Tenant { get; set; }
+    public string? Tenant { get; set; }
 
     /// <summary>
     /// The expected username the user will use to login. This is requested from the client 
@@ -71,7 +72,7 @@ public class AuthorizationRequest
     /// <value>
     /// The LoginHint.
     /// </value>
-    public string LoginHint { get; set; }
+    public string? LoginHint { get; set; }
 
     /// <summary>
     /// Gets or sets the collection of prompt modes.
@@ -87,12 +88,12 @@ public class AuthorizationRequest
     /// <value>
     /// The acr values.
     /// </value>
-    public IEnumerable<string> AcrValues { get; set; }
+    public IEnumerable<string> AcrValues { get; set; } = Enumerable.Empty<string>();
 
     /// <summary>
     /// The validated resources.
     /// </summary>
-    public ResourceValidationResult ValidatedResources { get; set; }
+    public ResourceValidationResult ValidatedResources { get; set; } = default!;
 
     /// <summary>
     /// Gets the entire parameter collection.
@@ -108,7 +109,7 @@ public class AuthorizationRequest
     /// <value>
     /// The request object values
     /// </value>
-    public IEnumerable<Claim> RequestObjectValues { get; }
+    public IEnumerable<Claim> RequestObjectValues { get; } = default!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthorizationRequest"/> class.

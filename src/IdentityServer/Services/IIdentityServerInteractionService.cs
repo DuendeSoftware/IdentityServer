@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -41,7 +42,7 @@ public interface IIdentityServerInteractionService
     /// Used to create a logoutId if there is not one presently.
     /// </summary>
     /// <returns></returns>
-    Task<string> CreateLogoutContextAsync();
+    Task<string?> CreateLogoutContextAsync();
 
     /// <summary>
     /// Informs IdentityServer of the user's consent.
@@ -49,7 +50,7 @@ public interface IIdentityServerInteractionService
     /// <param name="request">The request.</param>
     /// <param name="consent">The consent.</param>
     /// <param name="subject">The subject.</param>
-    Task GrantConsentAsync(AuthorizationRequest request, ConsentResponse consent, string subject = null);
+    Task GrantConsentAsync(AuthorizationRequest request, ConsentResponse consent, string? subject = null);
 
     /// <summary>
     /// Triggers error back to the client for the authorization request.
@@ -58,7 +59,7 @@ public interface IIdentityServerInteractionService
     /// <param name="request">The request.</param>
     /// <param name="error"></param>
     /// <param name="errorDescription"></param>
-    Task DenyAuthorizationAsync(AuthorizationRequest request, AuthorizationError error, string errorDescription = null);
+    Task DenyAuthorizationAsync(AuthorizationRequest request, AuthorizationError error, string? errorDescription = null);
 
     /// <summary>
     /// Returns a collection representing all of the user's consents and grants.

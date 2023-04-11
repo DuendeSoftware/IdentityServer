@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Extensions;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ public class UserInteractionOptions
     /// <value>
     /// The login URL.
     /// </value>
-    public string LoginUrl { get; set; } //= Constants.UIConstants.DefaultRoutePaths.Login.EnsureLeadingSlash();
+    public string? LoginUrl { get; set; } //= Constants.UIConstants.DefaultRoutePaths.Login.EnsureLeadingSlash();
 
     /// <summary>
     /// Gets or sets the login return URL parameter.
@@ -26,7 +27,7 @@ public class UserInteractionOptions
     /// <value>
     /// The login return URL parameter.
     /// </value>
-    public string LoginReturnUrlParameter { get; set; } //= Constants.UIConstants.DefaultRoutePathParams.Login;
+    public string? LoginReturnUrlParameter { get; set; } //= Constants.UIConstants.DefaultRoutePathParams.Login;
 
     /// <summary>
     /// Gets or sets the logout URL. If a local URL, the value must start with a leading slash.
@@ -34,7 +35,7 @@ public class UserInteractionOptions
     /// <value>
     /// The logout URL.
     /// </value>
-    public string LogoutUrl { get; set; } //= Constants.UIConstants.DefaultRoutePaths.Logout.EnsureLeadingSlash();
+    public string? LogoutUrl { get; set; } //= Constants.UIConstants.DefaultRoutePaths.Logout.EnsureLeadingSlash();
 
     /// <summary>
     /// Gets or sets the logout identifier parameter.
@@ -66,7 +67,7 @@ public class UserInteractionOptions
     /// <value>
     /// The create account URL.
     /// </value>
-    public string CreateAccountUrl { get; set; } // null by default to omit support in discovery
+    public string? CreateAccountUrl { get; set; } // null by default to omit support in discovery
 
     /// <summary>
     /// Gets or sets the create account (or register) return URL parameter.

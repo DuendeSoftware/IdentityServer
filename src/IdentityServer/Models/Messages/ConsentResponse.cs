@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ public class ConsentResponse
     /// <summary>
     /// Error description.
     /// </summary>
-    public string ErrorDescription { get; set; }
+    public string? ErrorDescription { get; set; }
 
     /// <summary>
     /// Gets if consent was granted.
@@ -36,7 +37,7 @@ public class ConsentResponse
     /// <value>
     /// The scopes.
     /// </value>
-    public IEnumerable<string> ScopesValuesConsented { get; set; }
+    public IEnumerable<string>? ScopesValuesConsented { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the user wishes the consent to be remembered.
@@ -52,7 +53,7 @@ public class ConsentResponse
     /// <value>
     /// The description of the device.
     /// </value>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 }
 
 /// <summary>

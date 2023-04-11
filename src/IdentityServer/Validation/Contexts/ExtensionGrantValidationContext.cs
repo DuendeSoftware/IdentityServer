@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 
@@ -17,7 +18,7 @@ public class ExtensionGrantValidationContext
     /// <value>
     /// The request.
     /// </value>
-    public ValidatedTokenRequest Request { get; set; }
+    public ValidatedTokenRequest Request { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the result.

@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 
@@ -17,7 +18,7 @@ public class ClientSecretValidationResult : ValidationResult
     /// <value>
     /// The client.
     /// </value>
-    public Client Client { get; set; }
+    public Client? Client { get; set; }
 
     /// <summary>
     /// Gets or sets the secret used to authenticate the client.
@@ -25,7 +26,7 @@ public class ClientSecretValidationResult : ValidationResult
     /// <value>
     /// The secret.
     /// </value>
-    public ParsedSecret Secret { get; set; }
+    public ParsedSecret? Secret { get; set; }
 
     /// <summary>
     /// Gets or sets the value of the confirmation method (will become the cnf claim). Must be a JSON object.
@@ -33,5 +34,5 @@ public class ClientSecretValidationResult : ValidationResult
     /// <value>
     /// The confirmation.
     /// </value>
-    public string Confirmation { get; set; }
+    public string? Confirmation { get; set; }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Collections.Generic;
 
@@ -16,7 +17,7 @@ public class TokenRequestValidationResult : ValidationResult
     /// </summary>
     /// <param name="validatedRequest">The validated request.</param>
     /// <param name="customResponse">The custom response.</param>
-    public TokenRequestValidationResult(ValidatedTokenRequest validatedRequest, Dictionary<string, object> customResponse = null)
+    public TokenRequestValidationResult(ValidatedTokenRequest validatedRequest, Dictionary<string, object>? customResponse = null)
     {
         IsError = false;
 
@@ -31,7 +32,7 @@ public class TokenRequestValidationResult : ValidationResult
     /// <param name="error">The error.</param>
     /// <param name="errorDescription">The error description.</param>
     /// <param name="customResponse">The custom response.</param>
-    public TokenRequestValidationResult(ValidatedTokenRequest validatedRequest, string error, string errorDescription = null, Dictionary<string, object> customResponse = null)
+    public TokenRequestValidationResult(ValidatedTokenRequest validatedRequest, string error, string? errorDescription = null, Dictionary<string, object>? customResponse = null)
     {
         IsError = true;
 
@@ -55,11 +56,11 @@ public class TokenRequestValidationResult : ValidationResult
     /// <value>
     /// The custom response.
     /// </value>
-    public Dictionary<string, object> CustomResponse { get; set; }
+    public Dictionary<string, object>? CustomResponse { get; set; }
 
     /// <summary>
     /// The DPoP nonce value issued by the server.
     /// </summary>
-    public string DPoPNonce { get; set; }
+    public string? DPoPNonce { get; set; }
 
 }

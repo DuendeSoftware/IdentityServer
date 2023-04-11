@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer;
 using Duende.IdentityServer.Hosting.LocalApiAuthentication;
@@ -22,7 +23,7 @@ public static class LocalApiAuthenticationExtensions
     /// <param name="services">The service collection</param>
     /// <param name="transformationFunc">Function to transform the resulting principal</param>
     /// <returns></returns>
-    public static IServiceCollection AddLocalApiAuthentication(this IServiceCollection services, Func<ClaimsPrincipal, Task<ClaimsPrincipal>> transformationFunc = null)
+    public static IServiceCollection AddLocalApiAuthentication(this IServiceCollection services, Func<ClaimsPrincipal, Task<ClaimsPrincipal>>? transformationFunc = null)
     {
         services.AddAuthentication()
             .AddLocalApi(options =>
@@ -88,7 +89,7 @@ public static class LocalApiAuthenticationExtensions
     /// <param name="displayName">The display name of this scheme.</param>
     /// <param name="configureOptions">The configure options.</param>
     /// <returns></returns>
-    public static AuthenticationBuilder AddLocalApi(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<LocalApiAuthenticationOptions> configureOptions)
+    public static AuthenticationBuilder AddLocalApi(this AuthenticationBuilder builder, string authenticationScheme, string? displayName, Action<LocalApiAuthenticationOptions> configureOptions)
     {
         return builder.AddScheme<LocalApiAuthenticationOptions, LocalApiAuthenticationHandler>(authenticationScheme, displayName, configureOptions);
     }

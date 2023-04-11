@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 namespace Duende.IdentityServer.Models;
 
 /// <summary>
@@ -14,7 +16,7 @@ public class DeviceFlowInteractionResult
     /// <value>
     /// The error description.
     /// </value>
-    public string ErrorDescription { get; private set; }
+    public string? ErrorDescription { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether this instance is error.
@@ -37,7 +39,7 @@ public class DeviceFlowInteractionResult
     /// </summary>
     /// <param name="errorDescription">The error description.</param>
     /// <returns></returns>
-    public static DeviceFlowInteractionResult Failure(string errorDescription = null)
+    public static DeviceFlowInteractionResult Failure(string? errorDescription = null)
     {
         return new DeviceFlowInteractionResult
         {

@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -35,7 +37,7 @@ public abstract class ConfigureAuthenticationOptions<TAuthenticationOptions, TId
     }
 
     /// <inheritdoc/>
-    public void Configure(string name, TAuthenticationOptions options)
+    public void Configure(string? name, TAuthenticationOptions options)
     {
         if (_httpContextAccessor.HttpContext == null)
         {

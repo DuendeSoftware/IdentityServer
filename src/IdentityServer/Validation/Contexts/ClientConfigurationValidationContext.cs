@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Models;
 
@@ -33,7 +34,7 @@ public class ClientConfigurationValidationContext
     /// <value>
     /// The error message.
     /// </value>
-    public string ErrorMessage { get; set; }
+    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClientConfigurationValidationContext"/> class.

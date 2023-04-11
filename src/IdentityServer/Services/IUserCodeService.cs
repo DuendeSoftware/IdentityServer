@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Threading.Tasks;
 
@@ -16,5 +17,5 @@ public interface IUserCodeService
     /// </summary>
     /// <param name="userCodeType">Type of user code.</param>
     /// <returns></returns>
-    Task<IUserCodeGenerator> GetGenerator(string userCodeType);
+    Task<IUserCodeGenerator?> GetGenerator(string userCodeType);
 }

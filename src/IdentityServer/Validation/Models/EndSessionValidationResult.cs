@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 namespace Duende.IdentityServer.Validation;
 
@@ -16,5 +17,5 @@ public class EndSessionValidationResult : ValidationResult
     /// <value>
     /// The validated request.
     /// </value>
-    public ValidatedEndSessionRequest ValidatedRequest { get; set; }
+    public ValidatedEndSessionRequest? ValidatedRequest { get; set; }
 }

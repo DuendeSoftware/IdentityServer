@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
@@ -14,17 +16,17 @@ public class IdentityProviderName
     /// <summary>
     /// Scheme name for the provider.
     /// </summary>
-    public string Scheme { get; set; }
+    public string Scheme { get; set; } = default!;
 
     /// <summary>
     /// Display name for the provider.
     /// </summary>
-    public string DisplayName { get; set; }
-        
+    public string? DisplayName { get; set; }
+
     /// <summary>
     /// Flag that indicates if the provider should be used.
     /// </summary>
-    public bool Enabled { get; set; }
+    public bool Enabled { get; set; } = default!;
 }
 
 /// <summary>
@@ -58,12 +60,12 @@ public class IdentityProvider
     /// <summary>
     /// Scheme name for the provider.
     /// </summary>
-    public string Scheme { get; set; }
+    public string Scheme { get; set; } = default!;
 
     /// <summary>
     /// Display name for the provider.
     /// </summary>
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
 
     /// <summary>
     /// Flag that indicates if the provider should be used.
@@ -85,7 +87,7 @@ public class IdentityProvider
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>
-    protected string this[string name]
+    protected string? this[string name]
     {
         get
         {
@@ -94,7 +96,7 @@ public class IdentityProvider
         }
         set
         {
-            Properties[name] = value;
+            Properties[name] = value!;
         }
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Microsoft.AspNetCore.Authentication;
 
@@ -15,7 +16,7 @@ public class LocalApiAuthenticationOptions : AuthenticationSchemeOptions
     /// <summary>
     /// Allows setting a specific required scope (optional)
     /// </summary>
-    public string ExpectedScope { get; set; }
+    public string? ExpectedScope { get; set; }
 
     /// <summary>
     /// Specifies whether the token should be saved in the authentication properties
@@ -27,7 +28,7 @@ public class LocalApiAuthenticationOptions : AuthenticationSchemeOptions
     /// </summary>
     public new LocalApiAuthenticationEvents Events
     {
-        get { return (LocalApiAuthenticationEvents)base.Events; }
+        get { return (LocalApiAuthenticationEvents)base.Events!; }
         set { base.Events = value; }
     }
 }

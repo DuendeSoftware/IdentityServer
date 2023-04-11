@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 
@@ -17,7 +18,7 @@ public class PersistedGrant
     /// <value>
     /// The key.
     /// </value>
-    public string Key { get; set; }
+    public string Key { get; set; } = default!;
 
     /// <summary>
     /// Gets the type.
@@ -25,7 +26,7 @@ public class PersistedGrant
     /// <value>
     /// The type.
     /// </value>
-    public string Type { get; set; }
+    public string Type { get; set; } = default!;
 
     /// <summary>
     /// Gets the subject identifier.
@@ -33,7 +34,7 @@ public class PersistedGrant
     /// <value>
     /// The subject identifier.
     /// </value>
-    public string SubjectId { get; set; }
+    public string SubjectId { get; set; } = default!;
 
     /// <summary>
     /// Gets the session identifier.
@@ -41,15 +42,15 @@ public class PersistedGrant
     /// <value>
     /// The session identifier.
     /// </value>
-    public string SessionId { get; set; }
-        
+    public string SessionId { get; set; } = default!;
+
     /// <summary>
     /// Gets the client identifier.
     /// </summary>
     /// <value>
     /// The client identifier.
     /// </value>
-    public string ClientId { get; set; }
+    public string ClientId { get; set; } = default!;
 
     /// <summary>
     /// Gets the description the user assigned to the device being authorized.
@@ -57,7 +58,7 @@ public class PersistedGrant
     /// <value>
     /// The description.
     /// </value>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Gets or sets the creation time.
@@ -89,5 +90,5 @@ public class PersistedGrant
     /// <value>
     /// The data.
     /// </value>
-    public string Data { get; set; }
+    public string Data { get; set; } = default!;
 }

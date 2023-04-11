@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +22,7 @@ public interface ISecretsListParser
     /// <returns>
     /// A parsed secret
     /// </returns>
-    Task<ParsedSecret> ParseAsync(HttpContext context);
+    Task<ParsedSecret?> ParseAsync(HttpContext context);
 
     /// <summary>
     /// Gets all available authentication methods.
