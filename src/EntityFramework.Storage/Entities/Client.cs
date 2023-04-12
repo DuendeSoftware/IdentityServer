@@ -60,6 +60,7 @@ public class Client
     public string ClientClaimsPrefix { get; set; } = "client_";
     public string PairWiseSubjectSalt { get; set; }
     public List<ClientCorsOrigin> AllowedCorsOrigins { get; set; }
+    public string InitiateLoginUri { get; set; }
     public List<ClientProperty> Properties { get; set; }
     public int? UserSsoLifetime { get; set; }
     public string UserCodeType { get; set; }

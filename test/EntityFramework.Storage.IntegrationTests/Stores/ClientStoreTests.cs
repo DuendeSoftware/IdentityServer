@@ -43,7 +43,7 @@ public class ClientStoreTests : IntegrationTest<ClientStoreTests, ConfigurationD
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public async Task FindClientByIdAsync_WhenClientExists_ExpectClientRetured(DbContextOptions<ConfigurationDbContext> options)
+    public async Task FindClientByIdAsync_WhenClientExists_ExpectClientReturned(DbContextOptions<ConfigurationDbContext> options)
     {
         var testClient = new Client
         {

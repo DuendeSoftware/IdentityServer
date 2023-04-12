@@ -62,6 +62,9 @@ CREATE TABLE [Clients] (
     [AllowPlainTextPkce] bit NOT NULL,
     [RequireRequestObject] bit NOT NULL,
     [AllowAccessTokensViaBrowser] bit NOT NULL,
+    [RequireDPoP] bit NOT NULL,
+    [DPoPValidationMode] int NOT NULL,
+    [DPoPClockSkew] time NOT NULL,
     [FrontChannelLogoutUri] nvarchar(2000) NULL,
     [FrontChannelLogoutSessionRequired] bit NOT NULL,
     [BackChannelLogoutUri] nvarchar(2000) NULL,
@@ -83,6 +86,7 @@ CREATE TABLE [Clients] (
     [AlwaysSendClientClaims] bit NOT NULL,
     [ClientClaimsPrefix] nvarchar(200) NULL,
     [PairWiseSubjectSalt] nvarchar(200) NULL,
+    [InitiateLoginUri] nvarchar(2000) NULL,
     [UserSsoLifetime] int NULL,
     [UserCodeType] nvarchar(100) NULL,
     [DeviceCodeLifetime] int NOT NULL,
@@ -361,7 +365,7 @@ CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20220324152912_Configuration', N'6.0.0');
+VALUES (N'20230410170353_Configuration', N'6.0.0');
 GO
 
 COMMIT;
