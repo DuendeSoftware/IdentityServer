@@ -3,7 +3,7 @@
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
         <FrameworkVersion>6.0.0</FrameworkVersion>
         <ExtensionsVersion>6.0.0</ExtensionsVersion>
-        <EntityFrameworkVersion>6.0.0</EntityFrameworkVersion>
+        <EntityFrameworkVersion>7.0.5</EntityFrameworkVersion>
         <WilsonVersion>6.10.0</WilsonVersion>
     </PropertyGroup>
 
