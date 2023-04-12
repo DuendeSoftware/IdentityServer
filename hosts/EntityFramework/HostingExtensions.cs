@@ -4,7 +4,6 @@
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using IdentityServerHost.Pages.Admin.ApiScopes;
-using IdentityServerHost.Pages.Admin.Clients;
 using IdentityServerHost.Pages.Admin.IdentityScopes;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
@@ -60,7 +59,8 @@ internal static class HostingExtensions
         builder.Services.Configure<RazorPagesOptions>(options => 
             options.Conventions.AuthorizeFolder("/Admin", "admin"));
 
-        builder.Services.AddTransient<ClientRepository>();
+        builder.Services.AddTransient<Pages.Admin.Clients.ClientRepository>();
+        builder.Services.AddTransient<Pages.Portal.ClientRepository>();
         builder.Services.AddTransient<IdentityScopeRepository>();
         builder.Services.AddTransient<ApiScopeRepository>();
     }
