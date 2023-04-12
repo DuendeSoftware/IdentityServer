@@ -346,7 +346,7 @@ public class Client
     /// IdentityServer host or a third party. See
     /// https://openid.net/specs/openid-connect-core-1_0.html#ThirdPartyInitiatedLogin
     /// </summary>
-    public string InitiateLoginUri { get; set; }
+    public string? InitiateLoginUri { get; set; }
 
     /// <summary>
     /// Gets or sets the custom properties for the client.
