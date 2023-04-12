@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 namespace Duende.IdentityServer.Validation;
 
@@ -15,7 +16,7 @@ public class BackchannelAuthenticationRequestIdValidationContext
     /// <value>
     /// The device code.
     /// </value>
-    public string AuthenticationRequestId { get; set; }
+    public string AuthenticationRequestId { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the request.
@@ -23,7 +24,7 @@ public class BackchannelAuthenticationRequestIdValidationContext
     /// <value>
     /// The request.
     /// </value>
-    public ValidatedTokenRequest Request { get; set; }
+    public ValidatedTokenRequest Request { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the result.
@@ -31,5 +32,5 @@ public class BackchannelAuthenticationRequestIdValidationContext
     /// <value>
     /// The result.
     /// </value>
-    public TokenRequestValidationResult Result { get; set; }
+    public TokenRequestValidationResult? Result { get; set; }
 }

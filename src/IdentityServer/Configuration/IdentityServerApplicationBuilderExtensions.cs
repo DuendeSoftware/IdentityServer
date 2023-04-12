@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
@@ -31,7 +32,7 @@ public static class IdentityServerApplicationBuilderExtensions
     /// <param name="app">The application.</param>
     /// <param name="options">The options.</param>
     /// <returns></returns>
-    public static IApplicationBuilder UseIdentityServer(this IApplicationBuilder app, IdentityServerMiddlewareOptions options = null)
+    public static IApplicationBuilder UseIdentityServer(this IApplicationBuilder app, IdentityServerMiddlewareOptions? options = null)
     {
         app.Validate();
 
@@ -61,9 +62,11 @@ public static class IdentityServerApplicationBuilderExtensions
         if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
 
         var logger = loggerFactory.CreateLogger("Duende.IdentityServer.Startup");
-        logger.LogInformation("Starting Duende IdentityServer version {version} ({netversion})", typeof(Duende.IdentityServer.Hosting.IdentityServerMiddleware).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, RuntimeInformation.FrameworkDescription);
+        logger.LogInformation("Starting Duende IdentityServer version {version} ({netversion})", 
+            typeof(IdentityServerMiddleware).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion, 
+            RuntimeInformation.FrameworkDescription);
 
-        var scopeFactory = app.ApplicationServices.GetService<IServiceScopeFactory>();
+        var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
 
         using (var scope = scopeFactory.CreateScope())
         {
@@ -78,7 +81,7 @@ public static class IdentityServerApplicationBuilderExtensions
             TestService(serviceProvider, typeof(IClientStore), logger, "No storage mechanism for clients specified. Use the 'AddInMemoryClients' extension method to register a development version.");
             TestService(serviceProvider, typeof(IResourceStore), logger, "No storage mechanism for resources specified. Use the 'AddInMemoryIdentityResources' or 'AddInMemoryApiResources' extension method to register a development version.");
 
-            var persistedGrants = serviceProvider.GetService(typeof(IPersistedGrantStore));
+            var persistedGrants = serviceProvider.GetRequiredService(typeof(IPersistedGrantStore));
             if (persistedGrants.GetType().FullName == typeof(InMemoryPersistedGrantStore).FullName)
             {
                 logger.LogInformation("You are using the in-memory version of the persisted grant store. This will store consent decisions, authorization codes, refresh and reference tokens in memory only. If you are using any of those features in production, you want to switch to a different store implementation.");
@@ -102,17 +105,28 @@ public static class IdentityServerApplicationBuilderExtensions
         }
         else
         {
-            AuthenticationScheme authenticationScheme = null;
+            AuthenticationScheme? authenticationScheme;
 
             if (options.Authentication.CookieAuthenticationScheme != null)
             {
                 authenticationScheme = await schemes.GetSchemeAsync(options.Authentication.CookieAuthenticationScheme);
-                logger.LogInformation("Using explicitly configured authentication scheme {scheme} for IdentityServer", options.Authentication.CookieAuthenticationScheme);
+                if (authenticationScheme != null)
+                {
+                    logger.LogInformation("Using explicitly configured authentication scheme {scheme} for IdentityServer", options.Authentication.CookieAuthenticationScheme);
+                }
             }
             else
             {
                 authenticationScheme = await schemes.GetDefaultAuthenticateSchemeAsync();
-                logger.LogInformation("Using the default authentication scheme {scheme} for IdentityServer", authenticationScheme.Name);
+                if (authenticationScheme != null)
+                {
+                    logger.LogInformation("Using the default authentication scheme {scheme} for IdentityServer", authenticationScheme.Name);
+                }
+            }
+
+            if (authenticationScheme == null)
+            {
+                throw new Exception("Could not locate an authentication scheme for your host. Please configure a default, or set the IdentityServerOptions.Authentication.CookieAuthenticationScheme.");
             }
 
             if (!typeof(IAuthenticationSignInHandler).IsAssignableFrom(authenticationScheme.HandlerType))
@@ -155,7 +169,7 @@ public static class IdentityServerApplicationBuilderExtensions
         if (options.Cors.CorsPolicyName.IsMissing()) throw new InvalidOperationException("CorsPolicyName is not configured");
     }
 
-    internal static object TestService(IServiceProvider serviceProvider, Type service, ILogger logger, string message = null, bool doThrow = true)
+    internal static object? TestService(IServiceProvider serviceProvider, Type service, ILogger logger, string? message = null, bool doThrow = true)
     {
         var appService = serviceProvider.GetService(service);
 

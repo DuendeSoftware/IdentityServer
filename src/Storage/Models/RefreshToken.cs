@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using IdentityModel;
 using System;
@@ -45,7 +46,7 @@ public class RefreshToken
     /// The access token.
     /// </value>
     [Obsolete("Use AccessTokens or Set/GetAccessToken instead.")]
-    public Token AccessToken { get; set; }
+    public Token? AccessToken { get; set; }
 
     /// <summary>
     /// Gets or sets the resource indicator specific access token.
@@ -60,7 +61,7 @@ public class RefreshToken
     /// </summary>
     /// <param name="resourceIndicator"></param>
     /// <returns></returns>
-    public Token GetAccessToken(string resourceIndicator = null)
+    public Token? GetAccessToken(string? resourceIndicator = null)
     {
         AccessTokens.TryGetValue(resourceIndicator ?? String.Empty, out var token);
         return token;
@@ -72,7 +73,7 @@ public class RefreshToken
     /// <param name="resourceIndicator"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    public void SetAccessToken(Token token, string resourceIndicator = null)
+    public void SetAccessToken(Token token, string? resourceIndicator = null)
     {
         AccessTokens[resourceIndicator ?? String.Empty] = token;
     }
@@ -83,7 +84,7 @@ public class RefreshToken
     /// <value>
     /// The subject.
     /// </value>
-    public ClaimsPrincipal Subject { get; set; }
+    public ClaimsPrincipal Subject { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the version number.
@@ -99,7 +100,7 @@ public class RefreshToken
     /// <value>
     /// The client identifier.
     /// </value>
-    public string ClientId { get; set; }
+    public string ClientId { get; set; } = default!;
 
     /// <summary>
     /// Gets the subject identifier.
@@ -107,7 +108,7 @@ public class RefreshToken
     /// <value>
     /// The subject identifier.
     /// </value>
-    public string SubjectId => Subject?.FindFirst(JwtClaimTypes.Subject)?.Value;
+    public string? SubjectId => Subject?.FindFirst(JwtClaimTypes.Subject)?.Value;
 
     /// <summary>
     /// Gets the session identifier.
@@ -115,7 +116,7 @@ public class RefreshToken
     /// <value>
     /// The session identifier.
     /// </value>
-    public string SessionId { get; set; }
+    public string? SessionId { get; set; }
 
     /// <summary>
     /// Gets the description the user assigned to the device being authorized.
@@ -123,7 +124,7 @@ public class RefreshToken
     /// <value>
     /// The description.
     /// </value>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Gets the scopes.
@@ -131,13 +132,13 @@ public class RefreshToken
     /// <value>
     /// The scopes.
     /// </value>
-    public IEnumerable<string> AuthorizedScopes { get; set; }
+    public IEnumerable<string> AuthorizedScopes { get; set; } = default!;
 
     /// <summary>
     /// The resource indicators. Null indicates there was no authorization step, thus no restrictions.
     /// Non-null means there was an authorization step, and subsequent requested resource indicators must be in the original list.
     /// </summary>
-    public IEnumerable<string> AuthorizedResourceIndicators { get; set; }
+    public IEnumerable<string>? AuthorizedResourceIndicators { get; set; }
 
     /// <summary>
     /// The type of proof used for the refresh token. Null indicates refresh tokens created prior to this property being added.

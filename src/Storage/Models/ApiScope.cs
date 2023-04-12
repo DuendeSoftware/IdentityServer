@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Extensions;
 using System;
@@ -60,7 +61,7 @@ public class ApiScope : Resource
     /// <param name="displayName">The display name.</param>
     /// <param name="userClaims">List of associated user claims that should be included when this resource is requested.</param>
     /// <exception cref="System.ArgumentNullException">name</exception>
-    public ApiScope(string name, string displayName, IEnumerable<string> userClaims)
+    public ApiScope(string name, string displayName, IEnumerable<string>? userClaims)
     {
         if (name.IsMissing()) throw new ArgumentNullException(nameof(name));
 
@@ -69,7 +70,7 @@ public class ApiScope : Resource
 
         if (!userClaims.IsNullOrEmpty())
         {
-            foreach (var type in userClaims)
+            foreach (var type in userClaims!)
             {
                 UserClaims.Add(type);
             }

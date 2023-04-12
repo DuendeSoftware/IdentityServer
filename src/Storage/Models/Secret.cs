@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 
@@ -17,7 +18,7 @@ public class Secret
     /// <value>
     /// The description.
     /// </value>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Gets or sets the value.
@@ -25,7 +26,7 @@ public class Secret
     /// <value>
     /// The value.
     /// </value>
-    public string Value { get; set; }
+    public string Value { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the expiration.
@@ -41,7 +42,7 @@ public class Secret
     /// <value>
     /// The type of the client secret.
     /// </value>
-    public string Type { get; set; }
+    public string Type { get; set; } = default!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Secret"/> class.
@@ -102,7 +103,7 @@ public class Secret
     /// <returns>
     ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
     /// </returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj == null) return false;
         var other = obj as Secret;

@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using System.Collections.Generic;
@@ -17,7 +19,7 @@ public interface ISessionManagementService
     /// <summary>
     /// Queries all the session related data for a user.
     /// </summary>
-    Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default);
+    Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery? filter = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes all the session related data for a user.
@@ -33,18 +35,18 @@ public class RemoveSessionsContext
     /// <summary>
     /// The subject ID
     /// </summary>
-    public string SubjectId { get; init; }
+    public string? SubjectId { get; init; }
 
     /// <summary>
     /// The session ID
     /// </summary>
-    public string SessionId { get; init; }
+    public string? SessionId { get; init; }
 
     /// <summary>
     /// The client ids for which to trigger logout notification, or revoke tokens or consent.
     /// If not set, then all clients will be removed.
     /// </summary>
-    public IEnumerable<string> ClientIds { get; set; } = default!;
+    public IEnumerable<string>? ClientIds { get; set; }
 
     /// <summary>
     /// Removes the server side session for the user's session.

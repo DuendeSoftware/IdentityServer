@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ public class DeviceCode
     /// <value>
     /// The client identifier.
     /// </value>
-    public string ClientId { get; set; }
+    public string ClientId { get; set; } = default!;
 
     /// <summary>
     /// Gets the description the user assigned to the device being authorized.
@@ -43,7 +44,7 @@ public class DeviceCode
     /// <value>
     /// The description.
     /// </value>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this instance is open identifier.
@@ -67,7 +68,7 @@ public class DeviceCode
     /// <value>
     /// The authorized scopes.
     /// </value>
-    public IEnumerable<string> RequestedScopes { get; set; }
+    public IEnumerable<string> RequestedScopes { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the authorized scopes.
@@ -75,7 +76,7 @@ public class DeviceCode
     /// <value>
     /// The authorized scopes.
     /// </value>
-    public IEnumerable<string> AuthorizedScopes { get; set; }
+    public IEnumerable<string>? AuthorizedScopes { get; set; }
 
     /// <summary>
     /// Gets or sets the subject.
@@ -83,7 +84,7 @@ public class DeviceCode
     /// <value>
     /// The subject.
     /// </value>
-    public ClaimsPrincipal Subject { get; set; }
+    public ClaimsPrincipal? Subject { get; set; }
 
     /// <summary>
     /// Gets or sets the session identifier.
@@ -91,5 +92,5 @@ public class DeviceCode
     /// <value>
     /// The session identifier.
     /// </value>
-    public string SessionId { get; set; }
+    public string? SessionId { get; set; }
 }

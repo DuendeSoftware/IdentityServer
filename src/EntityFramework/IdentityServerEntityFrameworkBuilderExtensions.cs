@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using Duende.IdentityServer.EntityFramework;
@@ -28,7 +29,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
     /// <returns></returns>
     public static IIdentityServerBuilder AddConfigurationStore(
         this IIdentityServerBuilder builder,
-        Action<ConfigurationStoreOptions> storeOptionsAction = null)
+        Action<ConfigurationStoreOptions>? storeOptionsAction = null)
     {
         return builder.AddConfigurationStore<ConfigurationDbContext>(storeOptionsAction);
     }
@@ -42,7 +43,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
     /// <returns></returns>
     public static IIdentityServerBuilder AddConfigurationStore<TContext>(
         this IIdentityServerBuilder builder,
-        Action<ConfigurationStoreOptions> storeOptionsAction = null)
+        Action<ConfigurationStoreOptions>? storeOptionsAction = null)
         where TContext : DbContext, IConfigurationDbContext
     {
         builder.Services.AddConfigurationDbContext<TContext>(storeOptionsAction);
@@ -82,7 +83,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
     /// <returns></returns>
     public static IIdentityServerBuilder AddOperationalStore(
         this IIdentityServerBuilder builder,
-        Action<OperationalStoreOptions> storeOptionsAction = null)
+        Action<OperationalStoreOptions>? storeOptionsAction = null)
     {
         return builder.AddOperationalStore<PersistedGrantDbContext>(storeOptionsAction);
     }
@@ -96,7 +97,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
     /// <returns></returns>
     public static IIdentityServerBuilder AddOperationalStore<TContext>(
         this IIdentityServerBuilder builder,
-        Action<OperationalStoreOptions> storeOptionsAction = null)
+        Action<OperationalStoreOptions>? storeOptionsAction = null)
         where TContext : DbContext, IPersistedGrantDbContext
     {
         builder.Services.AddOperationalDbContext<TContext>(storeOptionsAction);

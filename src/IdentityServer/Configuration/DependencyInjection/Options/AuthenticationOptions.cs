@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,7 @@ public class AuthenticationOptions
     /// Sets the cookie authentication scheme configured by the host used for interactive users. If not set, the scheme will inferred from the host's default authentication scheme.
     /// This setting is typically used when AddPolicyScheme is used in the host as the default scheme.
     /// </summary>
-    public string CookieAuthenticationScheme { get; set; }
+    public string? CookieAuthenticationScheme { get; set; }
 
     /// <summary>
     /// Sets the cookie lifetime (only effective if the IdentityServer-provided cookie handler is used)
@@ -49,7 +50,7 @@ public class AuthenticationOptions
     /// <summary>
     /// Gets or sets the domain of the cookie used for the check session endpoint. Defaults to null.
     /// </summary>
-    public string CheckSessionCookieDomain { get; set; }
+    public string? CheckSessionCookieDomain { get; set; }
 
     /// <summary>
     /// Gets or sets the SameSite mode of the cookie used for the check session endpoint. Defaults to SameSiteMode.None.

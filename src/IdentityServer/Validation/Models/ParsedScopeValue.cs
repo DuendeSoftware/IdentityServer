@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 
@@ -26,7 +27,7 @@ public class ParsedScopeValue
     /// <param name="rawValue"></param>
     /// <param name="parsedName"></param>
     /// <param name="parsedParameter"></param>
-    public ParsedScopeValue(string rawValue, string parsedName, string parsedParameter)
+    public ParsedScopeValue(string rawValue, string parsedName, string? parsedParameter)
     {
         if (String.IsNullOrWhiteSpace(rawValue))
         {
@@ -57,5 +58,5 @@ public class ParsedScopeValue
     /// <summary>
     /// The parameter value of the parsed scope. If the scope has no structure, then the value will be null.
     /// </summary>
-    public string ParsedParameter { get; set; }
+    public string? ParsedParameter { get; set; }
 }

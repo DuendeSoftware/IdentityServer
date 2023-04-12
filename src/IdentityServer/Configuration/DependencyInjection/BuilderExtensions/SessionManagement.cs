@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
@@ -77,7 +78,8 @@ public static class SessionManagementServiceCollectionExtensions
     {
         builder.Services.AddTransient<IServerSideSessionStore>(svcs =>
         {
-            if (svcs.GetService<IServerSideSessionsMarker>() == null) return null;
+            // odd that this Func is marked as non-null return value, since it is allowed to return null here.
+            if (svcs.GetService<IServerSideSessionsMarker>() == null) return null!;
             return svcs.GetRequiredService<T>();
         });
 

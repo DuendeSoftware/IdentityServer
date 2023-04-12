@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using Duende.IdentityServer.EntityFramework.DbContexts;
@@ -23,7 +24,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
     /// <param name="storeOptionsAction">The store options action.</param>
     /// <returns></returns>
     public static IServiceCollection AddConfigurationDbContext(this IServiceCollection services,
-        Action<ConfigurationStoreOptions> storeOptionsAction = null)
+        Action<ConfigurationStoreOptions>? storeOptionsAction = null)
     {
         return services.AddConfigurationDbContext<ConfigurationDbContext>(storeOptionsAction);
     }
@@ -36,7 +37,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
     /// <param name="storeOptionsAction">The store options action.</param>
     /// <returns></returns>
     public static IServiceCollection AddConfigurationDbContext<TContext>(this IServiceCollection services,
-        Action<ConfigurationStoreOptions> storeOptionsAction = null)
+        Action<ConfigurationStoreOptions>? storeOptionsAction = null)
         where TContext : DbContext, IConfigurationDbContext
     {
         var options = new ConfigurationStoreOptions();
@@ -97,7 +98,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
     /// <param name="storeOptionsAction">The store options action.</param>
     /// <returns></returns>
     public static IServiceCollection AddOperationalDbContext(this IServiceCollection services,
-        Action<OperationalStoreOptions> storeOptionsAction = null)
+        Action<OperationalStoreOptions>? storeOptionsAction = null)
     {
         return services.AddOperationalDbContext<PersistedGrantDbContext>(storeOptionsAction);
     }
@@ -110,7 +111,7 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
     /// <param name="storeOptionsAction">The store options action.</param>
     /// <returns></returns>
     public static IServiceCollection AddOperationalDbContext<TContext>(this IServiceCollection services,
-        Action<OperationalStoreOptions> storeOptionsAction = null)
+        Action<OperationalStoreOptions>? storeOptionsAction = null)
         where TContext : DbContext, IPersistedGrantDbContext
     {
         var storeOptions = new OperationalStoreOptions();

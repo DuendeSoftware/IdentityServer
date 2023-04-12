@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
@@ -406,7 +407,7 @@ public static class IdentityServerBuilderExtensionsAdditional
     /// <param name="builder">The builder.</param>
     /// <param name="configureClient">The configuration callback.</param>
     /// <returns></returns>
-    public static IHttpClientBuilder AddBackChannelLogoutHttpClient(this IIdentityServerBuilder builder, Action<HttpClient> configureClient = null)
+    public static IHttpClientBuilder AddBackChannelLogoutHttpClient(this IIdentityServerBuilder builder, Action<HttpClient>? configureClient = null)
     {
         const string name = IdentityServerConstants.HttpClients.BackChannelLogoutHttpClient;
         IHttpClientBuilder httpBuilder;
@@ -443,7 +444,7 @@ public static class IdentityServerBuilderExtensionsAdditional
     /// <param name="builder">The builder.</param>
     /// <param name="configureClient">The configuration callback.</param>
     /// <returns></returns>
-    public static IHttpClientBuilder AddJwtRequestUriHttpClient(this IIdentityServerBuilder builder, Action<HttpClient> configureClient = null)
+    public static IHttpClientBuilder AddJwtRequestUriHttpClient(this IIdentityServerBuilder builder, Action<HttpClient>? configureClient = null)
     {
         const string name = IdentityServerConstants.HttpClients.JwtRequestUriHttpClient;
         IHttpClientBuilder httpBuilder;

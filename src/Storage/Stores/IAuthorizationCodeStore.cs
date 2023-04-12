@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
@@ -24,7 +25,7 @@ public interface IAuthorizationCodeStore
     /// </summary>
     /// <param name="code">The code.</param>
     /// <returns></returns>
-    Task<AuthorizationCode> GetAuthorizationCodeAsync(string code);
+    Task<AuthorizationCode?> GetAuthorizationCodeAsync(string code);
 
     /// <summary>
     /// Removes the authorization code.

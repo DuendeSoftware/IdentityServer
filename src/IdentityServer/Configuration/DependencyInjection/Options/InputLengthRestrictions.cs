@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 namespace Duende.IdentityServer.Configuration;
 
 /// <summary>
@@ -155,6 +157,15 @@ public class InputLengthRestrictions
     /// </summary>
     public int AuthenticationRequestId { get; set; } = Default;
 
+    /// <summary>
+    /// Max length for dpop_jkt
+    /// </summary>
+    public int DPoPKeyThumbprint { get; set; } = Default;
+
+    /// <summary>
+    /// Max length for DPoP proof token
+    /// </summary>
+    public int DPoPProofToken { get; set; } = 4000;
 
     //// todo: review this default
     ///// <summary>

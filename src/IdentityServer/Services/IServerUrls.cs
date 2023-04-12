@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 namespace Duende.IdentityServer.Services;
 
@@ -17,7 +18,7 @@ public interface IServerUrls
     /// <summary>
     /// Gets or sets the base path of IdentityServer.
     /// </summary>
-    string BasePath { get; set; }
+    string? BasePath { get; set; }
         
     /// <summary>
     /// Gets the base URL for IdentityServer.

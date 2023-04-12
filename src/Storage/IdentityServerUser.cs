@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using IdentityModel;
 using Duende.IdentityServer.Extensions;
@@ -24,12 +25,12 @@ internal class IdentityServerUser
     /// <summary>
     /// Display name (optional)
     /// </summary>
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
 
     /// <summary>
     /// Identity provider (optional)
     /// </summary>
-    public string IdentityProvider { get; set; }
+    public string? IdentityProvider { get; set; }
 
     /// <summary>
     /// Authentication methods
@@ -69,12 +70,12 @@ internal class IdentityServerUser
 
         if (DisplayName.IsPresent())
         {
-            claims.Add(new Claim(JwtClaimTypes.Name, DisplayName));
+            claims.Add(new Claim(JwtClaimTypes.Name, DisplayName!));
         }
 
         if (IdentityProvider.IsPresent())
         {
-            claims.Add(new Claim(JwtClaimTypes.IdentityProvider, IdentityProvider));
+            claims.Add(new Claim(JwtClaimTypes.IdentityProvider, IdentityProvider!));
         }
 
         if (AuthenticationTime.HasValue)

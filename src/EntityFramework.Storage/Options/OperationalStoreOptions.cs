@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ public class OperationalStoreOptions
     /// <value>
     /// The configure database context.
     /// </value>
-    public Action<DbContextOptionsBuilder> ConfigureDbContext { get; set; }
+    public Action<DbContextOptionsBuilder>? ConfigureDbContext { get; set; }
 
     /// <summary>
     /// Callback in DI resolve the EF DbContextOptions. If set, ConfigureDbContext will not be used.
@@ -26,7 +27,7 @@ public class OperationalStoreOptions
     /// <value>
     /// The configure database context.
     /// </value>
-    public Action<IServiceProvider, DbContextOptionsBuilder> ResolveDbContextOptions { get; set; }
+    public Action<IServiceProvider, DbContextOptionsBuilder>? ResolveDbContextOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the default schema.
@@ -34,7 +35,7 @@ public class OperationalStoreOptions
     /// <value>
     /// The default schema.
     /// </value>
-    public string DefaultSchema { get; set; } = null;
+    public string? DefaultSchema { get; set; } = null;
 
     /// <summary>
     /// Gets or sets the persisted grants table configuration.

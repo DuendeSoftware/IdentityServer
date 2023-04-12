@@ -1,6 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
+
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -20,20 +22,20 @@ public class ConfigureAuthenticationContext<TAuthenticationOptions, TIdentityPro
     /// <summary>
     /// The authentication options.
     /// </summary>
-    public TAuthenticationOptions AuthenticationOptions { get; set; }
+    public TAuthenticationOptions AuthenticationOptions { get; set; } = default!;
 
     /// <summary>
     /// The identity provider.
     /// </summary>
-    public TIdentityProvider IdentityProvider { get; set; }
+    public TIdentityProvider IdentityProvider { get; set; } = default!;
 
     /// <summary>
     /// The dynamic identity provider options.
     /// </summary>
-    public DynamicProviderOptions DynamicProviderOptions { get; set; }
+    public DynamicProviderOptions DynamicProviderOptions { get; set; } = default!;
 
     /// <summary>
     /// The path prefix for callback paths the authentication handler is to use.
     /// </summary>
-    public PathString PathPrefix { get; set; }
+    public PathString PathPrefix { get; set; } = default!;
 }

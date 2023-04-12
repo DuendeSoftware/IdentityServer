@@ -1,6 +1,7 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,10 +15,10 @@ public class SecurityKeyInfo
     /// <summary>
     /// The key
     /// </summary>
-    public SecurityKey Key { get; set; }
+    public SecurityKey Key { get; set; } = default!;
 
     /// <summary>
     /// The signing algorithm
     /// </summary>
-    public string SigningAlgorithm { get; set; }
+    public string SigningAlgorithm { get; set; } = default!;
 }

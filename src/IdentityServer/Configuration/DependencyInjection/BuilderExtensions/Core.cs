@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
@@ -390,12 +391,16 @@ public static class IdentityServerBuilderExtensionsCore
                 return new DisposableDecorator<TService>((TService)registration.ImplementationFactory(provider));
             }, registration.Lifetime));
         }
-        else
+        else if (registration.ImplementationType != null)
         {
             var type = registration.ImplementationType;
             var innerType = typeof(Decorator<,>).MakeGenericType(typeof(TService), registration.ImplementationType);
             services.Add(new ServiceDescriptor(typeof(Decorator<TService>), innerType, ServiceLifetime.Transient));
             services.Add(new ServiceDescriptor(type, type, registration.Lifetime));
+        }
+        else
+        {
+            throw new InvalidOperationException("Invalid registration in DI for: " + typeof(TService).Name);
         }
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -15,5 +16,5 @@ public class JwtRequestValidationResult : ValidationResult
     /// <summary>
     /// The key/value pairs from the JWT payload of a successfuly validated request.
     /// </summary>
-    public IEnumerable<Claim> Payload { get; set; }
+    public IEnumerable<Claim>? Payload { get; set; }
 }
