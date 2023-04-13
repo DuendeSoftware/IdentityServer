@@ -59,7 +59,7 @@ public class LicenseValidatorTests
             subject.ResourceIsolationFeature.Should().BeTrue();
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.ServerSideSessionsFeature.Should().BeTrue();
-            subject.DCRFeature.Should().BeTrue();
+            subject.ConfigApiFeature.Should().BeTrue();
             subject.DPoPFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
             subject.RedistributionFeature.Should().BeFalse();
@@ -75,7 +75,7 @@ public class LicenseValidatorTests
             subject.ResourceIsolationFeature.Should().BeFalse();
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.ServerSideSessionsFeature.Should().BeTrue();
-            subject.DCRFeature.Should().BeTrue();
+            subject.ConfigApiFeature.Should().BeTrue();
             subject.DPoPFeature.Should().BeFalse();
             subject.BffFeature.Should().BeTrue();
             subject.RedistributionFeature.Should().BeFalse();
@@ -91,7 +91,7 @@ public class LicenseValidatorTests
             subject.ResourceIsolationFeature.Should().BeFalse();
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.ServerSideSessionsFeature.Should().BeFalse();
-            subject.DCRFeature.Should().BeFalse();
+            subject.ConfigApiFeature.Should().BeFalse();
             subject.DPoPFeature.Should().BeFalse();
             subject.BffFeature.Should().BeFalse();
             subject.RedistributionFeature.Should().BeFalse();
@@ -107,7 +107,7 @@ public class LicenseValidatorTests
             subject.ResourceIsolationFeature.Should().BeTrue();
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.ServerSideSessionsFeature.Should().BeTrue();
-            subject.DCRFeature.Should().BeTrue();
+            subject.ConfigApiFeature.Should().BeTrue();
             subject.DPoPFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
             subject.RedistributionFeature.Should().BeFalse();
@@ -120,7 +120,7 @@ public class LicenseValidatorTests
             subject.Edition.Should().Be(License.LicenseEdition.Bff);
             subject.IsBffEdition.Should().BeTrue();
             subject.ServerSideSessionsFeature.Should().BeFalse();
-            subject.DCRFeature.Should().BeFalse();
+            subject.ConfigApiFeature.Should().BeFalse();
             subject.DPoPFeature.Should().BeFalse();
             subject.BffFeature.Should().BeTrue();
             subject.ClientLimit.Should().Be(0);
@@ -143,7 +143,7 @@ public class LicenseValidatorTests
             subject.ResourceIsolationFeature.Should().BeTrue();
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.ServerSideSessionsFeature.Should().BeTrue();
-            subject.DCRFeature.Should().BeTrue();
+            subject.ConfigApiFeature.Should().BeTrue();
             subject.DPoPFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
             subject.RedistributionFeature.Should().BeTrue();
@@ -159,7 +159,7 @@ public class LicenseValidatorTests
             subject.ResourceIsolationFeature.Should().BeFalse();
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.ServerSideSessionsFeature.Should().BeTrue();
-            subject.DCRFeature.Should().BeTrue();
+            subject.ConfigApiFeature.Should().BeTrue();
             subject.DPoPFeature.Should().BeFalse();
             subject.BffFeature.Should().BeTrue();
             subject.RedistributionFeature.Should().BeTrue();
@@ -175,7 +175,7 @@ public class LicenseValidatorTests
             subject.ResourceIsolationFeature.Should().BeFalse();
             subject.DynamicProvidersFeature.Should().BeFalse();
             subject.ServerSideSessionsFeature.Should().BeFalse();
-            subject.DCRFeature.Should().BeFalse();
+            subject.ConfigApiFeature.Should().BeFalse();
             subject.DPoPFeature.Should().BeFalse();
             subject.BffFeature.Should().BeFalse();
             subject.RedistributionFeature.Should().BeTrue();
@@ -238,7 +238,7 @@ public class LicenseValidatorTests
                 new Claim("feature", "isv"),
                 new Claim("feature", "resource_isolation"),
                 new Claim("feature", "server_side_sessions"),
-                new Claim("feature", "dcr"),
+                new Claim("feature", "config_api"),
                 new Claim("feature", "dpop"),
                 new Claim("feature", "bff"),
                 new Claim("feature", "ciba"),
@@ -248,7 +248,7 @@ public class LicenseValidatorTests
             subject.KeyManagementFeature.Should().BeTrue();
             subject.ResourceIsolationFeature.Should().BeTrue();
             subject.ServerSideSessionsFeature.Should().BeTrue();
-            subject.DCRFeature.Should().BeTrue();
+            subject.ConfigApiFeature.Should().BeTrue();
             subject.DPoPFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
             subject.DynamicProvidersFeature.Should().BeTrue();
@@ -297,14 +297,14 @@ public class LicenseValidatorTests
                 new Claim("edition", "starter"),
                 new Claim("feature", "isv"),
                 new Claim("feature", "server_side_sessions"),
-                new Claim("feature", "dcr"),
+                new Claim("feature", "config_api"),
                 new Claim("feature", "dpop"),
                 new Claim("feature", "bff"),
                 new Claim("feature", "ciba"),
                 new Claim("client_limit", "20"));
             subject.ClientLimit.Should().Be(20);
             subject.ServerSideSessionsFeature.Should().BeTrue();
-            subject.DCRFeature.Should().BeTrue();
+            subject.ConfigApiFeature.Should().BeTrue();
             subject.DPoPFeature.Should().BeTrue();
             subject.BffFeature.Should().BeTrue();
             subject.CibaFeature.Should().BeTrue();

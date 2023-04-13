@@ -107,13 +107,13 @@ internal class License
                 break;
         }
 
-        DCRFeature = claims.HasClaim("feature", "dcr");
+        ConfigApiFeature = claims.HasClaim("feature", "config_api");
         switch (Edition)
         {
             case LicenseEdition.Enterprise:
             case LicenseEdition.Business:
             case LicenseEdition.Community:
-                DCRFeature = true;
+                ConfigApiFeature = true;
                 break;
         }
 
@@ -226,7 +226,7 @@ internal class License
     public bool BffFeature { get; set; }
     public bool CibaFeature { get; set; }
     public bool ServerSideSessionsFeature { get; set; }
-    public bool DCRFeature { get; set; }
+    public bool ConfigApiFeature { get; set; }
     public bool DPoPFeature { get; set; }
 
     public string Extras { get; set; }
