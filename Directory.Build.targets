@@ -25,7 +25,7 @@
         <PackageReference Update="Bullseye" Version="4.2.1"/>
 
         <!--tests -->
-        <PackageReference Update="FluentAssertions" Version="5.10.3"/>
+        <PackageReference Update="FluentAssertions" Version="6.11.0"/>
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.4.1"/>
         <PackageReference Update="xunit" Version="2.4.1"/>
         <PackageReference Update="xunit.runner.visualstudio" Version="2.4.5" PrivateAssets="All"/>
