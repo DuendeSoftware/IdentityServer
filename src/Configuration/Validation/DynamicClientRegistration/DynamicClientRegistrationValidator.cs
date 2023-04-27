@@ -490,10 +490,6 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetPublicClientProperties(DynamicClientRegistrationValidationContext context)
     {
-        if (context.Request.AllowAccessTokensViaBrowser.HasValue)
-        {
-            context.Client.AllowAccessTokensViaBrowser = context.Request.AllowAccessTokensViaBrowser.Value;
-        }
         context.Client.AllowedCorsOrigins = context.Request.AllowedCorsOrigins;
         if (context.Request.RequireClientSecret.HasValue)
         {

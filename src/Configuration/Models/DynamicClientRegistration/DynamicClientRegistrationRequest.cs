@@ -65,7 +65,7 @@ public class DynamicClientRegistrationRequest
     /// <remark>
     /// The <see cref="JwksUri"/> and <see cref="Jwks"/> parameters MUST NOT both be present in
     /// the same request or response.
-    /// 
+    /// </remark>
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.JwksUri)]
     public Uri? JwksUri { get; set; }
@@ -210,34 +210,38 @@ public class DynamicClientRegistrationRequest
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.InitiateLoginUri)]
     public Uri? InitiateLoginUri { get; set; }
-    
+
     /// <summary>
     /// The lifetime of identity tokens, in seconds.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
-    // REVIEW - Should names of non-standard properties be prefixed in some way?
     [JsonPropertyName("identity_token_lifetime")]
     public int? IdentityTokenLifetime { get; set; }
 
     /// <summary>
     /// The lifetime of access tokens, in seconds.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("access_token_lifetime")]
     public int? AccessTokenLifetime { get; set; }
 
     /// <summary>
     /// The lifetime of authorization codes, in seconds.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("authorization_code_lifetime")]
     public int? AuthorizationCodeLifetime { get; set; }
 
     /// <summary>
     /// The absolute lifetime of refresh tokens, in seconds.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("absolute_refresh_token_lifetime")]
     public int? AbsoluteRefreshTokenLifetime { get; set; }
 
     /// <summary>
     /// The sliding lifetime of refresh tokens, in seconds.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("sliding_refresh_token_lifetime")]
     public int? SlidingRefreshTokenLifetime { get; set; }
@@ -245,12 +249,14 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// The type of expiration for refresh tokens. Either "sliding" or
     /// "absolute".
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("refresh_token_expiration")]
     public string? RefreshTokenExpiration { get; set; }
 
     /// <summary>
     /// The usage type for refresh tokens. Either "OneTimeOnly" or "ReUse".
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("refresh_token_usage")]
     public string? RefreshTokenUsage { get; set; }
@@ -258,6 +264,7 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// Boolean value specifying whether access token claims are updated during 
     /// token refresh.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("update_access_token_claims_on_refresh")]
     public bool? UpdateAccessTokenClaimsOnRefresh { get; set; }
@@ -265,6 +272,7 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// Boolean value specifying whether consent is required in user-centric
     /// flows initiated by this client.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("require_consent")]
     public bool? RequireConsent { get; set; }
@@ -272,12 +280,14 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// Boolean value specifying whether a user's consent can be remembered in
     /// flows initiated by this client.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("allow_remember_consent")]
     public bool? AllowRememberConsent { get; set; }
 
     /// <summary>
     /// The lifetime of consent, in seconds.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("consent_lifetime")]
     public int? ConsentLifetime { get; set; }
@@ -285,21 +295,14 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// The type of access tokens that this client will create. Either "jwt" or
     /// "reference".
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("access_token_type")]
     public string? AccessTokenType { get; set; }
 
     /// <summary>
-    /// Boolean value specifying whether access tokens are transmitted via the
-    /// browser for this client (defaults to <c>false</c>). This can prevent
-    /// accidental leakage of access tokens when multiple response types are
-    /// allowed.
-    /// </summary>
-    [JsonPropertyName("allow_access_tokens_via_browser")]
-    public bool? AllowAccessTokensViaBrowser { get; set; }
-
-    /// <summary>
     /// List of allowed CORS origins for JavaScript clients.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("allowed_cors_origins")]
     public HashSet<string> AllowedCorsOrigins { get; set; } = new HashSet<string>();
@@ -307,6 +310,7 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// Boolean value specifying if a client secret is needed to request tokens
     /// at the token endpoint.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("require_client_secret")]
     public bool? RequireClientSecret { get; set; }
@@ -314,6 +318,7 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// Boolean value specifying if local logins are enabled when this client
     /// uses interactive flows.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("enable_local_login")]
     public bool? EnableLocalLogin { get; set; }
@@ -321,6 +326,7 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// List of external IdPs that can be used with this client. If list is
     /// empty all IdPs are allowed. Defaults to empty.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("identity_provider_restrictions")]
     public HashSet<string> IdentityProviderRestrictions { get; set; } = new HashSet<string>();
@@ -332,13 +338,16 @@ public class DynamicClientRegistrationRequest
     /// expired sessions will also remove any revokable tokens, and backchannel
     /// logout will be triggered. This client's setting overrides the global
     /// CoordinateTokensWithUserSession configuration setting.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("coordinate_lifetime_with_user_session")]
     public bool? CoordinateLifetimeWithUserSession { get; set; }
 
     /// <summary>
     /// List of signing algorithms to use when signing identity tokens. If not set, will use the server default signing algorithm.
+    /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
+    [JsonPropertyName("allowed_identity_token_signing_algorithms")]
     public ICollection<string> AllowedIdentityTokenSigningAlgorithms { get; set; } = new HashSet<string>();
 
     /// <summary>

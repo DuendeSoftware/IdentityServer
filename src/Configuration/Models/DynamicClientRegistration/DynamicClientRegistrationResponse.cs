@@ -58,7 +58,6 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
         RefreshTokenUsage = request.RefreshTokenUsage;
         UpdateAccessTokenClaimsOnRefresh = request.UpdateAccessTokenClaimsOnRefresh;
         
-        AllowAccessTokensViaBrowser = request.AllowAccessTokensViaBrowser;
         AllowedCorsOrigins = request.AllowedCorsOrigins;
         RequireClientSecret = request.RequireClientSecret;
 
