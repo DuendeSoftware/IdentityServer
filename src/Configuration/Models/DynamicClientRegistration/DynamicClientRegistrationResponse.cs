@@ -48,6 +48,31 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
         InitiateLoginUri = request.InitiateLoginUri;
         RequireSignedRequestObject = request.RequireSignedRequestObject;
         TokenEndpointAuthenticationMethod = request.TokenEndpointAuthenticationMethod;
+        RefreshTokenExpiration = request.RefreshTokenExpiration;
+        AbsoluteRefreshTokenLifetime = request.AbsoluteRefreshTokenLifetime;
+        SlidingRefreshTokenLifetime = request.SlidingRefreshTokenLifetime;
+        AuthorizationCodeLifetime = request.AuthorizationCodeLifetime;
+        RefreshTokenUsage = request.RefreshTokenUsage;
+        UpdateAccessTokenClaimsOnRefresh = request.UpdateAccessTokenClaimsOnRefresh;
+        
+        // TODO If you don't set this explicitly, we are going to infer something. Should we echo back the inferred value? (And similarly for other properties that are inferred)
+        AllowAccessTokensViaBrowser = request.AllowAccessTokensViaBrowser;
+        
+        AllowedCorsOrigins = request.AllowedCorsOrigins;
+        RequireClientSecret = request.RequireClientSecret;
+        EnableLocalLogin = request.EnableLocalLogin;
+        IdentityProviderRestrictions = request.IdentityProviderRestrictions;
+        RequireConsent = request.RequireConsent;
+        AllowRememberConsent = request.AllowRememberConsent;
+        ConsentLifetime = request.ConsentLifetime;
+
+        AccessTokenType = request.AccessTokenType;
+        AccessTokenLifetime = request.AccessTokenLifetime;
+
+        IdentityTokenLifetime = request.IdentityTokenLifetime;
+        AllowedIdentityTokenSigningAlgorithms = request.AllowedIdentityTokenSigningAlgorithms;
+
+        CoordinateLifetimeWithUserSession = request.CoordinateLifetimeWithUserSession;
     }
 
     /// <summary>

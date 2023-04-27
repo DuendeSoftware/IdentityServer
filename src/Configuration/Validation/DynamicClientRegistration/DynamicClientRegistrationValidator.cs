@@ -78,10 +78,34 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             return maxAgeValidation.Error;
         }
 
-        result = await SetClientMisc(context);
+        result = await SetUserInterfaceProperties(context);
         if (result is ValidationStepFailure miscValidation)
         {
             return miscValidation.Error;
+        }
+
+        result = await SetPublicClientProperties(context);
+        if (result is ValidationStepFailure publicClientValidation)
+        {
+            return publicClientValidation.Error;
+        }
+
+        result = await SetAccessTokenProperties(context);
+        if (result is ValidationStepFailure accessTokenValidation)
+        {
+            return accessTokenValidation.Error;
+        }
+
+        result = await SetIdTokenProperties(context);
+        if (result is ValidationStepFailure idTokenValidation)
+        {
+            return idTokenValidation.Error;
+        }
+
+        result = await SetServerSideSessionProperties(context);
+        if (result is ValidationStepFailure serverSideSessionValidation)
+        {
+            return serverSideSessionValidation.Error;
         }
 
         return new DynamicClientRegistrationValidatedRequest(context.Client, request);
@@ -111,7 +135,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.AuthorizationCode))
         {
             context.Client.AllowedGrantTypes.Add(GrantType.AuthorizationCode);
-        }
+            if(context.Request.AuthorizationCodeLifetime.HasValue)
+            {
+                context.Client.AuthorizationCodeLifetime = context.Request.AuthorizationCodeLifetime.Value;
+            }
+            }
 
         // we only support the two above grant types
         if (context.Client.AllowedGrantTypes.Count == 0)
@@ -130,6 +158,34 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             }
 
             context.Client.AllowOfflineAccess = true;
+            if (context.Request.RefreshTokenExpiration != null)
+            {
+                if (!Enum.TryParse<TokenExpiration>(context.Request.RefreshTokenExpiration, out var tokenExpiration))
+                {
+                    return ValidationStepFailed("invalid refresh token expiration - use 'absolute' or 'sliding'");
+                }
+                context.Client.RefreshTokenExpiration = tokenExpiration;
+            }
+            if (context.Request.SlidingRefreshTokenLifetime.HasValue)
+            {
+                context.Client.SlidingRefreshTokenLifetime = context.Request.SlidingRefreshTokenLifetime.Value;
+            }
+            if (context.Request.AbsoluteRefreshTokenLifetime.HasValue)
+            {
+                context.Client.AbsoluteRefreshTokenLifetime = context.Request.AbsoluteRefreshTokenLifetime.Value;
+            }
+            if (context.Request.RefreshTokenUsage != null)
+            {
+                if (!Enum.TryParse<TokenUsage>(context.Request.RefreshTokenUsage, out var tokenUsage))
+                {
+                    return ValidationStepFailed("invalid refresh token usage - use 'OneTimeOnly' or 'ReUse'");
+                }
+                context.Client.RefreshTokenUsage = tokenUsage;
+            }
+            if (context.Request.UpdateAccessTokenClaimsOnRefresh.HasValue)
+            {
+                context.Client.UpdateAccessTokenClaimsOnRefresh = context.Request.UpdateAccessTokenClaimsOnRefresh.Value;
+            }
         }
 
         return ValidationStepSucceeded();
@@ -346,7 +402,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
 
     /// <summary>
     /// Validates the requested client parameters related to logout and uses
-    /// them to set the associated parameters in the client. Those parameters
+    /// them to set the corresponding properties in the client. Those parameters
     /// include the post logout redirect uris, front channel and back channel
     /// uris, and flags for the front and back channel uris indicating if they
     /// require session ids.
@@ -406,20 +462,142 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <summary>
-    /// Validates miscellaneous details of the request, including the logo uri,
-    /// client uri, and initiate login uri, and uses them to set the associated
-    /// client properties. 
+    /// Validates the requested client parameters related to public clients and
+    /// uses them to set the corresponding properties in the client. Those
+    /// parameters include the allow access tokens via browser flag, the require
+    /// client secret flag, and the allowed cors origins.
+    /// </summary>
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its public client properties set, the DCR request,
+    /// and other contextual information.
+    /// </param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
+    protected virtual Task<ValidationStepResult> SetPublicClientProperties(DynamicClientRegistrationValidationContext context)
+    {
+        if (context.Request.AllowAccessTokensViaBrowser.HasValue)
+        {
+            context.Client.AllowAccessTokensViaBrowser = context.Request.AllowAccessTokensViaBrowser.Value;
+        }
+        context.Client.AllowedCorsOrigins = context.Request.AllowedCorsOrigins;
+        if (context.Request.RequireClientSecret.HasValue)
+        {
+            context.Client.RequireClientSecret = context.Request.RequireClientSecret.Value;
+        }
+        return ValidationStepSucceeded();
+    }
+
+    /// <summary>
+    /// Validates the requested client parameters related to access tokens and
+    /// uses them to set the corresponding properties in the client. Those
+    /// parameters include the allow access token type and access token lifetime.
+    /// </summary>
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its access token properties set, the DCR request,
+    /// and other contextual information.
+    /// </param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
+    protected virtual Task<ValidationStepResult> SetAccessTokenProperties(DynamicClientRegistrationValidationContext context)
+    {
+        if (context.Request.AccessTokenType != null)
+        {
+            if (!Enum.TryParse<AccessTokenType>(context.Request.AccessTokenType, out var tokenType))
+            {
+                return ValidationStepFailed("invalid access token type - use 'jwt' or 'reference'");
+            }
+            context.Client.AccessTokenType = tokenType;
+        }
+        if(context.Request.AccessTokenLifetime.HasValue)
+        {
+            // TODO - Validate that all lifetimes are positive values.
+            context.Client.AccessTokenLifetime = context.Request.AccessTokenLifetime.Value;
+        }
+        return ValidationStepSucceeded();
+    }
+
+    /// <summary>
+    /// Validates the requested client parameters related to id tokens and uses
+    /// them to set the corresponding properties in the client. Those parameters
+    /// include the id token lifetime and the allowed id token signing
+    /// algorithms.
+    /// </summary>
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its id token properties set, the DCR request, and
+    /// other contextual information.
+    /// </param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
+    protected virtual Task<ValidationStepResult> SetIdTokenProperties(DynamicClientRegistrationValidationContext context)
+    {
+        if(context.Request.IdentityTokenLifetime.HasValue)
+        {
+            context.Client.IdentityTokenLifetime = context.Request.IdentityTokenLifetime.Value;
+        }
+        context.Client.AllowedIdentityTokenSigningAlgorithms = context.Request.AllowedIdentityTokenSigningAlgorithms;
+        return ValidationStepSucceeded();
+    }
+
+    /// <summary>
+    /// Validates the requested client parameters related to server side
+    /// sessions and uses them to set the corresponding properties in the
+    /// client. Those parameters include the coordinate lifetime with user
+    /// session flag.
+    /// </summary>
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its server side session properties set, the DCR request,
+    /// and other contextual information.
+    /// </param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
+    protected virtual Task<ValidationStepResult> SetServerSideSessionProperties(DynamicClientRegistrationValidationContext context)
+    {
+        if(context.Request.CoordinateLifetimeWithUserSession.HasValue)
+        {
+            context.Client.CoordinateLifetimeWithUserSession = context.Request.CoordinateLifetimeWithUserSession.Value;
+        }
+        return ValidationStepSucceeded();
+    }
+
+    /// <summary>
+    /// Validates details of the request that control the user interface,
+    /// including the logo uri, client uri, initiate login uri, enable local
+    /// login flag, and identity provider restrictions, and uses them to set the
+    /// corresponding client properties. 
     /// </summary>
     /// <param name="context">The validation context, which includes the client
     /// model that will have miscellaneous properties set, the DCR request, and
     /// other contextual information.</param>
     /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetClientMisc(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<ValidationStepResult> SetUserInterfaceProperties(DynamicClientRegistrationValidationContext context)
     {
-        context.Client.ClientUri = context.Request.ClientUri?.AbsoluteUri;
+        // Misc Uris
         context.Client.LogoUri = context.Request.LogoUri?.ToString();
         context.Client.InitiateLoginUri = context.Request.InitiateLoginUri?.ToString();
+        
+        // Login Providers
+        if(context.Request.EnableLocalLogin.HasValue)
+        {
+            context.Client.EnableLocalLogin = context.Request.EnableLocalLogin.Value;
+        }
+        context.Client.IdentityProviderRestrictions = context.Request.IdentityProviderRestrictions;
+        if(context.Request.RequireConsent.HasValue)
+        {
+            context.Client.RequireConsent = context.Request.RequireConsent.Value;
+        }
+
+        // Consent
+        context.Client.ClientUri = context.Request.ClientUri?.AbsoluteUri;
+        if(context.Request.AllowRememberConsent.HasValue)
+        {
+            context.Client.AllowRememberConsent = context.Request.AllowRememberConsent.Value;
+        }
+        if(context.Request.ConsentLifetime.HasValue)
+        {
+            context.Client.ConsentLifetime = context.Request.ConsentLifetime.Value;
+        }
+
         return ValidationStepSucceeded();
     }
 
