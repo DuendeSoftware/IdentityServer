@@ -4,6 +4,8 @@
 
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
+// REVIEW - Should we rename this type?
+
 /// <summary>
 /// Represents a JSON Web Key Set.
 /// </summary>
