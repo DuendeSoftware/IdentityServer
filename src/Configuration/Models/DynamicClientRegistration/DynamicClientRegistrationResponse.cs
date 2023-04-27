@@ -36,14 +36,17 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
         Scope = request.Scope;
         DefaultMaxAge = request.DefaultMaxAge;
         Extensions = request.Extensions;
+        
         SoftwareStatement = request.SoftwareStatement;
         SoftwareId = request.SoftwareId;
         SoftwareVersion = request.SoftwareVersion;
+        
         PostLogoutRedirectUris = request.PostLogoutRedirectUris;
         FrontChannelLogoutUri = request.FrontChannelLogoutUri;
         FrontChannelLogoutSessionRequired = request.FrontChannelLogoutSessionRequired;
         BackChannelLogoutUri = request.BackChannelLogoutUri;
         BackchannelLogoutSessionRequired = request.BackchannelLogoutSessionRequired;
+        
         LogoUri = request.LogoUri;
         InitiateLoginUri = request.InitiateLoginUri;
         RequireSignedRequestObject = request.RequireSignedRequestObject;
@@ -55,11 +58,10 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
         RefreshTokenUsage = request.RefreshTokenUsage;
         UpdateAccessTokenClaimsOnRefresh = request.UpdateAccessTokenClaimsOnRefresh;
         
-        // TODO If you don't set this explicitly, we are going to infer something. Should we echo back the inferred value? (And similarly for other properties that are inferred)
         AllowAccessTokensViaBrowser = request.AllowAccessTokensViaBrowser;
-        
         AllowedCorsOrigins = request.AllowedCorsOrigins;
         RequireClientSecret = request.RequireClientSecret;
+
         EnableLocalLogin = request.EnableLocalLogin;
         IdentityProviderRestrictions = request.IdentityProviderRestrictions;
         RequireConsent = request.RequireConsent;

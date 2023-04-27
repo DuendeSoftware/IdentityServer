@@ -57,9 +57,15 @@ public class DynamicClientRegistrationRequest
     /// URL to a JWK Set document which contains the client's public keys.
     /// </summary>
     /// <remarks>
-    /// Use of this parameter is preferred over the "jwks" parameter, as it allows for easier key rotation.
+    /// <remark>
+    /// The default configuration endpoints do not use the software statement.
+    /// It is included in this model to facilitate extensions to the
+    /// configuration system.
+    /// </remark>
+    /// <remark>
     /// The <see cref="JwksUri"/> and <see cref="Jwks"/> parameters MUST NOT both be present in
     /// the same request or response.
+    /// 
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.JwksUri)]
     public Uri? JwksUri { get; set; }

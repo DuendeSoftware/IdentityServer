@@ -137,9 +137,14 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             context.Client.AllowedGrantTypes.Add(GrantType.AuthorizationCode);
             if(context.Request.AuthorizationCodeLifetime.HasValue)
             {
-                context.Client.AuthorizationCodeLifetime = context.Request.AuthorizationCodeLifetime.Value;
+                var lifetime = context.Request.AuthorizationCodeLifetime.Value;
+                if (lifetime <= 0)
+                {
+                    return ValidationStepFailed("The authorization code lifetime must be greater than 0 if used");
+                }
+                context.Client.AuthorizationCodeLifetime = lifetime;
             }
-            }
+        }
 
         // we only support the two above grant types
         if (context.Client.AllowedGrantTypes.Count == 0)
@@ -168,11 +173,21 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             }
             if (context.Request.SlidingRefreshTokenLifetime.HasValue)
             {
-                context.Client.SlidingRefreshTokenLifetime = context.Request.SlidingRefreshTokenLifetime.Value;
+                var lifetime = context.Request.SlidingRefreshTokenLifetime.Value;
+                if (lifetime <= 0)
+                {
+                    return ValidationStepFailed("The sliding refresh token lifetime must be greater than 0 if used");
+                }
+                context.Client.SlidingRefreshTokenLifetime = lifetime;
             }
             if (context.Request.AbsoluteRefreshTokenLifetime.HasValue)
             {
-                context.Client.AbsoluteRefreshTokenLifetime = context.Request.AbsoluteRefreshTokenLifetime.Value;
+                var lifetime = context.Request.AbsoluteRefreshTokenLifetime.Value;
+                if (lifetime <= 0)
+                {
+                    return ValidationStepFailed("The absolute refresh token lifetime must be greater than 0 if used");
+                }
+                context.Client.AbsoluteRefreshTokenLifetime = lifetime;                
             }
             if (context.Request.RefreshTokenUsage != null)
             {
@@ -347,21 +362,20 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                         return ValidationStepFailed("unexpected private key in jwk");
                     }
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException ex)
                 {
-                    // TODO - Log more exception details
+                    _logger.LogError(ex, "Failed to parse jwk");
                     return ValidationStepFailed("malformed jwk");
                 }
-                catch (JsonException)
+                catch (JsonException ex)
                 {
-                    // TODO - Log more exception details
+                    _logger.LogError(ex, "Failed to parse jwk");
                     return ValidationStepFailed("malformed jwk");
                 }
 
                 context.Client.ClientSecrets.Add(new Secret
                 {
-                    // TODO - Define this constant
-                    Type = "JWK", //IdentityServerConstants.SecretTypes.JsonWebKey,
+                    Type = "JWK",
                     Value = jwk
                 });
             }
@@ -438,11 +452,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         if (context.Request.DefaultMaxAge.HasValue)
         {
-            if (context.Request.DefaultMaxAge <= 0)
+            var lifetime = context.Request.DefaultMaxAge;
+            if (lifetime <= 0)
             {
                 return ValidationStepFailed("default_max_age must be greater than 0 if used");
             }
-            context.Client.UserSsoLifetime = context.Request.DefaultMaxAge;
+            context.Client.UserSsoLifetime = lifetime;
         }
         return ValidationStepSucceeded();
     }
@@ -510,8 +525,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         }
         if(context.Request.AccessTokenLifetime.HasValue)
         {
-            // TODO - Validate that all lifetimes are positive values.
-            context.Client.AccessTokenLifetime = context.Request.AccessTokenLifetime.Value;
+            var lifetime = context.Request.AccessTokenLifetime.Value;
+            if (lifetime <= 0)
+            {
+                return ValidationStepFailed("The access token lifetime must be greater than 0 if used");
+            }
+            context.Client.AccessTokenLifetime = lifetime;
         }
         return ValidationStepSucceeded();
     }
@@ -532,7 +551,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         if(context.Request.IdentityTokenLifetime.HasValue)
         {
-            context.Client.IdentityTokenLifetime = context.Request.IdentityTokenLifetime.Value;
+            var lifetime = context.Request.IdentityTokenLifetime.Value;
+            if (lifetime <= 0)
+            {
+                return ValidationStepFailed("The identity token lifetime must be greater than 0 if used");
+            }
+            context.Client.IdentityTokenLifetime = lifetime;
         }
         context.Client.AllowedIdentityTokenSigningAlgorithms = context.Request.AllowedIdentityTokenSigningAlgorithms;
         return ValidationStepSucceeded();
@@ -595,7 +619,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         }
         if(context.Request.ConsentLifetime.HasValue)
         {
-            context.Client.ConsentLifetime = context.Request.ConsentLifetime.Value;
+            var lifetime = context.Request.ConsentLifetime.Value;
+            if (lifetime <= 0)
+            {
+                return ValidationStepFailed("The consent lifetime must be greater than 0 if used");
+            }
+            context.Client.ConsentLifetime = lifetime;
         }
 
         return ValidationStepSucceeded();

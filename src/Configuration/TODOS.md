@@ -4,10 +4,6 @@
 - Create a console client
 - Create a sample that requires use of extensibility points to set client id and secret (scenario is a CI/CD pipeline needs to create the client)
 
-
-
-
-
 # Client Properties not supported, yet
 ## Client Claims
 - AlwaysSendClientClaims
