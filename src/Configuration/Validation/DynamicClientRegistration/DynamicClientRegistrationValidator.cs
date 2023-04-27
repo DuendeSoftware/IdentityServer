@@ -154,12 +154,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
 
         if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
         {
-            // TODO - make it more explicit which grant types support refresh
-            // tokens (make this a positive check, for robustness).
-            if (context.Client.AllowedGrantTypes.Count == 1 &&
-                context.Client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
+            // Note that if we ever support additional grant types that allow refresh tokens, this 
+            // could be refactored.
+            if (!context.Client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
             {
-                return ValidationStepFailed("client credentials does not support refresh tokens");
+                return ValidationStepFailed("Refresh token grant requested, but no grant that supports refresh tokens was requested");
             }
 
             context.Client.AllowOfflineAccess = true;
@@ -356,8 +355,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 {
                     var parsedJwk = new IdentityModel.Jwk.JsonWebKey(jwk);
 
-                    // TODO - Other HMAC hashing algorithms would also expect a private key
-                    if (parsedJwk.HasPrivateKey && parsedJwk.Alg != "HS256")
+                    if (parsedJwk.HasPrivateKey && parsedJwk.Alg.StartsWith("HS", StringComparison.InvariantCulture))
                     {
                         return ValidationStepFailed("unexpected private key in jwk");
                     }
@@ -400,21 +398,6 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <summary>
-    /// Validates the requested client uri and uses it to set the client uri of
-    /// the client.
-    /// </summary>
-    /// <param name="context">The validation context, which includes the client
-    /// model that will have its client uri set, the DCR request, and other
-    /// contextual information.
-    /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
-    /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetClientUriAsync(DynamicClientRegistrationValidationContext context)
-    {
-        return ValidationStepSucceeded();
-    }
-
-    /// <summary>
     /// Validates the requested client parameters related to logout and uses
     /// them to set the corresponding properties in the client. Those parameters
     /// include the post logout redirect uris, front channel and back channel
@@ -433,7 +416,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         context.Client.FrontChannelLogoutUri = context.Request.FrontChannelLogoutUri?.AbsoluteUri;
         context.Client.FrontChannelLogoutSessionRequired = context.Request.FrontChannelLogoutSessionRequired ?? false;
         context.Client.BackChannelLogoutUri = context.Request.BackChannelLogoutUri?.AbsoluteUri;
-        context.Client.BackChannelLogoutSessionRequired = context.Request.BackchannelLogoutSessionRequired ?? false;
+        context.Client.BackChannelLogoutSessionRequired = context.Request.BackChannelLogoutSessionRequired ?? false;
 
         return ValidationStepSucceeded();
     }
@@ -479,8 +462,8 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// <summary>
     /// Validates the requested client parameters related to public clients and
     /// uses them to set the corresponding properties in the client. Those
-    /// parameters include the allow access tokens via browser flag, the require
-    /// client secret flag, and the allowed cors origins.
+    /// parameters include the require client secret flag and the allowed cors
+    /// origins.
     /// </summary>
     /// <param name="context">The validation context, which includes the client
     /// model that will have its public client properties set, the DCR request,
@@ -501,7 +484,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// <summary>
     /// Validates the requested client parameters related to access tokens and
     /// uses them to set the corresponding properties in the client. Those
-    /// parameters include the allow access token type and access token lifetime.
+    /// parameters include the allowed access token type and access token lifetime.
     /// </summary>
     /// <param name="context">The validation context, which includes the client
     /// model that will have its access token properties set, the DCR request,
@@ -602,12 +585,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             context.Client.EnableLocalLogin = context.Request.EnableLocalLogin.Value;
         }
         context.Client.IdentityProviderRestrictions = context.Request.IdentityProviderRestrictions;
+        
+        // Consent
         if(context.Request.RequireConsent.HasValue)
         {
             context.Client.RequireConsent = context.Request.RequireConsent.Value;
         }
-
-        // Consent
         context.Client.ClientUri = context.Request.ClientUri?.AbsoluteUri;
         if(context.Request.AllowRememberConsent.HasValue)
         {

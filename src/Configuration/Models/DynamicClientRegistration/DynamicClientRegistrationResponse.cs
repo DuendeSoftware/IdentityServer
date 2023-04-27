@@ -2,12 +2,13 @@
 // See LICENSE in the project root for license information.
 
 using System.Text.Json.Serialization;
+using Duende.IdentityServer.Models;
 using IdentityModel;
 
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 /// <summary>
-/// Represents the response to a successful dynamic client registration request.
+/// Represents the response to a successful dynamic client registration client.
 /// </summary>
 public class DynamicClientRegistrationResponse : DynamicClientRegistrationRequest, IDynamicClientRegistrationResponse
 {
@@ -21,60 +22,89 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
     /// <summary>
     /// Initializes a new instance of the <see
     /// cref="DynamicClientRegistrationResponse"/> class copying properties from
-    /// the specified request.
+    /// the specified request and client. This tries to copy from the client's
+    /// properties, and only uses the request if it must. Doing so means that the 
+    /// response will better reflect the actually created client record.
     /// </summary>
     /// <param name="request">The request used to initialize the
     /// response.</param>
-    public DynamicClientRegistrationResponse(DynamicClientRegistrationRequest request)
+    /// <param name="client">The client used to initialize the response.</param>
+    public DynamicClientRegistrationResponse(DynamicClientRegistrationRequest request, Client client)
     {
-        RedirectUris = request.RedirectUris;
-        GrantTypes = request.GrantTypes;
-        ClientName = request.ClientName;
-        ClientUri = request.ClientUri;
-        JwksUri = request.JwksUri;
-        Jwks = request.Jwks;
-        Scope = request.Scope;
-        DefaultMaxAge = request.DefaultMaxAge;
-        Extensions = request.Extensions;
-        
+        // Software Statement
         SoftwareStatement = request.SoftwareStatement;
         SoftwareId = request.SoftwareId;
         SoftwareVersion = request.SoftwareVersion;
-        
-        PostLogoutRedirectUris = request.PostLogoutRedirectUris;
-        FrontChannelLogoutUri = request.FrontChannelLogoutUri;
-        FrontChannelLogoutSessionRequired = request.FrontChannelLogoutSessionRequired;
-        BackChannelLogoutUri = request.BackChannelLogoutUri;
-        BackchannelLogoutSessionRequired = request.BackchannelLogoutSessionRequired;
-        
-        LogoUri = request.LogoUri;
-        InitiateLoginUri = request.InitiateLoginUri;
-        RequireSignedRequestObject = request.RequireSignedRequestObject;
+
+        // Grant Types
+        GrantTypes = client.AllowedGrantTypes;
+        if(client.AllowOfflineAccess)
+        {
+            GrantTypes.Add(OidcConstants.GrantTypes.RefreshToken);
+        }
+        AuthorizationCodeLifetime = client.AuthorizationCodeLifetime;
+        RefreshTokenExpiration = client.RefreshTokenExpiration.ToString();
+        RefreshTokenUsage = client.RefreshTokenUsage.ToString();
+        AbsoluteRefreshTokenLifetime = client.AbsoluteRefreshTokenLifetime;
+        SlidingRefreshTokenLifetime = client.SlidingRefreshTokenLifetime;
+        UpdateAccessTokenClaimsOnRefresh = client.UpdateAccessTokenClaimsOnRefresh;
+
+        // Redirect Uris
+        RedirectUris = client.RedirectUris.Select(s => new Uri(s)).ToList();
+
+        // Scopes
+        Scope = string.Join(' ', client.AllowedScopes);
+
+        // Secrets
+        JwksUri = request.JwksUri;
+        Jwks = request.Jwks;
         TokenEndpointAuthenticationMethod = request.TokenEndpointAuthenticationMethod;
-        RefreshTokenExpiration = request.RefreshTokenExpiration;
-        AbsoluteRefreshTokenLifetime = request.AbsoluteRefreshTokenLifetime;
-        SlidingRefreshTokenLifetime = request.SlidingRefreshTokenLifetime;
-        AuthorizationCodeLifetime = request.AuthorizationCodeLifetime;
-        RefreshTokenUsage = request.RefreshTokenUsage;
-        UpdateAccessTokenClaimsOnRefresh = request.UpdateAccessTokenClaimsOnRefresh;
-        
-        AllowedCorsOrigins = request.AllowedCorsOrigins;
-        RequireClientSecret = request.RequireClientSecret;
+        RequireSignedRequestObject = client.RequireRequestObject;
 
-        EnableLocalLogin = request.EnableLocalLogin;
-        IdentityProviderRestrictions = request.IdentityProviderRestrictions;
-        RequireConsent = request.RequireConsent;
-        AllowRememberConsent = request.AllowRememberConsent;
-        ConsentLifetime = request.ConsentLifetime;
+        // Client Name
+        ClientName = client.ClientName;
 
-        AccessTokenType = request.AccessTokenType;
-        AccessTokenLifetime = request.AccessTokenLifetime;
+        // Logout Parameters
+        PostLogoutRedirectUris = client.PostLogoutRedirectUris.Select(s => new Uri(s)).ToList();
+        FrontChannelLogoutUri = ToUri(client.FrontChannelLogoutUri);
+        FrontChannelLogoutSessionRequired = client.FrontChannelLogoutSessionRequired;
+        BackChannelLogoutUri = ToUri(client.BackChannelLogoutUri);
+        BackChannelLogoutSessionRequired = client.BackChannelLogoutSessionRequired;
 
-        IdentityTokenLifetime = request.IdentityTokenLifetime;
-        AllowedIdentityTokenSigningAlgorithms = request.AllowedIdentityTokenSigningAlgorithms;
+        // Max Age
+        DefaultMaxAge = client.UserSsoLifetime;
 
-        CoordinateLifetimeWithUserSession = request.CoordinateLifetimeWithUserSession;
+        // User Interface
+        LogoUri = ToUri(client.LogoUri);
+        InitiateLoginUri = ToUri(client.InitiateLoginUri);
+        EnableLocalLogin = client.EnableLocalLogin;
+        IdentityProviderRestrictions = client.IdentityProviderRestrictions.ToHashSet();
+        RequireConsent = client.RequireConsent;
+        ClientUri = ToUri(client.ClientUri);
+        AllowRememberConsent = client.AllowRememberConsent;
+        ConsentLifetime = client.ConsentLifetime;
+
+        // Public Clients
+        AllowedCorsOrigins = client.AllowedCorsOrigins.ToHashSet();
+        RequireClientSecret = client.RequireClientSecret;
+
+        // Access Token
+        AccessTokenType = client.AccessTokenType.ToString();
+        AccessTokenLifetime = client.AccessTokenLifetime;
+
+        // ID Token
+        IdentityTokenLifetime = client.IdentityTokenLifetime;
+        AllowedIdentityTokenSigningAlgorithms = client.AllowedIdentityTokenSigningAlgorithms;
+
+        // Server Side Sessions
+        CoordinateLifetimeWithUserSession = client.CoordinateLifetimeWithUserSession;
+
+        // Extensions
+        Extensions = request.Extensions;
     }
+
+    private static Uri? ToUri(string? s) =>
+        s != null ? new Uri(s) : null;
 
     /// <summary>
     /// Gets or sets the client ID.
@@ -102,6 +132,4 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.ResponseTypes)]
     public ICollection<string> ResponseTypes { get; set; } = new HashSet<string>();
-
-    
 }

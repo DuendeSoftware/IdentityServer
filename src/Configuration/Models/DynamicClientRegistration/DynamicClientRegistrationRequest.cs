@@ -120,7 +120,7 @@ public class DynamicClientRegistrationRequest
     /// the OP when the backchannel_logout_uri is used.e
     /// </summary>
     [JsonPropertyName(OidcConstants.ClientMetadata.BackchannelLogoutSessionRequired)]
-    public bool? BackchannelLogoutSessionRequired { get; set; }
+    public bool? BackChannelLogoutSessionRequired { get; set; }
 
     /// <summary>
     /// A software statement containing client metadata values about the client

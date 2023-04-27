@@ -43,7 +43,7 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
 
         await _store.AddAsync(validatedRequest.Client);
 
-        return new DynamicClientRegistrationResponse(validatedRequest.OriginalRequest)
+        return new DynamicClientRegistrationResponse(validatedRequest.OriginalRequest, validatedRequest.Client)
         {
             ClientId = validatedRequest.Client.ClientId,
             ClientSecret = plainText,
