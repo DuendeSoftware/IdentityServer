@@ -66,16 +66,22 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             return nameValidation.Error;
         }
 
-        result = await SetClientUriAsync(context);
-        if (result is ValidationStepFailure uriValidation)
+        result = await SetLogoutParametersAsync(context);
+        if(result is ValidationStepFailure logoutValidation)
         {
-            return uriValidation.Error;
+            return logoutValidation.Error;
         }
 
         result = await SetMaxAgeAsync(context);
         if (result is ValidationStepFailure maxAgeValidation)
         {
             return maxAgeValidation.Error;
+        }
+
+        result = await SetClientMisc(context);
+        if (result is ValidationStepFailure miscValidation)
+        {
+            return miscValidation.Error;
         }
 
         return new DynamicClientRegistrationValidatedRequest(context.Client, request);
@@ -159,7 +165,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             }
             else
             {
-                // TODO - When we implement PAR, this may no longer be an error for clients that use PAR
+                // Note that when we implement PAR, this may no longer be an error for clients that use PAR
                 return ValidationStepFailed("redirect URI required for authorization_code grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
             }
         }
@@ -245,15 +251,22 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         if (context.Request.Jwks is null && context.Request.TokenEndpointAuthenticationMethod == OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
         {
             return ValidationStepFailed("Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
-        }
 
+        }
         if (context.Request.Jwks is not null && context.Request.TokenEndpointAuthenticationMethod != OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
         {
             return ValidationStepFailed("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
         }
 
+        if (context.Request.Jwks?.Keys is null && context.Request.RequireSignedRequestObject == true)
+        {
+            return ValidationStepFailed("Jwks are required when the require signed request object flag is enabled");
+        }
+
         if (context.Request.Jwks?.Keys is not null)
         {
+            context.Client.RequireRequestObject = context.Request.RequireSignedRequestObject ?? false;
+
             var jsonOptions = new JsonSerializerOptions
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -265,8 +278,8 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             {
                 var jwk = JsonSerializer.Serialize(key, jsonOptions);
 
-                // We parse the jwk to ensure it is valid, but we utlimately
-                // write the original text that was passed to us (parsing can
+                // We parse the jwk to ensure it is valid, but we ultimately
+                // write the original string that was passed to us (parsing can
                 // change it)
                 try
                 {
@@ -280,10 +293,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 }
                 catch (InvalidOperationException)
                 {
+                    // TODO - Log more exception details
                     return ValidationStepFailed("malformed jwk");
                 }
                 catch (JsonException)
                 {
+                    // TODO - Log more exception details
                     return ValidationStepFailed("malformed jwk");
                 }
 
@@ -299,8 +314,8 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <summary>
-    /// Validates the requested client name uses it to set the redirect uris of
-    /// the client.
+    /// Validates the requested client name uses it to set the name of the
+    /// client.
     /// </summary>
     /// <param name="context">The validation context, which includes the client
     /// model that will have its name set, the DCR request, and other contextual
@@ -310,13 +325,9 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetClientNameAsync(DynamicClientRegistrationValidationContext context)
     {
-        if (!string.IsNullOrWhiteSpace(context.Request.ClientName))
-        {
-            context.Client.ClientName = context.Request.ClientName;
-        }
+        context.Client.ClientName = context.Request?.ClientName;
         return ValidationStepSucceeded();
     }
-
 
     /// <summary>
     /// Validates the requested client uri and uses it to set the client uri of
@@ -330,10 +341,30 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetClientUriAsync(DynamicClientRegistrationValidationContext context)
     {
-        if (context.Request.ClientUri != null)
-        {
-            context.Client.ClientUri = context.Request.ClientUri.AbsoluteUri;
-        }
+        return ValidationStepSucceeded();
+    }
+
+    /// <summary>
+    /// Validates the requested client parameters related to logout and uses
+    /// them to set the associated parameters in the client. Those parameters
+    /// include the post logout redirect uris, front channel and back channel
+    /// uris, and flags for the front and back channel uris indicating if they
+    /// require session ids.
+    /// </summary>
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have its logout parameters set, the DCR request, and
+    /// other contextual information.
+    /// </param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
+    protected virtual Task<ValidationStepResult> SetLogoutParametersAsync(DynamicClientRegistrationValidationContext context)
+    {
+        context.Client.PostLogoutRedirectUris = context.Request.PostLogoutRedirectUris.Select(uri => uri.ToString()).ToList();
+        context.Client.FrontChannelLogoutUri = context.Request.FrontChannelLogoutUri?.AbsoluteUri;
+        context.Client.FrontChannelLogoutSessionRequired = context.Request.FrontChannelLogoutSessionRequired ?? false;
+        context.Client.BackChannelLogoutUri = context.Request.BackChannelLogoutUri?.AbsoluteUri;
+        context.Client.BackChannelLogoutSessionRequired = context.Request.BackchannelLogoutSessionRequired ?? false;
+
         return ValidationStepSucceeded();
     }
 
@@ -374,8 +405,23 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         return ValidationStepSucceeded();
     }
 
-    // TODO Add a method for validating things like logo uri and other stuff
-    // that isn't really controlling the protocols, just describes the client.
+    /// <summary>
+    /// Validates miscellaneous details of the request, including the logo uri,
+    /// client uri, and initiate login uri, and uses them to set the associated
+    /// client properties. 
+    /// </summary>
+    /// <param name="context">The validation context, which includes the client
+    /// model that will have miscellaneous properties set, the DCR request, and
+    /// other contextual information.</param>
+    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// either represents that this step succeeded or failed.</returns>
+    protected virtual Task<ValidationStepResult> SetClientMisc(DynamicClientRegistrationValidationContext context)
+    {
+        context.Client.ClientUri = context.Request.ClientUri?.AbsoluteUri;
+        context.Client.LogoUri = context.Request.LogoUri?.ToString();
+        context.Client.InitiateLoginUri = context.Request.InitiateLoginUri?.ToString();
+        return ValidationStepSucceeded();
+    }
 
     private static Task<ValidationStepResult> ValidationStepFailed(string errorDescription,
         string error = DynamicClientRegistrationErrors.InvalidClientMetadata) =>

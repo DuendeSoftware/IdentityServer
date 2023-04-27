@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 using System.Text.Json.Serialization;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
@@ -18,13 +19,14 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DynamicClientRegistrationResponse"/> class copying properties from the specified request.
+    /// Initializes a new instance of the <see
+    /// cref="DynamicClientRegistrationResponse"/> class copying properties from
+    /// the specified request.
     /// </summary>
-    /// <param name="request">The request used to initialize the response.</param>
+    /// <param name="request">The request used to initialize the
+    /// response.</param>
     public DynamicClientRegistrationResponse(DynamicClientRegistrationRequest request)
     {
-        // TODO - verify that all these parameters should be echoed back in the
-        // response
         RedirectUris = request.RedirectUris;
         GrantTypes = request.GrantTypes;
         ClientName = request.ClientName;
@@ -35,23 +37,45 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
         DefaultMaxAge = request.DefaultMaxAge;
         Extensions = request.Extensions;
         SoftwareStatement = request.SoftwareStatement;
+        SoftwareId = request.SoftwareId;
+        SoftwareVersion = request.SoftwareVersion;
+        PostLogoutRedirectUris = request.PostLogoutRedirectUris;
+        FrontChannelLogoutUri = request.FrontChannelLogoutUri;
+        FrontChannelLogoutSessionRequired = request.FrontChannelLogoutSessionRequired;
+        BackChannelLogoutUri = request.BackChannelLogoutUri;
+        BackchannelLogoutSessionRequired = request.BackchannelLogoutSessionRequired;
+        LogoUri = request.LogoUri;
+        InitiateLoginUri = request.InitiateLoginUri;
+        RequireSignedRequestObject = request.RequireSignedRequestObject;
+        TokenEndpointAuthenticationMethod = request.TokenEndpointAuthenticationMethod;
     }
 
     /// <summary>
     /// Gets or sets the client ID.
     /// </summary>
-    [JsonPropertyName("client_id")]
+    [JsonPropertyName(OidcConstants.RegistrationResponse.ClientId)]
     public string ClientId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the client secret.
     /// </summary>
-    [JsonPropertyName("client_secret")]
+    [JsonPropertyName(OidcConstants.RegistrationResponse.ClientSecret)]
     public string? ClientSecret { get; set; }
 
     /// <summary>
     /// Gets or sets the expiration time of the client secret.
     /// </summary>
-    [JsonPropertyName("client_secret_expires_at")]
+    [JsonPropertyName(OidcConstants.RegistrationResponse.ClientSecretExpiresAt)]
     public long? ClientSecretExpiresAt { get; set; }
+
+    /// <summary>
+    /// List of the OAuth 2.0 response type strings that the client can use at the authorization endpoint.
+    /// </summary>
+    /// <remarks>
+    /// Example: "code" or "token".
+    /// </remarks>
+    [JsonPropertyName(OidcConstants.ClientMetadata.ResponseTypes)]
+    public ICollection<string> ResponseTypes { get; set; } = new HashSet<string>();
+
+    
 }
