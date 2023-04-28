@@ -394,6 +394,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         if (result.Nonce.IsMissing())
         {
             result.IsError = true;
+            result.Error = OidcConstants.TokenErrors.UseDPoPNonce;
             result.ErrorDescription = "Missing 'nonce' value.";
             result.ServerIssuedNonce = CreateNonce(context, result);
             return;

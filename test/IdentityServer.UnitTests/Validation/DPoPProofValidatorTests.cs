@@ -637,7 +637,7 @@ public class DPoPProofValidatorTests
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
-        result.Error.Should().Be("invalid_dpop_proof");
+        result.Error.Should().Be("use_dpop_nonce");
         result.ServerIssuedNonce.Should().NotBeNullOrEmpty();
     }
     
