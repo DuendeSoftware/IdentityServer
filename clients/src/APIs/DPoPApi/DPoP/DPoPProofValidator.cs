@@ -364,6 +364,7 @@ public class DPoPProofValidator
         if (String.IsNullOrWhiteSpace(result.Nonce))
         {
             result.IsError = true;
+            result.Error = OidcConstants.TokenErrors.UseDPoPNonce;
             result.ErrorDescription = "Missing 'nonce' value.";
             result.ServerIssuedNonce = CreateNonce(context, result);
             return;
