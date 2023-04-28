@@ -22,7 +22,7 @@ namespace DPoPApi.Controllers
             var claims = User.Claims.Select(c => new { c.Type, c.Value });
             _logger.LogInformation("claims: {claims}", claims);
 
-            var scheme = Request.Headers.Authorization.FirstOrDefault()?.Split(' ', System.StringSplitOptions.RemoveEmptyEntries)[0];
+            var scheme = Request.GetAuthorizationScheme();
             var proofToken = Request.GetDPoPProofToken();
 
             return new JsonResult(new { scheme, proofToken, claims });

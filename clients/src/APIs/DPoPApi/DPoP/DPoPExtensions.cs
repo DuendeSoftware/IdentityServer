@@ -33,7 +33,12 @@ static class DPoPExtensions
         }
         return false;
     }
-    
+
+    public static string GetAuthorizationScheme(this HttpRequest request)
+    {
+        return request.Headers.Authorization.FirstOrDefault()?.Split(' ', System.StringSplitOptions.RemoveEmptyEntries)[0];
+    }
+
     public static string GetDPoPProofToken(this HttpRequest request)
     {
         return request.Headers[OidcConstants.HttpHeaders.DPoP].FirstOrDefault();
