@@ -116,7 +116,7 @@ public class DefaultEventService : IEventService
         evt.TimeStamp = DateTime.UtcNow;
         evt.ProcessId = Process.GetCurrentProcess().Id;
 
-        if (Context.HttpContext.Connection.LocalIpAddress != null)
+        if (Context.HttpContext?.Connection.LocalIpAddress != null)
         {
             evt.LocalIpAddress = Context.HttpContext.Connection.LocalIpAddress.ToString() + ":" + Context.HttpContext.Connection.LocalPort;
         }
@@ -125,7 +125,7 @@ public class DefaultEventService : IEventService
             evt.LocalIpAddress = "unknown";
         }
 
-        if (Context.HttpContext.Connection.RemoteIpAddress != null)
+        if (Context.HttpContext?.Connection.RemoteIpAddress != null)
         {
             evt.RemoteIpAddress = Context.HttpContext.Connection.RemoteIpAddress.ToString();
         }
