@@ -21,7 +21,7 @@ public class DynamicClientRegistrationRequest
     /// Clients using flows with redirection must register their redirection URI values.
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.RedirectUris)]
-    public ICollection<Uri> RedirectUris { get; set; } = new HashSet<Uri>();
+    public ICollection<Uri>? RedirectUris { get; set; }
 
     /// <summary>
     /// List of OAuth 2.0 grant type strings that the client can use at the token endpoint.
@@ -90,7 +90,7 @@ public class DynamicClientRegistrationRequest
     /// endpoint.
     /// </summary>
     [JsonPropertyName(OidcConstants.ClientMetadata.PostLogoutRedirectUris)]
-    public ICollection<Uri> PostLogoutRedirectUris { get; set; } = new HashSet<Uri>();
+    public ICollection<Uri>? PostLogoutRedirectUris { get; set; }
 
     /// <summary>
     /// RP URL that will cause the RP to log itself out when rendered in an
@@ -293,8 +293,8 @@ public class DynamicClientRegistrationRequest
     public int? ConsentLifetime { get; set; }
 
     /// <summary>
-    /// The type of access tokens that this client will create. Either "jwt" or
-    /// "reference".
+    /// The type of access tokens that this client will create. Either "Jwt" or
+    /// "Reference".
     /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("access_token_type")]
@@ -305,7 +305,7 @@ public class DynamicClientRegistrationRequest
     /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("allowed_cors_origins")]
-    public HashSet<string> AllowedCorsOrigins { get; set; } = new HashSet<string>();
+    public HashSet<string>? AllowedCorsOrigins { get; set; }
 
     /// <summary>
     /// Boolean value specifying if a client secret is needed to request tokens
@@ -329,7 +329,7 @@ public class DynamicClientRegistrationRequest
     /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("identity_provider_restrictions")]
-    public HashSet<string> IdentityProviderRestrictions { get; set; } = new HashSet<string>();
+    public HashSet<string>? IdentityProviderRestrictions { get; set; }
 
     /// <summary>
     /// When enabled, the client's token lifetimes (e.g. refresh tokens) will be
@@ -348,7 +348,7 @@ public class DynamicClientRegistrationRequest
     /// This property is an extension to the Dynamic Client Registration Protocol.
     /// </summary>
     [JsonPropertyName("allowed_identity_token_signing_algorithms")]
-    public ICollection<string> AllowedIdentityTokenSigningAlgorithms { get; set; } = new HashSet<string>();
+    public ICollection<string>? AllowedIdentityTokenSigningAlgorithms { get; set; }
 
     /// <summary>
     /// Custom client metadata fields to include in the serialization.

@@ -166,7 +166,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             {
                 if (!Enum.TryParse<TokenExpiration>(context.Request.RefreshTokenExpiration, out var tokenExpiration))
                 {
-                    return ValidationStepFailed("invalid refresh token expiration - use 'absolute' or 'sliding'");
+                    return ValidationStepFailed("invalid refresh token expiration - use Absolute or Sliding (case-sensitive)");
                 }
                 context.Client.RefreshTokenExpiration = tokenExpiration;
             }
@@ -192,7 +192,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             {
                 if (!Enum.TryParse<TokenUsage>(context.Request.RefreshTokenUsage, out var tokenUsage))
                 {
-                    return ValidationStepFailed("invalid refresh token usage - use 'OneTimeOnly' or 'ReUse'");
+                    return ValidationStepFailed("invalid refresh token usage - use OneTimeOnly or ReUse (case-sensitive)");
                 }
                 context.Client.RefreshTokenUsage = tokenUsage;
             }
@@ -219,7 +219,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         if (context.Client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
         {
-            if (context.Request.RedirectUris.Any())
+            if (context.Request.RedirectUris != null)
             {
                 foreach (var requestRedirectUri in context.Request.RedirectUris)
                 {
@@ -243,7 +243,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         if (context.Client.AllowedGrantTypes.Count == 1 &&
             context.Client.AllowedGrantTypes.FirstOrDefault(t => t.Equals(GrantType.ClientCredentials)) != null)
         {
-            if (context.Request.RedirectUris.Any())
+            if (context.Request.RedirectUris?.Any() == true)
             {
                 return ValidationStepFailed("redirect URI not compatible with client_credentials grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
             }
@@ -323,9 +323,13 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             return ValidationStepFailed("Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
 
         }
-        if (context.Request.Jwks is not null && context.Request.TokenEndpointAuthenticationMethod != OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
+        if (context.Request.Jwks is not null)
         {
-            return ValidationStepFailed("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
+            context.Request.TokenEndpointAuthenticationMethod ??= OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt;
+            if (context.Request.TokenEndpointAuthenticationMethod != OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
+            {
+                return ValidationStepFailed("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
+            }
         }
 
         if (context.Request.Jwks?.Keys is null && context.Request.RequireSignedRequestObject == true)
@@ -412,11 +416,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetLogoutParametersAsync(DynamicClientRegistrationValidationContext context)
     {
-        context.Client.PostLogoutRedirectUris = context.Request.PostLogoutRedirectUris.Select(uri => uri.ToString()).ToList();
+        context.Client.PostLogoutRedirectUris = context.Request.PostLogoutRedirectUris?.Select(uri => uri.ToString()).ToList() ?? new List<string>();
         context.Client.FrontChannelLogoutUri = context.Request.FrontChannelLogoutUri?.AbsoluteUri;
-        context.Client.FrontChannelLogoutSessionRequired = context.Request.FrontChannelLogoutSessionRequired ?? false;
+        context.Client.FrontChannelLogoutSessionRequired = context.Request.FrontChannelLogoutSessionRequired ?? true;
         context.Client.BackChannelLogoutUri = context.Request.BackChannelLogoutUri?.AbsoluteUri;
-        context.Client.BackChannelLogoutSessionRequired = context.Request.BackChannelLogoutSessionRequired ?? false;
+        context.Client.BackChannelLogoutSessionRequired = context.Request.BackChannelLogoutSessionRequired ?? true;
 
         return ValidationStepSucceeded();
     }
@@ -435,6 +439,10 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         if (context.Request.DefaultMaxAge.HasValue)
         {
+            if(!context.Request.GrantTypes.Contains(GrantType.AuthorizationCode))
+            {
+                return ValidationStepFailed("default_max_age requires authorization code grant type");
+            }
             var lifetime = context.Request.DefaultMaxAge;
             if (lifetime <= 0)
             {
@@ -473,7 +481,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> SetPublicClientProperties(DynamicClientRegistrationValidationContext context)
     {
-        context.Client.AllowedCorsOrigins = context.Request.AllowedCorsOrigins;
+        context.Client.AllowedCorsOrigins = context.Request.AllowedCorsOrigins ?? new();
         if (context.Request.RequireClientSecret.HasValue)
         {
             context.Client.RequireClientSecret = context.Request.RequireClientSecret.Value;
@@ -498,7 +506,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             if (!Enum.TryParse<AccessTokenType>(context.Request.AccessTokenType, out var tokenType))
             {
-                return ValidationStepFailed("invalid access token type - use 'jwt' or 'reference'");
+                return ValidationStepFailed("invalid access token type - use Jwt or Reference (case-sensitive)");
             }
             context.Client.AccessTokenType = tokenType;
         }
@@ -537,7 +545,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             }
             context.Client.IdentityTokenLifetime = lifetime;
         }
-        context.Client.AllowedIdentityTokenSigningAlgorithms = context.Request.AllowedIdentityTokenSigningAlgorithms;
+        context.Client.AllowedIdentityTokenSigningAlgorithms = context.Request.AllowedIdentityTokenSigningAlgorithms ?? new HashSet<string>();
         return ValidationStepSucceeded();
     }
 
@@ -584,7 +592,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             context.Client.EnableLocalLogin = context.Request.EnableLocalLogin.Value;
         }
-        context.Client.IdentityProviderRestrictions = context.Request.IdentityProviderRestrictions;
+        context.Client.IdentityProviderRestrictions = context.Request.IdentityProviderRestrictions ?? new();
         
         // Consent
         if(context.Request.RequireConsent.HasValue)

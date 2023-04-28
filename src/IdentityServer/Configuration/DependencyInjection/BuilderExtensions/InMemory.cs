@@ -153,7 +153,6 @@ public static class IdentityServerBuilderExtensionsInMemory
         return builder;
     }
 
-
     /// <summary>
     /// Adds the in memory clients.
     /// </summary>

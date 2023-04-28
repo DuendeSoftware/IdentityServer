@@ -31,80 +31,115 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
     /// <param name="client">The client used to initialize the response.</param>
     public DynamicClientRegistrationResponse(DynamicClientRegistrationRequest request, Client client)
     {
-        // Software Statement
+        //// Software Statement
         SoftwareStatement = request.SoftwareStatement;
         SoftwareId = request.SoftwareId;
         SoftwareVersion = request.SoftwareVersion;
 
-        // Grant Types
+        //// Grant Types
         GrantTypes = client.AllowedGrantTypes;
         if(client.AllowOfflineAccess)
         {
             GrantTypes.Add(OidcConstants.GrantTypes.RefreshToken);
+            // Sliding refresh tokens can use both absolute and sliding lifetime,
+            // but absolute refresh tokens never use the sliding lifetime
+            AbsoluteRefreshTokenLifetime = client.AbsoluteRefreshTokenLifetime;
+            if (client.RefreshTokenExpiration == TokenExpiration.Sliding)
+            {
+                SlidingRefreshTokenLifetime = client.SlidingRefreshTokenLifetime;
+            }
+            UpdateAccessTokenClaimsOnRefresh = client.UpdateAccessTokenClaimsOnRefresh;
+            RefreshTokenExpiration = client.RefreshTokenExpiration.ToString();
+            RefreshTokenUsage = client.RefreshTokenUsage.ToString();
         }
-        AuthorizationCodeLifetime = client.AuthorizationCodeLifetime;
-        RefreshTokenExpiration = client.RefreshTokenExpiration.ToString();
-        RefreshTokenUsage = client.RefreshTokenUsage.ToString();
-        AbsoluteRefreshTokenLifetime = client.AbsoluteRefreshTokenLifetime;
-        SlidingRefreshTokenLifetime = client.SlidingRefreshTokenLifetime;
-        UpdateAccessTokenClaimsOnRefresh = client.UpdateAccessTokenClaimsOnRefresh;
+        if (GrantTypes.Contains(GrantType.AuthorizationCode))
+        {
+            AuthorizationCodeLifetime = client.AuthorizationCodeLifetime;
+        }
 
-        // Redirect Uris
-        RedirectUris = client.RedirectUris.Select(s => new Uri(s)).ToList();
+        //// Redirect Uris
+        if (client.RedirectUris.Any())
+        {
+            RedirectUris = client.RedirectUris.Select(s => new Uri(s)).ToList();
+        }
 
-        // Scopes
+        //// Scopes
         Scope = string.Join(' ', client.AllowedScopes);
 
-        // Secrets
+        //// Secrets
         JwksUri = request.JwksUri;
         Jwks = request.Jwks;
         TokenEndpointAuthenticationMethod = request.TokenEndpointAuthenticationMethod;
-        RequireSignedRequestObject = client.RequireRequestObject;
+        RequireSignedRequestObject = InteractiveFlowsEnabled(client) ? 
+            client.RequireRequestObject : null;
 
-        // Client Name
+        //// Client Name
         ClientName = client.ClientName;
 
-        // Logout Parameters
-        PostLogoutRedirectUris = client.PostLogoutRedirectUris.Select(s => new Uri(s)).ToList();
-        FrontChannelLogoutUri = ToUri(client.FrontChannelLogoutUri);
-        FrontChannelLogoutSessionRequired = client.FrontChannelLogoutSessionRequired;
-        BackChannelLogoutUri = ToUri(client.BackChannelLogoutUri);
-        BackChannelLogoutSessionRequired = client.BackChannelLogoutSessionRequired;
+        if (GrantTypes.Contains(GrantType.AuthorizationCode))
+        {
+            //// Logout Parameters
+            PostLogoutRedirectUris = client.PostLogoutRedirectUris.Select(s => new Uri(s)).ToList();
 
-        // Max Age
-        DefaultMaxAge = client.UserSsoLifetime;
+            FrontChannelLogoutUri = ToUri(client.FrontChannelLogoutUri);
+            // If there is no FrontChannelLogoutUri, then we hide the session required flag because it would be confusing
+            // (the user probably didn't set it, and they can't use it without the uri anyway)
+            FrontChannelLogoutSessionRequired = FrontChannelLogoutUri != null ? client.FrontChannelLogoutSessionRequired : null;
+            BackChannelLogoutUri = ToUri(client.BackChannelLogoutUri);
+            // Again, we hide this flag when there's no corresponding uri, just as for the FrontChannel case.
+            BackChannelLogoutSessionRequired = BackChannelLogoutUri != null ? client.BackChannelLogoutSessionRequired : null;
 
-        // User Interface
-        LogoUri = ToUri(client.LogoUri);
-        InitiateLoginUri = ToUri(client.InitiateLoginUri);
-        EnableLocalLogin = client.EnableLocalLogin;
-        IdentityProviderRestrictions = client.IdentityProviderRestrictions.ToHashSet();
-        RequireConsent = client.RequireConsent;
-        ClientUri = ToUri(client.ClientUri);
-        AllowRememberConsent = client.AllowRememberConsent;
-        ConsentLifetime = client.ConsentLifetime;
+            //// Max Age
+            DefaultMaxAge = client.UserSsoLifetime;
 
-        // Public Clients
-        AllowedCorsOrigins = client.AllowedCorsOrigins.ToHashSet();
+            //// User Interface
+            LogoUri = ToUri(client.LogoUri);
+            InitiateLoginUri = ToUri(client.InitiateLoginUri);
+            EnableLocalLogin = client.EnableLocalLogin;
+            IdentityProviderRestrictions = client.IdentityProviderRestrictions.ToHashSet();
+            RequireConsent = client.RequireConsent;
+            ClientUri = ToUri(client.ClientUri);
+            if (RequireConsent == true)
+            {
+                AllowRememberConsent = client.AllowRememberConsent;
+                ConsentLifetime = client.ConsentLifetime;
+            }
+        }
+
+        //// Public Clients
+        AllowedCorsOrigins = InteractiveFlowsEnabled(client) ?
+            client.AllowedCorsOrigins.ToHashSet() :
+            null;
+
         RequireClientSecret = client.RequireClientSecret;
 
-        // Access Token
+        //// Access Token
         AccessTokenType = client.AccessTokenType.ToString();
         AccessTokenLifetime = client.AccessTokenLifetime;
 
-        // ID Token
-        IdentityTokenLifetime = client.IdentityTokenLifetime;
-        AllowedIdentityTokenSigningAlgorithms = client.AllowedIdentityTokenSigningAlgorithms;
+        //// ID Token
+        if (client.AllowedScopes.Contains("openid"))
+        {
+            IdentityTokenLifetime = client.IdentityTokenLifetime;
+            AllowedIdentityTokenSigningAlgorithms = client.AllowedIdentityTokenSigningAlgorithms.Any() ?
+                client.AllowedIdentityTokenSigningAlgorithms : null;
+        }
 
-        // Server Side Sessions
+        //// Server Side Sessions
         CoordinateLifetimeWithUserSession = client.CoordinateLifetimeWithUserSession;
 
-        // Extensions
+        //// Response Types
+        ResponseTypes = InteractiveFlowsEnabled(client) ? new List<string> { "code" } : null;
+
+        //// Extensions
         Extensions = request.Extensions;
     }
 
     private static Uri? ToUri(string? s) =>
         s != null ? new Uri(s) : null;
+
+    private static bool InteractiveFlowsEnabled(Client c) => 
+        c.AllowedGrantTypes.Contains(GrantType.AuthorizationCode);
 
     /// <summary>
     /// Gets or sets the client ID.
@@ -125,11 +160,15 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
     public long? ClientSecretExpiresAt { get; set; }
 
     /// <summary>
-    /// List of the OAuth 2.0 response type strings that the client can use at the authorization endpoint.
+    /// List of the OAuth 2.0 response type strings that the client can use at
+    /// the authorization endpoint.
     /// </summary>
     /// <remarks>
-    /// Example: "code" or "token".
+    /// This will either be ["code"], when using the authorization code grant,
+    /// or omitted from the response when not using authorization code grant.
+    /// Other grants, such as the implicit or hybrid grants, that would allow
+    /// the use of other values are not supported.
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.ResponseTypes)]
-    public ICollection<string> ResponseTypes { get; set; } = new HashSet<string>();
+    public ICollection<string>? ResponseTypes { get; set; } = new HashSet<string>();
 }
