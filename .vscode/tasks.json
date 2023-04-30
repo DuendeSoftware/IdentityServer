@@ -69,12 +69,12 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "build-host-dcr",
+      "label": "build-host-configuration",
       "type": "process",
       "command": "dotnet",
       "args": [
           "build",
-          "${workspaceFolder}/hosts/Dcr/Host.Dcr.csproj",
+          "${workspaceFolder}/hosts/Configuration/Host.Configuration.csproj",
           "/property:GenerateFullPaths=true",
           "/consoleloggerparameters:NoSummary"
       ],
@@ -178,6 +178,18 @@
       "args": [
           "build",
           "${workspaceFolder}/clients/src/ConsoleCustomGrant/ConsoleCustomGrant.csproj",
+          "/property:GenerateFullPaths=true",
+          "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-client-ConsoleDcrClient",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+          "build",
+          "${workspaceFolder}/clients/src/ConsoleDcrClient/ConsoleDcrClient.csproj",
           "/property:GenerateFullPaths=true",
           "/consoleloggerparameters:NoSummary"
       ],

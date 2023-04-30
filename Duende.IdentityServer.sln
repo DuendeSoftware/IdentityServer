@@ -43,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServerDb", "migrati
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host.Main7", "hosts\main7\Host.Main7.csproj", "{43CF5C83-BD02-49F7-8DB7-FBF7583D668C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host.Dcr", "hosts\Dcr\Host.Dcr.csproj", "{E6EC07BC-1F4E-43BC-ADBB-4ACA0D26920F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host.Configuration", "hosts\Configuration\Host.Configuration.csproj", "{E6EC07BC-1F4E-43BC-ADBB-4ACA0D26920F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duende.IdentityServer.Configuration", "src\Configuration\Duende.IdentityServer.Configuration.csproj", "{C0AE6878-A605-4EA9-8439-2EBB1EF09AAA}"
 EndProject

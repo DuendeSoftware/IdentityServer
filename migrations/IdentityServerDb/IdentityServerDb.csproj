@@ -15,16 +15,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="..\..\hosts\Configuration\Clients.cs">
+        <Compile Include="..\..\hosts\Config\Clients.cs">
             <Link>Configuration\Clients.cs</Link>
         </Compile>
-        <Compile Include="..\..\hosts\Configuration\ClientsConsole.cs">
+        <Compile Include="..\..\hosts\Config\ClientsConsole.cs">
             <Link>Configuration\ClientsConsole.cs</Link>
         </Compile>
-        <Compile Include="..\..\hosts\Configuration\ClientsWeb.cs">
+        <Compile Include="..\..\hosts\Config\ClientsWeb.cs">
             <Link>Configuration\ClientsWeb.cs</Link>
         </Compile>
-        <Compile Include="..\..\hosts\Configuration\Resources.cs">
+        <Compile Include="..\..\hosts\Config\Resources.cs">
             <Link>Configuration\Resources.cs</Link>
         </Compile>
     </ItemGroup>

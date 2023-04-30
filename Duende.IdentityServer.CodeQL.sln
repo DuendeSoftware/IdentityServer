@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host.AspNetIdentity", "host
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host.EntityFramework", "hosts\EntityFramework\Host.EntityFramework.csproj", "{C53603DE-CAF5-4AEB-A424-C1C72356BB17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host.Dcr", "hosts\Dcr\Host.Dcr.csproj", "{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host.Configuration", "hosts\Configuration\Host.Configuration.csproj", "{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
