@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host.AspNetIdentity", "host
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host.EntityFramework", "hosts\EntityFramework\Host.EntityFramework.csproj", "{C53603DE-CAF5-4AEB-A424-C1C72356BB17}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host.Dcr", "hosts\Dcr\Host.Dcr.csproj", "{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +131,18 @@ Global
 		{C53603DE-CAF5-4AEB-A424-C1C72356BB17}.Release|x64.Build.0 = Release|Any CPU
 		{C53603DE-CAF5-4AEB-A424-C1C72356BB17}.Release|x86.ActiveCfg = Release|Any CPU
 		{C53603DE-CAF5-4AEB-A424-C1C72356BB17}.Release|x86.Build.0 = Release|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Debug|x64.Build.0 = Debug|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Debug|x86.Build.0 = Debug|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Release|x64.ActiveCfg = Release|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Release|x64.Build.0 = Release|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Release|x86.ActiveCfg = Release|Any CPU
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -142,6 +156,7 @@ Global
 		{376FD801-0E35-4145-9322-28FFB219E668} = {D5E9E8E5-4050-4B9A-9F1F-15FA3BDB0684}
 		{6070C566-BD7B-42B8-B0F8-5F15CBBA0A9B} = {82C80BEB-73A0-4B96-83A4-7C69792CF010}
 		{C53603DE-CAF5-4AEB-A424-C1C72356BB17} = {82C80BEB-73A0-4B96-83A4-7C69792CF010}
+		{A4AD8256-11FA-4D46-A0BB-2BCC24506CD6} = {82C80BEB-73A0-4B96-83A4-7C69792CF010}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FDB095BE-A04A-4440-ACA0-EDD7CF9CFD64}

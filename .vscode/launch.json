@@ -112,7 +112,28 @@
           "order": 40
         }
       },
-
+      {
+        "name": "host: DCR",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-host-dcr",
+        "program": "${workspaceFolder}/hosts/Dcr/bin/Debug/net6.0/Host.Dcr.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/hosts/Dcr",
+        "serverReadyAction": {
+            "action": "openExternally",
+            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        },
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "console": "externalTerminal",
+        "presentation": {
+          "hidden": false,
+          "group": "10-hosts",
+          "order": 50
+        }
+      },
       //------------
       // Migrations
       //------------

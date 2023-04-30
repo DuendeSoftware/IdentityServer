@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     //-----------------
-    // Identity Server
+    // Full solution
     //-----------------
     {
       "label": "build",
@@ -68,7 +68,18 @@
       ],
       "problemMatcher": "$msCompile"
     },
-
+    {
+      "label": "build-host-dcr",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+          "build",
+          "${workspaceFolder}/hosts/Dcr/Host.Dcr.csproj",
+          "/property:GenerateFullPaths=true",
+          "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
     //------------
     // Migrations
     //------------
