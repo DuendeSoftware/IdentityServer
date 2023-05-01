@@ -30,16 +30,35 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
 
 
     /// <inheritdoc />
-    public virtual async Task<DynamicClientRegistrationResponse> ProcessAsync(
+    public virtual async Task<IDynamicClientRegistrationResponse> ProcessAsync(
         DynamicClientRegistrationValidatedRequest validatedRequest)
     {
-        await AddClientId(validatedRequest);
-
-        var (secret, plainText) = await AddClientSecret(validatedRequest) switch
+        var clientIdResult = await AddClientId(validatedRequest);
+        if(clientIdResult is RequestProcessingStepFailure clientIdFailure)
         {
-            (Secret s, string p) => (s, p),
-            null => (null, null)
-        };
+            return new DynamicClientRegistrationErrorResponse
+            {
+                Error = clientIdFailure.Error,
+                ErrorDescription = clientIdFailure.ErrorDescription
+            };
+        }
+
+        Secret? secret = null;
+        string? plainText = null;
+        var clientSecretResult = await AddClientSecret(validatedRequest);
+        if(clientSecretResult is RequestProcessingStepFailure<(Secret Secret, string PlainText)> clientSecretFailure)
+        {
+            return new DynamicClientRegistrationErrorResponse
+            {
+                Error = clientSecretFailure.Error,
+                ErrorDescription = clientSecretFailure.ErrorDescription
+            };
+        }
+        else if(clientSecretResult is RequestProcessingStepSuccess<(Secret Secret, string PlainText)> clientSecretSuccess)
+        {
+            secret = clientSecretSuccess.StepResult.Secret;
+            plainText = clientSecretSuccess.StepResult.PlainText;
+        }
 
         await _store.AddAsync(validatedRequest.Client);
 
@@ -61,16 +80,20 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     /// </summary>
     /// <param name="validatedRequest">The validated dynamic client registration request.</param>
     /// <returns>A tuple containing the added secret and its plaintext representation, or null if no secret was added.</returns>
-    protected virtual async Task<(Secret secret, string plainText)?> AddClientSecret(
+    protected virtual async Task<RequestProcessingStep<(Secret secret, string plainText)>> AddClientSecret(
         DynamicClientRegistrationValidatedRequest validatedRequest)
     {
         if (!validatedRequest.Client.ClientSecrets.Any())
         {
-            var (secret, plainText) = await GenerateSecret(validatedRequest);
-            validatedRequest.Client.ClientSecrets.Add(secret);
-            return (secret, plainText);
+            var result = await GenerateSecret(validatedRequest);
+            if(result is RequestProcessingStepSuccess<(Secret secret, string plainText)> success)
+            {
+                var (secret, _) = success.StepResult;
+                validatedRequest.Client.ClientSecrets.Add(secret);
+            }
+            return result;
         }
-        return null;
+        return new RequestProcessingStepSuccess<(Secret secret, string plainText)>();
     }
 
     /// <summary>
@@ -78,7 +101,7 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     /// </summary>
     /// <param name="validatedRequest">The validated request to generate a secret for.</param>
     /// <returns>A tuple containing the generated secret and its plaintext representation.</returns>
-    protected virtual Task<(Secret secret, string plainText)> GenerateSecret(
+    protected virtual Task<RequestProcessingStep<(Secret secret, string plainText)>> GenerateSecret(
         DynamicClientRegistrationValidatedRequest validatedRequest)
     {
         var plainText = CryptoRandom.CreateUniqueId();
@@ -91,7 +114,13 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
 
         var secret = new Secret(plainText.ToSha256(), lifetime);
 
-        return Task.FromResult((secret, plainText));
+        var success = new RequestProcessingStepSuccess<(Secret secret, string plainText)>
+        {
+            StepResult = (secret, plainText)
+        };
+
+// TODO make a type alias
+        return Task.FromResult<RequestProcessingStep<(Secret secret, string plainText)>>(success);
     }
 
     /// <summary>
@@ -100,10 +129,13 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     /// </summary>
     /// <param name="validatedRequest">The request whose client will have an Id
     /// generated.</param>
-    protected virtual Task AddClientId(
+    /// <returns>
+    /// True if a client id was successfully added, and false otherwise
+    /// </returns>
+    protected virtual Task<RequestProcessingStep> AddClientId(
         DynamicClientRegistrationValidatedRequest validatedRequest)
     {
         validatedRequest.Client.ClientId = CryptoRandom.CreateUniqueId();
-        return Task.CompletedTask;
+        return Task.FromResult<RequestProcessingStep>(new RequestProcessingStepSuccess());
     }
 }
