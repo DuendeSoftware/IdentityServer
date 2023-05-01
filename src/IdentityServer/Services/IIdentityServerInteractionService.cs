@@ -18,19 +18,19 @@ public interface IIdentityServerInteractionService
     /// Gets the authorization context.
     /// </summary>
     /// <param name="returnUrl">The return URL.</param>
-    Task<AuthorizationRequest> GetAuthorizationContextAsync(string returnUrl);
+    Task<AuthorizationRequest?> GetAuthorizationContextAsync(string? returnUrl);
 
     /// <summary>
     /// Indicates if the returnUrl is a valid URL for redirect after login or consent.
     /// </summary>
     /// <param name="returnUrl">The return URL.</param>
-    bool IsValidReturnUrl(string returnUrl);
+    bool IsValidReturnUrl(string? returnUrl);
 
     /// <summary>
     /// Gets the error context.
     /// </summary>
     /// <param name="errorId">The error identifier.</param>
-    Task<ErrorMessage> GetErrorContextAsync(string errorId);
+    Task<ErrorMessage?> GetErrorContextAsync(string errorId);
 
     /// <summary>
     /// Gets the logout context.
