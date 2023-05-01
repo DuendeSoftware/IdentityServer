@@ -63,6 +63,12 @@ public class DynamicClientRegistrationResponseGenerator : IDynamicClientRegistra
                 ErrorDescription = error.ErrorDescription
             });
 
+
+    /// <inheritdoc/>
+    public virtual async Task WriteProcessingError(HttpContext context, DynamicClientRegistrationErrorResponse error) =>
+        await WriteResponse(context, StatusCodes.Status400BadRequest, error);
+    
+
     /// <inheritdoc/>
     public virtual async Task WriteSuccessResponse(HttpContext context, DynamicClientRegistrationResponse response) =>
         await WriteResponse(context, StatusCodes.Status201Created, response);

@@ -3,6 +3,7 @@
 
 using System.Security.Cryptography.X509Certificates;
 using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
 using IdentityModel;
 using IdentityServerHost.Configuration;
 using IdentityServerHost.Extensions;
@@ -29,7 +30,7 @@ internal static class IdentityServerExtensions
                 options.UserInteraction.CreateAccountUrl = "/Account/Create";
             })
             //.AddServerSideSessions()
-            .AddInMemoryClients(Clients.Get())
+            .AddInMemoryClients(Clients.Get().ToList())
             .AddInMemoryIdentityResources(Resources.IdentityResources)
             .AddInMemoryApiScopes(Resources.ApiScopes)
             .AddInMemoryApiResources(Resources.ApiResources)
@@ -55,6 +56,11 @@ internal static class IdentityServerExtensions
                     Scope = "openid profile"
                 }
             });
+
+        builder.Services.AddIdentityServerConfiguration(opt =>
+        {
+            // opt.DynamicClientRegistration.SecretLifetime = TimeSpan.FromHours(1);
+        }).AddInMemoryClientConfigurationStore();
 
         return builder;
     }

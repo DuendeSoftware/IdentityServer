@@ -39,16 +39,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="..\Configuration\Clients.cs">
+        <Compile Include="..\Config\Clients.cs">
             <Link>Configuration\Clients.cs</Link>
         </Compile>
-        <Compile Include="..\Configuration\ClientsConsole.cs">
+        <Compile Include="..\Config\ClientsConsole.cs">
             <Link>Configuration\ClientsConsole.cs</Link>
         </Compile>
-        <Compile Include="..\Configuration\ClientsWeb.cs">
+        <Compile Include="..\Config\ClientsWeb.cs">
             <Link>Configuration\ClientsWeb.cs</Link>
         </Compile>
-        <Compile Include="..\Configuration\Resources.cs">
+        <Compile Include="..\Config\Resources.cs">
             <Link>Configuration\Resources.cs</Link>
         </Compile>
     </ItemGroup>

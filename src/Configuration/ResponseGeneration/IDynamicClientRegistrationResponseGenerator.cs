@@ -47,4 +47,11 @@ public interface IDynamicClientRegistrationResponseGenerator
     /// <param name="context">The HTTP context to write the error to.</param>
     /// <param name="error">The dynamic client registration validation error.</param>
     Task WriteValidationError(HttpContext context, DynamicClientRegistrationValidationError error);
+
+    /// <summary>
+    /// Writes a processing error to the HTTP context.
+    /// </summary>
+    /// <param name="context">The HTTP context to write the error to.</param>
+    /// <param name="error">The dynamic client registration validation error.</param>
+    Task WriteProcessingError(HttpContext context, DynamicClientRegistrationErrorResponse error);
 }

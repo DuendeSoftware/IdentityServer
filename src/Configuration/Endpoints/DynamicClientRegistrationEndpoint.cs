@@ -67,7 +67,19 @@ public class DynamicClientRegistrationEndpoint
         else if (result is DynamicClientRegistrationValidatedRequest validatedRequest)
         {
             var response = await _processor.ProcessAsync(validatedRequest);
-            await _responseGenerator.WriteSuccessResponse(context, response);
+            if(response is DynamicClientRegistrationErrorResponse processingFailure)
+            {
+                await _responseGenerator.WriteProcessingError(context, processingFailure);
+            } 
+            else if (response is DynamicClientRegistrationResponse success)
+            {
+                await _responseGenerator.WriteSuccessResponse(context, success);
+            }
+            else 
+            {
+                // This "can't happen" - if it does, something weird is going on.
+                throw new InvalidOperationException("Results of request processing where neither success or failure");
+            }
         }
     }
 

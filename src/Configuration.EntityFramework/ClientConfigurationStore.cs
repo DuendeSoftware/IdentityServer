@@ -47,8 +47,7 @@ public class ClientConfigurationStore : IClientConfigurationStore
     /// <inheritdoc />
     public async Task AddAsync(Client client)
     {
-        // TODO - nicer log message
-        Logger.LogDebug("Adding a client");
+        Logger.LogDebug("Adding client {clientId} to configuration store", client.ClientId);
         DbContext.Clients.Add(ClientMappers.ToEntity(client));
         await DbContext.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
     }

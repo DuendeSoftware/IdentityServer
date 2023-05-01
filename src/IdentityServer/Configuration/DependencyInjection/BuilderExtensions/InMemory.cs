@@ -117,8 +117,8 @@ public static class IdentityServerBuilderExtensionsInMemory
     }
 
     /// <summary>
-    /// Adds in memory clients using an ICollection. This allows Dynamic Client
-    /// Registration to use in memory clients for demos and testing.
+    /// Adds in memory clients using an ICollection. This allows
+    /// Duende.Configuration to use in memory clients for demos and testing.
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <param name="clients">The clients.</param>
@@ -152,7 +152,6 @@ public static class IdentityServerBuilderExtensionsInMemory
 
         return builder;
     }
-
 
     /// <summary>
     /// Adds the in memory clients.

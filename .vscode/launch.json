@@ -112,7 +112,28 @@
           "order": 40
         }
       },
-
+      {
+        "name": "host: Configuration",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-host-configuration",
+        "program": "${workspaceFolder}/hosts/Configuration/bin/Debug/net6.0/Host.Configuration.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/hosts/Configuration",
+        "serverReadyAction": {
+            "action": "openExternally",
+            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        },
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "console": "externalTerminal",
+        "presentation": {
+          "hidden": false,
+          "group": "10-hosts",
+          "order": 50
+        }
+      },
       //------------
       // Migrations
       //------------
@@ -233,6 +254,20 @@
         "program": "${workspaceFolder}/clients/src/ConsoleCustomGrant/bin/Debug/net6.0/ConsoleCustomGrant.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/ConsoleCustomGrant",
+        "console": "externalTerminal",
+        "presentation": {
+          "hidden": false,
+          "group": "20-clients",
+        }
+      },
+      {
+        "name": "client: ConsoleDcrClient",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-client-ConsoleDcrClient",
+        "program": "${workspaceFolder}/clients/src/ConsoleDcrClient/bin/Debug/net6.0/ConsoleDcrClient.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/clients/src/ConsoleDcrClient",
         "console": "externalTerminal",
         "presentation": {
           "hidden": false,
