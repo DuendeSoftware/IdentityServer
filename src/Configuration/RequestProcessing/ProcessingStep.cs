@@ -4,14 +4,16 @@
 namespace Duende.IdentityServer.Configuration.RequestProcessing;
 
 /// <summary>
-/// Represents the result of a step in the dynamic client registration validator.
+/// Represents a step in the request processor that will return a TResult if it
+/// succeeds.
 /// </summary>
 public abstract class RequestProcessingStep<TResult>
 {
 }
 
 /// <summary>
-/// Represents a successful RequestProcessing step that returns some data.
+/// Represents a step in the request processor that succeeded, returning a
+/// TResult.
 /// </summary>
 public class RequestProcessingStepSuccess<TResult> : RequestProcessingStep<TResult>
 {
@@ -22,7 +24,9 @@ public class RequestProcessingStepSuccess<TResult> : RequestProcessingStep<TResu
 }
 
 /// <summary>
-/// Represents a failed RequestProcessing step.
+/// Represents a failed step in the request processor that would have returned a
+/// TResult if it had succeeded. If a step would return a TResult on success,
+/// use this type so that the success and failure cases have the same base type.
 /// </summary>
 public class RequestProcessingStepFailure<TResult> : RequestProcessingStep<TResult>
 {
@@ -38,21 +42,23 @@ public class RequestProcessingStepFailure<TResult> : RequestProcessingStep<TResu
 }
 
 /// <summary>
-/// TODO
+/// Represents a step in the request processor that doesn't return any data.
 /// </summary>
 public class RequestProcessingStep
 {
 }
 
 /// <summary>
-/// TODO
+/// Represents a successful step in the request processor that didn't return any
+/// data.
 /// </summary>
 public class RequestProcessingStepSuccess : RequestProcessingStep { };
 
 /// <summary>
-/// TODO
+/// Represents a failed step in the request processor. Steps that would not
+/// return any data on success should use this type.
 /// </summary>
-public class RequestProcessingStepFailure : RequestProcessingStep // TODO - inheriet the other from this
+public class RequestProcessingStepFailure : RequestProcessingStep
 {
  /// <summary>
     /// A short, human-readable message briefly describing the failure that occurred. 

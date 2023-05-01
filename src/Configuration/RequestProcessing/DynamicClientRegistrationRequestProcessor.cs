@@ -119,7 +119,6 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
             StepResult = (secret, plainText)
         };
 
-// TODO make a type alias
         return Task.FromResult<RequestProcessingStep<(Secret secret, string plainText)>>(success);
     }
 
