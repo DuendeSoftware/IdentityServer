@@ -3,6 +3,7 @@
 
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.EntityFramework;
+using Duende.IdentityServer.EntityFramework.Stores;
 using IdentityModel;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,8 @@ internal static class IdentityServerExtensions
             options.ServerSideSessions.RemoveExpiredSessions = true;
             options.ServerSideSessions.RemoveExpiredSessionsFrequency = TimeSpan.FromSeconds(10);
             options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout = true;
+
+            options.KeyManagement.KeyPath = "custom/path/to/keys";
         })
             .AddTestUsers(TestUsers.Users)
             // this adds the config data from DB (clients, resources, CORS)
@@ -42,6 +45,9 @@ internal static class IdentityServerExtensions
             // this is something you will want in production to reduce load on and requests to the DB
             //.AddConfigurationStoreCache()
             ;
+
+        var efKeyStoreDescriptor = builder.Services.FirstOrDefault(d => d.ImplementationType == typeof(SigningKeyStore));
+        builder.Services.Remove(efKeyStoreDescriptor);
 
         builder.Services.AddIdentityServerConfiguration(opt =>
         {
