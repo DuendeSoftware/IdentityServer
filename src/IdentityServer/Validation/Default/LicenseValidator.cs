@@ -176,12 +176,15 @@ internal class LicenseValidator
         }
     }
 
-    public static void ValidateDPoP()
+    public static bool ValidateDPoP()
     {
         if (_license != null && !_license.DPoPFeature)
         {
             _errorLog.Invoke("A request was made using DPoP. Your license for Duende IdentityServer does not include the DPoP feature.", Array.Empty<object>());
+            return false;
         }
+        
+        return true;
     }
 
     public static void ValidateResourceIndicators(string resourceIndicator)
