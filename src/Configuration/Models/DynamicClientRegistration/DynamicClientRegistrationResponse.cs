@@ -28,7 +28,7 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
     /// </summary>
     /// <param name="request">The request used to initialize the
     /// response.</param>
-    /// <param name="client">The client used to initialize the response.</param>
+    /// <param name="client">The client used to initialize the response.</param> TODO - UGLY Usage...
     public DynamicClientRegistrationResponse(DynamicClientRegistrationRequest request, Client client)
     {
         //// Software Statement

@@ -6,6 +6,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Configuration.RequestProcessing;
 using Duende.IdentityServer.Configuration.Configuration;
 using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
+using Duende.IdentityServer.Configuration.Validation;
 
 namespace IdentityServerHost;
 
@@ -21,44 +22,42 @@ internal class CustomClientRegistrationProcessor : DynamicClientRegistrationRequ
         _clients = clients;
     }
 
-
-    protected override async Task<RequestProcessingStep> AddClientId(DynamicClientRegistrationValidatedRequest validatedRequest)
+    protected override async Task<ValidationStepResult> AddClientId(DynamicClientRegistrationValidationContext context)
     {
-        if (validatedRequest.OriginalRequest.Extensions.TryGetValue("client_id", out var clientIdParameter))
+        if (context.Request.Extensions.TryGetValue("client_id", out var clientIdParameter))
         {
             var clientId = clientIdParameter.ToString();
             if(_clients.Any(c => c.ClientId == clientId))
             {
-                
-                return new RequestProcessingStepFailure
-                {
-                    Error = "Duplicate client id",
-                    ErrorDescription = "Attempt to register a client with a client id that has already been registered"
-                };
+                return new ValidationStepFailure(
+                    error: "Duplicate client id",
+                    errorDescription: "Attempt to register a client with a client id that has already been registered"
+                );
             } 
             else
             {
-                validatedRequest.Client.ClientId = clientId;
-                return new RequestProcessingStepSuccess();
+                context.Client.ClientId = clientId;
+                return new ValidationStepSuccess();
             }
         }
-        return await base.AddClientId(validatedRequest);
+        return await base.AddClientId(context);
     }
 
-    protected override async Task<RequestProcessingStep<(Secret secret, string plainText)>> GenerateSecret(DynamicClientRegistrationValidatedRequest validatedRequest)
+    protected override async Task<ValidationStepResult> GenerateSecret(DynamicClientRegistrationValidationContext context)
     {
-         if(validatedRequest.OriginalRequest.Extensions.TryGetValue("client_secret", out var secretParam))
+         if(context.Request.Extensions.TryGetValue("client_secret", out var secretParam))
         {
-            var secretPlainText = secretParam.ToString();
-            var secret = new Secret(secretPlainText.Sha256());
-            return new RequestProcessingStepSuccess<(Secret secret, string plainText)>
-            {
-                StepResult = (secret, secretPlainText)
-            };
+            var plainText = secretParam.ToString();
+            var secret = new Secret(plainText.Sha256());
+            
+            context.Items["secret"] = secret;
+            context.Items["plainText"] = plainText;
+
+            return new ValidationStepSuccess();
         }
         else
         {
-            return await base.GenerateSecret(validatedRequest);
+            return await base.GenerateSecret(context);
         }
 
     }

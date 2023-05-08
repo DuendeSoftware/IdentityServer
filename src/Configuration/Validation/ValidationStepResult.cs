@@ -10,6 +10,25 @@ namespace Duende.IdentityServer.Configuration.Validation;
 /// </summary>
 public abstract class ValidationStepResult 
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="errorDescription"></param>
+    /// <param name="error"></param>
+    /// <returns></returns>
+    public static Task<ValidationStepResult> Failure(string errorDescription,
+        string error = DynamicClientRegistrationErrors.InvalidClientMetadata) =>
+            Task.FromResult<ValidationStepResult>(new ValidationStepFailure(
+                    error,
+                    errorDescription
+                ));
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public static Task<ValidationStepResult> Success() =>
+        Task.FromResult<ValidationStepResult>(new ValidationStepSuccess());
 }
 
 /// <summary>

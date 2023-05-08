@@ -3,6 +3,7 @@
 
 using Duende.IdentityServer.Configuration.Configuration;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
+using Duende.IdentityServer.Configuration.Validation;
 using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
 using IdentityModel;
@@ -31,40 +32,40 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
 
     /// <inheritdoc />
     public virtual async Task<IDynamicClientRegistrationResponse> ProcessAsync(
-        DynamicClientRegistrationValidatedRequest validatedRequest)
+        DynamicClientRegistrationValidationContext context)
     {
-        var clientIdResult = await AddClientId(validatedRequest);
-        if(clientIdResult is RequestProcessingStepFailure clientIdFailure)
+        var clientIdResult = await AddClientId(context);
+        if(clientIdResult is ValidationStepFailure clientIdFailure)
         {
             return new DynamicClientRegistrationErrorResponse
             {
-                Error = clientIdFailure.Error,
-                ErrorDescription = clientIdFailure.ErrorDescription
+                Error = clientIdFailure.Error.Error, // TODO - would like to not have awkward Error.Error name here...
+                ErrorDescription = clientIdFailure.Error.ErrorDescription
             };
         }
 
         Secret? secret = null;
         string? plainText = null;
-        var clientSecretResult = await AddClientSecret(validatedRequest);
-        if(clientSecretResult is RequestProcessingStepFailure<(Secret Secret, string PlainText)> clientSecretFailure)
+        var clientSecretResult = await AddClientSecret(context);
+        if(clientSecretResult is ValidationStepFailure clientSecretFailure)
         {
             return new DynamicClientRegistrationErrorResponse
             {
-                Error = clientSecretFailure.Error,
-                ErrorDescription = clientSecretFailure.ErrorDescription
+                Error = clientSecretFailure.Error.Error,
+                ErrorDescription = clientSecretFailure.Error.ErrorDescription
             };
         }
-        else if(clientSecretResult is RequestProcessingStepSuccess<(Secret Secret, string PlainText)> clientSecretSuccess)
+        else if(clientSecretResult is ValidationStepSuccess)
         {
-            secret = clientSecretSuccess.StepResult.Secret;
-            plainText = clientSecretSuccess.StepResult.PlainText;
+            secret = (Secret) context.Items["secret"];
+            plainText = (string) context.Items["plainText"];
         }
 
-        await _store.AddAsync(validatedRequest.Client);
+        await _store.AddAsync(context.Client);
 
-        return new DynamicClientRegistrationResponse(validatedRequest.OriginalRequest, validatedRequest.Client)
+        return new DynamicClientRegistrationResponse(context.Request, context.Client)
         {
-            ClientId = validatedRequest.Client.ClientId,
+            ClientId = context.Client.ClientId,
             ClientSecret = plainText,
             ClientSecretExpiresAt = secret switch
             {
@@ -78,31 +79,33 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     /// <summary>
     /// Adds a client secret to a dynamic client registration request.
     /// </summary>
-    /// <param name="validatedRequest">The validated dynamic client registration request.</param>
-    /// <returns>A tuple containing the added secret and its plaintext representation, or null if no secret was added.</returns>
-    protected virtual async Task<RequestProcessingStep<(Secret secret, string plainText)>> AddClientSecret(
-        DynamicClientRegistrationValidatedRequest validatedRequest)
+    /// <param name="context"></param>
+    /// <returns></returns>
+    protected virtual async Task<ValidationStepResult> AddClientSecret(
+        DynamicClientRegistrationValidationContext context)
     {
-        if (!validatedRequest.Client.ClientSecrets.Any())
+        if (!context.Client.ClientSecrets.Any())
         {
-            var result = await GenerateSecret(validatedRequest);
-            if(result is RequestProcessingStepSuccess<(Secret secret, string plainText)> success)
+            var result = await GenerateSecret(context);
+            if(result is ValidationStepSuccess)
             {
-                var (secret, _) = success.StepResult;
-                validatedRequest.Client.ClientSecrets.Add(secret);
+                if (context.Items.TryGetValue("secret", out var secret))
+                {
+                    context.Client.ClientSecrets.Add((Secret)secret);
+                }
             }
             return result;
         }
-        return new RequestProcessingStepSuccess<(Secret secret, string plainText)>();
+        return new ValidationStepSuccess();
     }
 
     /// <summary>
     /// Generates a secret for a dynamic client registration request.
     /// </summary>
-    /// <param name="validatedRequest">The validated request to generate a secret for.</param>
-    /// <returns>A tuple containing the generated secret and its plaintext representation.</returns>
-    protected virtual Task<RequestProcessingStep<(Secret secret, string plainText)>> GenerateSecret(
-        DynamicClientRegistrationValidatedRequest validatedRequest)
+    /// <param name="context"></param>
+    /// <returns></returns>
+    protected virtual Task<ValidationStepResult> GenerateSecret(
+        DynamicClientRegistrationValidationContext context)
     {
         var plainText = CryptoRandom.CreateUniqueId();
 
@@ -114,27 +117,22 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
 
         var secret = new Secret(plainText.ToSha256(), lifetime);
 
-        var success = new RequestProcessingStepSuccess<(Secret secret, string plainText)>
-        {
-            StepResult = (secret, plainText)
-        };
+        context.Items["secret"] = secret;
+        context.Items["plainText"] = plainText;
 
-        return Task.FromResult<RequestProcessingStep<(Secret secret, string plainText)>>(success);
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
     /// Generates a client ID and adds it to the validatedRequest's client
     /// model.
     /// </summary>
-    /// <param name="validatedRequest">The request whose client will have an Id
-    /// generated.</param>
-    /// <returns>
-    /// True if a client id was successfully added, and false otherwise
-    /// </returns>
-    protected virtual Task<RequestProcessingStep> AddClientId(
-        DynamicClientRegistrationValidatedRequest validatedRequest)
+    /// <param name="context"></param>
+    /// <returns></returns>
+    protected virtual Task<ValidationStepResult> AddClientId(
+        DynamicClientRegistrationValidationContext context)
     {
-        validatedRequest.Client.ClientId = CryptoRandom.CreateUniqueId();
-        return Task.FromResult<RequestProcessingStep>(new RequestProcessingStepSuccess());
+        context.Client.ClientId = CryptoRandom.CreateUniqueId();
+        return ValidationStepResult.Success();
     }
 }

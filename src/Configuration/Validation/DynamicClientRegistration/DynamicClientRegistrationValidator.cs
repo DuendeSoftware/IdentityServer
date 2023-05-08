@@ -1,13 +1,11 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.Extensions.Logging;
-using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
@@ -26,10 +24,8 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <inheritdoc/>
-    public async Task<DynamicClientRegistrationValidationResult> ValidateAsync(DynamicClientRegistrationRequest request, ClaimsPrincipal caller)
+    public async Task<DynamicClientRegistrationValidationResult> ValidateAsync(DynamicClientRegistrationValidationContext context)
     {
-        var context = new DynamicClientRegistrationValidationContext(request, caller);
-
         var result = await ValidateSoftwareStatementAsync(context);
         if (result is ValidationStepFailure softwareStatementValidation)
         {
@@ -108,7 +104,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             return serverSideSessionValidation.Error;
         }
 
-        return new DynamicClientRegistrationValidatedRequest(context.Client, request);
+        return new DynamicClientRegistrationValidatedRequest(context.Client, context.Request);
     }
 
     /// <summary>
@@ -125,7 +121,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         if (context.Request.GrantTypes.Count == 0)
         {
-            return ValidationStepFailed("grant type is required");
+            return ValidationStepResult.Failure("grant type is required");
         }
 
         if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
@@ -140,7 +136,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 var lifetime = context.Request.AuthorizationCodeLifetime.Value;
                 if (lifetime <= 0)
                 {
-                    return ValidationStepFailed("The authorization code lifetime must be greater than 0 if used");
+                    return ValidationStepResult.Failure("The authorization code lifetime must be greater than 0 if used");
                 }
                 context.Client.AuthorizationCodeLifetime = lifetime;
             }
@@ -149,7 +145,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         // we only support the two above grant types
         if (context.Client.AllowedGrantTypes.Count == 0)
         {
-            return ValidationStepFailed("unsupported grant type");
+            return ValidationStepResult.Failure("unsupported grant type");
         }
 
         if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
@@ -158,7 +154,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             // could be refactored.
             if (!context.Client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
             {
-                return ValidationStepFailed("Refresh token grant requested, but no grant that supports refresh tokens was requested");
+                return ValidationStepResult.Failure("Refresh token grant requested, but no grant that supports refresh tokens was requested");
             }
 
             context.Client.AllowOfflineAccess = true;
@@ -166,7 +162,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             {
                 if (!Enum.TryParse<TokenExpiration>(context.Request.RefreshTokenExpiration, out var tokenExpiration))
                 {
-                    return ValidationStepFailed("invalid refresh token expiration - use Absolute or Sliding (case-sensitive)");
+                    return ValidationStepResult.Failure("invalid refresh token expiration - use Absolute or Sliding (case-sensitive)");
                 }
                 context.Client.RefreshTokenExpiration = tokenExpiration;
             }
@@ -175,7 +171,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 var lifetime = context.Request.SlidingRefreshTokenLifetime.Value;
                 if (lifetime <= 0)
                 {
-                    return ValidationStepFailed("The sliding refresh token lifetime must be greater than 0 if used");
+                    return ValidationStepResult.Failure("The sliding refresh token lifetime must be greater than 0 if used");
                 }
                 context.Client.SlidingRefreshTokenLifetime = lifetime;
             }
@@ -184,7 +180,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 var lifetime = context.Request.AbsoluteRefreshTokenLifetime.Value;
                 if (lifetime <= 0)
                 {
-                    return ValidationStepFailed("The absolute refresh token lifetime must be greater than 0 if used");
+                    return ValidationStepResult.Failure("The absolute refresh token lifetime must be greater than 0 if used");
                 }
                 context.Client.AbsoluteRefreshTokenLifetime = lifetime;                
             }
@@ -192,7 +188,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             {
                 if (!Enum.TryParse<TokenUsage>(context.Request.RefreshTokenUsage, out var tokenUsage))
                 {
-                    return ValidationStepFailed("invalid refresh token usage - use OneTimeOnly or ReUse (case-sensitive)");
+                    return ValidationStepResult.Failure("invalid refresh token usage - use OneTimeOnly or ReUse (case-sensitive)");
                 }
                 context.Client.RefreshTokenUsage = tokenUsage;
             }
@@ -202,7 +198,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             }
         }
 
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -229,14 +225,14 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                     }
                     else
                     {
-                        return ValidationStepFailed("malformed redirect URI", DynamicClientRegistrationErrors.InvalidRedirectUri);
+                        return ValidationStepResult.Failure("malformed redirect URI", DynamicClientRegistrationErrors.InvalidRedirectUri);
                     }
                 }
             }
             else
             {
                 // Note that when we implement PAR, this may no longer be an error for clients that use PAR
-                return ValidationStepFailed("redirect URI required for authorization_code grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
+                return ValidationStepResult.Failure("redirect URI required for authorization_code grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
             }
         }
 
@@ -245,11 +241,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             if (context.Request.RedirectUris?.Any() == true)
             {
-                return ValidationStepFailed("redirect URI not compatible with client_credentials grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
+                return ValidationStepResult.Failure("redirect URI not compatible with client_credentials grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
             }
         }
 
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -283,7 +279,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 context.Client.AllowedScopes.Add(scope);
             }
         }
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -299,7 +295,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     protected virtual Task<ValidationStepResult> SetDefaultScopes(DynamicClientRegistrationValidationContext context)
     {
         _logger.LogDebug("No scopes requested for dynamic client registration, and no default scope behavior implemented. To set default scopes, extend the DynamicClientRegistrationValidator and override the SetDefaultScopes method.");
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -315,12 +311,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     {
         if (context.Request.JwksUri is not null && context.Request.Jwks is not null)
         {
-            return ValidationStepFailed("The jwks_uri and jwks parameters must not be used together");
+            return ValidationStepResult.Failure("The jwks_uri and jwks parameters must not be used together");
         }
 
         if (context.Request.Jwks is null && context.Request.TokenEndpointAuthenticationMethod == OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
         {
-            return ValidationStepFailed("Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
+            return ValidationStepResult.Failure("Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
 
         }
         if (context.Request.Jwks is not null)
@@ -328,13 +324,13 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             context.Request.TokenEndpointAuthenticationMethod ??= OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt;
             if (context.Request.TokenEndpointAuthenticationMethod != OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
             {
-                return ValidationStepFailed("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
+                return ValidationStepResult.Failure("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
             }
         }
 
         if (context.Request.Jwks?.Keys is null && context.Request.RequireSignedRequestObject == true)
         {
-            return ValidationStepFailed("Jwks are required when the require signed request object flag is enabled");
+            return ValidationStepResult.Failure("Jwks are required when the require signed request object flag is enabled");
         }
 
         if (context.Request.Jwks?.Keys is not null)
@@ -361,18 +357,18 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
 
                     if (parsedJwk.HasPrivateKey && parsedJwk.Alg.StartsWith("HS", StringComparison.InvariantCulture))
                     {
-                        return ValidationStepFailed("unexpected private key in jwk");
+                        return ValidationStepResult.Failure("unexpected private key in jwk");
                     }
                 }
                 catch (InvalidOperationException ex)
                 {
                     _logger.LogError(ex, "Failed to parse jwk");
-                    return ValidationStepFailed("malformed jwk");
+                    return ValidationStepResult.Failure("malformed jwk");
                 }
                 catch (JsonException ex)
                 {
                     _logger.LogError(ex, "Failed to parse jwk");
-                    return ValidationStepFailed("malformed jwk");
+                    return ValidationStepResult.Failure("malformed jwk");
                 }
 
                 context.Client.ClientSecrets.Add(new Secret
@@ -382,7 +378,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 });
             }
         }
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -398,7 +394,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     protected virtual Task<ValidationStepResult> SetClientNameAsync(DynamicClientRegistrationValidationContext context)
     {
         context.Client.ClientName = context.Request?.ClientName;
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -422,7 +418,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         context.Client.BackChannelLogoutUri = context.Request.BackChannelLogoutUri?.AbsoluteUri;
         context.Client.BackChannelLogoutSessionRequired = context.Request.BackChannelLogoutSessionRequired ?? true;
 
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -441,16 +437,16 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             if(!context.Request.GrantTypes.Contains(GrantType.AuthorizationCode))
             {
-                return ValidationStepFailed("default_max_age requires authorization code grant type");
+                return ValidationStepResult.Failure("default_max_age requires authorization code grant type");
             }
             var lifetime = context.Request.DefaultMaxAge;
             if (lifetime <= 0)
             {
-                return ValidationStepFailed("default_max_age must be greater than 0 if used");
+                return ValidationStepResult.Failure("default_max_age must be greater than 0 if used");
             }
             context.Client.UserSsoLifetime = lifetime;
         }
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -464,7 +460,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// either represents that this step succeeded or failed.</returns>
     protected virtual Task<ValidationStepResult> ValidateSoftwareStatementAsync(DynamicClientRegistrationValidationContext context)
     {
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -486,7 +482,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             context.Client.RequireClientSecret = context.Request.RequireClientSecret.Value;
         }
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -506,7 +502,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             if (!Enum.TryParse<AccessTokenType>(context.Request.AccessTokenType, out var tokenType))
             {
-                return ValidationStepFailed("invalid access token type - use Jwt or Reference (case-sensitive)");
+                return ValidationStepResult.Failure("invalid access token type - use Jwt or Reference (case-sensitive)");
             }
             context.Client.AccessTokenType = tokenType;
         }
@@ -515,11 +511,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             var lifetime = context.Request.AccessTokenLifetime.Value;
             if (lifetime <= 0)
             {
-                return ValidationStepFailed("The access token lifetime must be greater than 0 if used");
+                return ValidationStepResult.Failure("The access token lifetime must be greater than 0 if used");
             }
             context.Client.AccessTokenLifetime = lifetime;
         }
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -541,12 +537,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             var lifetime = context.Request.IdentityTokenLifetime.Value;
             if (lifetime <= 0)
             {
-                return ValidationStepFailed("The identity token lifetime must be greater than 0 if used");
+                return ValidationStepResult.Failure("The identity token lifetime must be greater than 0 if used");
             }
             context.Client.IdentityTokenLifetime = lifetime;
         }
         context.Client.AllowedIdentityTokenSigningAlgorithms = context.Request.AllowedIdentityTokenSigningAlgorithms ?? new HashSet<string>();
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -567,7 +563,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             context.Client.CoordinateLifetimeWithUserSession = context.Request.CoordinateLifetimeWithUserSession.Value;
         }
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
 
     /// <summary>
@@ -609,21 +605,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             var lifetime = context.Request.ConsentLifetime.Value;
             if (lifetime <= 0)
             {
-                return ValidationStepFailed("The consent lifetime must be greater than 0 if used");
+                return ValidationStepResult.Failure("The consent lifetime must be greater than 0 if used");
             }
             context.Client.ConsentLifetime = lifetime;
         }
 
-        return ValidationStepSucceeded();
+        return ValidationStepResult.Success();
     }
-
-    private static Task<ValidationStepResult> ValidationStepFailed(string errorDescription,
-        string error = DynamicClientRegistrationErrors.InvalidClientMetadata) =>
-            Task.FromResult<ValidationStepResult>(new ValidationStepFailure(
-                    error,
-                    errorDescription
-                ));
-
-    private static Task<ValidationStepResult> ValidationStepSucceeded() =>
-        Task.FromResult<ValidationStepResult>(new ValidationStepSuccess());
 }

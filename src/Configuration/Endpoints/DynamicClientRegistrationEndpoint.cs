@@ -40,40 +40,43 @@ public class DynamicClientRegistrationEndpoint
     /// <summary>
     /// Processes requests to the dynamic client registration endpoint
     /// </summary>
-    public async Task Process(HttpContext context)
+    public async Task Process(HttpContext httpContext)
     {
         // Check content type
-        if (!HasCorrectContentType(context.Request))
+        if (!HasCorrectContentType(httpContext.Request))
         {
-            await _responseGenerator.WriteContentTypeError(context);
+            await _responseGenerator.WriteContentTypeError(httpContext);
             return;
         }
 
         // Parse body
-        var request = await TryParseAsync(context.Request);
+        var request = await TryParseAsync(httpContext.Request);
         if (request == null)
         {
-            await _responseGenerator.WriteBadRequestError(context);
+            await _responseGenerator.WriteBadRequestError(httpContext);
             return;
         }
 
+        var dcrContext = new DynamicClientRegistrationValidationContext(request, httpContext.User);
+
+
         // Validate request values 
-        var result = await _validator.ValidateAsync(request, context.User);
+        var result = await _validator.ValidateAsync(dcrContext);
 
         if (result is DynamicClientRegistrationValidationError validationError)
         {
-            await _responseGenerator.WriteValidationError(context, validationError);
+            await _responseGenerator.WriteValidationError(httpContext, validationError);
         }
-        else if (result is DynamicClientRegistrationValidatedRequest validatedRequest)
+        else if (result is DynamicClientRegistrationValidatedRequest)
         {
-            var response = await _processor.ProcessAsync(validatedRequest);
+            var response = await _processor.ProcessAsync(dcrContext);
             if(response is DynamicClientRegistrationErrorResponse processingFailure)
             {
-                await _responseGenerator.WriteProcessingError(context, processingFailure);
+                await _responseGenerator.WriteProcessingError(httpContext, processingFailure);
             } 
             else if (response is DynamicClientRegistrationResponse success)
             {
-                await _responseGenerator.WriteSuccessResponse(context, success);
+                await _responseGenerator.WriteSuccessResponse(httpContext, success);
             }
             else 
             {
