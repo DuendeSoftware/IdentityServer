@@ -223,8 +223,13 @@ internal class TokenRequestValidator : ITokenRequestValidator
         }
 
         // DPoP
-        if (context.DPoPProofToken.IsPresent() && LicenseValidator.CanUseDPoP())
+        if (context.DPoPProofToken.IsPresent())
         {
+            if (!LicenseValidator.CanUseDPoP())
+            {
+                throw new Exception("A request was made using DPoP. Your license for Duende IdentityServer does not include the DPoP feature.");
+            }
+
             if (context.DPoPProofToken.Length > _options.InputLengthRestrictions.DPoPProofToken)
             {
                 LogError("DPoP proof token is too long");

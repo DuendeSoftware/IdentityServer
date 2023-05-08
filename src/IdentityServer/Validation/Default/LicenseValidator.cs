@@ -180,17 +180,10 @@ internal class LicenseValidator
     {
         if (_license != null)
         {
-            if (!_license.DPoPFeature)
-            {
-                _errorLog.Invoke("A request was made using DPoP. Your license for Duende IdentityServer does not include the DPoP feature.", Array.Empty<object>());
-                return false;
-            }
+            return _license.DPoPFeature;
         }
-        else
-        {
-            _debugLog.Invoke("A request was made using DPoP, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
-        }
-        
+
+        _informationLog.Invoke("A request was made using DPoP, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
         return true;
     }
 
