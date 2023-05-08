@@ -223,7 +223,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         }
 
         // DPoP
-        if (context.DPoPProofToken.IsPresent() && LicenseValidator.ValidateDPoP())
+        if (context.DPoPProofToken.IsPresent() && LicenseValidator.CanUseDPoP())
         {
             if (context.DPoPProofToken.Length > _options.InputLengthRestrictions.DPoPProofToken)
             {
