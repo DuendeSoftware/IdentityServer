@@ -3,8 +3,8 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Duende.IdentityServer.Configuration.Models;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
-using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 

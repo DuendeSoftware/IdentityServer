@@ -5,8 +5,8 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Configuration.RequestProcessing;
 using Duende.IdentityServer.Configuration.Configuration;
-using Duende.IdentityServer.Configuration.Validation;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
+using Duende.IdentityServer.Configuration.Models;
 
 namespace IdentityServerHost;
 
@@ -22,14 +22,14 @@ internal class CustomClientRegistrationProcessor : DynamicClientRegistrationRequ
         _clients = clients;
     }
 
-    protected override async Task<StepResult> AddClientId(DynamicClientRegistrationContext context)
+    protected override async Task<IStepResult> AddClientId(DynamicClientRegistrationContext context)
     {
         if (context.Request.Extensions.TryGetValue("client_id", out var clientIdParameter))
         {
             var clientId = clientIdParameter.ToString();
             if(_clients.Any(c => c.ClientId == clientId))
             {
-                return new FailedStep(
+                return new DynamicClientRegistrationError(
                     "Duplicate client id", 
                     "Attempt to register a client with a client id that has already been registered"
                 );
@@ -43,7 +43,7 @@ internal class CustomClientRegistrationProcessor : DynamicClientRegistrationRequ
         return await base.AddClientId(context);
     }
 
-    protected override async Task<StepResult> GenerateSecret(DynamicClientRegistrationContext context)
+    protected override async Task<IStepResult> GenerateSecret(DynamicClientRegistrationContext context)
     {
          if(context.Request.Extensions.TryGetValue("client_secret", out var secretParam))
         {

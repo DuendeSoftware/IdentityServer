@@ -331,6 +331,5 @@ Content-Type: application/json
     "scope": "openid profile email resource1.scope1 resource2.scope1 transaction"
 }
 
-#TODO - Test other JWK algorithms
 
 

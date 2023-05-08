@@ -4,6 +4,8 @@
 namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
 /// <summary>
-/// Represents the result of validating a dynamic client registration request.
+/// Represents a successfully validated dynamic client registration request.
 /// </summary>
-public interface IDynamicClientRegistrationValidationResult { }
+public class DynamicClientRegistrationValidatedRequest : IDynamicClientRegistrationValidationResult
+{
+}

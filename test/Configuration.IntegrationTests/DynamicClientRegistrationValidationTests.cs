@@ -7,7 +7,7 @@ using IntegrationTests.TestHosts;
 using Xunit;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using System.Net.Http.Json;
-using Duende.IdentityServer.Configuration.Validation;
+using Duende.IdentityServer.Configuration.Models;
 
 namespace IntegrationTests;
 
@@ -40,7 +40,7 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var error = await response.Content.ReadFromJsonAsync<FailedStep>();
+        var error = await response.Content.ReadFromJsonAsync<DynamicClientRegistrationError>();
         error?.Error.Should().Be("invalid_client_metadata");
     }
 
@@ -54,7 +54,7 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var error = await response.Content.ReadFromJsonAsync<FailedStep>();
+        var error = await response.Content.ReadFromJsonAsync<DynamicClientRegistrationError>();
         error?.Error.Should().Be("invalid_client_metadata");
     }
 
@@ -68,7 +68,7 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var error = await response.Content.ReadFromJsonAsync<FailedStep>();
+        var error = await response.Content.ReadFromJsonAsync<DynamicClientRegistrationError>();
         error?.Error.Should().Be("invalid_redirect_uri");
     }
 
@@ -81,7 +81,7 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var error = await response.Content.ReadFromJsonAsync<FailedStep>();
+        var error = await response.Content.ReadFromJsonAsync<DynamicClientRegistrationError>();
         error?.Error.Should().Be("invalid_redirect_uri");
     }
 
@@ -94,7 +94,7 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
         });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var error = await response.Content.ReadFromJsonAsync<FailedStep>();
+        var error = await response.Content.ReadFromJsonAsync<DynamicClientRegistrationError>();
         error?.Error.Should().Be("invalid_client_metadata");
     }
 
@@ -111,7 +111,7 @@ public class DynamicClientRegistrationValidationTests : ConfigurationIntegration
         );
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var error = await response.Content.ReadFromJsonAsync<FailedStep>();
+        var error = await response.Content.ReadFromJsonAsync<DynamicClientRegistrationError>();
         error?.Error.Should().Be("invalid_client_metadata");
     }
 }

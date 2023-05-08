@@ -2,8 +2,8 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Configuration.Configuration;
+using Duende.IdentityServer.Configuration.Models;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
-using Duende.IdentityServer.Configuration.Validation;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 
@@ -34,7 +34,7 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         DynamicClientRegistrationContext context)
     {
         var clientIdResult = await AddClientId(context);
-        if(clientIdResult is FailedStep clientIdFailure)
+        if(clientIdResult is DynamicClientRegistrationError clientIdFailure)
         {
             return clientIdFailure;
         }
@@ -42,7 +42,7 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         Secret? secret = null;
         string? plainText = null;
         var clientSecretResult = await AddClientSecret(context);
-        if(clientSecretResult is FailedStep clientSecretFailure)
+        if(clientSecretResult is DynamicClientRegistrationError clientSecretFailure)
         {
             return clientSecretFailure;
         }
@@ -70,9 +70,17 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     /// <summary>
     /// Adds a client secret to a dynamic client registration request.
     /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    protected virtual async Task<StepResult> AddClientSecret(
+    /// <param name="context">The dynamic client registration context, which
+    /// includes the client model, the DCR request, and other contextual
+    /// information.</param>
+    /// <returns>A task that returns an <see cref="IStepResult"/>, which either
+    /// represents that this step succeeded or failed.</returns>
+    /// <remark> This method depends on the the "secret" and "plainText"
+    /// properties of the context's Items dictionary being set previously.</remark>
+    /// <returns>A task that returns an <see cref="IStepResult"/>, which either
+    /// represents that this step succeeded or failed.</returns>
+    
+    protected virtual async Task<IStepResult> AddClientSecret(
         DynamicClientRegistrationContext context)
     {
         if (!context.Client.ClientSecrets.Any())
@@ -92,11 +100,15 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
 
     /// <summary>
     /// Generates a secret for a dynamic client registration request.
-    /// TODO - Document items that are required to be set
     /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    protected virtual Task<StepResult> GenerateSecret(
+    /// <param name="context">The dynamic client registration context, which
+    /// includes the client model, the DCR request, and other contextual
+    /// information.</param>
+    /// <remark> This method must set the "secret" and "plainText" properties of
+    /// the context's Items dictionary.</remark>
+    /// <returns>A task that returns an <see cref="IStepResult"/>, which either
+    /// represents that this step succeeded or failed.</returns>
+    protected virtual Task<IStepResult> GenerateSecret(
         DynamicClientRegistrationContext context)
     {
         var plainText = CryptoRandom.CreateUniqueId();
@@ -119,9 +131,11 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     /// Generates a client ID and adds it to the validatedRequest's client
     /// model.
     /// </summary>
-    /// <param name="context"></param>
+    /// <param name="context">The dynamic client registration context, which
+    /// includes the client model, the DCR request, and other contextual
+    /// information.</param>
     /// <returns></returns>
-    protected virtual Task<StepResult> AddClientId(
+    protected virtual Task<IStepResult> AddClientId(
         DynamicClientRegistrationContext context)
     {
         context.Client.ClientId = CryptoRandom.CreateUniqueId();

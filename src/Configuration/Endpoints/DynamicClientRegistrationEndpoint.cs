@@ -3,6 +3,7 @@
 
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Duende.IdentityServer.Configuration.Models;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Configuration.RequestProcessing;
 using Duende.IdentityServer.Configuration.ResponseGeneration;
