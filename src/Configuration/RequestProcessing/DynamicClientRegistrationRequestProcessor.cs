@@ -48,8 +48,16 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         }
         else if(clientSecretResult is SuccessfulStep)
         {
-            secret = (Secret) context.Items["secret"];
-            plainText = (string) context.Items["plainText"];
+            if(context.Items.ContainsKey("secret") && context.Items["secret"] is Secret s &&
+               context.Items.ContainsKey("plainText") && context.Items["plainText"] is string pt)
+            {
+                secret = s;
+                plainText = pt;
+            }
+            else
+            {
+                throw new Exception("a secret and plaintext must be set in the context.Items");
+            }
         }
 
         await _store.AddAsync(context.Client);
