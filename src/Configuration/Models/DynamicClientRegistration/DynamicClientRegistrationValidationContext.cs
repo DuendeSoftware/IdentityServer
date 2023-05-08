@@ -7,7 +7,7 @@ using Duende.IdentityServer.Models;
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 /// <summary>
-/// Represents the context a for dynamic client registration request, including
+/// Represents the context for a dynamic client registration request, including
 /// the original DCR request, the client model that is built up through
 /// validation and processing, the caller who made the DCR request, and other
 /// contextual information.
