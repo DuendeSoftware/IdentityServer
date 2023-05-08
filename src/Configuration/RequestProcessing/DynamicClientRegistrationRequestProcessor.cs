@@ -54,10 +54,6 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
                 secret = s;
                 plainText = pt;
             }
-            else
-            {
-                throw new Exception("a secret and plaintext must be set in the context.Items");
-            }
         }
 
         await _store.AddAsync(context.Client);
