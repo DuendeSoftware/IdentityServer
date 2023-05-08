@@ -48,24 +48,13 @@ public class DynamicClientRegistrationResponseGenerator : IDynamicClientRegistra
     /// <inheritdoc/>
     public virtual async Task WriteBadRequestError(HttpContext context) =>
         await WriteResponse(context, StatusCodes.Status400BadRequest,
-            new DynamicClientRegistrationErrorResponse
-            {
-                Error = DynamicClientRegistrationErrors.InvalidClientMetadata,
-                ErrorDescription = "malformed metadata document"
-            });
+            new DynamicClientRegistrationError(
+                DynamicClientRegistrationErrors.InvalidClientMetadata,
+                "malformed metadata document")
+        );
 
     /// <inheritdoc/>
-    public virtual async Task WriteValidationError(HttpContext context, DynamicClientRegistrationValidationError error) =>
-        await WriteResponse(context, StatusCodes.Status400BadRequest,
-            new DynamicClientRegistrationErrorResponse
-            {
-                Error = error.Error,
-                ErrorDescription = error.ErrorDescription
-            });
-
-
-    /// <inheritdoc/>
-    public virtual async Task WriteProcessingError(HttpContext context, DynamicClientRegistrationErrorResponse error) =>
+    public virtual async Task WriteError(HttpContext context, DynamicClientRegistrationError error) =>
         await WriteResponse(context, StatusCodes.Status400BadRequest, error);
     
 

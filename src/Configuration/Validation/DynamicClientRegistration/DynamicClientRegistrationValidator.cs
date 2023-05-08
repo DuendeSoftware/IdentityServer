@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.Extensions.Logging;
@@ -24,87 +25,87 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <inheritdoc/>
-    public async Task<DynamicClientRegistrationValidationResult> ValidateAsync(DynamicClientRegistrationValidationContext context)
+    public async Task<IDynamicClientRegistrationValidationResult> ValidateAsync(DynamicClientRegistrationContext context)
     {
         var result = await ValidateSoftwareStatementAsync(context);
-        if (result is ValidationStepFailure softwareStatementValidation)
+        if (result is FailedStep softwareStatementValidation)
         {
-            return softwareStatementValidation.Error;
+            return softwareStatementValidation;
         }
 
         result = await SetGrantTypesAsync(context);
-        if (result is ValidationStepFailure grantTypeValidation)
+        if (result is FailedStep grantTypeValidation)
         {
-            return grantTypeValidation.Error;
+            return grantTypeValidation;
         }
 
         result = await SetRedirectUrisAsync(context);
-        if (result is ValidationStepFailure redirectUrisValidation)
+        if (result is FailedStep redirectUrisValidation)
         {
-            return redirectUrisValidation.Error;
+            return redirectUrisValidation;
         }
 
         result = await SetScopesAsync(context);
-        if (result is ValidationStepFailure scopeValidation)
+        if (result is FailedStep scopeValidation)
         {
-            return scopeValidation.Error;
+            return scopeValidation;
         }
 
         result = await SetSecretsAsync(context);
-        if (result is ValidationStepFailure keySetValidation)
+        if (result is FailedStep keySetValidation)
         {
-            return keySetValidation.Error;
+            return keySetValidation;
         }
 
         result = await SetClientNameAsync(context);
-        if (result is ValidationStepFailure nameValidation)
+        if (result is FailedStep nameValidation)
         {
-            return nameValidation.Error;
+            return nameValidation;
         }
 
         result = await SetLogoutParametersAsync(context);
-        if(result is ValidationStepFailure logoutValidation)
+        if(result is FailedStep logoutValidation)
         {
-            return logoutValidation.Error;
+            return logoutValidation;
         }
 
         result = await SetMaxAgeAsync(context);
-        if (result is ValidationStepFailure maxAgeValidation)
+        if (result is FailedStep maxAgeValidation)
         {
-            return maxAgeValidation.Error;
+            return maxAgeValidation;
         }
 
         result = await SetUserInterfaceProperties(context);
-        if (result is ValidationStepFailure miscValidation)
+        if (result is FailedStep miscValidation)
         {
-            return miscValidation.Error;
+            return miscValidation;
         }
 
         result = await SetPublicClientProperties(context);
-        if (result is ValidationStepFailure publicClientValidation)
+        if (result is FailedStep publicClientValidation)
         {
-            return publicClientValidation.Error;
+            return publicClientValidation;
         }
 
         result = await SetAccessTokenProperties(context);
-        if (result is ValidationStepFailure accessTokenValidation)
+        if (result is FailedStep accessTokenValidation)
         {
-            return accessTokenValidation.Error;
+            return accessTokenValidation;
         }
 
         result = await SetIdTokenProperties(context);
-        if (result is ValidationStepFailure idTokenValidation)
+        if (result is FailedStep idTokenValidation)
         {
-            return idTokenValidation.Error;
+            return idTokenValidation;
         }
 
         result = await SetServerSideSessionProperties(context);
-        if (result is ValidationStepFailure serverSideSessionValidation)
+        if (result is FailedStep serverSideSessionValidation)
         {
-            return serverSideSessionValidation.Error;
+            return serverSideSessionValidation;
         }
 
-        return new DynamicClientRegistrationValidatedRequest(context.Client, context.Request);
+        return new DynamicClientRegistrationValidatedRequest();
     }
 
     /// <summary>
@@ -115,13 +116,13 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its allowed grant types set, the DCR request, and
     /// other contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetGrantTypesAsync(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetGrantTypesAsync(DynamicClientRegistrationContext context)
     {
         if (context.Request.GrantTypes.Count == 0)
         {
-            return ValidationStepResult.Failure("grant type is required");
+            return StepResult.Failure("grant type is required");
         }
 
         if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.ClientCredentials))
@@ -136,7 +137,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 var lifetime = context.Request.AuthorizationCodeLifetime.Value;
                 if (lifetime <= 0)
                 {
-                    return ValidationStepResult.Failure("The authorization code lifetime must be greater than 0 if used");
+                    return StepResult.Failure("The authorization code lifetime must be greater than 0 if used");
                 }
                 context.Client.AuthorizationCodeLifetime = lifetime;
             }
@@ -145,7 +146,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         // we only support the two above grant types
         if (context.Client.AllowedGrantTypes.Count == 0)
         {
-            return ValidationStepResult.Failure("unsupported grant type");
+            return StepResult.Failure("unsupported grant type");
         }
 
         if (context.Request.GrantTypes.Contains(OidcConstants.GrantTypes.RefreshToken))
@@ -154,7 +155,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             // could be refactored.
             if (!context.Client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
             {
-                return ValidationStepResult.Failure("Refresh token grant requested, but no grant that supports refresh tokens was requested");
+                return StepResult.Failure("Refresh token grant requested, but no grant that supports refresh tokens was requested");
             }
 
             context.Client.AllowOfflineAccess = true;
@@ -162,7 +163,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             {
                 if (!Enum.TryParse<TokenExpiration>(context.Request.RefreshTokenExpiration, out var tokenExpiration))
                 {
-                    return ValidationStepResult.Failure("invalid refresh token expiration - use Absolute or Sliding (case-sensitive)");
+                    return StepResult.Failure("invalid refresh token expiration - use Absolute or Sliding (case-sensitive)");
                 }
                 context.Client.RefreshTokenExpiration = tokenExpiration;
             }
@@ -171,7 +172,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 var lifetime = context.Request.SlidingRefreshTokenLifetime.Value;
                 if (lifetime <= 0)
                 {
-                    return ValidationStepResult.Failure("The sliding refresh token lifetime must be greater than 0 if used");
+                    return StepResult.Failure("The sliding refresh token lifetime must be greater than 0 if used");
                 }
                 context.Client.SlidingRefreshTokenLifetime = lifetime;
             }
@@ -180,7 +181,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 var lifetime = context.Request.AbsoluteRefreshTokenLifetime.Value;
                 if (lifetime <= 0)
                 {
-                    return ValidationStepResult.Failure("The absolute refresh token lifetime must be greater than 0 if used");
+                    return StepResult.Failure("The absolute refresh token lifetime must be greater than 0 if used");
                 }
                 context.Client.AbsoluteRefreshTokenLifetime = lifetime;                
             }
@@ -188,7 +189,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             {
                 if (!Enum.TryParse<TokenUsage>(context.Request.RefreshTokenUsage, out var tokenUsage))
                 {
-                    return ValidationStepResult.Failure("invalid refresh token usage - use OneTimeOnly or ReUse (case-sensitive)");
+                    return StepResult.Failure("invalid refresh token usage - use OneTimeOnly or ReUse (case-sensitive)");
                 }
                 context.Client.RefreshTokenUsage = tokenUsage;
             }
@@ -198,7 +199,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             }
         }
 
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -209,9 +210,9 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its redirect uri set, the DCR request, and other
     /// contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetRedirectUrisAsync(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetRedirectUrisAsync(DynamicClientRegistrationContext context)
     {
         if (context.Client.AllowedGrantTypes.Contains(GrantType.AuthorizationCode))
         {
@@ -225,14 +226,14 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                     }
                     else
                     {
-                        return ValidationStepResult.Failure("malformed redirect URI", DynamicClientRegistrationErrors.InvalidRedirectUri);
+                        return StepResult.Failure("malformed redirect URI", DynamicClientRegistrationErrors.InvalidRedirectUri);
                     }
                 }
             }
             else
             {
                 // Note that when we implement PAR, this may no longer be an error for clients that use PAR
-                return ValidationStepResult.Failure("redirect URI required for authorization_code grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
+                return StepResult.Failure("redirect URI required for authorization_code grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
             }
         }
 
@@ -241,11 +242,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         {
             if (context.Request.RedirectUris?.Any() == true)
             {
-                return ValidationStepResult.Failure("redirect URI not compatible with client_credentials grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
+                return StepResult.Failure("redirect URI not compatible with client_credentials grant type", DynamicClientRegistrationErrors.InvalidRedirectUri);
             }
         }
 
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -256,9 +257,9 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its scopes set, the DCR request, and other
     /// contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetScopesAsync(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetScopesAsync(DynamicClientRegistrationContext context)
     {
         if (string.IsNullOrEmpty(context.Request.Scope))
         {
@@ -279,7 +280,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 context.Client.AllowedScopes.Add(scope);
             }
         }
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -290,12 +291,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its scopes set, the DCR request, and other
     /// contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetDefaultScopes(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetDefaultScopes(DynamicClientRegistrationContext context)
     {
         _logger.LogDebug("No scopes requested for dynamic client registration, and no default scope behavior implemented. To set default scopes, extend the DynamicClientRegistrationValidator and override the SetDefaultScopes method.");
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -305,18 +306,18 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its secrets set, the DCR request, and other
     /// contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetSecretsAsync(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetSecretsAsync(DynamicClientRegistrationContext context)
     {
         if (context.Request.JwksUri is not null && context.Request.Jwks is not null)
         {
-            return ValidationStepResult.Failure("The jwks_uri and jwks parameters must not be used together");
+            return StepResult.Failure("The jwks_uri and jwks parameters must not be used together");
         }
 
         if (context.Request.Jwks is null && context.Request.TokenEndpointAuthenticationMethod == OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
         {
-            return ValidationStepResult.Failure("Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
+            return StepResult.Failure("Missing jwks parameter - the private_key_jwt token_endpoint_auth_method requires the jwks parameter");
 
         }
         if (context.Request.Jwks is not null)
@@ -324,13 +325,13 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             context.Request.TokenEndpointAuthenticationMethod ??= OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt;
             if (context.Request.TokenEndpointAuthenticationMethod != OidcConstants.EndpointAuthenticationMethods.PrivateKeyJwt)
             {
-                return ValidationStepResult.Failure("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
+                return StepResult.Failure("Invalid authentication method - the jwks parameter requires the private_key_jwt token_endpoint_auth_method");
             }
         }
 
         if (context.Request.Jwks?.Keys is null && context.Request.RequireSignedRequestObject == true)
         {
-            return ValidationStepResult.Failure("Jwks are required when the require signed request object flag is enabled");
+            return StepResult.Failure("Jwks are required when the require signed request object flag is enabled");
         }
 
         if (context.Request.Jwks?.Keys is not null)
@@ -357,18 +358,18 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
 
                     if (parsedJwk.HasPrivateKey && parsedJwk.Alg.StartsWith("HS", StringComparison.InvariantCulture))
                     {
-                        return ValidationStepResult.Failure("unexpected private key in jwk");
+                        return StepResult.Failure("unexpected private key in jwk");
                     }
                 }
                 catch (InvalidOperationException ex)
                 {
                     _logger.LogError(ex, "Failed to parse jwk");
-                    return ValidationStepResult.Failure("malformed jwk");
+                    return StepResult.Failure("malformed jwk");
                 }
                 catch (JsonException ex)
                 {
                     _logger.LogError(ex, "Failed to parse jwk");
-                    return ValidationStepResult.Failure("malformed jwk");
+                    return StepResult.Failure("malformed jwk");
                 }
 
                 context.Client.ClientSecrets.Add(new Secret
@@ -378,7 +379,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 });
             }
         }
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -389,12 +390,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its name set, the DCR request, and other contextual
     /// information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetClientNameAsync(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetClientNameAsync(DynamicClientRegistrationContext context)
     {
         context.Client.ClientName = context.Request?.ClientName;
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -408,9 +409,9 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its logout parameters set, the DCR request, and
     /// other contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetLogoutParametersAsync(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetLogoutParametersAsync(DynamicClientRegistrationContext context)
     {
         context.Client.PostLogoutRedirectUris = context.Request.PostLogoutRedirectUris?.Select(uri => uri.ToString()).ToList() ?? new List<string>();
         context.Client.FrontChannelLogoutUri = context.Request.FrontChannelLogoutUri?.AbsoluteUri;
@@ -418,7 +419,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
         context.Client.BackChannelLogoutUri = context.Request.BackChannelLogoutUri?.AbsoluteUri;
         context.Client.BackChannelLogoutSessionRequired = context.Request.BackChannelLogoutSessionRequired ?? true;
 
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -429,24 +430,24 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its max age set, the DCR request, and other
     /// contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetMaxAgeAsync(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetMaxAgeAsync(DynamicClientRegistrationContext context)
     {
         if (context.Request.DefaultMaxAge.HasValue)
         {
             if(!context.Request.GrantTypes.Contains(GrantType.AuthorizationCode))
             {
-                return ValidationStepResult.Failure("default_max_age requires authorization code grant type");
+                return StepResult.Failure("default_max_age requires authorization code grant type");
             }
             var lifetime = context.Request.DefaultMaxAge;
             if (lifetime <= 0)
             {
-                return ValidationStepResult.Failure("default_max_age must be greater than 0 if used");
+                return StepResult.Failure("default_max_age must be greater than 0 if used");
             }
             context.Client.UserSsoLifetime = lifetime;
         }
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -456,11 +457,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// <param name="context">The validation context, which includes the client
     /// model that is being built up, the DCR request, and other contextual
     /// information.</param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> ValidateSoftwareStatementAsync(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> ValidateSoftwareStatementAsync(DynamicClientRegistrationContext context)
     {
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -473,16 +474,16 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its public client properties set, the DCR request,
     /// and other contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetPublicClientProperties(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetPublicClientProperties(DynamicClientRegistrationContext context)
     {
         context.Client.AllowedCorsOrigins = context.Request.AllowedCorsOrigins ?? new();
         if (context.Request.RequireClientSecret.HasValue)
         {
             context.Client.RequireClientSecret = context.Request.RequireClientSecret.Value;
         }
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -494,15 +495,15 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its access token properties set, the DCR request,
     /// and other contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetAccessTokenProperties(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetAccessTokenProperties(DynamicClientRegistrationContext context)
     {
         if (context.Request.AccessTokenType != null)
         {
             if (!Enum.TryParse<AccessTokenType>(context.Request.AccessTokenType, out var tokenType))
             {
-                return ValidationStepResult.Failure("invalid access token type - use Jwt or Reference (case-sensitive)");
+                return StepResult.Failure("invalid access token type - use Jwt or Reference (case-sensitive)");
             }
             context.Client.AccessTokenType = tokenType;
         }
@@ -511,11 +512,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             var lifetime = context.Request.AccessTokenLifetime.Value;
             if (lifetime <= 0)
             {
-                return ValidationStepResult.Failure("The access token lifetime must be greater than 0 if used");
+                return StepResult.Failure("The access token lifetime must be greater than 0 if used");
             }
             context.Client.AccessTokenLifetime = lifetime;
         }
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -528,21 +529,21 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its id token properties set, the DCR request, and
     /// other contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetIdTokenProperties(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetIdTokenProperties(DynamicClientRegistrationContext context)
     {
         if(context.Request.IdentityTokenLifetime.HasValue)
         {
             var lifetime = context.Request.IdentityTokenLifetime.Value;
             if (lifetime <= 0)
             {
-                return ValidationStepResult.Failure("The identity token lifetime must be greater than 0 if used");
+                return StepResult.Failure("The identity token lifetime must be greater than 0 if used");
             }
             context.Client.IdentityTokenLifetime = lifetime;
         }
         context.Client.AllowedIdentityTokenSigningAlgorithms = context.Request.AllowedIdentityTokenSigningAlgorithms ?? new HashSet<string>();
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -555,15 +556,15 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// model that will have its server side session properties set, the DCR request,
     /// and other contextual information.
     /// </param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetServerSideSessionProperties(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetServerSideSessionProperties(DynamicClientRegistrationContext context)
     {
         if(context.Request.CoordinateLifetimeWithUserSession.HasValue)
         {
             context.Client.CoordinateLifetimeWithUserSession = context.Request.CoordinateLifetimeWithUserSession.Value;
         }
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 
     /// <summary>
@@ -575,9 +576,9 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// <param name="context">The validation context, which includes the client
     /// model that will have miscellaneous properties set, the DCR request, and
     /// other contextual information.</param>
-    /// <returns>A task that returns a <see cref="ValidationStepResult"/>, which
+    /// <returns>A task that returns a <see cref="StepResult"/>, which
     /// either represents that this step succeeded or failed.</returns>
-    protected virtual Task<ValidationStepResult> SetUserInterfaceProperties(DynamicClientRegistrationValidationContext context)
+    protected virtual Task<StepResult> SetUserInterfaceProperties(DynamicClientRegistrationContext context)
     {
         // Misc Uris
         context.Client.LogoUri = context.Request.LogoUri?.ToString();
@@ -605,11 +606,11 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             var lifetime = context.Request.ConsentLifetime.Value;
             if (lifetime <= 0)
             {
-                return ValidationStepResult.Failure("The consent lifetime must be greater than 0 if used");
+                return StepResult.Failure("The consent lifetime must be greater than 0 if used");
             }
             context.Client.ConsentLifetime = lifetime;
         }
 
-        return ValidationStepResult.Success();
+        return StepResult.Success();
     }
 }

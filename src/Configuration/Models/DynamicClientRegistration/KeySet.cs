@@ -1,10 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
-
-// REVIEW - Should we rename this type?
 
 /// <summary>
 /// Represents a JSON Web Key Set.

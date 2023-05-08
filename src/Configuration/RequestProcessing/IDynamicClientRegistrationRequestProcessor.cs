@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
-using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
 namespace Duende.IdentityServer.Configuration.RequestProcessing;
 
@@ -22,5 +21,5 @@ public interface IDynamicClientRegistrationRequestProcessor
     /// properties of the client that are not specified in the request, and
     /// storing the new client in the <see cref="IClientConfigurationStore"/>.
     /// </summary>
-    Task<IDynamicClientRegistrationResponse> ProcessAsync(DynamicClientRegistrationValidationContext validatedRequest);
+    Task<IDynamicClientRegistrationResponse> ProcessAsync(DynamicClientRegistrationContext validatedRequest);
 }

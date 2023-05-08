@@ -57,24 +57,23 @@ public class DynamicClientRegistrationEndpoint
             return;
         }
 
-        var dcrContext = new DynamicClientRegistrationValidationContext(request, httpContext.User);
-
+        var dcrContext = new DynamicClientRegistrationContext(request, httpContext.User);
 
         // Validate request values 
-        var result = await _validator.ValidateAsync(dcrContext);
+        var validationResult = await _validator.ValidateAsync(dcrContext);
 
-        if (result is DynamicClientRegistrationValidationError validationError)
+        if (validationResult is DynamicClientRegistrationError validationError)
         {
-            await _responseGenerator.WriteValidationError(httpContext, validationError);
+            await _responseGenerator.WriteError(httpContext, validationError);
         }
-        else if (result is DynamicClientRegistrationValidatedRequest)
+        else
         {
-            var response = await _processor.ProcessAsync(dcrContext);
-            if(response is DynamicClientRegistrationErrorResponse processingFailure)
+            var processingResult = await _processor.ProcessAsync(dcrContext);
+            if(processingResult is DynamicClientRegistrationError processingFailure)
             {
-                await _responseGenerator.WriteProcessingError(httpContext, processingFailure);
+                await _responseGenerator.WriteError(httpContext, processingFailure);
             } 
-            else if (response is DynamicClientRegistrationResponse success)
+            else if (processingResult is DynamicClientRegistrationResponse success)
             {
                 await _responseGenerator.WriteSuccessResponse(httpContext, success);
             }

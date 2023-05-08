@@ -1,14 +1,15 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 
 namespace Duende.IdentityServer.Configuration.Validation;
 
 /// <summary>
-/// Represents the result of a step in the dynamic client registration validator.
+/// Represents the result of a step in dynamic client registration validation or processing.
 /// </summary>
-public abstract class ValidationStepResult 
+public abstract class StepResult 
 {
     /// <summary>
     /// 
@@ -16,49 +17,49 @@ public abstract class ValidationStepResult
     /// <param name="errorDescription"></param>
     /// <param name="error"></param>
     /// <returns></returns>
-    public static Task<ValidationStepResult> Failure(string errorDescription,
+    public static Task<StepResult> Failure(string errorDescription,
         string error = DynamicClientRegistrationErrors.InvalidClientMetadata) =>
-            Task.FromResult<ValidationStepResult>(new ValidationStepFailure(
-                    error,
-                    errorDescription
-                ));
+            Task.FromResult<StepResult>(new FailedStep(error, errorDescription));
 
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
-    public static Task<ValidationStepResult> Success() =>
-        Task.FromResult<ValidationStepResult>(new ValidationStepSuccess());
+    public static Task<StepResult> Success() =>
+        Task.FromResult<StepResult>(new SuccessfulStep());
 }
 
 /// <summary>
 /// Represents a successful validation step.
 /// </summary>
-public class ValidationStepSuccess : ValidationStepResult
+public class SuccessfulStep : StepResult
 {
 }
 
 /// <summary>
 /// Represents a failed validation step.
 /// </summary>
-public class ValidationStepFailure : ValidationStepResult
+public class FailedStep : StepResult, IDynamicClientRegistrationResponse, IDynamicClientRegistrationValidationResult
 {
     /// <summary>
-    /// The validation error.
+    /// 
     /// </summary>
-    public DynamicClientRegistrationValidationError Error { get; set; }
+    /// <param name="error"></param>
+    /// <param name="errorDescription"></param>
+    public FailedStep(string error, String errorDescription)
+    {
+        Error = error;
+        ErrorDescription = errorDescription;
+    }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ValidationStepFailure" />
-    /// class.
+    /// 
     /// </summary>
-    /// <param name="error">The error code for the error that occurred during
-    /// validation. Error codes defined by RFC 7591 are defined as constants in
-    /// the <see cref="DynamicClientRegistrationErrors" /> class.</param>
-    /// <param name="errorDescription">A human-readable description of the error
-    /// that occurred during validation.</param>
-    public ValidationStepFailure(string error, string errorDescription)
-    {
-        Error = new DynamicClientRegistrationValidationError(error, errorDescription);
-    }
+    public string Error { get; set; }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string ErrorDescription { get; set; }
 }

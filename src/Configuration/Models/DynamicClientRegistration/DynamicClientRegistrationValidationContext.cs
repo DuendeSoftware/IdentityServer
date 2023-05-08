@@ -3,32 +3,31 @@
 
 using System.Security.Claims;
 using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
-namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
+namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 /// <summary>
-/// Represents the context of validation for dynamic client registration,
-/// including the original DCR request, the client model that is built up
-/// through validation, the caller who made the DCR request, and other
+/// Represents the context a for dynamic client registration request, including
+/// the original DCR request, the client model that is built up through
+/// validation and processing, the caller who made the DCR request, and other
 /// contextual information.
 /// </summary>
-public class DynamicClientRegistrationValidationContext
+public class DynamicClientRegistrationContext
 {
     /// <summary>
     /// Initializes a new instance of the <see
-    /// cref="DynamicClientRegistrationValidationContext"/> class.
+    /// cref="DynamicClientRegistrationContext"/> class.
     /// </summary>
     /// <param name="request">The original dynamic client registration request.</param>
     /// <param name="caller">The <see cref="ClaimsPrincipal"/> that made the DCR request.</param>
-    public DynamicClientRegistrationValidationContext(DynamicClientRegistrationRequest request, ClaimsPrincipal caller)
+    public DynamicClientRegistrationContext(DynamicClientRegistrationRequest request, ClaimsPrincipal caller)
     {
         Request = request;
         Caller = caller;
     }
 
     /// <summary>
-    /// The client model that is built up through validation.
+    /// The client model that is built up through validation and processing.
     /// </summary>
     public Client Client { get; set; } = new();
 
