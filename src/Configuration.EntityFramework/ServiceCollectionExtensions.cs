@@ -1,7 +1,10 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Duende.IdentityServer.Configuration.EntityFramework;
 
@@ -18,6 +21,8 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddClientConfigurationStore(this IdentityServerConfigurationBuilder builder)
     {
+        builder.Services.TryAddTransient<ICancellationTokenProvider, DefaultCancellationTokenProvider>();
+        builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         return builder.Services.AddTransient<IClientConfigurationStore, ClientConfigurationStore>();
     }
 }
