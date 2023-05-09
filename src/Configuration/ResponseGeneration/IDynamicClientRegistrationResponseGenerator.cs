@@ -1,8 +1,8 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+using Duende.IdentityServer.Configuration.Models;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
-using Duende.IdentityServer.Configuration.Validation.DynamicClientRegistration;
 using Microsoft.AspNetCore.Http;
 
 namespace Duende.IdentityServer.Configuration.ResponseGeneration;
@@ -42,16 +42,9 @@ public interface IDynamicClientRegistrationResponseGenerator
     Task WriteSuccessResponse(HttpContext context, DynamicClientRegistrationResponse response);
 
     /// <summary>
-    /// Writes a validation error to the HTTP context.
+    /// Writes a validation or processing step's error to the HTTP context.
     /// </summary>
     /// <param name="context">The HTTP context to write the error to.</param>
     /// <param name="error">The dynamic client registration validation error.</param>
-    Task WriteValidationError(HttpContext context, DynamicClientRegistrationValidationError error);
-
-    /// <summary>
-    /// Writes a processing error to the HTTP context.
-    /// </summary>
-    /// <param name="context">The HTTP context to write the error to.</param>
-    /// <param name="error">The dynamic client registration validation error.</param>
-    Task WriteProcessingError(HttpContext context, DynamicClientRegistrationErrorResponse error);
+    Task WriteError(HttpContext context, DynamicClientRegistrationError error);
 }

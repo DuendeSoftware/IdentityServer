@@ -8,7 +8,7 @@ using IdentityModel;
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 /// <summary>
-/// Represents the response to a successful dynamic client registration client.
+/// Represents the response to a successful dynamic client registration request.
 /// </summary>
 public class DynamicClientRegistrationResponse : DynamicClientRegistrationRequest, IDynamicClientRegistrationResponse
 {
