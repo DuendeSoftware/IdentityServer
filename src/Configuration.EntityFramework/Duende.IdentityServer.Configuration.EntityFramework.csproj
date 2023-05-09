@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-      <ProjectReference Include="..\Configuration\Duende.IdentityServer.Configuration.csproj" />
-      <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
+    <ProjectReference Include="..\Configuration\Duende.IdentityServer.Configuration.csproj" />
+    <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
     <ProjectReference Include="..\EntityFramework.Storage\Duende.IdentityServer.EntityFramework.Storage.csproj" />
   </ItemGroup>
 
