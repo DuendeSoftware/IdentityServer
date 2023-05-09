@@ -43,17 +43,14 @@ internal class CustomClientRegistrationProcessor : DynamicClientRegistrationRequ
         return await base.AddClientId(context);
     }
 
-    protected override async Task<IStepResult> GenerateSecret(DynamicClientRegistrationContext context)
+    protected override async Task<(Secret, string)> GenerateSecret(DynamicClientRegistrationContext context)
     {
          if(context.Request.Extensions.TryGetValue("client_secret", out var secretParam))
         {
             var plainText = secretParam.ToString();
             var secret = new Secret(plainText.Sha256());
-            
-            context.Items["secret"] = secret;
-            context.Items["plainText"] = plainText;
 
-            return new SuccessfulStep();
+            return (secret, plainText);
         }
         else
         {

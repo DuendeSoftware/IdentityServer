@@ -79,8 +79,8 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     /// information.</param>
     /// <returns>A task that returns an <see cref="IStepResult"/>, which either
     /// represents that this step succeeded or failed.</returns>
-    /// <remark> This method depends on the the "secret" and "plainText"
-    /// properties of the context's Items dictionary being set previously.</remark>
+    /// <remark> This method must set the "secret" and "plainText" properties of
+    /// the context's Items dictionary.</remark>
     /// <returns>A task that returns an <see cref="IStepResult"/>, which either
     /// represents that this step succeeded or failed.</returns>
     
@@ -89,15 +89,10 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     {
         if (!context.Client.ClientSecrets.Any())
         {
-            var result = await GenerateSecret(context);
-            if(result is SuccessfulStep)
-            {
-                if (context.Items.TryGetValue("secret", out var secret))
-                {
-                    context.Client.ClientSecrets.Add((Secret)secret);
-                }
-            }
-            return result;
+            var (secret, plainText) = await GenerateSecret(context);
+            context.Items["secret"] = secret;
+            context.Items["plainText"] = plainText;
+            context.Client.ClientSecrets.Add(secret);
         }
         return new SuccessfulStep();
     }
@@ -108,27 +103,19 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
     /// <param name="context">The dynamic client registration context, which
     /// includes the client model, the DCR request, and other contextual
     /// information.</param>
-    /// <remark> This method must set the "secret" and "plainText" properties of
-    /// the context's Items dictionary.</remark>
-    /// <returns>A task that returns an <see cref="IStepResult"/>, which either
-    /// represents that this step succeeded or failed.</returns>
-    protected virtual Task<IStepResult> GenerateSecret(
+    /// <returns>A task that returns a tuple containing the generated secret and
+    /// the plaintext of that secret.</returns>
+    protected virtual Task<(Secret secret, string plainText)> GenerateSecret(
         DynamicClientRegistrationContext context)
     {
         var plainText = CryptoRandom.CreateUniqueId();
-
         DateTime? lifetime = _options.DynamicClientRegistration.SecretLifetime switch
         {
             null => null,
             TimeSpan t => DateTime.UtcNow.Add(t)
         };
-
         var secret = new Secret(plainText.ToSha256(), lifetime);
-
-        context.Items["secret"] = secret;
-        context.Items["plainText"] = plainText;
-
-        return StepResult.Success();
+        return Task.FromResult((secret, plainText));       
     }
 
     /// <summary>

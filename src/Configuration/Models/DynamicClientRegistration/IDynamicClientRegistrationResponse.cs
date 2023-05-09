@@ -4,10 +4,8 @@
 namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 
 /// <summary>
-/// Represents the response to a dynamic client registration request.
+/// Marker interface for the response to a dynamic client registration request.
 /// </summary>
 public interface IDynamicClientRegistrationResponse
 {
-    // This interface deliberately does not define any members
-    // It serves as a marker interface for classes that implement it
 }

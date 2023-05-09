@@ -15,7 +15,7 @@ public interface IDynamicClientRegistrationValidator
     /// </summary>
     /// <param name="context">Contextual information about the DCR
     /// request.</param>
-    /// <returns>A task that returns am <see
+    /// <returns>A task that returns an <see
     /// cref="IDynamicClientRegistrationValidationResult"/>, which either
     /// indicates success or failure.</returns>
     Task<IDynamicClientRegistrationValidationResult> ValidateAsync(DynamicClientRegistrationContext context);
