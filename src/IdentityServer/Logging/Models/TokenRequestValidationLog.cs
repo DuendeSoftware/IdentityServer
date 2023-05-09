@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
+using System;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Logging.Models;
 
@@ -44,7 +46,15 @@ internal class TokenRequestValidationLog
         GrantType = request.GrantType;
         AuthorizationCode = request.AuthorizationCodeHandle.Obfuscate();
         RefreshToken = request.RefreshTokenHandle.Obfuscate();
-        UserName = request.UserName;
+        
+        if (!sensitiveValuesFilter.Contains(OidcConstants.TokenRequest.UserName, StringComparer.OrdinalIgnoreCase))
+        {
+            UserName = request.UserName;
+        }
+        else if (request.UserName.IsPresent())
+        {
+            UserName = "***REDACTED***";
+        }
     }
 
     public override string ToString()
