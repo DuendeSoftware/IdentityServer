@@ -1,19 +1,15 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Configuration.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Duende.IdentityServer.Validation;
+namespace Duende.IdentityServer.Configuration.Licensing;
 
 internal class LicenseValidator
 {
@@ -23,23 +19,22 @@ internal class LicenseValidator
         "Duende_IdentityServer_License.key",
     };
 
-    static ILogger _logger;
-    static Action<string, object[]> _errorLog;
-    static Action<string, object[]> _informationLog;
-    static Action<string, object[]> _debugLog;
+    static ILogger _logger = default!;
+    static Action<string, object[]> _errorLog  = default!;
+    static Action<string, object[]> _informationLog  = default!;
+    static Action<string, object[]> _debugLog  = default!;
 
-    static IdentityServerOptions _options;
-    static License _license;
+    static License? _license;
 
     static ConcurrentDictionary<string, byte> _clientIds = new ConcurrentDictionary<string, byte>();
     static ConcurrentDictionary<string, byte> _issuers = new ConcurrentDictionary<string, byte>();
 
-    public static void Initalize(ILoggerFactory loggerFactory, IdentityServerOptions options, bool isDevelopment = false)
+
+    public static void Initalize(ILoggerFactory loggerFactory, IdentityServerConfigurationOptions options, bool isDevelopment = false)
     {
         _logger = loggerFactory.CreateLogger("Duende.License");
-        _options = options;
 
-        var key = options.LicenseKey ?? LoadFromFile();
+        var key = options.LicenseKey ?? LoadFromFile() ?? throw new Exception("TODO");
         _license = ValidateKey(key);
 
         if (_license?.RedistributionFeature == true && !isDevelopment)
@@ -55,7 +50,7 @@ internal class LicenseValidator
         }
     }
 
-    private static string LoadFromFile()
+    private static string? LoadFromFile()
     {
         foreach (var name in LicenseFileNames)
         {
@@ -83,9 +78,9 @@ internal class LicenseValidator
             _logger.LogWarning(message);
             return;
         }
-        else if (_license.IsBffEdition)
+        else if (!_license.ConfigApiFeature)
         {
-            errors.Add($"Your Duende software license is not valid for IdentityServer.");
+            errors.Add($"Your Duende software license does not include the Configuration API feature.");
         }
         else
         {
@@ -99,12 +94,10 @@ internal class LicenseValidator
                     errors.Add($"Your license for the Duende software expired {diff} days ago.");
                 }
             }
-
-            if (_options.KeyManagement.Enabled && !_license.KeyManagementFeature)
-            {
-                errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");
-            }
         }
+
+        var contactInfo = _license.ContactInfo ?? "<Contact Missing>";
+        var companyName = _license.CompanyName ?? "<Company Missing>";
 
         if (errors.Count > 0)
         {
@@ -115,20 +108,20 @@ internal class LicenseValidator
 
             _errorLog.Invoke(
                 "Please contact {licenceContact} from {licenseCompany} to obtain a valid license for the Duende software.",
-                new[] { _license.ContactInfo, _license.CompanyName });
+                new[] { contactInfo, companyName });
         }
         else
         {
             if (_license.Expiration.HasValue)
             {
                 _informationLog.Invoke("You have a valid license key for the Duende software {edition} edition for use at {licenseCompany}. The license expires on {licenseExpiration}.",
-                    new object[] { _license.Edition, _license.CompanyName, _license.Expiration.Value.ToLongDateString() });
+                    new object[] { _license.Edition, companyName, _license.Expiration.Value.ToLongDateString() });
             }
             else
             {
                 _informationLog.Invoke(
                     "You have a valid license key for the Duende software {edition} edition for use at {licenseCompany}.",
-                    new object[] { _license.Edition, _license.CompanyName });
+                    new object[] { _license.Edition, companyName });
             }
         }
     }
@@ -182,7 +175,7 @@ internal class LicenseValidator
             return _license.DPoPFeature;
         }
 
-        _informationLog.Invoke("A request was made using DPoP, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
+        _informationLog.Invoke("A request was made using DPoP, but you do not have a license. This feature requires the Enterprise Edition tier of license.", Array.Empty<object>());
         return true;
     }
 
@@ -218,7 +211,7 @@ internal class LicenseValidator
         }
     }
 
-    internal static License ValidateKey(string licenseKey)
+    internal static License? ValidateKey(string licenseKey)
     {
         if (!String.IsNullOrWhiteSpace(licenseKey))
         {
