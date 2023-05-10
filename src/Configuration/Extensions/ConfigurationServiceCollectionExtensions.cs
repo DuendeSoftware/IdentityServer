@@ -38,7 +38,8 @@ public class IdentityServerConfigurationBuilder
 public static class ConfigurationServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds IdentityServer.Configuration services
+    /// Adds IdentityServer.Configuration services with configuration options
+    /// specified by a lambda.
     /// </summary>
     public static IdentityServerConfigurationBuilder AddIdentityServerConfiguration(this IServiceCollection services, Action<IdentityServerConfigurationOptions> setupAction)
     {
@@ -47,7 +48,8 @@ public static class ConfigurationServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds IdentityServer.Configuration services
+    /// Adds IdentityServer.Configuration services with configuration options
+    /// specified by an <see cref="IConfiguration" />.
     /// </summary>
     public static IdentityServerConfigurationBuilder AddIdentityServerConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
