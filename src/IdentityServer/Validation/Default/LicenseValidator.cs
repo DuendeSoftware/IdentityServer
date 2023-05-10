@@ -89,7 +89,7 @@ internal class LicenseValidator
         }
         else
         {
-            _debugLog.Invoke("The validated licence key details: {@license}", new[] { _license });
+            _debugLog.Invoke("The validated license key details: {@license}", new[] { _license });
 
             if (_license.Expiration.HasValue)
             {
@@ -114,7 +114,7 @@ internal class LicenseValidator
             }
 
             _errorLog.Invoke(
-                "Please contact {licenceContact} from {licenseCompany} to obtain a valid license for the Duende software.",
+                "Please contact {licenseContact} from {licenseCompany} to obtain a valid license for the Duende software.",
                 new[] { _license.ContactInfo, _license.CompanyName });
         }
         else
