@@ -34,7 +34,7 @@ internal class LicenseValidator
     {
         _logger = loggerFactory.CreateLogger("Duende.License");
 
-        var key = options.LicenseKey ?? LoadFromFile() ?? throw new Exception("TODO");
+        var key = options.LicenseKey ?? LoadFromFile();
         _license = ValidateKey(key);
 
         if (_license?.RedistributionFeature == true && !isDevelopment)
@@ -211,7 +211,7 @@ internal class LicenseValidator
         }
     }
 
-    internal static License? ValidateKey(string licenseKey)
+    internal static License? ValidateKey(string? licenseKey)
     {
         if (!String.IsNullOrWhiteSpace(licenseKey))
         {
