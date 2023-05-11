@@ -53,7 +53,7 @@
         <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(WilsonVersion)"/>
         <PackageReference Update="System.IdentityModel.Tokens.Jwt" Version="$(WilsonVersion)"/>
         <PackageReference Update="AutoMapper" Version="[12.0.0,13.0)"/>
-        <PackageReference Update="Serilog.AspNetCore" Version="6.0.0"/>
+        <PackageReference Update="Serilog.AspNetCore" Version="7.0.0"/>
 
         <!--microsoft asp.net core -->
         <PackageReference Update="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(FrameworkVersion)"/>
