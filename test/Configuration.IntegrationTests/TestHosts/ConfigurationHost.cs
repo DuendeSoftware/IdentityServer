@@ -31,11 +31,6 @@ public class ConfigurationHost : GenericHost
         services.AddRouting();
         services.AddAuthorization();
 
-        services.AddLogging(logging =>
-        {
-            logging.AddFilter("Duende", LogLevel.Debug);
-        });
-
         services.AddSingleton<ICancellationTokenProvider, MockCancellationTokenProvider>();
 
         services.AddIdentityServerConfiguration(opt =>
