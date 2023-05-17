@@ -79,7 +79,7 @@ public class GenericHost
     {
         services.AddLogging(options =>
         {
-            options.SetMinimumLevel(LogLevel.Critical);
+            options.SetMinimumLevel(LogLevel.Debug);
             options.AddProvider(Logger);
         });
 
