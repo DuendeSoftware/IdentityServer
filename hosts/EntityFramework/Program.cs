@@ -34,7 +34,12 @@ try
 
     app.Run();
 }
-catch (Exception ex)
+catch (Exception ex) when (
+    // https://github.com/dotnet/runtime/issues/60600
+    ex.GetType().Name is not "StopTheHostException"
+    // HostAbortedException was added in .NET 7, but since we target .NET 6 we
+    // need to do it this way until we target .NET 8
+    && ex.GetType().Name is not "HostAbortedException")
 {
     Log.Fatal(ex, "Unhandled exception");
     Console.ReadLine();
