@@ -14,7 +14,7 @@ env:
 
 permissions:
   contents: read
-  
+
 jobs:
   build:
     strategy:
@@ -24,11 +24,12 @@ jobs:
     name: ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    
-    - name: Setup dotnet (main)
+
+    - name: Setup dotnet
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: |
