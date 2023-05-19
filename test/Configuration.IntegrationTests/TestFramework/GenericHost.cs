@@ -42,7 +42,6 @@ public class GenericHost
 
     public string Url(string path = "")
     {
-        path = path ?? String.Empty;
         if (!path.StartsWith("/")) path = "/" + path;
         return _baseAddress + path;
     }
@@ -79,7 +78,7 @@ public class GenericHost
     {
         services.AddLogging(options =>
         {
-            options.SetMinimumLevel(LogLevel.Debug);
+            options.SetMinimumLevel(LogLevel.Critical);
             options.AddProvider(Logger);
         });
 
