@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -211,6 +213,32 @@ public class DPoPProofValidator
     /// </summary>
     protected virtual async Task ValidatePayloadAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
+        if (result.Payload.TryGetValue(JwtClaimTypes.DPoPAccessTokenHash, out var ath))
+        {
+            result.AccessTokenHash = ath as string;
+        }
+
+        if (String.IsNullOrEmpty(result.AccessTokenHash))
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Invalid 'ath' value.";
+            return;
+        }
+
+        using (var sha = SHA256.Create())
+        {
+            var bytes = Encoding.UTF8.GetBytes(context.AccessToken);
+            var hash = sha.ComputeHash(bytes);
+
+            var accessTokenHash = Base64Url.Encode(hash);
+            if (accessTokenHash != result.AccessTokenHash)
+            {
+                result.IsError = true;
+                result.ErrorDescription = "Invalid 'ath' value.";
+                return;
+            }
+        }
+
         if (result.Payload.TryGetValue(JwtClaimTypes.JwtId, out var jti))
         {
             result.TokenId = jti as string;
