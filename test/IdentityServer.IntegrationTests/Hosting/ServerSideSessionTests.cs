@@ -37,7 +37,6 @@ public class ServerSideSessionTests
     private IPersistedGrantStore _grantStore;
     private IRefreshTokenStore _refreshTokenStore;
     private IDataProtector _protector;
-    //private ILogger _logger;
 
     private MockServerUrls _urls = new MockServerUrls();
 
