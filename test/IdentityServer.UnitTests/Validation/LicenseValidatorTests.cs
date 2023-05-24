@@ -4,6 +4,7 @@
 
 using System;
 using System.Security.Claims;
+using Duende;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using Xunit;
