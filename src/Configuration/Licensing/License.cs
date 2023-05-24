@@ -1,12 +1,14 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable disable
 
+using System;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Duende.IdentityServer.Configuration.Licensing;
+namespace Duende.IdentityServer.Configuration;
 
 internal class License
 {
@@ -204,8 +206,8 @@ internal class License
 
     public int Id { get; set; }
 
-    public string? CompanyName { get; set; }
-    public string? ContactInfo { get; set; }
+    public string CompanyName { get; set; }
+    public string ContactInfo { get; set; }
 
     public DateTime? Expiration { get; set; }
 
@@ -230,7 +232,7 @@ internal class License
     public bool ConfigApiFeature { get; set; }
     public bool DPoPFeature { get; set; }
 
-    public string? Extras { get; set; }
+    public string Extras { get; set; }
 
     public enum LicenseEdition
     {
@@ -243,6 +245,19 @@ internal class License
 
     public override string ToString()
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+        return ObjectSerializer.ToString(this);
+    }
+
+    internal static class ObjectSerializer
+    {
+        private static readonly JsonSerializerOptions Options = new()
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        public static string ToString(object o)
+        {
+            return JsonSerializer.Serialize(o, Options);
+        }
     }
 }

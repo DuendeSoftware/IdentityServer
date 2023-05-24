@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Duende;
+namespace Duende.IdentityServer;
 
 internal class License
 {

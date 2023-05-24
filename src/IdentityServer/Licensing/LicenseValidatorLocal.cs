@@ -10,7 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Duende;
+namespace Duende.IdentityServer;
 
 // APIs needed for IdentityServer specific license validation
 internal partial class LicenseValidator
