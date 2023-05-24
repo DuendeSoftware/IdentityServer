@@ -30,9 +30,9 @@ internal partial class LicenseValidator
 
     static License _license;
 
-    static void Initalize(ILoggerFactory loggerFactory, string key, bool isDevelopment = false)
+    static void Initalize(ILogger logger, string key, bool isDevelopment = false)
     {
-        _logger = loggerFactory.CreateLogger("Duende.License");
+        _logger = logger;
 
         key ??= LoadFromFile();
         _license = ValidateKey(key);

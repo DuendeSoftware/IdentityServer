@@ -23,7 +23,7 @@ internal partial class LicenseValidator
     {
         _options = options;
 
-        Initalize(loggerFactory, options.LicenseKey, isDevelopment);
+        Initalize(loggerFactory.CreateLogger("Duende.License"), options.LicenseKey, isDevelopment);
     }
 
     // this should just add to the error list
