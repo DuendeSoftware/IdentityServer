@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Session;
 using FluentAssertions.Common;
 using Duende.IdentityServer;
+using Microsoft.AspNetCore.DataProtection;
+using Duende.IdentityServer.Extensions;
 
 namespace IntegrationTests.Hosting;
 
@@ -34,6 +36,7 @@ public class ServerSideSessionTests
     private ISessionManagementService _sessionMgmt;
     private IPersistedGrantStore _grantStore;
     private IRefreshTokenStore _refreshTokenStore;
+    private IDataProtector _protector;
 
     private MockServerUrls _urls = new MockServerUrls();
 
@@ -122,6 +125,7 @@ public class ServerSideSessionTests
         _sessionMgmt = _pipeline.Resolve<ISessionManagementService>();
         _grantStore = _pipeline.Resolve<IPersistedGrantStore>();
         _refreshTokenStore = _pipeline.Resolve<IRefreshTokenStore>();
+        _protector = _pipeline.Resolve<IDataProtectionProvider>().CreateProtector("Duende.SessionManagement.ServerSideTicketStore");
     }
 
     async Task<bool> IsLoggedIn()
@@ -542,17 +546,26 @@ public class ServerSideSessionTests
             RedirectUri = "https://client/callback"
         });
 
-        var expiration1 = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single().Expires.Value;
+        var ticket1 = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single()
+            .Deserialize(_protector, null);
+        var expiration1 = ticket1.GetExpiration();
+        var issued1 = ticket1.GetIssued();
+
+        await Task.Delay(1000);
 
         await _pipeline.BackChannelClient.RequestRefreshTokenAsync(new RefreshTokenRequest {
             Address = IdentityServerPipeline.TokenEndpoint,
             ClientId = "client",
             RefreshToken = tokenResponse.RefreshToken
         });
-        
-        var expiration2 = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single().Expires.Value;
 
-        expiration2.Should().BeAfter(expiration1);
+        var ticket2 = (await _sessionStore.GetSessionsAsync(new SessionFilter { SubjectId = "alice" })).Single()
+            .Deserialize(_protector, null);
+        var expiration2 = ticket2.GetExpiration();
+        var issued2 = ticket2.GetIssued();
+
+        issued2.Should().BeAfter(issued1);
+        expiration2.Value.Should().BeAfter(expiration1.Value);
     }
 
     [Fact]

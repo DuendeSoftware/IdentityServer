@@ -156,6 +156,10 @@ public static class AuthenticationTicketExtensions
                 properties.ExpiresUtc = null;
             }
 
+            // similar to the expires update above, this is needed so that the ticket will have the 
+            // right issued timestamp when the cookie handler performs its sliding logic
+            properties.IssuedUtc = new DateTimeOffset(session.Renewed, TimeSpan.Zero);
+
             return new AuthenticationTicket(user, properties, ticket.Scheme);
         }
         catch (Exception ex)
