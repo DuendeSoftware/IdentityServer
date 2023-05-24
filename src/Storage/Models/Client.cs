@@ -285,7 +285,7 @@ public class Client
     /// <value>
     /// Any non empty string if claims should be prefixed with the value; otherwise, <c>null</c>.
     /// </value>
-    public string ClientClaimsPrefix { get; set; } = "client_";
+    public string? ClientClaimsPrefix { get; set; } = "client_";
 
     /// <summary>
     /// Gets or sets a salt value used in pair-wise subjectId generation for users of this client.
