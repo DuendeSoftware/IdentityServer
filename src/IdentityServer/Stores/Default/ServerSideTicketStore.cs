@@ -177,24 +177,8 @@ public class ServerSideTicketStore : IServerSideTicketStore
         
         var sessions = await _store.GetSessionsAsync(filter, cancellationToken);
 
-        var results = sessions
-            .Select(x => new { x.Renewed, Ticket = x.Deserialize(_protector, _logger)! })
-            .Where(x => x != null && x.Ticket != null)
-            .Select(item => new UserSession
-            {
-                SubjectId = item.Ticket.GetSubjectId(),
-                SessionId = item.Ticket.GetSessionId(),
-                DisplayName = item.Ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
-                Created = item.Ticket.GetIssued(),
-                Renewed = item.Renewed,
-                Expires = item.Ticket.GetExpiration(),
-                Issuer = item.Ticket.GetIssuer(),
-                ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
-                AuthenticationTicket = item.Ticket
-            })
-            .ToArray();
+        return AsUserSessions(sessions);
 
-        return results;
     }
 
     /// <inheritdoc />
@@ -204,22 +188,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
         
         var results = await _store.QuerySessionsAsync(filter, cancellationToken);
 
-        var tickets = results.Results
-            .Select(x => new { x.Renewed, Ticket = x.Deserialize(_protector, _logger)! })
-            .Where(x => x != null && x.Ticket != null)
-            .Select(item => new UserSession
-            {
-                SubjectId = item.Ticket.GetSubjectId(),
-                SessionId = item.Ticket.GetSessionId(),
-                DisplayName = item.Ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
-                Created = item.Ticket.GetIssued(),
-                Renewed = item.Renewed,
-                Expires = item.Ticket.GetExpiration(),
-                Issuer = item.Ticket.GetIssuer(),
-                ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
-                AuthenticationTicket = item.Ticket
-            })
-            .ToArray();
+        var tickets = AsUserSessions(results.Results);
 
         var result = new QueryResult<UserSession>
         {
@@ -242,23 +211,26 @@ public class ServerSideTicketStore : IServerSideTicketStore
         
         var sessions = await _store.GetAndRemoveExpiredSessionsAsync(count, cancellationToken);
 
-        var results = sessions
-            .Select(x => new { x.Renewed, Ticket = x.Deserialize(_protector, _logger)! })
+        return AsUserSessions(sessions);
+    }
+
+    private UserSession[] AsUserSessions(IEnumerable<ServerSideSession> sessions)
+    {
+        return sessions
+            .Select(x => new { x.Created, Ticket = x.Deserialize(_protector, _logger)! })
             .Where(x => x != null && x.Ticket != null)
             .Select(item => new UserSession
             {
                 SubjectId = item.Ticket.GetSubjectId(),
                 SessionId = item.Ticket.GetSessionId(),
                 DisplayName = item.Ticket.GetDisplayName(_options.ServerSideSessions.UserDisplayNameClaimType),
-                Created = item.Ticket.GetIssued(),
-                Renewed = item.Renewed,
+                Created = item.Created,
+                Renewed = item.Ticket.GetIssued(),
                 Expires = item.Ticket.GetExpiration(),
                 Issuer = item.Ticket.GetIssuer(),
                 ClientIds = item.Ticket.Properties.GetClientList().ToList().AsReadOnly(),
                 AuthenticationTicket = item.Ticket
             })
             .ToArray();
-
-        return results;
     }
 }
