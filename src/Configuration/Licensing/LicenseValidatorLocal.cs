@@ -6,14 +6,14 @@
 using Duende.IdentityServer.Configuration.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Duende.IdentityServer.Configuration;
+namespace Duende;
 
 // APIs needed for IdentityServer specific license validation
 internal partial class LicenseValidator
 {
     public static void Initalize(ILoggerFactory loggerFactory, IdentityServerConfigurationOptions options, bool isDevelopment = false)
     {
-        Initalize(loggerFactory.CreateLogger("Duende.License"), options.LicenseKey, isDevelopment);
+        Initalize(loggerFactory, "IdentityServer.Configuration", options.LicenseKey, isDevelopment);
     }
 
     // this should just add to the error list

@@ -10,7 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Duende.IdentityServer;
+namespace Duende;
 
 // APIs needed for IdentityServer specific license validation
 internal partial class LicenseValidator
@@ -23,7 +23,7 @@ internal partial class LicenseValidator
     {
         _options = options;
 
-        Initalize(loggerFactory.CreateLogger("Duende.License"), options.LicenseKey, isDevelopment);
+        Initalize(loggerFactory, "IdentityServer", options.LicenseKey, isDevelopment);
     }
 
     // this should just add to the error list

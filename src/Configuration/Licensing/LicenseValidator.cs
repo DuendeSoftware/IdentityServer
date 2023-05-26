@@ -5,16 +5,19 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Duende.IdentityServer.Configuration;
+namespace Duende;
 
 // shared APIs needed for Duende license validation
 internal partial class LicenseValidator
 {
-    static readonly string[] LicenseFileNames = new[]
+    static readonly string[] LicenseFileNames = new[] 
     {
         "Duende_License.key",
         "Duende_IdentityServer_License.key",
@@ -27,9 +30,9 @@ internal partial class LicenseValidator
 
     static License _license;
 
-    static void Initalize(ILogger logger, string key, bool isDevelopment = false)
+    static void Initalize(ILoggerFactory loggerFactory, string productName, string key, bool isDevelopment = false)
     {
-        _logger = logger;
+        _logger = loggerFactory.CreateLogger($"Duende.{productName}.License");
 
         key ??= LoadFromFile();
         _license = ValidateKey(key);
@@ -155,7 +158,7 @@ internal partial class LicenseValidator
 
         return null;
     }
-
+    
     private static void LogToTrace(string message, params object[] args)
     {
         if (_logger.IsEnabled(LogLevel.Trace))
@@ -163,7 +166,7 @@ internal partial class LicenseValidator
             LoggerExtensions.LogTrace(_logger, message, args);
         }
     }
-
+    
     private static void LogToDebug(string message, params object[] args)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
@@ -171,7 +174,7 @@ internal partial class LicenseValidator
             LoggerExtensions.LogDebug(_logger, message, args);
         }
     }
-
+    
     private static void LogToInformation(string message, params object[] args)
     {
         if (_logger.IsEnabled(LogLevel.Information))
@@ -179,7 +182,7 @@ internal partial class LicenseValidator
             LoggerExtensions.LogInformation(_logger, message, args);
         }
     }
-
+    
     private static void LogToError(string message, params object[] args)
     {
         if (_logger.IsEnabled(LogLevel.Error))

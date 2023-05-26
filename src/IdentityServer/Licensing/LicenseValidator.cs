@@ -12,7 +12,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Duende.IdentityServer;
+namespace Duende;
 
 // shared APIs needed for Duende license validation
 internal partial class LicenseValidator
@@ -30,9 +30,9 @@ internal partial class LicenseValidator
 
     static License _license;
 
-    static void Initalize(ILogger logger, string key, bool isDevelopment = false)
+    static void Initalize(ILoggerFactory loggerFactory, string productName, string key, bool isDevelopment = false)
     {
-        _logger = logger;
+        _logger = loggerFactory.CreateLogger($"Duende.{productName}.License");
 
         key ??= LoadFromFile();
         _license = ValidateKey(key);

@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using Duende;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
