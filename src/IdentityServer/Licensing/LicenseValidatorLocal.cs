@@ -43,43 +43,64 @@ internal partial class LicenseValidator
 
     public static void ValidateClient(string clientId)
     {
+        _clientIds.TryAdd(clientId, 1);
+
         if (_license != null)
         {
-            if (_license.ClientLimit.HasValue)
+            if (_license.ClientLimit.HasValue && _clientIds.Count > _license.ClientLimit)
             {
-                _clientIds.TryAdd(clientId, 1);
-                if (_clientIds.Count > _license.ClientLimit)
-                {
-                    _errorLog.Invoke(
-                        "Your license for Duende IdentityServer only permits {clientLimit} number of clients. You have processed requests for {clientCount}. The clients used were: {clients}.",
-                        new object[] { _license.ClientLimit, _clientIds.Count, _clientIds.Keys.ToArray() });
-                }
+                _errorLog.Invoke(
+                    "Your license for Duende IdentityServer only permits {clientLimit} number of clients. You have processed requests for {clientCount}. The clients used were: {clients}.",
+                    new object[] { _license.ClientLimit, _clientIds.Count, _clientIds.Keys.ToArray() });
+            }
+        }
+        else
+        {
+            if (_clientIds.Count > 5)
+            {
+                _warningLog?.Invoke(
+                    "You do not have a license, and you have processed requests for {clientCount} clients. This number requires a tier of license higher than Starter Edition. The clients used were: {clients}.",
+                    new object[] { _clientIds.Count, _clientIds.Keys.ToArray() });
             }
         }
     }
 
     public static void ValidateIssuer(string iss)
     {
+        _issuers.TryAdd(iss, 1);
+
         if (_license != null)
         {
-            if (_license.IssuerLimit.HasValue)
+            if (_license.IssuerLimit.HasValue && _issuers.Count > _license.IssuerLimit)
             {
-                _issuers.TryAdd(iss, 1);
-                if (_issuers.Count > _license.IssuerLimit)
-                {
-                    _errorLog.Invoke(
-                        "Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}. The issuers used were: {issuers}. This might be due to your server being accessed via different URLs or a direct IP and/or you have reverse proxy or a gateway involved. This suggests a network infrastructure configuration problem, or you are deliberately hosting multiple URLs and require an upgraded license.",
-                        new object[] { _license.IssuerLimit, _issuers.Count, _issuers.Keys.ToArray() });
-                }
+                _errorLog.Invoke(
+                    "Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}. The issuers used were: {issuers}. This might be due to your server being accessed via different URLs or a direct IP and/or you have reverse proxy or a gateway involved. This suggests a network infrastructure configuration problem, or you are deliberately hosting multiple URLs and require an upgraded license.",
+                    new object[] { _license.IssuerLimit, _issuers.Count, _issuers.Keys.ToArray() });
+            }
+        }
+        else
+        {
+            if (_issuers.Count > 1)
+            {
+                _warningLog?.Invoke(
+                    "You do not have a license, and you have processed requests for {issuerCount} issuers. If you are deliberately hosting multiple URLs then this number requires a license per issuer, or the Enterprise Edition tier of license. If not then this might be due to your server being accessed via different URLs or a direct IP and/or you have reverse proxy or a gateway involved, and this suggests a network infrastructure configuration problem. The issuers used were: {issuers}.",
+                    new object[] { _issuers.Count, _issuers.Keys.ToArray() });
             }
         }
     }
 
     public static void ValidateServerSideSessions()
     {
-        if (_license != null && !_license.ServerSideSessionsFeature)
+        if (_license != null)
         {
-            _errorLog.Invoke("You have configured server-side sessions. Your license for Duende IdentityServer does not include that feature.", Array.Empty<object>());
+            if (!_license.ServerSideSessionsFeature)
+            {
+                _errorLog.Invoke("You have configured server-side sessions. Your license for Duende IdentityServer does not include that feature.", Array.Empty<object>());
+            }
+        }
+        else
+        {
+            _warningLog?.Invoke("You have configured server-side sessions, but you do not have a license. This feature requires the Business or Enterprise Edition tier of license.", null);
         }
     }
 
@@ -90,39 +111,73 @@ internal partial class LicenseValidator
             return _license.DPoPFeature;
         }
 
-        _informationLog.Invoke("A request was made using DPoP, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
+        _warningLog?.Invoke("A request was made using DPoP, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
         return true;
     }
 
     public static void ValidateResourceIndicators(string resourceIndicator)
     {
-        if (_license != null && !String.IsNullOrWhiteSpace(resourceIndicator) && !_license.ResourceIsolationFeature)
+        if (!String.IsNullOrWhiteSpace(resourceIndicator))
         {
-            _errorLog.Invoke("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.", Array.Empty<object>());
+            if (_license != null)
+            {
+                if (!_license.ResourceIsolationFeature)
+                {
+                    _errorLog.Invoke("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.", Array.Empty<object>());
+                }
+            }
+            else
+            {
+                _warningLog?.Invoke("A request was made using a resource indicator, but you do not have a license. This feature requires the Enterprise Edition tier of license.", Array.Empty<object>());
+            }
         }
     }
 
     public static void ValidateResourceIndicators(IEnumerable<string> resourceIndicators)
     {
-        if (_license != null && resourceIndicators?.Any() == true && !_license.ResourceIsolationFeature)
+        if (resourceIndicators?.Any() == true)
         {
-            _errorLog.Invoke("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.", Array.Empty<object>());
+            if (_license != null)
+            {
+                if (!_license.ResourceIsolationFeature)
+                {
+                    _errorLog.Invoke("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.", Array.Empty<object>());
+                }
+            }
+            else
+            {
+                _warningLog?.Invoke("A request was made using a resource indicator, but you do not have a license. This feature requires the Enterprise Edition tier of license.", Array.Empty<object>());
+            }
         }
     }
 
     public static void ValidateDynamicProviders()
     {
-        if (_license != null && !_license.DynamicProvidersFeature)
+        if (_license != null)
         {
-            _errorLog.Invoke("A request was made invoking a dynamic provider. Your license for Duende IdentityServer does not permit dynamic providers.", Array.Empty<object>());
+            if (!_license.DynamicProvidersFeature)
+            {
+                _errorLog.Invoke("A request was made invoking a dynamic provider. Your license for Duende IdentityServer does not permit dynamic providers.", Array.Empty<object>());
+            }
+        }
+        else
+        {
+            _warningLog?.Invoke("A request was made invoking a dynamic provider, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
         }
     }
 
     public static void ValidateCiba()
     {
-        if (_license != null && !_license.CibaFeature)
+        if (_license != null)
         {
-            _errorLog.Invoke("A CIBA (client initiated backchannel authentication) request was made. Your license for Duende IdentityServer does not permit the CIBA feature.", Array.Empty<object>());
+            if (!_license.CibaFeature)
+            {
+                _errorLog.Invoke("A CIBA (client initiated backchannel authentication) request was made. Your license for Duende IdentityServer does not permit the CIBA feature.", Array.Empty<object>());
+            }
+        }
+        else
+        {
+            _warningLog?.Invoke("A CIBA (client initiated backchannel authentication) request was made, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
         }
     }
 }
