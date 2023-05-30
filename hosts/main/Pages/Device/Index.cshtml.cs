@@ -33,26 +33,21 @@ public class Index : PageModel
         _logger = logger;
     }
 
-    public ViewModel View { get; set; }
+    public ViewModel View { get; set; } = default!;
 
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = default!;
 
-    public async Task<IActionResult> OnGet(string userCode)
+    public async Task<IActionResult> OnGet(string? userCode)
     {
         if (String.IsNullOrWhiteSpace(userCode))
         {
-            View = new ViewModel();
-            Input = new InputModel();
             return Page();
         }
 
-        View = await BuildViewModelAsync(userCode);
-        if (View == null)
+        if (!await SetViewModelAsync(userCode))
         {
             ModelState.AddModelError("", DeviceOptions.InvalidUserCode);
-            View = new ViewModel();
-            Input = new InputModel();
             return Page();
         }
 
@@ -65,10 +60,10 @@ public class Index : PageModel
 
     public async Task<IActionResult> OnPost()
     {
-        var request = await _interaction.GetAuthorizationContextAsync(Input.UserCode);
+        var request = await _interaction.GetAuthorizationContextAsync(Input.UserCode ?? throw new ArgumentNullException(Input.UserCode));
         if (request == null) return RedirectToPage("/Home/Error/Index");
 
-        ConsentResponse grantedConsent = null;
+        ConsentResponse? grantedConsent = null;
 
         // user clicked 'no' - send back the standard 'access_denied' response
         if (Input.Button == "no")
@@ -123,23 +118,30 @@ public class Index : PageModel
         }
 
         // we need to redisplay the consent UI
-        View = await BuildViewModelAsync(Input.UserCode, Input);
+        if (!await SetViewModelAsync(Input.UserCode))
+        {
+            return RedirectToPage("/Home/Error/Index");
+        }
         return Page();
     }
 
 
-    private async Task<ViewModel> BuildViewModelAsync(string userCode, InputModel model = null)
+    private async Task<bool> SetViewModelAsync(string userCode)
     {
         var request = await _interaction.GetAuthorizationContextAsync(userCode);
         if (request != null)
         {
-            return CreateConsentViewModel(model, request);
+            View = CreateConsentViewModel(Input, request);
+            return true;
         }
-
-        return null;
+        else
+        {
+            View = new ViewModel();
+            return false;
+        }
     }
 
-    private ViewModel CreateConsentViewModel(InputModel model, DeviceFlowAuthorizationRequest request)
+    private static ViewModel CreateConsentViewModel(InputModel model, DeviceFlowAuthorizationRequest request)
     {
         var vm = new ViewModel
         {
@@ -170,7 +172,7 @@ public class Index : PageModel
         return vm;
     }
 
-    private ScopeViewModel CreateScopeViewModel(IdentityResource identity, bool check)
+    private static ScopeViewModel CreateScopeViewModel(IdentityResource identity, bool check)
     {
         return new ScopeViewModel
         {
@@ -183,7 +185,7 @@ public class Index : PageModel
         };
     }
 
-    public ScopeViewModel CreateScopeViewModel(ParsedScopeValue parsedScopeValue, ApiScope apiScope, bool check)
+    private static ScopeViewModel CreateScopeViewModel(ParsedScopeValue parsedScopeValue, ApiScope apiScope, bool check)
     {
         return new ScopeViewModel
         {
@@ -197,7 +199,7 @@ public class Index : PageModel
         };
     }
 
-    private ScopeViewModel GetOfflineAccessScope(bool check)
+    private static ScopeViewModel GetOfflineAccessScope(bool check)
     {
         return new ScopeViewModel
         {
