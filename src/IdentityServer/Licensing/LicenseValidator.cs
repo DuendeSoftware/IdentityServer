@@ -81,7 +81,7 @@ internal partial class LicenseValidator
 
             // we're not using our _warningLog because we always want this emitted regardless of the context
             _logger.LogWarning(message);
-            WarnForProductFeatures();
+            WarnForProductFeaturesWhenMissingLicense();
             return;
         }
 
@@ -96,7 +96,7 @@ internal partial class LicenseValidator
             }
         }
 
-        ValidateLicenseForProduct(errors);
+        ValidateProductFeaturesForLicense(errors);
 
         if (errors.Count > 0)
         {

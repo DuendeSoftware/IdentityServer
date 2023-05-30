@@ -27,23 +27,20 @@ internal partial class LicenseValidator
     }
 
     // this should just add to the error list
-    static void ValidateLicenseForProduct(IList<string> errors)
+    static void ValidateProductFeaturesForLicense(IList<string> errors)
     {
-        if (_license != null)
+        if (_license.IsBffEdition)
         {
-            if (_license.IsBffEdition)
-            {
-                errors.Add($"Your Duende software license is not valid for IdentityServer.");
-                return;
-            }
+            errors.Add($"Your Duende software license is not valid for IdentityServer.");
+            return;
+        }
 
-            if (_options.KeyManagement.Enabled && !_license.KeyManagementFeature)
-            {
-                errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");
-            }
+        if (_options.KeyManagement.Enabled && !_license.KeyManagementFeature)
+        {
+            errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");
         }
     }
-    static void WarnForProductFeatures()
+    static void WarnForProductFeaturesWhenMissingLicense()
     {
         if (_options.KeyManagement.Enabled)
         {

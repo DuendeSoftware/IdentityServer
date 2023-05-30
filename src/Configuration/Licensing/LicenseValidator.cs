@@ -5,9 +5,6 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -17,7 +14,7 @@ namespace Duende;
 // shared APIs needed for Duende license validation
 internal partial class LicenseValidator
 {
-    static readonly string[] LicenseFileNames = new[] 
+    static readonly string[] LicenseFileNames = new[]
     {
         "Duende_License.key",
         "Duende_IdentityServer_License.key",
@@ -26,6 +23,7 @@ internal partial class LicenseValidator
     static ILogger _logger;
     static Action<string, object[]> _errorLog;
     static Action<string, object[]> _informationLog;
+    static Action<string, object[]> _warningLog;
     static Action<string, object[]> _debugLog;
 
     static License _license;
@@ -40,11 +38,12 @@ internal partial class LicenseValidator
         if (_license?.RedistributionFeature == true && !isDevelopment)
         {
             // for redistribution/prod scenarios, we want most of these to be at trace level
-            _errorLog = _informationLog = _debugLog = LogToTrace;
+            _errorLog = _warningLog = _informationLog = _debugLog = LogToTrace;
         }
         else
         {
             _errorLog = LogToError;
+            _warningLog = LogToWarning;
             _informationLog = LogToInformation;
             _debugLog = LogToDebug;
         }
@@ -66,6 +65,8 @@ internal partial class LicenseValidator
 
     public static void ValidateLicense()
     {
+        if (_logger == null) throw new Exception("LicenseValidator.Initalize has not yet been called.");
+
         var errors = new List<string>();
 
         if (_license == null)
@@ -75,7 +76,9 @@ internal partial class LicenseValidator
                           "If you are running in production you are required to have a licensed version. " +
                           "Please start a conversation with us: https://duendesoftware.com/contact";
 
+            // we're not using our _warningLog because we always want this emitted regardless of the context
             _logger.LogWarning(message);
+            WarnForProductFeaturesWhenMissingLicense();
             return;
         }
 
@@ -90,7 +93,7 @@ internal partial class LicenseValidator
             }
         }
 
-        ValidateLicenseForProduct(errors);
+        ValidateProductFeaturesForLicense(errors);
 
         if (errors.Count > 0)
         {
@@ -158,7 +161,7 @@ internal partial class LicenseValidator
 
         return null;
     }
-    
+
     private static void LogToTrace(string message, params object[] args)
     {
         if (_logger.IsEnabled(LogLevel.Trace))
@@ -166,7 +169,7 @@ internal partial class LicenseValidator
             LoggerExtensions.LogTrace(_logger, message, args);
         }
     }
-    
+
     private static void LogToDebug(string message, params object[] args)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
@@ -174,7 +177,7 @@ internal partial class LicenseValidator
             LoggerExtensions.LogDebug(_logger, message, args);
         }
     }
-    
+
     private static void LogToInformation(string message, params object[] args)
     {
         if (_logger.IsEnabled(LogLevel.Information))
@@ -182,7 +185,15 @@ internal partial class LicenseValidator
             LoggerExtensions.LogInformation(_logger, message, args);
         }
     }
-    
+
+    private static void LogToWarning(string message, params object[] args)
+    {
+        if (_logger.IsEnabled(LogLevel.Warning))
+        {
+            LoggerExtensions.LogWarning(_logger, message, args);
+        }
+    }
+
     private static void LogToError(string message, params object[] args)
     {
         if (_logger.IsEnabled(LogLevel.Error))
