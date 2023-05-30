@@ -3,6 +3,7 @@
 
 using System.Security.Claims;
 using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
 using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
@@ -19,6 +20,9 @@ internal static class HostingExtensions
             .AddRazorRuntimeCompilation();
 
         builder.Services.AddControllers();
+        builder.Services.AddHealthChecks()
+                    .AddCheck<DiscoveryHealthCheck>("DiscoveryHealthCheck")
+                    .AddCheck<DiscoveryKeysHealthCheck>("DiscoveryKeysHealthCheck");
 
         // cookie policy to deal with temporary browser incompatibilities
         builder.Services.AddSameSiteCookiePolicy();
@@ -151,6 +155,9 @@ internal static class HostingExtensions
         app.UseIdentityServer();
         app.UseAuthorization();
 
+        // health checks
+        app.MapHealthChecks("/health");
+        
         // local API endpoints
         app.MapControllers()
             .RequireAuthorization(IdentityServerConstants.LocalApi.PolicyName);

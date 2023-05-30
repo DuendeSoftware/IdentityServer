@@ -11,6 +11,7 @@ public class NoSubjectExtensionGrantValidator : IExtensionGrantValidator
 {
     public Task ValidateAsync(ExtensionGrantValidationContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
         var credential = context.Request.Raw.Get("custom_credential");
 
         if (credential != null)

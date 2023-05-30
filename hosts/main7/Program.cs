@@ -5,9 +5,12 @@ using IdentityServerHost;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
+using System.Globalization;
+
+#pragma warning disable CA1852 // Seal internal types (disabled because we are using top level statements with no explicit class to seal.)
 
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
+    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
     .CreateBootstrapLogger();
 
 Log.Information("Host.Main Starting up");
@@ -20,7 +23,8 @@ try
         .WriteTo.Console(
             outputTemplate:
             "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}",
-            theme: AnsiConsoleTheme.Code)
+            theme: AnsiConsoleTheme.Code,
+            formatProvider: CultureInfo.InvariantCulture)
         .MinimumLevel.Debug()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)

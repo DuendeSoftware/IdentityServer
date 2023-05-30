@@ -11,10 +11,11 @@ public class ParameterizedScopeTokenRequestValidator : ICustomTokenRequestValida
 {
     public Task ValidateAsync(CustomTokenRequestValidationContext context)
     {
-        var transaction = context.Result.ValidatedRequest.ValidatedResources.ParsedScopes.FirstOrDefault(x => x.ParsedName == "transaction");
+        ArgumentNullException.ThrowIfNull(context);
+        var transaction = context.Result?.ValidatedRequest.ValidatedResources.ParsedScopes.FirstOrDefault(x => x.ParsedName == "transaction");
         if (transaction?.ParsedParameter != null)
         {
-            context.Result.ValidatedRequest.ClientClaims.Add(new Claim(transaction.ParsedName, transaction.ParsedParameter));
+            context.Result?.ValidatedRequest.ClientClaims.Add(new Claim(transaction.ParsedName, transaction.ParsedParameter));
         }
 
         return Task.CompletedTask;
