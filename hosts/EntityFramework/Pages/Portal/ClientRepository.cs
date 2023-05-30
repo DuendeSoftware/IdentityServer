@@ -5,8 +5,8 @@ namespace IdentityServerHost.Pages.Portal;
 
 public class ThirdPartyInitiatedLoginLink
 {
-    public string LinkText { get; set; }
-    public string InitiateLoginUri { get; set; }
+    public string? LinkText { get; set; }
+    public string? InitiateLoginUri { get; set; }
 }
 
 
@@ -19,7 +19,7 @@ public class ClientRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<ThirdPartyInitiatedLoginLink>> GetClientsWithLoginUris(string filter = null)
+    public async Task<IEnumerable<ThirdPartyInitiatedLoginLink>> GetClientsWithLoginUris(string? filter = null)
     {
         var query = _context.Clients
             .Where(c => c.InitiateLoginUri != null);

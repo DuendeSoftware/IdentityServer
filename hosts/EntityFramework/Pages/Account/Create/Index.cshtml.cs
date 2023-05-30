@@ -19,14 +19,14 @@ public class Index : PageModel
     private readonly IIdentityServerInteractionService _interaction;
 
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = default!;
         
     public Index(
         IIdentityServerInteractionService interaction,
-        TestUserStore users = null)
+        TestUserStore? users = null)
     {
         // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
-        _users = users ?? throw new Exception("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
+        _users = users ?? throw new InvalidOperationException("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
             
         _interaction = interaction;
     }
@@ -60,7 +60,7 @@ public class Index : PageModel
                     return this.LoadingPage(Input.ReturnUrl);
                 }
 
-                return Redirect(Input.ReturnUrl);
+                return Redirect(Input.ReturnUrl ?? "~/");
             }
             else
             {
@@ -95,8 +95,8 @@ public class Index : PageModel
                     return this.LoadingPage(Input.ReturnUrl);
                 }
 
-                // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                return Redirect(Input.ReturnUrl);
+                // we can trust Input.ReturnUrl since GetAuthorizationContextAsync returned non-null
+                return Redirect(Input.ReturnUrl ?? "~/");
             }
 
             // request for a local page
@@ -111,7 +111,7 @@ public class Index : PageModel
             else
             {
                 // user might have clicked on a malicious link - should be logged
-                throw new Exception("invalid return URL");
+                throw new ArgumentException("invalid return URL");
             }
         }
 

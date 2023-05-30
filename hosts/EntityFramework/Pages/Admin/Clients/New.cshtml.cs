@@ -17,8 +17,8 @@ public class NewModel : PageModel
     }
 
     [BindProperty]
-    public CreateClientModel InputModel { get; set; }
-        
+    public CreateClientModel InputModel { get; set; } = default!;
+
     public bool Created { get; set; }
 
     public void OnGet()

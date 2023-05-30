@@ -16,7 +16,7 @@ public class NewModel : PageModel
     }
 
     [BindProperty]
-    public ApiScopeModel InputModel { get; set; }
+    public ApiScopeModel InputModel { get; set; } = default!;
         
     public void OnGet()
     {

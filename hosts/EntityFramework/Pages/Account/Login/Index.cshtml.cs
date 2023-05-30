@@ -21,20 +21,20 @@ public class Index : PageModel
     private readonly IAuthenticationSchemeProvider _schemeProvider;
     private readonly IIdentityProviderStore _identityProviderStore;
 
-    public ViewModel View { get; set; }
-        
+    public ViewModel View { get; set; } = default!;
+
     [BindProperty]
-    public InputModel Input { get; set; }
-        
+    public InputModel Input { get; set; } = default!;
+
     public Index(
         IIdentityServerInteractionService interaction,
         IAuthenticationSchemeProvider schemeProvider,
         IIdentityProviderStore identityProviderStore,
         IEventService events,
-        TestUserStore users = null)
+        TestUserStore? users = null)
     {
         // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
-        _users = users ?? throw new Exception("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
+        _users = users ?? throw new InvalidOperationException("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
             
         _interaction = interaction;
         _schemeProvider = schemeProvider;
@@ -78,7 +78,7 @@ public class Index : PageModel
                     return this.LoadingPage(Input.ReturnUrl);
                 }
 
-                return Redirect(Input.ReturnUrl);
+                return Redirect(Input.ReturnUrl ?? "~/");
             }
             else
             {
@@ -97,14 +97,11 @@ public class Index : PageModel
 
                 // only set explicit expiration here if user chooses "remember me". 
                 // otherwise we rely upon expiration configured in cookie middleware.
-                AuthenticationProperties props = null;
+                var props = new AuthenticationProperties();
                 if (LoginOptions.AllowRememberLogin && Input.RememberLogin)
                 {
-                    props = new AuthenticationProperties
-                    {
-                        IsPersistent = true,
-                        ExpiresUtc = DateTimeOffset.UtcNow.Add(LoginOptions.RememberMeLoginDuration)
-                    };
+                    props.IsPersistent = true;
+                    props.ExpiresUtc = DateTimeOffset.UtcNow.Add(LoginOptions.RememberMeLoginDuration);
                 };
 
                 // issue authentication cookie with subject ID and username
@@ -125,7 +122,7 @@ public class Index : PageModel
                     }
 
                     // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                    return Redirect(Input.ReturnUrl);
+                    return Redirect(Input.ReturnUrl ?? "~/");
                 }
 
                 // request for a local page
@@ -140,7 +137,7 @@ public class Index : PageModel
                 else
                 {
                     // user might have clicked on a malicious link - should be logged
-                    throw new Exception("invalid return URL");
+                    throw new ArgumentException("invalid return URL");
                 }
             }
 
@@ -153,7 +150,7 @@ public class Index : PageModel
         return Page();
     }
         
-    private async Task BuildModelAsync(string returnUrl)
+    private async Task BuildModelAsync(string? returnUrl)
     {
         Input = new InputModel
         {
@@ -171,7 +168,7 @@ public class Index : PageModel
                 EnableLocalLogin = local,
             };
 
-            Input.Username = context?.LoginHint;
+            Input.Username = context.LoginHint;
 
             if (!local)
             {
@@ -196,7 +193,7 @@ public class Index : PageModel
             .Select(x => new ViewModel.ExternalProvider
             {
                 AuthenticationScheme = x.Scheme,
-                DisplayName = x.DisplayName
+                DisplayName = x.DisplayName ?? x.Scheme
             });
         providers.AddRange(dyanmicSchemes);
 
@@ -208,7 +205,9 @@ public class Index : PageModel
             allowLocal = client.EnableLocalLogin;
             if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Any())
             {
-                providers = providers.Where(provider => client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
+                providers = providers.Where(provider => 
+                    provider.AuthenticationScheme != null &&
+                    client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
             }
         }
 

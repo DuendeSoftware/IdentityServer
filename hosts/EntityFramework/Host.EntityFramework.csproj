@@ -4,6 +4,8 @@
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>IdentityServerHost</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AnalysisMode>all</AnalysisMode>
     </PropertyGroup>
 
     <ItemGroup>

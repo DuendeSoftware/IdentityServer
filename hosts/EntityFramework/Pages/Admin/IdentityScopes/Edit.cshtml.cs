@@ -16,19 +16,22 @@ public class EditModel : PageModel
     }
 
     [BindProperty]
-    public IdentityScopeModel InputModel { get; set; }
+    public IdentityScopeModel InputModel { get; set; } = default!;
     [BindProperty]
-    public string Button { get; set; }
+    public string? Button { get; set; }
 
     public async Task<IActionResult> OnGetAsync(string id)
     {
-        InputModel = await _repository.GetByIdAsync(id);
-        if (InputModel == null)
+        var model = await _repository.GetByIdAsync(id);
+        if (model == null)
         {
             return RedirectToPage("/Admin/IdentityScopes/Index");
         }
-
-        return Page();
+        else
+        { 
+            InputModel = model;
+            return Page();
+        }
     }
 
     public async Task<IActionResult> OnPostAsync(string id)
