@@ -29,18 +29,29 @@ internal partial class LicenseValidator
     // this should just add to the error list
     static void ValidateLicenseForProduct(IList<string> errors)
     {
-        if (_license.IsBffEdition)
+        if (_license != null)
         {
-            errors.Add($"Your Duende software license is not valid for IdentityServer.");
-            return;
-        }
+            if (_license.IsBffEdition)
+            {
+                errors.Add($"Your Duende software license is not valid for IdentityServer.");
+                return;
+            }
 
-        if (_options.KeyManagement.Enabled && !_license.KeyManagementFeature)
+            if (_options.KeyManagement.Enabled && !_license.KeyManagementFeature)
+            {
+                errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");
+            }
+        }
+    }
+    static void WarnForProductFeatures()
+    {
+        if (_options.KeyManagement.Enabled)
         {
-            errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");
+            _warningLog?.Invoke("You have automatic key management enabled, but you do not have a license. This feature requires the Business or Enterprise Edition tier of license.", null);
         }
     }
 
+    static bool ValidateClientWarned = false;
     public static void ValidateClient(string clientId)
     {
         _clientIds.TryAdd(clientId, 1);
@@ -56,8 +67,9 @@ internal partial class LicenseValidator
         }
         else
         {
-            if (_clientIds.Count > 5)
+            if (_clientIds.Count > 5 && !ValidateClientWarned)
             {
+                ValidateClientWarned = true;
                 _warningLog?.Invoke(
                     "You do not have a license, and you have processed requests for {clientCount} clients. This number requires a tier of license higher than Starter Edition. The clients used were: {clients}.",
                     new object[] { _clientIds.Count, _clientIds.Keys.ToArray() });
@@ -65,6 +77,7 @@ internal partial class LicenseValidator
         }
     }
 
+    static bool ValidateIssuerWarned = false;
     public static void ValidateIssuer(string iss)
     {
         _issuers.TryAdd(iss, 1);
@@ -80,8 +93,9 @@ internal partial class LicenseValidator
         }
         else
         {
-            if (_issuers.Count > 1)
+            if (_issuers.Count > 1 && !ValidateIssuerWarned)
             {
+                ValidateIssuerWarned = true;
                 _warningLog?.Invoke(
                     "You do not have a license, and you have processed requests for {issuerCount} issuers. If you are deliberately hosting multiple URLs then this number requires a license per issuer, or the Enterprise Edition tier of license. If not then this might be due to your server being accessed via different URLs or a direct IP and/or you have reverse proxy or a gateway involved, and this suggests a network infrastructure configuration problem. The issuers used were: {issuers}.",
                     new object[] { _issuers.Count, _issuers.Keys.ToArray() });
@@ -89,6 +103,7 @@ internal partial class LicenseValidator
         }
     }
 
+    static bool ValidateServerSideSessionsWarned = false;
     public static void ValidateServerSideSessions()
     {
         if (_license != null)
@@ -98,12 +113,14 @@ internal partial class LicenseValidator
                 _errorLog.Invoke("You have configured server-side sessions. Your license for Duende IdentityServer does not include that feature.", Array.Empty<object>());
             }
         }
-        else
+        else if (!ValidateServerSideSessionsWarned)
         {
+            ValidateServerSideSessionsWarned = true;
             _warningLog?.Invoke("You have configured server-side sessions, but you do not have a license. This feature requires the Business or Enterprise Edition tier of license.", null);
         }
     }
 
+    static bool CanUseDPoPWarned = false;
     public static bool CanUseDPoP()
     {
         if (_license != null)
@@ -111,10 +128,16 @@ internal partial class LicenseValidator
             return _license.DPoPFeature;
         }
 
-        _warningLog?.Invoke("A request was made using DPoP, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
+        if (!CanUseDPoPWarned)
+        {
+            CanUseDPoPWarned = true;
+            _warningLog?.Invoke("A request was made using DPoP, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
+        }
+
         return true;
     }
 
+    static bool ValidateResourceIndicatorsWarned = false;
     public static void ValidateResourceIndicators(string resourceIndicator)
     {
         if (!String.IsNullOrWhiteSpace(resourceIndicator))
@@ -126,13 +149,13 @@ internal partial class LicenseValidator
                     _errorLog.Invoke("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.", Array.Empty<object>());
                 }
             }
-            else
+            else if (!ValidateResourceIndicatorsWarned)
             {
+                ValidateResourceIndicatorsWarned = true;
                 _warningLog?.Invoke("A request was made using a resource indicator, but you do not have a license. This feature requires the Enterprise Edition tier of license.", Array.Empty<object>());
             }
         }
     }
-
     public static void ValidateResourceIndicators(IEnumerable<string> resourceIndicators)
     {
         if (resourceIndicators?.Any() == true)
@@ -144,13 +167,15 @@ internal partial class LicenseValidator
                     _errorLog.Invoke("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.", Array.Empty<object>());
                 }
             }
-            else
+            else if (!ValidateResourceIndicatorsWarned)
             {
+                ValidateResourceIndicatorsWarned = true;
                 _warningLog?.Invoke("A request was made using a resource indicator, but you do not have a license. This feature requires the Enterprise Edition tier of license.", Array.Empty<object>());
             }
         }
     }
 
+    static bool ValidateDynamicProvidersWarned = false;
     public static void ValidateDynamicProviders()
     {
         if (_license != null)
@@ -160,12 +185,14 @@ internal partial class LicenseValidator
                 _errorLog.Invoke("A request was made invoking a dynamic provider. Your license for Duende IdentityServer does not permit dynamic providers.", Array.Empty<object>());
             }
         }
-        else
+        else if (!ValidateDynamicProvidersWarned)
         {
+            ValidateDynamicProvidersWarned = true;
             _warningLog?.Invoke("A request was made invoking a dynamic provider, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
         }
     }
 
+    static bool ValidateCibaWarned = false;
     public static void ValidateCiba()
     {
         if (_license != null)
@@ -175,8 +202,9 @@ internal partial class LicenseValidator
                 _errorLog.Invoke("A CIBA (client initiated backchannel authentication) request was made. Your license for Duende IdentityServer does not permit the CIBA feature.", Array.Empty<object>());
             }
         }
-        else
+        else if (!ValidateCibaWarned)
         {
+            ValidateCibaWarned = true;
             _warningLog?.Invoke("A CIBA (client initiated backchannel authentication) request was made, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
         }
     }
