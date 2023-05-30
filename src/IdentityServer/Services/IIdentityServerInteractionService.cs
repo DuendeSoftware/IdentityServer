@@ -30,13 +30,13 @@ public interface IIdentityServerInteractionService
     /// Gets the error context.
     /// </summary>
     /// <param name="errorId">The error identifier.</param>
-    Task<ErrorMessage?> GetErrorContextAsync(string errorId);
+    Task<ErrorMessage?> GetErrorContextAsync(string? errorId);
 
     /// <summary>
     /// Gets the logout context.
     /// </summary>
     /// <param name="logoutId">The logout identifier.</param>
-    Task<LogoutRequest> GetLogoutContextAsync(string logoutId);
+    Task<LogoutRequest> GetLogoutContextAsync(string? logoutId);
 
     /// <summary>
     /// Used to create a logoutId if there is not one presently.
