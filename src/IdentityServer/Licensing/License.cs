@@ -1,11 +1,14 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable disable
 
 using System;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace Duende.IdentityServer.Validation;
+namespace Duende;
 
 internal class License
 {
@@ -243,5 +246,18 @@ internal class License
     public override string ToString()
     {
         return ObjectSerializer.ToString(this);
+    }
+
+    internal static class ObjectSerializer
+    {
+        private static readonly JsonSerializerOptions Options = new()
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        public static string ToString(object o)
+        {
+            return JsonSerializer.Serialize(o, Options);
+        }
     }
 }
