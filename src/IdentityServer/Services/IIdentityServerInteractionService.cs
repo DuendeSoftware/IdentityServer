@@ -67,10 +67,10 @@ public interface IIdentityServerInteractionService
     Task<IEnumerable<Grant>> GetAllUserGrantsAsync();
 
     /// <summary>
-    /// Revokes all a user's consents and grants for a client.
+    /// Revokes all a user's consents and grants for a given client, or for all clients if clientId is null.
     /// </summary>
     /// <param name="clientId">The client identifier.</param>
-    Task RevokeUserConsentAsync(string clientId);
+    Task RevokeUserConsentAsync(string? clientId);
 
     /// <summary>
     /// Revokes all of a user's consents and grants for clients the user has signed into during their current session.
