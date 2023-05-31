@@ -9,7 +9,7 @@ using Duende.IdentityServer.Models;
 
 namespace IdentityServerHost.Configuration;
 
-public static class Resources
+public class Resources
 {
     // identity resources represent identity data about a user that can be requested via the scope parameter (OpenID Connect)
     public static readonly IEnumerable<IdentityResource> IdentityResources =
