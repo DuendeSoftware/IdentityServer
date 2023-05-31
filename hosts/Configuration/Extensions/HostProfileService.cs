@@ -16,6 +16,7 @@ public class HostProfileService : TestUserProfileService
 
     public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
         await base.GetProfileDataAsync(context);
 
         var transaction = context.RequestedResources.ParsedScopes.FirstOrDefault(x => x.ParsedName == "transaction");

@@ -17,13 +17,13 @@ public class DiscoveryHealthCheck : IHealthCheck
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(context);
         try
         {
             var endpoint = _endpoints.FirstOrDefault(x => x.Name == IdentityServerConstants.EndpointNames.Discovery);
             if (endpoint != null)
             {
-                var handler = _httpContextAccessor.HttpContext.RequestServices.GetRequiredService(endpoint.Handler) as IEndpointHandler;
-                if (handler != null)
+                if (_httpContextAccessor.HttpContext?.RequestServices.GetRequiredService(endpoint.Handler) is IEndpointHandler handler)
                 {
                     var result = await handler.ProcessAsync(_httpContextAccessor.HttpContext);
                     if (result is DiscoveryDocumentResult)
@@ -54,13 +54,13 @@ public class DiscoveryKeysHealthCheck : IHealthCheck
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(context);
         try
         {
             var endpoint = _endpoints.FirstOrDefault(x => x.Name == IdentityServerConstants.EndpointNames.Jwks);
             if (endpoint != null)
             {
-                var handler = _httpContextAccessor.HttpContext.RequestServices.GetRequiredService(endpoint.Handler) as IEndpointHandler;
-                if (handler != null)
+                if (_httpContextAccessor.HttpContext?.RequestServices.GetRequiredService(endpoint.Handler) is IEndpointHandler handler)
                 {
                     var result = await handler.ProcessAsync(_httpContextAccessor.HttpContext);
                     if (result is JsonWebKeysResult)

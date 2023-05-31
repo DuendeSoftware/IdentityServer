@@ -10,7 +10,7 @@ using Duende.IdentityServer.Test;
 
 namespace IdentityServerHost;
 
-public class TestUsers
+public static class TestUsers
 {
     public static List<TestUser> Users
     {
