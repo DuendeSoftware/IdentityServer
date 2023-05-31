@@ -30,6 +30,7 @@ public class ClientModel : CreateClientModel, IValidatableObject
     public string AllowedScopes { get; set; } = default!;
 
     public string? RedirectUri { get; set; }
+    public string? InitiateLoginUri { get; set; }
     public string? PostLogoutRedirectUri { get; set; }
     public string? FrontChannelLogoutUri { get; set; }
     public string? BackChannelLogoutUri { get; set; }
@@ -108,6 +109,7 @@ public class ClientRepository
                 .Single() == GrantType.ClientCredentials ? Flow.ClientCredentials : Flow.CodeFlowWithPkce,
             AllowedScopes = client.AllowedScopes.Any() ? client.AllowedScopes.Select(x => x.Scope).Aggregate((a, b) => $"{a} {b}") : string.Empty,
             RedirectUri = client.RedirectUris.Select(x => x.RedirectUri).SingleOrDefault(),
+            InitiateLoginUri = client.InitiateLoginUri,
             PostLogoutRedirectUri = client.PostLogoutRedirectUris.Select(x => x.PostLogoutRedirectUri).SingleOrDefault(),
             FrontChannelLogoutUri = client.FrontChannelLogoutUri,
             BackChannelLogoutUri = client.BackChannelLogoutUri,
@@ -184,6 +186,10 @@ public class ClientRepository
                 {
                     client.RedirectUris.Add(new ClientRedirectUri { RedirectUri = model.RedirectUri.Trim() });
                 }
+            }
+            if (client.InitiateLoginUri != model.InitiateLoginUri)
+            {
+                client.InitiateLoginUri = model.InitiateLoginUri;
             }
             if (client.PostLogoutRedirectUris.SingleOrDefault()?.PostLogoutRedirectUri != model.PostLogoutRedirectUri)
             {
