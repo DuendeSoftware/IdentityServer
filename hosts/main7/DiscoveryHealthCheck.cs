@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using Duende.IdentityServer.Endpoints.Results;
 using Duende.IdentityServer.Hosting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -77,3 +80,4 @@ public class DiscoveryKeysHealthCheck : IHealthCheck
         return new HealthCheckResult(context.Registration.FailureStatus);
     }
 }
+
