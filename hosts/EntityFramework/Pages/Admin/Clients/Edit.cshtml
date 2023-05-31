@@ -35,6 +35,10 @@
                         <input class="form-control" asp-for="@Model.InputModel.RedirectUri" />
                     </div>
                     <div class="form-group">
+                        <label asp-for="@Model.InputModel.InitiateLoginUri"></label>
+                        <input class="form-control" asp-for="@Model.InputModel.InitiateLoginUri" />
+                    </div>
+                    <div class="form-group">
                         <label asp-for="@Model.InputModel.PostLogoutRedirectUri"></label>
                         <input class="form-control" asp-for="@Model.InputModel.PostLogoutRedirectUri" />
                     </div>
