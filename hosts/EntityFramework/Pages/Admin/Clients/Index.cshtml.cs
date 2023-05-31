@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -14,10 +17,10 @@ public class IndexModel : PageModel
         _repository = repository;
     }
 
-    public IEnumerable<ClientSummaryModel> Clients { get; private set; }
-    public string Filter { get; set; }
+    public IEnumerable<ClientSummaryModel> Clients { get; private set; } = default!;
+    public string? Filter { get; set; }
 
-    public async Task OnGetAsync(string filter)
+    public async Task OnGetAsync(string? filter)
     {
         Filter = filter;
         Clients = await _repository.GetAllAsync(filter);

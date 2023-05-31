@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,8 +20,8 @@ public class NewModel : PageModel
     }
 
     [BindProperty]
-    public CreateClientModel InputModel { get; set; }
-        
+    public CreateClientModel InputModel { get; set; } = default!;
+
     public bool Created { get; set; }
 
     public void OnGet()

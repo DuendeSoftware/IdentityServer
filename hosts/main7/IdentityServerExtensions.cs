@@ -25,9 +25,11 @@ internal static class IdentityServerExtensions
                 options.Endpoints.EnableJwtRequestUri = true;
 
                 options.ServerSideSessions.UserDisplayNameClaimType = JwtClaimTypes.Name;
+
+                options.UserInteraction.CreateAccountUrl = "/Account/Create";
             })
             //.AddServerSideSessions()
-            .AddInMemoryClients(Clients.Get())
+            .AddInMemoryClients(Clients.Get().ToList())
             .AddInMemoryIdentityResources(Resources.IdentityResources)
             .AddInMemoryApiScopes(Resources.ApiScopes)
             .AddInMemoryApiResources(Resources.ApiResources)
@@ -63,14 +65,14 @@ internal static class IdentityServerExtensions
         //builder.AddDeveloperSigningCredential();
 
         // use an RSA-based certificate with RS256
-        var rsaCert = new X509Certificate2("./testkeys/identityserver.test.rsa.p12", "changeit");
+        using var rsaCert = new X509Certificate2("./testkeys/identityserver.test.rsa.p12", "changeit");
         builder.AddSigningCredential(rsaCert, "RS256");
 
         // ...and PS256
         builder.AddSigningCredential(rsaCert, "PS256");
 
         // or manually extract ECDSA key from certificate (directly using the certificate is not support by Microsoft right now)
-        var ecCert = new X509Certificate2("./testkeys/identityserver.test.ecdsa.p12", "changeit");
+        using var ecCert = new X509Certificate2("./testkeys/identityserver.test.ecdsa.p12", "changeit");
         var key = new ECDsaSecurityKey(ecCert.GetECDsaPrivateKey())
         {
             KeyId = CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)

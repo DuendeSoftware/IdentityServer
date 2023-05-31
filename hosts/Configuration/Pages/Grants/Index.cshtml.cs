@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using System.ComponentModel.DataAnnotations;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Extensions;
@@ -29,7 +32,7 @@ public class Index : PageModel
         _events = events;
     }
 
-    public ViewModel View { get; set; }
+    public ViewModel View { get; set; } = default!;
         
     public async Task OnGet()
     {
@@ -67,8 +70,7 @@ public class Index : PageModel
     }
 
     [BindProperty]
-    [Required]
-    public string ClientId { get; set; }
+    public string? ClientId { get; set; }
 
     public async Task<IActionResult> OnPost()
     {

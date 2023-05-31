@@ -1,7 +1,6 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
@@ -120,19 +119,19 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
     }
 
     /// <inheritdoc/>
-    public async Task CompleteLoginRequestAsync(CompleteBackchannelLoginRequest competionRequest)
+    public async Task CompleteLoginRequestAsync(CompleteBackchannelLoginRequest completionRequest)
     {
         using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.CompleteLoginRequest");
         
-        if (competionRequest == null) throw new ArgumentNullException(nameof(competionRequest));
+        if (completionRequest == null) throw new ArgumentNullException(nameof(completionRequest));
 
-        var request = await _requestStore.GetByInternalIdAsync(competionRequest.InternalId);
+        var request = await _requestStore.GetByInternalIdAsync(completionRequest.InternalId);
         if (request == null)
         {
             throw new InvalidOperationException("Invalid backchannel authentication request id.");
         }
 
-        var subject = competionRequest.Subject ?? await _session.GetUserAsync();
+        var subject = completionRequest.Subject ?? await _session.GetUserAsync();
         if (subject == null)
         {
             throw new InvalidOperationException("Invalid subject.");
@@ -143,13 +142,13 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
             throw new InvalidOperationException($"User's subject id: '{subject.GetSubjectId()}' does not match subject id for backchannel authentication request: '{request.Subject.GetSubjectId()}'.");
         }
 
-        var sid = (competionRequest.Subject == null) ?
+        var sid = (completionRequest.Subject == null) ?
             await _session.GetSessionIdAsync() :
-            competionRequest.SessionId;
+            completionRequest.SessionId;
 
-        if (competionRequest.ScopesValuesConsented != null)
+        if (completionRequest.ScopesValuesConsented != null)
         {
-            var extra = competionRequest.ScopesValuesConsented.Except(request.RequestedScopes);
+            var extra = completionRequest.ScopesValuesConsented.Except(request.RequestedScopes);
             if (extra.Any())
             {
                 throw new InvalidOperationException("More scopes consented than originally requested.");
@@ -170,11 +169,11 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
         request.IsComplete = true;
         request.Subject = subjectClone;
         request.SessionId = sid;
-        request.AuthorizedScopes = competionRequest.ScopesValuesConsented;
-        request.Description = competionRequest.Description;
+        request.AuthorizedScopes = completionRequest.ScopesValuesConsented;
+        request.Description = completionRequest.Description;
 
-        await _requestStore.UpdateByInternalIdAsync(competionRequest.InternalId, request);
+        await _requestStore.UpdateByInternalIdAsync(completionRequest.InternalId, request);
 
-        _logger.LogDebug("Successful update for backchannel authentication request id {id}", competionRequest.InternalId);
+        _logger.LogDebug("Successful update for backchannel authentication request id {id}", completionRequest.InternalId);
     }
 }

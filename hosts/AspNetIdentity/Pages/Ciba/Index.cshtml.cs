@@ -13,7 +13,7 @@ namespace IdentityServerHost.Pages.Ciba;
 [SecurityHeaders]
 public class IndexModel : PageModel
 {
-    public BackchannelUserLoginRequest LoginRequest { get; set; }
+    public BackchannelUserLoginRequest LoginRequest { get; set; } = default!;
 
     private readonly IBackchannelAuthenticationInteractionService _backchannelAuthenticationInteraction;
     private readonly ILogger<IndexModel> _logger;
@@ -24,15 +24,19 @@ public class IndexModel : PageModel
         _logger = logger;
     }
 
-    public async Task<IActionResult> OnGet(string id)
+    public async Task<IActionResult> OnGet(string? id)
     {
-        LoginRequest = await _backchannelAuthenticationInteraction.GetLoginRequestByInternalIdAsync(id);
-        if (LoginRequest == null)
+        ArgumentNullException.ThrowIfNull(id);
+        var result = await _backchannelAuthenticationInteraction.GetLoginRequestByInternalIdAsync(id);
+        if (result == null)
         {
-            _logger.LogWarning("Invalid backchannel login id {id}", id);
+            _logger.InvalidBackchannelLoginId(id);
             return RedirectToPage("/Home/Error/Index");
         }
-
-        return Page();
+        else
+        {
+            LoginRequest = result;
+            return Page();
+        }
     }
 }

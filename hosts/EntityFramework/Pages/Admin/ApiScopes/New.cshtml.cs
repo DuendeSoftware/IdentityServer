@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -16,7 +19,7 @@ public class NewModel : PageModel
     }
 
     [BindProperty]
-    public ApiScopeModel InputModel { get; set; }
+    public ApiScopeModel InputModel { get; set; } = default!;
         
     public void OnGet()
     {

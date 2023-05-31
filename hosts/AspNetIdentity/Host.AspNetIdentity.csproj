@@ -4,6 +4,8 @@
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>IdentityServerHost</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AnalysisMode>all</AnalysisMode>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,7 +14,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
 
-        <PackageReference Include="OpenTelemetry"  />
+        <PackageReference Include="OpenTelemetry" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
@@ -22,7 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\AspNetIdentity\Duende.IdentityServer.AspNetIdentity.csproj" />
+        <ProjectReference
+            Include="..\..\src\AspNetIdentity\Duende.IdentityServer.AspNetIdentity.csproj" />
     </ItemGroup>
 
     <ItemGroup>

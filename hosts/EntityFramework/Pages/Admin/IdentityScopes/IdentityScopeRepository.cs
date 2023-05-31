@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Mappers;
@@ -9,13 +12,13 @@ namespace IdentityServerHost.Pages.Admin.IdentityScopes;
 public class IdentityScopeSummaryModel
 {
     [Required]
-    public string Name { get; set; }
-    public string DisplayName { get; set; }
+    public string Name { get; set; } = default!;
+    public string? DisplayName { get; set; }
 }
 
 public class IdentityScopeModel : IdentityScopeSummaryModel
 {
-    public string UserClaims { get; set; }
+    public string? UserClaims { get; set; }
 }
 
 
@@ -28,7 +31,7 @@ public class IdentityScopeRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<IdentityScopeSummaryModel>> GetAllAsync(string filter = null)
+    public async Task<IEnumerable<IdentityScopeSummaryModel>> GetAllAsync(string? filter = null)
     {
         var query = _context.IdentityResources
             .Include(x => x.UserClaims)
@@ -48,7 +51,7 @@ public class IdentityScopeRepository
         return await result.ToArrayAsync();
     }
 
-    public async Task<IdentityScopeModel> GetByIdAsync(string id)
+    public async Task<IdentityScopeModel?> GetByIdAsync(string id)
     {
         var scope = await _context.IdentityResources
             .Include(x => x.UserClaims)
@@ -66,6 +69,7 @@ public class IdentityScopeRepository
 
     public async Task CreateAsync(IdentityScopeModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
         var scope = new Duende.IdentityServer.Models.IdentityResource()
         {
             Name = model.Name,
@@ -84,11 +88,12 @@ public class IdentityScopeRepository
 
     public async Task UpdateAsync(IdentityScopeModel model)
     {
+        ArgumentNullException.ThrowIfNull(model); 
         var scope = await _context.IdentityResources
             .Include(x => x.UserClaims)
             .SingleOrDefaultAsync(x => x.Name == model.Name);
 
-        if (scope == null) throw new Exception("Invalid Identity Scope");
+        if (scope == null) throw new ArgumentException("Invalid Identity Scope");
 
         if (scope.DisplayName != model.DisplayName)
         {
@@ -120,7 +125,7 @@ public class IdentityScopeRepository
     {
         var scope = await _context.IdentityResources.SingleOrDefaultAsync(x => x.Name == id);
 
-        if (scope == null) throw new Exception("Invalid Identity Scope");
+        if (scope == null) throw new ArgumentException("Invalid Identity Scope");
 
         _context.IdentityResources.Remove(scope);
         await _context.SaveChangesAsync();

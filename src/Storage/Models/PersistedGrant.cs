@@ -42,7 +42,7 @@ public class PersistedGrant
     /// <value>
     /// The session identifier.
     /// </value>
-    public string SessionId { get; set; } = default!;
+    public string? SessionId { get; set; }
 
     /// <summary>
     /// Gets the client identifier.
