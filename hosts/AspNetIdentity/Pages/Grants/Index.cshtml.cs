@@ -29,7 +29,7 @@ public class Index : PageModel
         _events = events;
     }
 
-    public ViewModel View { get; set; }
+    public ViewModel View { get; set; } = default!;
         
     public async Task OnGet()
     {
@@ -67,8 +67,7 @@ public class Index : PageModel
     }
 
     [BindProperty]
-    [Required]
-    public string ClientId { get; set; }
+    public string? ClientId { get; set; }
 
     public async Task<IActionResult> OnPost()
     {

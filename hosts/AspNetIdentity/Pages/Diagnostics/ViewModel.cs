@@ -15,16 +15,19 @@ public class ViewModel
     {
         AuthenticateResult = result;
 
-        if (result.Properties.Items.ContainsKey("client_list"))
+        if (result?.Properties?.Items.TryGetValue("client_list", out var encoded) ?? false)
         {
-            var encoded = result.Properties.Items["client_list"];
-            var bytes = Base64Url.Decode(encoded);
-            var value = Encoding.UTF8.GetString(bytes);
-
-            Clients = JsonSerializer.Deserialize<string[]>(value);
+            if (encoded != null)
+            {
+                var bytes = Base64Url.Decode(encoded);
+                var value = Encoding.UTF8.GetString(bytes);
+                Clients = JsonSerializer.Deserialize<string[]>(value) ?? Enumerable.Empty<string>();
+                return;
+            }
         }
+        Clients = Enumerable.Empty<string>();
     }
 
     public AuthenticateResult AuthenticateResult { get; }
-    public IEnumerable<string> Clients { get; } = new List<string>();
+    public IEnumerable<string> Clients { get; }
 }

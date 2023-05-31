@@ -67,13 +67,10 @@ public class Index : PageModel
     }
 
     [BindProperty]
-    [Required]
     public string? ClientId { get; set; }
 
     public async Task<IActionResult> OnPost()
     {
-        ArgumentNullException.ThrowIfNull(ClientId);
-
         await _interaction.RevokeUserConsentAsync(ClientId);
         await _events.RaiseAsync(new GrantsRevokedEvent(User.GetSubjectId(), ClientId));
 

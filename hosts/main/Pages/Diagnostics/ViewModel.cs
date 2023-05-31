@@ -15,9 +15,8 @@ public class ViewModel
     {
         AuthenticateResult = result;
 
-        if (result?.Properties != null && result.Properties.Items.ContainsKey("client_list"))
+        if (result?.Properties?.Items.TryGetValue("client_list", out var encoded) ?? false)
         {
-            var encoded = result.Properties.Items["client_list"];
             if (encoded != null)
             {
                 var bytes = Base64Url.Decode(encoded);

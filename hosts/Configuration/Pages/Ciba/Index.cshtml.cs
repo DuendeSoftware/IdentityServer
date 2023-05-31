@@ -26,6 +26,7 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnGet(string id)
     {
+        ArgumentNullException.ThrowIfNull(id);
         LoginRequest = await _backchannelAuthenticationInteraction.GetLoginRequestByInternalIdAsync(id);
         if (LoginRequest == null)
         {

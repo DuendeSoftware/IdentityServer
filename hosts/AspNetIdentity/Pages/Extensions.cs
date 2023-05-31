@@ -14,7 +14,7 @@ public static class Extensions
     /// <summary>
     /// Determines if the authentication scheme support signout.
     /// </summary>
-    public static async Task<bool> GetSchemeSupportsSignOutAsync(this HttpContext context, string scheme)
+    internal static async Task<bool> GetSchemeSupportsSignOutAsync(this HttpContext context, string scheme)
     {
         var provider = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
         var handler = await provider.GetHandlerAsync(context, scheme);
@@ -24,7 +24,7 @@ public static class Extensions
     /// <summary>
     /// Checks if the redirect URI is for a native client.
     /// </summary>
-    public static bool IsNativeClient(this AuthorizationRequest context)
+    internal static bool IsNativeClient(this AuthorizationRequest context)
     {
         return !context.RedirectUri.StartsWith("https", StringComparison.Ordinal)
                && !context.RedirectUri.StartsWith("http", StringComparison.Ordinal);
@@ -33,7 +33,7 @@ public static class Extensions
     /// <summary>
     /// Renders a loading page that is used to redirect back to the redirectUri.
     /// </summary>
-    public static IActionResult LoadingPage(this PageModel page, string redirectUri)
+    internal static IActionResult LoadingPage(this PageModel page, string redirectUri)
     {
         page.HttpContext.Response.StatusCode = 200;
         page.HttpContext.Response.Headers["Location"] = "";
