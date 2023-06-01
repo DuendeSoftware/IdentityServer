@@ -17,11 +17,15 @@ internal partial class LicenseValidator
     }
 
     // this should just add to the error list
-    static void ValidateLicenseForProduct(IList<string> errors)
+    static void ValidateProductFeaturesForLicense(IList<string> errors)
     {
         if (!_license.ConfigApiFeature)
         {
             errors.Add($"Your Duende software license does not include the Configuration API feature.");
         }
+    }
+    static void WarnForProductFeaturesWhenMissingLicense()
+    { 
+        // none
     }
 }
