@@ -37,14 +37,14 @@ internal partial class LicenseValidator
 
         if (_options.KeyManagement.Enabled && !_license.KeyManagementFeature)
         {
-            errors.Add("You have automatic key management enabled, but you do not have a valid license for that feature of Duende IdentityServer. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");
+            errors.Add("You have automatic key management enabled, but your license does not include that feature of Duende IdentityServer. This feature requires the Business or Enterprise Edition tier of license. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");
         }
     }
     static void WarnForProductFeaturesWhenMissingLicense()
     {
         if (_options.KeyManagement.Enabled)
         {
-            _warningLog?.Invoke("You have automatic key management enabled, but you do not have a license. This feature requires the Business or Enterprise Edition tier of license.", null);
+            _warningLog?.Invoke("You have automatic key management enabled, but you do not have a license. This feature requires the Business or Enterprise Edition tier of license. Alternatively you can disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.", null);
         }
     }
 
@@ -107,7 +107,7 @@ internal partial class LicenseValidator
         {
             if (!_license.ServerSideSessionsFeature)
             {
-                _errorLog.Invoke("You have configured server-side sessions. Your license for Duende IdentityServer does not include that feature.", Array.Empty<object>());
+                throw new Exception("You have configured server-side sessions. Your license for Duende IdentityServer does not include that feature. This feature requires the Business or Enterprise Edition tier of license.");
             }
         }
         else if (!ValidateServerSideSessionsWarned)
@@ -118,20 +118,20 @@ internal partial class LicenseValidator
     }
 
     static bool CanUseDPoPWarned = false;
-    public static bool CanUseDPoP()
+    public static void ValidateDPoP()
     {
         if (_license != null)
         {
-            return _license.DPoPFeature;
+            if (!_license.DPoPFeature)
+            {
+                throw new Exception("A request was made using DPoP. Your license for Duende IdentityServer does not include the DPoP feature. This feature requires the Enterprise Edition tier of license.");
+            }
         }
-
-        if (!CanUseDPoPWarned)
+        else if (!CanUseDPoPWarned)
         {
             CanUseDPoPWarned = true;
             _warningLog?.Invoke("A request was made using DPoP, but you do not have a license. This feature requires the Enterprise Edition tier of license.", null);
         }
-
-        return true;
     }
 
     static bool ValidateResourceIndicatorsWarned = false;
@@ -143,7 +143,7 @@ internal partial class LicenseValidator
             {
                 if (!_license.ResourceIsolationFeature)
                 {
-                    _errorLog.Invoke("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.", Array.Empty<object>());
+                    throw new Exception("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation. This feature requires the Enterprise Edition tier of license.");
                 }
             }
             else if (!ValidateResourceIndicatorsWarned)
@@ -161,7 +161,7 @@ internal partial class LicenseValidator
             {
                 if (!_license.ResourceIsolationFeature)
                 {
-                    _errorLog.Invoke("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation.", Array.Empty<object>());
+                    throw new Exception("A request was made using a resource indicator. Your license for Duende IdentityServer does not permit resource isolation. This feature requires the Enterprise Edition tier of license.");
                 }
             }
             else if (!ValidateResourceIndicatorsWarned)
@@ -179,7 +179,7 @@ internal partial class LicenseValidator
         {
             if (!_license.DynamicProvidersFeature)
             {
-                _errorLog.Invoke("A request was made invoking a dynamic provider. Your license for Duende IdentityServer does not permit dynamic providers.", Array.Empty<object>());
+                throw new Exception("A request was made invoking a dynamic provider. Your license for Duende IdentityServer does not permit dynamic providers. This feature requires the Enterprise Edition tier of license.");
             }
         }
         else if (!ValidateDynamicProvidersWarned)
@@ -196,7 +196,7 @@ internal partial class LicenseValidator
         {
             if (!_license.CibaFeature)
             {
-                _errorLog.Invoke("A CIBA (client initiated backchannel authentication) request was made. Your license for Duende IdentityServer does not permit the CIBA feature.", Array.Empty<object>());
+                throw new Exception("A CIBA (client initiated backchannel authentication) request was made. Your license for Duende IdentityServer does not permit the CIBA feature. This feature requires the Enterprise Edition tier of license.");
             }
         }
         else if (!ValidateCibaWarned)
