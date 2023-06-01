@@ -30,10 +30,10 @@ public class Consent : PageModel
         _logger = logger;
     }
 
-    public ViewModel View { get; set; } = default!;
+    public ViewModel? View { get; set; }
         
     [BindProperty]
-    public InputModel Input { get; set; } = default!;
+    public InputModel? Input { get; set; }
 
     public async Task<IActionResult> OnGet(string? id)
     {
@@ -53,7 +53,7 @@ public class Consent : PageModel
 	public async Task<IActionResult> OnPost()
     {
         // validate return url is still valid
-        var request = await _interaction.GetLoginRequestByInternalIdAsync(Input.Id ?? throw new ArgumentNullException(nameof(Input.Id)));
+        var request = await _interaction.GetLoginRequestByInternalIdAsync(Input?.Id ?? throw new ArgumentNullException(nameof(Input.Id)));
         if (request == null || request.Subject.GetSubjectId() != User.GetSubjectId())
         {
             _logger.InvalidId(Input.Id);
@@ -145,7 +145,7 @@ public class Consent : PageModel
         };
 
         vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources
-            .Select(x => CreateScopeViewModel(x, Input.ScopesConsented.Contains(x.Name) == true))
+            .Select(x => CreateScopeViewModel(x, Input == null || Input.ScopesConsented.Contains(x.Name) == true))
             .ToArray();
 
         var resourceIndicators = request.RequestedResourceIndicators ?? Enumerable.Empty<string>();
@@ -157,7 +157,7 @@ public class Consent : PageModel
             var apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
             if (apiScope != null)
             {
-                var scopeVm = CreateScopeViewModel(parsedScope, apiScope, Input.ScopesConsented.Contains(parsedScope.RawValue));
+                var scopeVm = CreateScopeViewModel(parsedScope, apiScope, Input == null || Input.ScopesConsented.Contains(parsedScope.RawValue));
                 scopeVm.Resources = apiResources.Where(x => x.Scopes.Contains(parsedScope.ParsedName))
                     .Select(x => new ResourceViewModel
                     {
@@ -169,7 +169,7 @@ public class Consent : PageModel
         }
         if (ConsentOptions.EnableOfflineAccess && request.ValidatedResources.Resources.OfflineAccess)
         {
-            apiScopes.Add(GetOfflineAccessScope(Input.ScopesConsented.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess)));
+            apiScopes.Add(GetOfflineAccessScope(Input == null || Input.ScopesConsented.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess)));
         }
         vm.ApiScopes = apiScopes;
 

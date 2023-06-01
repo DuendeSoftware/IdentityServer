@@ -11,7 +11,7 @@
 
     <div class="row">
 
-        @if (Model.View.EnableLocalLogin)
+        @if (Model.View?.EnableLocalLogin == true)
         {
             <div class="col-sm-6">
                 <div class="card">
@@ -21,23 +21,23 @@
 
                     <div class="card-body">
                         <form asp-page="/Account/Login/Index">
-                            <input type="hidden" asp-for="Input.ReturnUrl" />
+                            <input type="hidden" asp-for="Input!.ReturnUrl" />
 
                             <div class="form-group">
-                                <label asp-for="Input.Username"></label>
-                                <input class="form-control" placeholder="Username" asp-for="Input.Username" autofocus>
+                                <label asp-for="Input!.Username"></label>
+                                <input class="form-control" placeholder="Username" asp-for="Input!.Username" autofocus>
                             </div>
                             <div class="form-group">
-                                <label asp-for="Input.Password"></label>
-                                <input type="password" class="form-control" placeholder="Password" asp-for="Input.Password" autocomplete="off">
+                                <label asp-for="Input!.Password"></label>
+                                <input type="password" class="form-control" placeholder="Password" asp-for="Input!.Password" autocomplete="off">
                             </div>
                             
                             @if (Model.View.AllowRememberLogin)
                             {
                                 <div class="form-group">
                                     <div class="form-check">
-                                        <input class="form-check-input" asp-for="Input.RememberLogin">
-                                        <label class="form-check-label" asp-for="Input.RememberLogin">
+                                        <input class="form-check-input" asp-for="Input!.RememberLogin">
+                                        <label class="form-check-label" asp-for="Input!.RememberLogin">
                                             Remember My Login
                                         </label>
                                     </div>
@@ -52,7 +52,7 @@
             </div>
         }
 
-        @if (Model.View.VisibleExternalProviders.Any())
+        @if (Model.View?.VisibleExternalProviders.Any() == true)
         {
             <div class="col-sm-6">
                 <div class="card">
@@ -67,7 +67,7 @@
                                     <a class="btn btn-secondary"
                                        asp-page="/ExternalLogin/Challenge"
                                        asp-route-scheme="@provider.AuthenticationScheme"
-                                       asp-route-returnUrl="@Model.Input.ReturnUrl">
+                                       asp-route-returnUrl="@Model.Input?.ReturnUrl">
                                         @provider.DisplayName
                                     </a>
                                 </li>
@@ -78,7 +78,7 @@
             </div>
         }
 
-        @if (!Model.View.EnableLocalLogin && !Model.View.VisibleExternalProviders.Any())
+        @if ((Model.View?.EnableLocalLogin == false) && (Model.View?.VisibleExternalProviders.Any() == false))
         {
             <div class="alert alert-warning">
                 <strong>Invalid login request</strong>

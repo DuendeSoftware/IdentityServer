@@ -12,7 +12,7 @@ namespace IdentityServerHost.Pages.Diagnostics;
 [Authorize]
 public class Index : PageModel
 {
-    public ViewModel View { get; set; } = default!;
+    public ViewModel? View { get; set; }
 
     public async Task<IActionResult> OnGet()
     {

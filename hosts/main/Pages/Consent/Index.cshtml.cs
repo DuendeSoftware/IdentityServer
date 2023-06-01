@@ -31,14 +31,14 @@ public class Index : PageModel
         _logger = logger;
     }
 
-    public ViewModel View { get; set; } = default!;
+    public ViewModel? View { get; set; }
 
     [BindProperty]
-    public InputModel Input { get; set; } = default!;
+    public InputModel? Input { get; set; }
 
     public async Task<IActionResult> OnGet(string? returnUrl)
     {
-        if(!await SetViewModelAsync(returnUrl))
+        if (!await SetViewModelAsync(returnUrl))
         {
             return RedirectToPage("/Home/Error/Index");
         }
@@ -54,13 +54,13 @@ public class Index : PageModel
     public async Task<IActionResult> OnPost()
     {
         // validate return url is still valid
-        var request = await _interaction.GetAuthorizationContextAsync(Input.ReturnUrl);
+        var request = await _interaction.GetAuthorizationContextAsync(Input?.ReturnUrl);
         if (request == null) return RedirectToPage("/Home/Error/Index");
 
         ConsentResponse? grantedConsent = null;
 
         // user clicked 'no' - send back the standard 'access_denied' response
-        if (Input.Button == "no")
+        if (Input?.Button == "no")
         {
             grantedConsent = new ConsentResponse { Error = AuthorizationError.AccessDenied };
 
@@ -68,10 +68,10 @@ public class Index : PageModel
             await _events.RaiseAsync(new ConsentDeniedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues));
         }
         // user clicked 'yes' - validate the data
-        else if (Input.Button == "yes")
+        else if (Input?.Button == "yes")
         {
             // if the user consented to some scope, build the response model
-            if (Input.ScopesConsented != null && Input.ScopesConsented.Any())
+            if (Input.ScopesConsented?.Any() == true)
             {
                 var scopes = Input.ScopesConsented;
                 if (ConsentOptions.EnableOfflineAccess == false)
@@ -101,7 +101,7 @@ public class Index : PageModel
 
         if (grantedConsent != null)
         {
-            ArgumentNullException.ThrowIfNull(Input.ReturnUrl, nameof(Input.ReturnUrl));
+            ArgumentNullException.ThrowIfNull(Input?.ReturnUrl, nameof(Input.ReturnUrl));
 
             // communicate outcome of consent back to identityserver
             await _interaction.GrantConsentAsync(request, grantedConsent);
@@ -118,7 +118,7 @@ public class Index : PageModel
         }
 
         // we need to redisplay the consent UI
-        if (!await SetViewModelAsync(Input.ReturnUrl))
+        if (!await SetViewModelAsync(Input?.ReturnUrl))
         {
             return RedirectToPage("/Home/Error/Index");
         }
@@ -153,7 +153,7 @@ public class Index : PageModel
         };
 
         vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources
-            .Select(x => CreateScopeViewModel(x, Input.ScopesConsented.Contains(x.Name)))
+            .Select(x => CreateScopeViewModel(x, Input == null || (Input.ScopesConsented != null && Input.ScopesConsented.Contains(x.Name))))
             .ToArray();
 
         var resourceIndicators = request.Parameters.GetValues(OidcConstants.AuthorizeRequest.Resource) ?? Enumerable.Empty<string>();
@@ -165,7 +165,7 @@ public class Index : PageModel
             var apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
             if (apiScope != null)
             {
-                var scopeVm = CreateScopeViewModel(parsedScope, apiScope, Input.ScopesConsented.Contains(parsedScope.RawValue));
+                var scopeVm = CreateScopeViewModel(parsedScope, apiScope, Input == null || (Input.ScopesConsented != null && Input.ScopesConsented.Contains(parsedScope.RawValue)));
                 scopeVm.Resources = apiResources.Where(x => x.Scopes.Contains(parsedScope.ParsedName))
                     .Select(x => new ResourceViewModel
                     {
@@ -177,7 +177,7 @@ public class Index : PageModel
         }
         if (ConsentOptions.EnableOfflineAccess && request.ValidatedResources.Resources.OfflineAccess)
         {
-            apiScopes.Add(CreateOfflineAccessScope(Input.ScopesConsented.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess) == true));
+            apiScopes.Add(CreateOfflineAccessScope(Input == null || (Input.ScopesConsented != null && Input.ScopesConsented.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess))));
         }
         vm.ApiScopes = apiScopes;
 
