@@ -74,7 +74,7 @@ public class Consent : PageModel
         else if (Input.Button == "yes")
         {
             // if the user consented to some scope, build the response model
-            if (Input.ScopesConsented != null && Input.ScopesConsented.Any())
+            if (Input.ScopesConsented.Any())
             {
                 var scopes = Input.ScopesConsented;
                 if (ConsentOptions.EnableOfflineAccess == false)
@@ -145,7 +145,7 @@ public class Consent : PageModel
         };
 
         vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources
-            .Select(x => CreateScopeViewModel(x, Input == null || Input.ScopesConsented.Contains(x.Name) == true))
+            .Select(x => CreateScopeViewModel(x, Input == null || Input.ScopesConsented.Contains(x.Name)))
             .ToArray();
 
         var resourceIndicators = request.RequestedResourceIndicators ?? Enumerable.Empty<string>();

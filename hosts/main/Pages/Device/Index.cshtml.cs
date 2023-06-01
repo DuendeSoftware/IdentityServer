@@ -83,7 +83,7 @@ public class Index : PageModel
         else if (Input.Button == "yes")
         {
             // if the user consented to some scope, build the response model
-            if (Input.ScopesConsented != null && Input.ScopesConsented.Any())
+            if (Input.ScopesConsented.Any())
             {
                 var scopes = Input.ScopesConsented;
                 if (ConsentOptions.EnableOfflineAccess == false)
@@ -154,7 +154,7 @@ public class Index : PageModel
             AllowRememberConsent = request.Client.AllowRememberConsent
         };
 
-        vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, Input == null || (Input.ScopesConsented != null && Input.ScopesConsented.Contains(x.Name)))).ToArray();
+        vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, Input == null || Input.ScopesConsented.Contains(x.Name))).ToArray();
 
         var apiScopes = new List<ScopeViewModel>();
         foreach (var parsedScope in request.ValidatedResources.ParsedScopes)
@@ -162,13 +162,13 @@ public class Index : PageModel
             var apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
             if (apiScope != null)
             {
-                var scopeVm = CreateScopeViewModel(parsedScope, apiScope, Input == null || (Input.ScopesConsented != null && Input.ScopesConsented.Contains(parsedScope.RawValue)));
+                var scopeVm = CreateScopeViewModel(parsedScope, apiScope, Input == null || Input.ScopesConsented.Contains(parsedScope.RawValue));
                 apiScopes.Add(scopeVm);
             }
         }
         if (DeviceOptions.EnableOfflineAccess && request.ValidatedResources.Resources.OfflineAccess)
         {
-            apiScopes.Add(GetOfflineAccessScope(Input == null || Input.ScopesConsented != null && Input.ScopesConsented.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess)));
+            apiScopes.Add(GetOfflineAccessScope(Input == null || Input.ScopesConsented.Contains(Duende.IdentityServer.IdentityServerConstants.StandardScopes.OfflineAccess)));
         }
         vm.ApiScopes = apiScopes;
 
