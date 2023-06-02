@@ -11,6 +11,7 @@ using System.IO;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Duende.IdentityServer;
 
 namespace Duende;
 
@@ -30,6 +31,17 @@ internal partial class LicenseValidator
     static Action<string, object[]> _debugLog;
 
     static License _license;
+    // cloned copy meant to be accessible in DI
+    static License _copy;
+
+    static internal License GetLicense()
+    {
+        if (_copy == null && _license != null)
+        {
+            _copy = new License(_license.Claims.Clone());
+        }
+        return _copy;
+    }
 
     static void Initalize(ILoggerFactory loggerFactory, string productName, string key, bool isDevelopment = false)
     {
