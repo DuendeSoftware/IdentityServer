@@ -12,7 +12,7 @@ namespace IdentityServerHost.Pages.Ciba;
 [Authorize]
 public class AllModel : PageModel
 {
-    public IEnumerable<BackchannelUserLoginRequest>? Logins { get; set; }
+    public IEnumerable<BackchannelUserLoginRequest> Logins { get; set; } = default!;
 
     private readonly IBackchannelAuthenticationInteractionService _backchannelAuthenticationInteraction;
 
