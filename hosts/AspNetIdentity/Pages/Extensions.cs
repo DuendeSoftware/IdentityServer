@@ -32,7 +32,7 @@ public static class Extensions
     /// <summary>
     /// Renders a loading page that is used to redirect back to the redirectUri.
     /// </summary>
-    internal static IActionResult LoadingPage(this PageModel page, string redirectUri)
+    internal static IActionResult LoadingPage(this PageModel page, string? redirectUri)
     {
         page.HttpContext.Response.StatusCode = 200;
         page.HttpContext.Response.Headers["Location"] = "";
