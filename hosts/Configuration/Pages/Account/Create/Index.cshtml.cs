@@ -23,7 +23,7 @@ public class Index : PageModel
 
     [BindProperty]
     public InputModel Input { get; set; } = default!;
-        
+
     public Index(
         IIdentityServerInteractionService interaction,
         TestUserStore? users = null)
@@ -34,7 +34,7 @@ public class Index : PageModel
         _interaction = interaction;
     }
 
-    public IActionResult OnGet(string returnUrl)
+    public IActionResult OnGet(string? returnUrl)
     {
         Input = new InputModel { ReturnUrl = returnUrl };
         return Page();
