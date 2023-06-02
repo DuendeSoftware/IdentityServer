@@ -8,9 +8,12 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Duende;
+namespace Duende.IdentityServer;
 
-internal class License
+/// <summary>
+/// Models the license for IdentityServer.
+/// </summary>
+public class License
 {
     // for testing
     internal License(params Claim[] claims)
@@ -18,7 +21,7 @@ internal class License
     {
     }
 
-    public License(ClaimsPrincipal claims)
+    internal License(ClaimsPrincipal claims)
     {
         if (Int32.TryParse(claims.FindFirst("id")?.Value, out var id))
         {
@@ -202,15 +205,34 @@ internal class License
                     break;
             }
         }
+
+        Claims = claims;
     }
 
+    internal readonly ClaimsPrincipal Claims;
+
+    /// <summary>
+    /// The serial number
+    /// </summary>
     public int Id { get; set; }
 
+    /// <summary>
+    /// The company name
+    /// </summary>
     public string CompanyName { get; set; }
+    /// <summary>
+    /// The company contact info
+    /// </summary>
     public string ContactInfo { get; set; }
 
+    /// <summary>
+    /// The license expiration
+    /// </summary>
     public DateTime? Expiration { get; set; }
 
+    /// <summary>
+    /// The license edition 
+    /// </summary>
     public LicenseEdition Edition { get; set; }
 
     internal bool IsEnterpriseEdition => Edition == LicenseEdition.Enterprise;
@@ -219,30 +241,85 @@ internal class License
     internal bool IsCommunityEdition => Edition == LicenseEdition.Community;
     internal bool IsBffEdition => Edition == LicenseEdition.Bff;
 
+    /// <summary>
+    /// The client limit
+    /// </summary>
     public int? ClientLimit { get; set; }
+    /// <summary>
+    /// The issuer limit
+    /// </summary>
     public int? IssuerLimit { get; set; }
 
+    /// <summary>
+    /// Automatic key management
+    /// </summary>
     public bool KeyManagementFeature { get; set; }
+    /// <summary>
+    /// Resource isolation
+    /// </summary>
     public bool ResourceIsolationFeature { get; set; }
+    /// <summary>
+    /// Dynamic providers
+    /// </summary>
     public bool DynamicProvidersFeature { get; set; }
+    /// <summary>
+    /// Redistribution
+    /// </summary>
     public bool RedistributionFeature { get; set; }
+    /// <summary>
+    /// BFF
+    /// </summary>
     public bool BffFeature { get; set; }
+    /// <summary>
+    /// CIBA
+    /// </summary>
     public bool CibaFeature { get; set; }
+    /// <summary>
+    /// Server-side sessions
+    /// </summary>
     public bool ServerSideSessionsFeature { get; set; }
+    /// <summary>
+    ///  Config API
+    /// </summary>
     public bool ConfigApiFeature { get; set; }
+    /// <summary>
+    /// DPoP
+    /// </summary>
     public bool DPoPFeature { get; set; }
 
+    /// <summary>
+    /// Extras
+    /// </summary>
     public string Extras { get; set; }
 
+    /// <summary>
+    /// Models the license tier
+    /// </summary>
     public enum LicenseEdition
     {
+        /// <summary>
+        /// Enterprise
+        /// </summary>
         Enterprise,
+        /// <summary>
+        /// Business
+        /// </summary>
         Business,
+        /// <summary>
+        /// Starter
+        /// </summary>
         Starter,
+        /// <summary>
+        /// Community
+        /// </summary>
         Community,
+        /// <summary>
+        /// Bff
+        /// </summary>
         Bff
     }
 
+    /// <inheritdoc/>
     public override string ToString()
     {
         return ObjectSerializer.ToString(this);
