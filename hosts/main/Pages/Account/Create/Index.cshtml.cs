@@ -22,8 +22,8 @@ public class Index : PageModel
     private readonly IIdentityServerInteractionService _interaction;
 
     [BindProperty]
-    public InputModel? Input { get; set; }
-        
+    public InputModel Input { get; set; } = default!;
+
     public Index(
         IIdentityServerInteractionService interaction,
         TestUserStore? users = null)
@@ -43,10 +43,10 @@ public class Index : PageModel
     public async Task<IActionResult> OnPost()
     {
         // check if we are in the context of an authorization request
-        var context = await _interaction.GetAuthorizationContextAsync(Input?.ReturnUrl);
+        var context = await _interaction.GetAuthorizationContextAsync(Input.ReturnUrl);
 
         // the user clicked the "cancel" button
-        if (Input?.Button != "create")
+        if (Input.Button != "create")
         {
             if (context != null)
             {
@@ -60,10 +60,10 @@ public class Index : PageModel
                 {
                     // The client is native, so this change in how to
                     // return the response is for better UX for the end user.
-                    return this.LoadingPage(Input?.ReturnUrl);
+                    return this.LoadingPage(Input.ReturnUrl);
                 }
 
-                return Redirect(Input?.ReturnUrl ?? "~/");
+                return Redirect(Input.ReturnUrl ?? "~/");
             }
             else
             {

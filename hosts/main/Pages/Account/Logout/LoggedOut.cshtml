@@ -7,7 +7,7 @@
         <small>You are now logged out</small>
     </h1>
 
-    @if (Model.View?.PostLogoutRedirectUri != null)
+    @if (Model.View.PostLogoutRedirectUri != null)
     {
         <div>
             Click <a class="PostLogoutRedirectUri" href="@Model.View.PostLogoutRedirectUri">here</a> to return to the
@@ -15,7 +15,7 @@
         </div>
     }
 
-    @if (Model.View?.SignOutIframeUrl != null)
+    @if (Model.View.SignOutIframeUrl != null)
     {
         <iframe width="0" height="0" class="signout" src="@Model.View.SignOutIframeUrl"></iframe>
     }
@@ -23,7 +23,7 @@
 
 @section scripts
 {
-    @if (Model.View?.AutomaticRedirectAfterSignOut == true)
+    @if (Model.View.AutomaticRedirectAfterSignOut)
     {
         <script src="~/js/signout-redirect.js"></script>
     }

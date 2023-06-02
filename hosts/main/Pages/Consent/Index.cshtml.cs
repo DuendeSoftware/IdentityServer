@@ -54,13 +54,13 @@ public class Index : PageModel
     public async Task<IActionResult> OnPost()
     {
         // validate return url is still valid
-        var request = await _interaction.GetAuthorizationContextAsync(Input?.ReturnUrl);
+        var request = await _interaction.GetAuthorizationContextAsync(Input.ReturnUrl);
         if (request == null) return RedirectToPage("/Home/Error/Index");
 
         ConsentResponse? grantedConsent = null;
 
         // user clicked 'no' - send back the standard 'access_denied' response
-        if (Input?.Button == "no")
+        if (Input.Button == "no")
         {
             grantedConsent = new ConsentResponse { Error = AuthorizationError.AccessDenied };
 
@@ -68,7 +68,7 @@ public class Index : PageModel
             await _events.RaiseAsync(new ConsentDeniedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues));
         }
         // user clicked 'yes' - validate the data
-        else if (Input?.Button == "yes")
+        else if (Input.Button == "yes")
         {
             // if the user consented to some scope, build the response model
             if (Input.ScopesConsented.Any())
@@ -101,7 +101,7 @@ public class Index : PageModel
 
         if (grantedConsent != null)
         {
-            ArgumentNullException.ThrowIfNull(Input?.ReturnUrl, nameof(Input.ReturnUrl));
+            ArgumentNullException.ThrowIfNull(Input.ReturnUrl, nameof(Input.ReturnUrl));
 
             // communicate outcome of consent back to identityserver
             await _interaction.GrantConsentAsync(request, grantedConsent);
@@ -118,7 +118,7 @@ public class Index : PageModel
         }
 
         // we need to redisplay the consent UI
-        if (!await SetViewModelAsync(Input?.ReturnUrl))
+        if (!await SetViewModelAsync(Input.ReturnUrl))
         {
             return RedirectToPage("/Home/Error/Index");
         }

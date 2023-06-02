@@ -12,23 +12,23 @@
 
         <div class="col-sm-6">
             <form asp-page="/Account/Create/Index">
-                <input type="hidden" asp-for="Input!.ReturnUrl" />
+                <input type="hidden" asp-for="Input.ReturnUrl" />
 
                 <div class="form-group">
-                    <label asp-for="Input!.Username"></label>
-                    <input class="form-control" placeholder="Username" asp-for="Input!.Username" autofocus>
+                    <label asp-for="Input.Username"></label>
+                    <input class="form-control" placeholder="Username" asp-for="Input.Username" autofocus>
                 </div>
                 <div class="form-group">
-                    <label asp-for="Input!.Password"></label>
-                    <input type="password" class="form-control" placeholder="Password" asp-for="Input!.Password" autocomplete="off">
+                    <label asp-for="Input.Password"></label>
+                    <input type="password" class="form-control" placeholder="Password" asp-for="Input.Password" autocomplete="off">
                 </div>
                 <div class="form-group">
-                    <label asp-for="Input!.Name"></label>
-                    <input type="text" class="form-control" placeholder="Name" asp-for="Input!.Name">
+                    <label asp-for="Input.Name"></label>
+                    <input type="text" class="form-control" placeholder="Name" asp-for="Input.Name">
                 </div>
                 <div class="form-group">
-                    <label asp-for="Input!.Email"></label>
-                    <input type="email" class="form-control" placeholder="Email" asp-for="Input!.Email" >
+                    <label asp-for="Input.Email"></label>
+                    <input type="email" class="form-control" placeholder="Email" asp-for="Input.Email" >
                 </div>
 
                 <button class="btn btn-primary" name="Input.Button" value="create">Create</button>

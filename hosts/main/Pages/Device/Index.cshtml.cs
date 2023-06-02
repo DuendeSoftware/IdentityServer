@@ -36,10 +36,10 @@ public class Index : PageModel
         _logger = logger;
     }
 
-    public ViewModel? View { get; set; }
+    public ViewModel View { get; set; } = default!;
 
     [BindProperty]
-    public InputModel? Input { get; set; }
+    public InputModel Input { get; set; } = default!;
 
     public async Task<IActionResult> OnGet(string? userCode)
     {
@@ -63,7 +63,7 @@ public class Index : PageModel
 
     public async Task<IActionResult> OnPost()
     {
-        var request = await _interaction.GetAuthorizationContextAsync(Input?.UserCode ?? throw new ArgumentNullException(nameof(Input.UserCode)));
+        var request = await _interaction.GetAuthorizationContextAsync(Input.UserCode ?? throw new ArgumentNullException(nameof(Input.UserCode)));
         if (request == null) return RedirectToPage("/Home/Error/Index");
 
         ConsentResponse? grantedConsent = null;

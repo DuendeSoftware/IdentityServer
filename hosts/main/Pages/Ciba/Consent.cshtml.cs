@@ -30,10 +30,10 @@ public class Consent : PageModel
         _logger = logger;
     }
 
-    public ViewModel? View { get; set; }
+    public ViewModel View { get; set; } = default!;
         
     [BindProperty]
-    public InputModel? Input { get; set; }
+    public InputModel Input { get; set; } = default!;
 
     public async Task<IActionResult> OnGet(string? id)
     {
@@ -53,7 +53,7 @@ public class Consent : PageModel
 	public async Task<IActionResult> OnPost()
     {
         // validate return url is still valid
-        var request = await _interaction.GetLoginRequestByInternalIdAsync(Input?.Id ?? throw new ArgumentNullException(nameof(Input.Id)));
+        var request = await _interaction.GetLoginRequestByInternalIdAsync(Input.Id ?? throw new ArgumentNullException(nameof(Input.Id)));
         if (request == null || request.Subject.GetSubjectId() != User.GetSubjectId())
         {
             _logger.InvalidId(Input.Id);

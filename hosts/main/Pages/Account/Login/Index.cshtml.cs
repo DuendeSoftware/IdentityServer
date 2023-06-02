@@ -24,10 +24,10 @@ public class Index : PageModel
     private readonly IAuthenticationSchemeProvider _schemeProvider;
     private readonly IIdentityProviderStore _identityProviderStore;
 
-    public ViewModel? View { get; set; }
+    public ViewModel View { get; set; } = default!;
 
     [BindProperty]
-    public InputModel? Input { get; set; }
+    public InputModel Input { get; set; } = default!;
 
     public Index(
         IIdentityServerInteractionService interaction,
@@ -49,7 +49,7 @@ public class Index : PageModel
     {
         await BuildModelAsync(returnUrl);
             
-        if (View?.IsExternalLoginOnly == true)
+        if (View.IsExternalLoginOnly)
         {
             // we only have one option for logging in and it's an external provider
             return RedirectToPage("/ExternalLogin/Challenge", new { scheme = View.ExternalLoginScheme, returnUrl });
@@ -61,10 +61,10 @@ public class Index : PageModel
     public async Task<IActionResult> OnPost()
     {
         // check if we are in the context of an authorization request
-        var context = await _interaction.GetAuthorizationContextAsync(Input?.ReturnUrl);
+        var context = await _interaction.GetAuthorizationContextAsync(Input.ReturnUrl);
 
         // the user clicked the "cancel" button
-        if (Input?.Button != "login")
+        if (Input.Button != "login")
         {
             if (context != null)
             {
@@ -78,10 +78,10 @@ public class Index : PageModel
                 {
                     // The client is native, so this change in how to
                     // return the response is for better UX for the end user.
-                    return this.LoadingPage(Input?.ReturnUrl);
+                    return this.LoadingPage(Input.ReturnUrl);
                 }
 
-                return Redirect(Input?.ReturnUrl ?? "~/");
+                return Redirect(Input.ReturnUrl ?? "~/");
             }
             else
             {
