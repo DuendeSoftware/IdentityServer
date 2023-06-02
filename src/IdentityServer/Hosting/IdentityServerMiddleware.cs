@@ -9,7 +9,6 @@ using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Models;
 using System.Linq;
 using Duende.IdentityServer.Configuration;
