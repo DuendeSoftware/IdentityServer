@@ -89,7 +89,7 @@ public static class ClientsWeb
                     new Secret("secret".Sha256())
                 },
 
-                RequireConsent = true,
+                RequireConsent = false,
                 AllowedGrantTypes = GrantTypes.Code,
 
                 RedirectUris = { "https://localhost:44302/signin-oidc" },
