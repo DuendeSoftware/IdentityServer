@@ -24,9 +24,8 @@ public class IndexModel : PageModel
         _logger = logger;
     }
 
-    public async Task<IActionResult> OnGet(string? id)
+    public async Task<IActionResult> OnGet(string id)
     {
-        ArgumentNullException.ThrowIfNull(id);
         var result = await _backchannelAuthenticationInteraction.GetLoginRequestByInternalIdAsync(id);
         if (result == null)
         {
@@ -36,7 +35,8 @@ public class IndexModel : PageModel
         else
         {
             LoginRequest = result;
-            return Page();
         }
+        
+        return Page();
     }
 }
