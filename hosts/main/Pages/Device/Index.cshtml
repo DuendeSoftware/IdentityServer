@@ -59,7 +59,7 @@ else
             <input asp-for="Input.UserCode" type="hidden" />
             <div class="row">
                 <div class="col-sm-8">
-                    @if (Model.View.IdentityScopes.Any() == true)
+                    @if (Model.View.IdentityScopes.Any())
                     {
                         <div class="form-group">
                             <div class="card">
@@ -77,7 +77,7 @@ else
                         </div>
                     }
 
-                    @if (Model.View.ApiScopes.Any() == true)
+                    @if (Model.View.ApiScopes.Any())
                     {
                         <div class="form-group">
                             <div class="card">
@@ -107,7 +107,7 @@ else
                         </div>
                     </div>
 
-                    @if (Model.View.AllowRememberConsent == true)
+                    @if (Model.View.AllowRememberConsent)
                     {
                         <div class="form-group">
                             <div class="form-check">
