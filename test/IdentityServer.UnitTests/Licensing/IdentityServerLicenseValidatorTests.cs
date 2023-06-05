@@ -183,14 +183,15 @@ public class IdentityServerLicenseValidatorTests
             subject.RedistributionFeature.Should().BeTrue();
             subject.CibaFeature.Should().BeFalse();
         }
-        {
-            Action a = () => new IdentityServerLicense(new Claim("edition", "community"), new Claim("feature", "isv"));
-            a.Should().Throw<Exception>();
-        }
-        {
-            Action a = () => new IdentityServerLicense(new Claim("edition", "bff"), new Claim("feature", "isv"));
-            a.Should().Throw<Exception>();
-        }
+        // TODO: these exceptions were moved to the validator
+        //{
+        //    Action a = () => new IdentityServerLicense(new Claim("edition", "community"), new Claim("feature", "isv"));
+        //    a.Should().Throw<Exception>();
+        //}
+        //{
+        //    Action a = () => new IdentityServerLicense(new Claim("edition", "bff"), new Claim("feature", "isv"));
+        //    a.Should().Throw<Exception>();
+        //}
     }
 
     [Fact]
