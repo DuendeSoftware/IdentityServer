@@ -46,12 +46,16 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
 
     protected override void ValidateProductFeatures(List<string> errors)
     {
-        if (License.IsBffEdition)
+        if (License.IsCommunityEdition && License.RedistributionFeature)
         {
-            //errors.Add($"Your Duende software license is not valid for IdentityServer.");
-            //return;
+            throw new Exception("Invalid License: Redistribution is not valid for the IdentityServer Community Edition.");
         }
 
+        if (License.IsBffEdition)
+        {
+            throw new Exception("Invalid License: The BFF edition license is not valid for IdentityServer.");
+        }
+        
         if (_options.KeyManagement.Enabled && !License.KeyManagementFeature)
         {
             errors.Add("You have automatic key management enabled, but your license does not include that feature of Duende IdentityServer. This feature requires the Business or Enterprise Edition tier of license. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");

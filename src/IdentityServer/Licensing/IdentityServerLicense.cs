@@ -32,16 +32,6 @@ public class IdentityServerLicense : License
         
         RedistributionFeature = claims.HasClaim("feature", "isv") || claims.HasClaim("feature", "redistribution");
 
-        if (IsCommunityEdition && RedistributionFeature)
-        {
-            throw new Exception("Invalid License: Redistribution is not valid for community edition.");
-        }
-
-        if (IsBffEdition)
-        {
-            throw new Exception("Invalid License: The BFF edition license is not valid for IdentityServer.");
-        }
-
         KeyManagementFeature = claims.HasClaim("feature", "key_management");
         switch (Edition)
         {
