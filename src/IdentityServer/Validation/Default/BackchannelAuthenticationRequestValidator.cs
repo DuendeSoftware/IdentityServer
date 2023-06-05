@@ -71,7 +71,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
             return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.UnauthorizedClient, "Unauthorized client");
         }
 
-        LicenseValidator.ValidateCiba();
+        IdentityServerLicenseValidator.Instance.ValidateCiba();
 
         //////////////////////////////////////////////////////////
         // load request object
@@ -173,7 +173,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
             }
         }
 
-        LicenseValidator.ValidateResourceIndicators(resourceIndicators);
+        IdentityServerLicenseValidator.Instance.ValidateResourceIndicators(resourceIndicators);
         _validatedRequest.ValidatedResources = validatedResources;
 
 

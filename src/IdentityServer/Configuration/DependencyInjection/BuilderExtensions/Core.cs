@@ -176,7 +176,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IClientStore, EmptyClientStore>();
         builder.Services.TryAddTransient<IResourceStore, EmptyResourceStore>();
 
-        builder.Services.AddTransient(services => LicenseValidator.GetLicense());
+        builder.Services.AddTransient(services => IdentityServerLicenseValidator.Instance.GetLicense());
 
         return builder;
     }

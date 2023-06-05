@@ -140,7 +140,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
         _logger.LogTrace("Authorize request protocol validation successful");
 
-        LicenseValidator.ValidateClient(request.ClientId);
+        IdentityServerLicenseValidator.Instance.ValidateClient(request.ClientId);
 
         return Valid(request);
     }
@@ -648,8 +648,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope");
             }
         }
-            
-        LicenseValidator.ValidateResourceIndicators(resourceIndicators);
+
+        IdentityServerLicenseValidator.Instance.ValidateResourceIndicators(resourceIndicators);
 
         if (validatedResources.Resources.IdentityResources.Any() && !request.IsOpenIdRequest)
         {
