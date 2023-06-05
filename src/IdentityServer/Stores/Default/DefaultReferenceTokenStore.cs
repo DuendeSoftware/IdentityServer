@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -31,11 +31,7 @@ public class DefaultReferenceTokenStore : DefaultGrantStore<Token>, IReferenceTo
     {
     }
 
-    /// <summary>
-    /// Stores the reference token asynchronous.
-    /// </summary>
-    /// <param name="token">The token.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public Task<string> StoreReferenceTokenAsync(Token token)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.StoreReferenceToken");
@@ -43,11 +39,7 @@ public class DefaultReferenceTokenStore : DefaultGrantStore<Token>, IReferenceTo
         return CreateItemAsync(token, token.ClientId, token.SubjectId, token.SessionId, token.Description, token.CreationTime, token.Lifetime);
     }
 
-    /// <summary>
-    /// Gets the reference token asynchronous.
-    /// </summary>
-    /// <param name="handle">The handle.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public Task<Token> GetReferenceTokenAsync(string handle)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.GetReferenceToken");
@@ -55,11 +47,7 @@ public class DefaultReferenceTokenStore : DefaultGrantStore<Token>, IReferenceTo
         return GetItemAsync(handle);
     }
 
-    /// <summary>
-    /// Removes the reference token asynchronous.
-    /// </summary>
-    /// <param name="handle">The handle.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public Task RemoveReferenceTokenAsync(string handle)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.RemoveReferenceToken");
@@ -67,16 +55,11 @@ public class DefaultReferenceTokenStore : DefaultGrantStore<Token>, IReferenceTo
         return RemoveItemAsync(handle);
     }
 
-    /// <summary>
-    /// Removes the reference tokens asynchronous.
-    /// </summary>
-    /// <param name="subjectId">The subject identifier.</param>
-    /// <param name="clientId">The client identifier.</param>
-    /// <returns></returns>
-    public Task RemoveReferenceTokensAsync(string subjectId, string clientId)
+    /// <inheritdoc/>
+    public Task RemoveReferenceTokensAsync(string subjectId, string clientId, string sessionId = null)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.RemoveReferenceTokens");
         
-        return RemoveAllAsync(subjectId, clientId);
+        return RemoveAllAsync(subjectId, clientId, sessionId);
     }
 }
