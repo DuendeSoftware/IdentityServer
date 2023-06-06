@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
+using System.Security.Claims;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -21,6 +23,7 @@ internal class UserInfoRequestValidator : IUserInfoRequestValidator
     private readonly ITokenValidator _tokenValidator;
     private readonly IProfileService _profile;
     private readonly ILogger _logger;
+    private readonly IServerSideTicketStore _serverSideTicketStore;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserInfoRequestValidator" /> class.
@@ -28,14 +31,17 @@ internal class UserInfoRequestValidator : IUserInfoRequestValidator
     /// <param name="tokenValidator">The token validator.</param>
     /// <param name="profile">The profile service</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="serverSideTicketStore"></param>
     public UserInfoRequestValidator(
         ITokenValidator tokenValidator, 
         IProfileService profile,
-        ILogger<UserInfoRequestValidator> logger)
+        ILogger<UserInfoRequestValidator> logger,
+        IServerSideTicketStore serverSideTicketStore = null)
     {
         _tokenValidator = tokenValidator;
         _profile = profile;
         _logger = logger;
+        _serverSideTicketStore = serverSideTicketStore;
     }
 
     /// <summary>
@@ -75,9 +81,35 @@ internal class UserInfoRequestValidator : IUserInfoRequestValidator
             };
         }
 
-        // create subject from incoming access token
-        var claims = tokenResult.Claims.Where(x => !Constants.Filters.ProtocolClaimsFilter.Contains(x.Type));
-        var subject = Principal.Create("UserInfo", claims.ToArray());
+        // create subject for the incoming access token
+        ClaimsPrincipal subject = null;
+
+        if (_serverSideTicketStore != null)
+        {
+            // we are using server-side sessions, so let's fetch the user from the session store
+            // this makes the Subject in the profile service consistent with all other calls into the profile service
+            var sid = tokenResult.Claims.SingleOrDefault(x => x.Type == JwtClaimTypes.SessionId)?.Value;
+            if (sid != null)
+            {
+                var sessions = await _serverSideTicketStore.GetSessionsAsync(new SessionFilter
+                {
+                    SubjectId = subClaim.Value,
+                    SessionId = sid,
+                });
+                
+                if (sessions.Count == 1)
+                {
+                    subject = sessions.First().AuthenticationTicket.Principal;
+                }
+            }
+        }
+        
+        if (subject == null)
+        {
+            // this falls back to prior behavior which provides the best we can for the subject based on claims from the access token
+            var claims = tokenResult.Claims.Where(x => !Constants.Filters.ProtocolClaimsFilter.Contains(x.Type));
+            subject = Principal.Create("UserInfo", claims.ToArray());
+        }
 
         // make sure user is still active
         var isActiveContext = new IsActiveContext(subject, tokenResult.Client, IdentityServerConstants.ProfileIsActiveCallers.UserInfoRequestValidation);
