@@ -11,15 +11,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj"/>
+        <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
     </ItemGroup>
 
     <ItemGroup>
