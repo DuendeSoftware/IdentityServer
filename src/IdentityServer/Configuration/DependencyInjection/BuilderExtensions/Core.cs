@@ -126,6 +126,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpointResultGenerator<DiscoveryDocumentResult, DiscoveryDocumentResultGenerator>();
         builder.AddEndpointResultGenerator<AuthorizeResult, AuthorizeResultGenerator>();
         builder.AddEndpointResultGenerator<AuthorizeInteractionPageResult, AuthorizeInteractionPageResultGenerator>();
+        builder.AddEndpointResultGenerator<BackchannelAuthenticationResult, BackchannelAuthenticationResultGenerator>();
 
         return builder;
     }
