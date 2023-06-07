@@ -751,10 +751,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
             else
             {
-                // TODO: change to error in a major release?
-                // https://github.com/DuendeSoftware/IdentityServer/issues/845#issuecomment-1405377531
-                // https://openid.net/specs/openid-connect-prompt-create-1_0.html#name-authorization-request
-                _logger.LogDebug("Unsupported prompt mode - ignored: " + prompt);
+                LogError("Unsupported prompt mode", request);
+                return Invalid(request, description: "Unsupported prompt mode");
             }
         }
 
