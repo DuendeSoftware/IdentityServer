@@ -99,6 +99,7 @@ internal class UserInfoRequestValidator : IUserInfoRequestValidator
                 
                 if (sessions.Count == 1)
                 {
+                    _logger.LogDebug("Loading subject claims from server-side session store");
                     subject = sessions.First().AuthenticationTicket.Principal;
                 }
             }
@@ -106,6 +107,7 @@ internal class UserInfoRequestValidator : IUserInfoRequestValidator
         
         if (subject == null)
         {
+            _logger.LogDebug("Loading subject claims from access token");
             // this falls back to prior behavior which provides the best we can for the subject based on claims from the access token
             var claims = tokenResult.Claims.Where(x => !Constants.Filters.ProtocolClaimsFilter.Contains(x.Type));
             subject = Principal.Create("UserInfo", claims.ToArray());
