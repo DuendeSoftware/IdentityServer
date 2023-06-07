@@ -29,7 +29,7 @@ public class EndpointResult<T> : IEndpointResult
                 throw new Exception($"Type paramter {typeof(T)} must be the class derived from 'EndPointResult<T>'.");
             }
 
-            await generator.ProcessAsync(target, context);
+            await generator.ExecuteAsync(target, context);
         }
         else
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -16,6 +16,6 @@ public interface IEndpointResultGenerator<in T>
     /// <summary>
     /// Writes the endpoint result to the HTTP response.
     /// </summary>
-    Task ProcessAsync(T result, HttpContext context);
+    Task ExecuteAsync(T result, HttpContext context);
 }
 
