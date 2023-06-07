@@ -126,6 +126,7 @@ public static class IdentityServerBuilderExtensionsCore
 
         builder.AddEndpointResultGenerator<DiscoveryDocumentResult, DiscoveryDocumentResultGenerator>();
         builder.AddEndpointResultGenerator<AuthorizeResult, AuthorizeResultGenerator>();
+        builder.AddEndpointResultGenerator<AuthorizeInteractionPageResult, AuthorizeInteractionPageResultGenerator>();
 
         return builder;
     }
@@ -152,9 +153,9 @@ public static class IdentityServerBuilderExtensionsCore
     /// </summary>
     public static IIdentityServerBuilder AddEndpointResultGenerator<TResult, TResultGenerator>(this IIdentityServerBuilder builder)
         where TResult : class, IEndpointResult
-        where TResultGenerator : class, IEndpointResultGenerator<TResult>
+        where TResultGenerator : class, Duende.IdentityServer.Hosting.IEndpointResultGenerator<TResult>
     {
-        builder.Services.AddTransient<IEndpointResultGenerator<TResult>, TResultGenerator>();
+        builder.Services.AddTransient<Duende.IdentityServer.Hosting.IEndpointResultGenerator<TResult>, TResultGenerator>();
         return builder;
     }
 

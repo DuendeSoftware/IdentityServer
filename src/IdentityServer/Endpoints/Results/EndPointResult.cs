@@ -14,7 +14,7 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// Provides the base implementation of IEndpointResult.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class EndpointResult<T> : IEndpointResult
+public abstract class EndpointResult<T> : IEndpointResult
     where T : class, IEndpointResult
 {
     /// <inheritdoc/>

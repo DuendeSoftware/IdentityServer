@@ -49,7 +49,7 @@ public class DiscoveryDocumentResult : EndpointResult<DiscoveryDocumentResult>
 /// <summary>
 /// The result generator for DiscoveryDocumentResult.
 /// </summary>
-public class DiscoveryDocumentResultGenerator : IEndpointResultGenerator<DiscoveryDocumentResult>
+public class DiscoveryDocumentResultGenerator : Hosting.IEndpointResultGenerator<DiscoveryDocumentResult>
 {
     /// <inheritdoc/>
     public Task ExecuteAsync(DiscoveryDocumentResult result, HttpContext context)
