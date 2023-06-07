@@ -12,7 +12,7 @@ using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class BackchannelAuthenticationResult : IEndpointResult
+internal class BackchannelAuthenticationResult : EndpointResult<BackchannelAuthenticationResult>
 {
     public BackchannelAuthenticationResponse Response { get; set; }
 
@@ -20,14 +20,17 @@ internal class BackchannelAuthenticationResult : IEndpointResult
     {
         Response = response ?? throw new ArgumentNullException(nameof(response));
     }
+}
 
-    public async Task ExecuteAsync(HttpContext context)
+internal class BackchannelAuthenticationResultGenerator : IEndpointResultGenerator<BackchannelAuthenticationResult>
+{
+    public async Task ExecuteAsync(BackchannelAuthenticationResult result, HttpContext context)
     {
         context.Response.SetNoCache();
 
-        if (Response.IsError)
+        if (result.Response.IsError)
         {
-            switch (Response.Error)
+            switch (result.Response.Error)
             {
                 case OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient:
                     context.Response.StatusCode = 401;
@@ -40,9 +43,10 @@ internal class BackchannelAuthenticationResult : IEndpointResult
                     break;
             }
 
-            await context.Response.WriteJsonAsync(new ErrorResultDto { 
-                error = Response.Error,
-                error_description = Response.ErrorDescription
+            await context.Response.WriteJsonAsync(new ErrorResultDto
+            {
+                error = result.Response.Error,
+                error_description = result.Response.ErrorDescription
             });
         }
         else
@@ -50,9 +54,9 @@ internal class BackchannelAuthenticationResult : IEndpointResult
             context.Response.StatusCode = 200;
             await context.Response.WriteJsonAsync(new SuccessResultDto
             {
-                auth_req_id = Response.AuthenticationRequestId,
-                expires_in = Response.ExpiresIn,
-                interval = Response.Interval
+                auth_req_id = result.Response.AuthenticationRequestId,
+                expires_in = result.Response.ExpiresIn,
+                interval = result.Response.Interval
             });
         }
     }
