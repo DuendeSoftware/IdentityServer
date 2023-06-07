@@ -12,10 +12,21 @@ using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class BackchannelAuthenticationResult : EndpointResult<BackchannelAuthenticationResult>
+/// <summary>
+/// Models the result of backchannel authentication 
+/// </summary>
+public class BackchannelAuthenticationResult : EndpointResult<BackchannelAuthenticationResult>
 {
-    public BackchannelAuthenticationResponse Response { get; set; }
+    /// <summary>
+    /// The response
+    /// </summary>
+    public BackchannelAuthenticationResponse Response { get; }
 
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="response"></param>
+    /// <exception cref="ArgumentNullException"></exception>
     public BackchannelAuthenticationResult(BackchannelAuthenticationResponse response)
     {
         Response = response ?? throw new ArgumentNullException(nameof(response));

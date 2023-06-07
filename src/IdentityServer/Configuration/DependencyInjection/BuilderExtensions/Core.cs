@@ -124,10 +124,23 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpoint<TokenEndpoint>(EndpointNames.Token, ProtocolRoutePaths.Token.EnsureLeadingSlash());
         builder.AddEndpoint<UserInfoEndpoint>(EndpointNames.UserInfo, ProtocolRoutePaths.UserInfo.EnsureLeadingSlash());
 
-        builder.AddEndpointResultGenerator<DiscoveryDocumentResult, DiscoveryDocumentResultGenerator>();
-        builder.AddEndpointResultGenerator<AuthorizeResult, AuthorizeResultGenerator>();
         builder.AddEndpointResultGenerator<AuthorizeInteractionPageResult, AuthorizeInteractionPageResultGenerator>();
+        builder.AddEndpointResultGenerator<AuthorizeResult, AuthorizeResultGenerator>();
         builder.AddEndpointResultGenerator<BackchannelAuthenticationResult, BackchannelAuthenticationResultGenerator>();
+        builder.AddEndpointResultGenerator<BadRequestResult, BadRequestResultGenerator>();
+        builder.AddEndpointResultGenerator<CheckSessionResult, CheckSessionResultGenerator>();
+        builder.AddEndpointResultGenerator<DeviceAuthorizationResult, DeviceAuthorizationResultGenerator>();
+        builder.AddEndpointResultGenerator<DiscoveryDocumentResult, DiscoveryDocumentResultGenerator>();
+        builder.AddEndpointResultGenerator<EndSessionCallbackResult, EndSessionCallbackResultGenerator>();
+        builder.AddEndpointResultGenerator<EndSessionResult, EndSessionResultGenerator>();
+        builder.AddEndpointResultGenerator<IntrospectionResult, IntrospectionResultGenerator>();
+        builder.AddEndpointResultGenerator<JsonWebKeysResult, JsonWebKeysResultGenerator>();
+        builder.AddEndpointResultGenerator<ProtectedResourceErrorResult, ProtectedResourceErrorResultGenerator>();
+        builder.AddEndpointResultGenerator<StatusCodeResult, StatusCodeResultGenerator>();
+        builder.AddEndpointResultGenerator<TokenErrorResult, TokenErrorResultGenerator>();
+        builder.AddEndpointResultGenerator<TokenResult, TokenResultGenerator>();
+        builder.AddEndpointResultGenerator<TokenRevocationErrorResult, TokenRevocationErrorResultGenerator>();
+        builder.AddEndpointResultGenerator<UserInfoResult, UserInfoResultGenerator>();
 
         return builder;
     }

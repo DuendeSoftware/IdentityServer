@@ -18,10 +18,21 @@ using Duende.IdentityServer.Stores;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class AuthorizeResult : EndpointResult<AuthorizeResult>
+/// <summary>
+/// Models the result from the authorize endpoint
+/// </summary>
+public class AuthorizeResult : EndpointResult<AuthorizeResult>
 {
+    /// <summary>
+    /// The authorize response
+    /// </summary>
     public AuthorizeResponse Response { get; }
 
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="response"></param>
+    /// <exception cref="ArgumentNullException"></exception>
     public AuthorizeResult(AuthorizeResponse response)
     {
         Response = response ?? throw new ArgumentNullException(nameof(response));
