@@ -39,17 +39,14 @@ public class DiscoveryDocumentResult : EndpointResult<DiscoveryDocumentResult>
     /// <param name="entries">The entries.</param>
     /// <param name="maxAge">The maximum age.</param>
     /// <exception cref="System.ArgumentNullException">entries</exception>
-    public DiscoveryDocumentResult(Dictionary<string, object> entries, int? maxAge)
+    public DiscoveryDocumentResult(Dictionary<string, object> entries, int? maxAge = null)
     {
         Entries = entries ?? throw new ArgumentNullException(nameof(entries));
         MaxAge = maxAge;
     }
 }
 
-/// <summary>
-/// The result generator for DiscoveryDocumentResult.
-/// </summary>
-public class DiscoveryDocumentResultGenerator : Hosting.IEndpointResultGenerator<DiscoveryDocumentResult>
+class DiscoveryDocumentResultGenerator : IEndpointResultGenerator<DiscoveryDocumentResult>
 {
     /// <inheritdoc/>
     public Task ExecuteAsync(DiscoveryDocumentResult result, HttpContext context)

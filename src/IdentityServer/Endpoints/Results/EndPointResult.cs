@@ -11,7 +11,7 @@ using Duende.IdentityServer.Hosting;
 namespace Duende.IdentityServer.Endpoints.Results;
 
 /// <summary>
-/// Provides the base implementation of IEndpointResult.
+/// Provides the base implementation of IEndpointResult that invokes the corresponding IEndpointResultGenerator<typeparamref name="T"/>.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public abstract class EndpointResult<T> : IEndpointResult

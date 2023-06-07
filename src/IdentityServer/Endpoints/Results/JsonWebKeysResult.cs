@@ -16,7 +16,7 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// Result for the jwks document
 /// </summary>
 /// <seealso cref="IEndpointResult" />
-public class JsonWebKeysResult : IEndpointResult
+public class JsonWebKeysResult : EndpointResult<JsonWebKeysResult>
 {
     /// <summary>
     /// Gets the web keys.
@@ -44,19 +44,17 @@ public class JsonWebKeysResult : IEndpointResult
         WebKeys = webKeys ?? throw new ArgumentNullException(nameof(webKeys));
         MaxAge = maxAge;
     }
+}
 
-    /// <summary>
-    /// Executes the result.
-    /// </summary>
-    /// <param name="context">The HTTP context.</param>
-    /// <returns></returns>
-    public Task ExecuteAsync(HttpContext context)
+class JsonWebKeysResultGenerator : IEndpointResultGenerator<JsonWebKeysResult>
+{
+    public Task ExecuteAsync(JsonWebKeysResult result, HttpContext context)
     {
-        if (MaxAge.HasValue && MaxAge.Value >= 0)
+        if (result.MaxAge.HasValue && result.MaxAge.Value >= 0)
         {
-            context.Response.SetCache(MaxAge.Value, "Origin");
+            context.Response.SetCache(result.MaxAge.Value, "Origin");
         }
 
-        return context.Response.WriteJsonAsync(new { keys = WebKeys }, "application/json; charset=UTF-8");
+        return context.Response.WriteJsonAsync(new { keys = result.WebKeys }, "application/json; charset=UTF-8");
     }
 }

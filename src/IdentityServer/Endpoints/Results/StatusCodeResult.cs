@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -13,7 +13,7 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// Result for a raw HTTP status code
 /// </summary>
 /// <seealso cref="IEndpointResult" />
-public class StatusCodeResult : IEndpointResult
+public class StatusCodeResult : EndpointResult<StatusCodeResult>
 {
     /// <summary>
     /// Gets the status code.
@@ -40,15 +40,13 @@ public class StatusCodeResult : IEndpointResult
     {
         StatusCode = statusCode;
     }
+}
 
-    /// <summary>
-    /// Executes the result.
-    /// </summary>
-    /// <param name="context">The HTTP context.</param>
-    /// <returns></returns>
-    public Task ExecuteAsync(HttpContext context)
+class StatusCodeResultGenerator : IEndpointResultGenerator<StatusCodeResult>
+{
+    public Task ExecuteAsync(StatusCodeResult result, HttpContext context)
     {
-        context.Response.StatusCode = StatusCode;
+        context.Response.StatusCode = result.StatusCode;
 
         return Task.CompletedTask;
     }
