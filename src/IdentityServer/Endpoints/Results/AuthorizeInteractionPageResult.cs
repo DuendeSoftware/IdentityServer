@@ -52,10 +52,7 @@ public abstract class AuthorizeInteractionPageResult : EndpointResult<AuthorizeI
     public string ReturnUrlParameterName { get; }
 }
 
-/// <summary>
-/// Result generator for AuthorizeInteractionPageResult
-/// </summary>
-public class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<AuthorizeInteractionPageResult>
+class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<AuthorizeInteractionPageResult>
 {
     private readonly IServerUrls _urls;
     private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;

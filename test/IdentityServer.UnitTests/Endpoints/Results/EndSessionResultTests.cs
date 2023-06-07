@@ -20,7 +20,7 @@ namespace UnitTests.Endpoints.Results;
 
 public class EndSessionResultTests
 {
-    private EndSessionResult _subject;
+    private EndSessionResultGenerator _subject;
 
     private EndSessionValidationResult _result = new EndSessionValidationResult();
     private IdentityServerOptions _options = new IdentityServerOptions();
@@ -39,7 +39,7 @@ public class EndSessionResultTests
         _options.UserInteraction.LogoutUrl = "~/logout";
         _options.UserInteraction.LogoutIdParameter = "logoutId";
 
-        _subject = new EndSessionResult(_result, _options, new StubClock(), _urls, _mockLogoutMessageStore);
+        _subject = new EndSessionResultGenerator(_options, new StubClock(), _urls, _mockLogoutMessageStore);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class EndSessionResultTests
             PostLogOutUri = "http://client/post-logout-callback"
         };
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.ExecuteAsync(new EndSessionResult(_result), _context);
 
         _mockLogoutMessageStore.Messages.Count.Should().Be(1);
         var location = _context.Response.Headers["Location"].Single();
@@ -70,7 +70,7 @@ public class EndSessionResultTests
     {
         _result.IsError = false;
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.ExecuteAsync(new EndSessionResult(_result), _context);
 
         _mockLogoutMessageStore.Messages.Count.Should().Be(0);
         var location = _context.Response.Headers["Location"].Single();
@@ -93,7 +93,7 @@ public class EndSessionResultTests
             PostLogOutUri = "http://client/post-logout-callback"
         };
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.ExecuteAsync(new EndSessionResult(_result), _context);
 
         _mockLogoutMessageStore.Messages.Count.Should().Be(0);
         var location = _context.Response.Headers["Location"].Single();

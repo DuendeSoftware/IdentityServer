@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Hosting;
+using System;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
@@ -14,7 +15,7 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// Result for revocation error
 /// </summary>
 /// <seealso cref="IEndpointResult" />
-public class TokenRevocationErrorResult : IEndpointResult
+public class TokenRevocationErrorResult : EndpointResult<TokenRevocationErrorResult>
 {
     /// <summary>
     /// Gets or sets the error.
@@ -22,7 +23,7 @@ public class TokenRevocationErrorResult : IEndpointResult
     /// <value>
     /// The error.
     /// </value>
-    public string Error { get; set; }
+    public string Error { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TokenRevocationErrorResult"/> class.
@@ -30,17 +31,15 @@ public class TokenRevocationErrorResult : IEndpointResult
     /// <param name="error">The error.</param>
     public TokenRevocationErrorResult(string error)
     {
-        Error = error;
+        Error = error ?? throw new ArgumentNullException(nameof(error));
     }
+}
 
-    /// <summary>
-    /// Executes the result.
-    /// </summary>
-    /// <param name="context">The HTTP context.</param>
-    /// <returns></returns>
-    public Task ExecuteAsync(HttpContext context)
+class TokenRevocationErrorResultGenerator : IEndpointResultGenerator<TokenRevocationErrorResult>
+{
+    public Task ExecuteAsync(TokenRevocationErrorResult result, HttpContext context)
     {
-        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-        return context.Response.WriteJsonAsync(new { error = Error });
+        context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+        return context.Response.WriteJsonAsync(new { error = result.Error });
     }
 }
