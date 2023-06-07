@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Extensions;
 using IdentityModel;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Text.Encodings.Web;
 using Duende.IdentityServer.Configuration;
@@ -18,7 +17,7 @@ using Duende.IdentityServer.Stores;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class AuthorizeResult : IEndpointResult
+internal class AuthorizeResult : EndpointResult<AuthorizeResult>
 {
     public AuthorizeResponse Response { get; }
 
@@ -26,15 +25,16 @@ internal class AuthorizeResult : IEndpointResult
     {
         Response = response ?? throw new ArgumentNullException(nameof(response));
     }
+}
 
-    internal AuthorizeResult(
-        AuthorizeResponse response,
+internal class AuthorizeResultGenerator : IEndpointResultGenerator<AuthorizeResult>
+{
+    public AuthorizeResultGenerator(
         IdentityServerOptions options,
         IUserSession userSession,
         IMessageStore<ErrorMessage> errorMessageStore,
         IServerUrls urls,
         IClock clock)
-        : this(response)
     {
         _options = options;
         _userSession = userSession;
@@ -49,78 +49,67 @@ internal class AuthorizeResult : IEndpointResult
     private IServerUrls _urls;
     private IClock _clock;
 
-    private void Init(HttpContext context)
+    public async Task ExecuteAsync(AuthorizeResult result, HttpContext context)
     {
-        _options ??= context.RequestServices.GetRequiredService<IdentityServerOptions>();
-        _userSession ??= context.RequestServices.GetRequiredService<IUserSession>();
-        _errorMessageStore ??= context.RequestServices.GetRequiredService<IMessageStore<ErrorMessage>>();
-        _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
-        _clock ??= context.RequestServices.GetRequiredService<IClock>();
-    }
-
-    public async Task ExecuteAsync(HttpContext context)
-    {
-        Init(context);
-
-        if (Response.IsError)
+        if (result.Response.IsError)
         {
-            await ProcessErrorAsync(context);
+            await ProcessErrorAsync(result.Response, context);
         }
         else
         {
-            await ProcessResponseAsync(context);
+            await ProcessResponseAsync(result.Response, context);
         }
     }
 
-    private async Task ProcessErrorAsync(HttpContext context)
+    private async Task ProcessErrorAsync(AuthorizeResponse response, HttpContext context)
     {
         // these are the conditions where we can send a response 
         // back directly to the client, otherwise we're only showing the error UI
         var isSafeError =
-            Response.Error == OidcConstants.AuthorizeErrors.AccessDenied ||
-            Response.Error == OidcConstants.AuthorizeErrors.AccountSelectionRequired ||
-            Response.Error == OidcConstants.AuthorizeErrors.LoginRequired ||
-            Response.Error == OidcConstants.AuthorizeErrors.ConsentRequired ||
-            Response.Error == OidcConstants.AuthorizeErrors.InteractionRequired ||
-            Response.Error == OidcConstants.AuthorizeErrors.TemporarilyUnavailable ||
-            Response.Error == OidcConstants.AuthorizeErrors.UnmetAuthenticationRequirements;
+            response.Error == OidcConstants.AuthorizeErrors.AccessDenied ||
+            response.Error == OidcConstants.AuthorizeErrors.AccountSelectionRequired ||
+            response.Error == OidcConstants.AuthorizeErrors.LoginRequired ||
+            response.Error == OidcConstants.AuthorizeErrors.ConsentRequired ||
+            response.Error == OidcConstants.AuthorizeErrors.InteractionRequired ||
+            response.Error == OidcConstants.AuthorizeErrors.TemporarilyUnavailable ||
+            response.Error == OidcConstants.AuthorizeErrors.UnmetAuthenticationRequirements;
         if (isSafeError)
         {
             // this scenario we can return back to the client
-            await ProcessResponseAsync(context);
+            await ProcessResponseAsync(response, context);
         }
         else
         {
             // we now know we must show error page
-            await RedirectToErrorPageAsync(context);
+            await RedirectToErrorPageAsync(response, context);
         }
     }
 
-    protected async Task ProcessResponseAsync(HttpContext context)
+    protected async Task ProcessResponseAsync(AuthorizeResponse response, HttpContext context)
     {
-        if (!Response.IsError)
+        if (!response.IsError)
         {
             // success response -- track client authorization for sign-out
             //_logger.LogDebug("Adding client {0} to client list cookie for subject {1}", request.ClientId, request.Subject.GetSubjectId());
-            await _userSession.AddClientIdAsync(Response.Request.ClientId);
+            await _userSession.AddClientIdAsync(response.Request.ClientId);
         }
 
-        await RenderAuthorizeResponseAsync(context);
+        await RenderAuthorizeResponseAsync(response, context);
     }
 
-    private async Task RenderAuthorizeResponseAsync(HttpContext context)
+    private async Task RenderAuthorizeResponseAsync(AuthorizeResponse response, HttpContext context)
     {
-        if (Response.Request.ResponseMode == OidcConstants.ResponseModes.Query ||
-            Response.Request.ResponseMode == OidcConstants.ResponseModes.Fragment)
+        if (response.Request.ResponseMode == OidcConstants.ResponseModes.Query ||
+            response.Request.ResponseMode == OidcConstants.ResponseModes.Fragment)
         {
             context.Response.SetNoCache();
-            context.Response.Redirect(BuildRedirectUri());
+            context.Response.Redirect(BuildRedirectUri(response));
         }
-        else if (Response.Request.ResponseMode == OidcConstants.ResponseModes.FormPost)
+        else if (response.Request.ResponseMode == OidcConstants.ResponseModes.FormPost)
         {
             context.Response.SetNoCache();
             AddSecurityHeaders(context);
-            await context.Response.WriteHtmlAsync(GetFormPostHtml());
+            await context.Response.WriteHtmlAsync(GetFormPostHtml(response));
         }
         else
         {
@@ -140,12 +129,12 @@ internal class AuthorizeResult : IEndpointResult
         }
     }
 
-    private string BuildRedirectUri()
+    private string BuildRedirectUri(AuthorizeResponse response)
     {
-        var uri = Response.RedirectUri;
-        var query = Response.ToNameValueCollection(_options).ToQueryString();
+        var uri = response.RedirectUri;
+        var query = response.ToNameValueCollection(_options).ToQueryString();
 
-        if (Response.Request.ResponseMode == OidcConstants.ResponseModes.Query)
+        if (response.Request.ResponseMode == OidcConstants.ResponseModes.Query)
         {
             uri = uri.AddQueryString(query);
         }
@@ -154,7 +143,7 @@ internal class AuthorizeResult : IEndpointResult
             uri = uri.AddHashFragment(query);
         }
 
-        if (Response.IsError && !uri.Contains("#"))
+        if (response.IsError && !uri.Contains("#"))
         {
             // https://tools.ietf.org/html/draft-bradley-oauth-open-redirector-00
             uri += "#_=_";
@@ -165,35 +154,35 @@ internal class AuthorizeResult : IEndpointResult
 
     private const string FormPostHtml = "<html><head><meta http-equiv='X-UA-Compatible' content='IE=edge' /><base target='_self'/></head><body><form method='post' action='{uri}'>{body}<noscript><button>Click to continue</button></noscript></form><script>window.addEventListener('load', function(){document.forms[0].submit();});</script></body></html>";
 
-    private string GetFormPostHtml()
+    private string GetFormPostHtml(AuthorizeResponse response)
     {
         var html = FormPostHtml;
 
-        var url = Response.Request.RedirectUri;
+        var url = response.Request.RedirectUri;
         url = HtmlEncoder.Default.Encode(url);
         html = html.Replace("{uri}", url);
-        html = html.Replace("{body}", Response.ToNameValueCollection(_options).ToFormPost());
+        html = html.Replace("{body}", response.ToNameValueCollection(_options).ToFormPost());
 
         return html;
     }
 
-    private async Task RedirectToErrorPageAsync(HttpContext context)
+    private async Task RedirectToErrorPageAsync(AuthorizeResponse response, HttpContext context)
     {
         var errorModel = new ErrorMessage
         {
             RequestId = context.TraceIdentifier,
-            Error = Response.Error,
-            ErrorDescription = Response.ErrorDescription,
-            UiLocales = Response.Request?.UiLocales,
-            DisplayMode = Response.Request?.DisplayMode,
-            ClientId = Response.Request?.ClientId
+            Error = response.Error,
+            ErrorDescription = response.ErrorDescription,
+            UiLocales = response.Request?.UiLocales,
+            DisplayMode = response.Request?.DisplayMode,
+            ClientId = response.Request?.ClientId
         };
 
-        if (Response.RedirectUri != null && Response.Request?.ResponseMode != null)
+        if (response.RedirectUri != null && response.Request?.ResponseMode != null)
         {
             // if we have a valid redirect uri, then include it to the error page
-            errorModel.RedirectUri = BuildRedirectUri();
-            errorModel.ResponseMode = Response.Request.ResponseMode;
+            errorModel.RedirectUri = BuildRedirectUri(response);
+            errorModel.ResponseMode = response.Request.ResponseMode;
         }
 
         var message = new Message<ErrorMessage>(errorModel, _clock.UtcNow.UtcDateTime);

@@ -115,15 +115,16 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpoint<CheckSessionEndpoint>(EndpointNames.CheckSession, ProtocolRoutePaths.CheckSession.EnsureLeadingSlash());
         builder.AddEndpoint<DeviceAuthorizationEndpoint>(EndpointNames.DeviceAuthorization, ProtocolRoutePaths.DeviceAuthorization.EnsureLeadingSlash());
         builder.AddEndpoint<DiscoveryKeyEndpoint>(EndpointNames.Jwks, ProtocolRoutePaths.DiscoveryWebKeys.EnsureLeadingSlash());
-        
-        builder.AddEndpoint<DiscoveryEndpoint, DiscoveryDocumentResult, DiscoveryDocumentResultGenerator>(EndpointNames.Discovery, ProtocolRoutePaths.DiscoveryConfiguration.EnsureLeadingSlash());
-        
+        builder.AddEndpoint<DiscoveryEndpoint>(EndpointNames.Discovery, ProtocolRoutePaths.DiscoveryConfiguration.EnsureLeadingSlash());
         builder.AddEndpoint<EndSessionCallbackEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSessionCallback.EnsureLeadingSlash());
         builder.AddEndpoint<EndSessionEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSession.EnsureLeadingSlash());
         builder.AddEndpoint<IntrospectionEndpoint>(EndpointNames.Introspection, ProtocolRoutePaths.Introspection.EnsureLeadingSlash());
         builder.AddEndpoint<TokenRevocationEndpoint>(EndpointNames.Revocation, ProtocolRoutePaths.Revocation.EnsureLeadingSlash());
         builder.AddEndpoint<TokenEndpoint>(EndpointNames.Token, ProtocolRoutePaths.Token.EnsureLeadingSlash());
         builder.AddEndpoint<UserInfoEndpoint>(EndpointNames.UserInfo, ProtocolRoutePaths.UserInfo.EnsureLeadingSlash());
+
+        builder.AddEndpointResultGenerator<DiscoveryDocumentResult, DiscoveryDocumentResultGenerator>();
+        builder.AddEndpointResultGenerator<AuthorizeResult, AuthorizeResultGenerator>();
 
         return builder;
     }
@@ -148,16 +149,11 @@ public static class IdentityServerBuilderExtensionsCore
     /// <summary>
     /// Adds the endpoint.
     /// </summary>
-    public static IIdentityServerBuilder AddEndpoint<TEndpoint, TResult, TResultGenerator>(this IIdentityServerBuilder builder, string name, PathString path)
-        where TEndpoint : class, IEndpointHandler
+    public static IIdentityServerBuilder AddEndpointResultGenerator<TResult, TResultGenerator>(this IIdentityServerBuilder builder)
         where TResult : class, IEndpointResult
         where TResultGenerator : class, IEndpointResultGenerator<TResult>
     {
-        builder.Services.AddTransient<TEndpoint>();
         builder.Services.AddTransient<IEndpointResultGenerator<TResult>, TResultGenerator>();
-
-        builder.Services.AddSingleton(new Duende.IdentityServer.Hosting.Endpoint(name, path, typeof(TEndpoint)));
-
         return builder;
     }
 
