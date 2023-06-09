@@ -494,6 +494,33 @@ public class IntrospectionTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task api_validation_with_refresh_token_should_fail()
+    {
+        var tokenResponse = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
+        {
+            Address = TokenEndpoint,
+            ClientId = "ro.client",
+            ClientSecret = "secret",
+            UserName = "bob",
+            Password = "bob",
+            Scope = "api1 offline_access"
+        });
+
+        var introspectionResponse = await _client.IntrospectTokenAsync(new TokenIntrospectionRequest
+        {
+            Address = IntrospectionEndpoint,
+            ClientId = "api1",
+            ClientSecret = "secret",
+
+            Token = tokenResponse.RefreshToken
+        });
+
+        introspectionResponse.IsActive.Should().BeFalse();
+        introspectionResponse.IsError.Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task client_validation_with_revoked_refresh_token_should_fail()
     {
         var tokenResponse = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
