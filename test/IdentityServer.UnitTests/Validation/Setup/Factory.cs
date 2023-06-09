@@ -133,9 +133,11 @@ internal static class Factory
             TestLogger.Create<TokenRequestValidator>());
     }
 
-    private static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store, IProfileService profile)
+    public static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store = null, IProfileService profile = null)
     {
-        return CreateRefreshTokenService(store, profile, new PersistentGrantOptions());
+        return CreateRefreshTokenService(store ?? CreateRefreshTokenStore(), 
+            profile ?? new TestProfileService(), 
+            new PersistentGrantOptions());
     }
 
     private static IRefreshTokenService CreateRefreshTokenService(

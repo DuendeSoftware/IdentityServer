@@ -23,6 +23,7 @@ public class IntrospectionTests
     private const string Category = "Introspection endpoint";
     private const string IntrospectionEndpoint = "https://server/connect/introspect";
     private const string TokenEndpoint = "https://server/connect/token";
+    private const string RevocationEndpoint = "https://server/connect/revocation";
 
     private readonly HttpClient _client;
     private readonly HttpMessageHandler _handler;
@@ -124,6 +125,31 @@ public class IntrospectionTests
         var client = new HttpClient(_handler);
         var response = await client.PostAsync(IntrospectionEndpoint, new StringContent(json, Encoding.UTF8, "application/json"));
         response.StatusCode.Should().Be(HttpStatusCode.UnsupportedMediaType);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task Invalid_token_type_hint_should_fail()
+    {
+        var tokenResponse = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+        {
+            Address = TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Scope = "api1"
+        });
+
+        var introspectionResponse = await _client.IntrospectTokenAsync(new TokenIntrospectionRequest
+        {
+            Address = IntrospectionEndpoint,
+            ClientId = "api1",
+            ClientSecret = "secret",
+
+            Token = tokenResponse.AccessToken,
+            TokenTypeHint = "invalid"
+        });
+
+        introspectionResponse.IsError.Should().BeTrue();
     }
 
     [Fact]
@@ -408,5 +434,150 @@ public class IntrospectionTests
 
         introspectionResponse.IsActive.Should().Be(false);
         introspectionResponse.IsError.Should().Be(false);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task client_validation_with_access_token_should_succeed()
+    {
+        var tokenResponse = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+        {
+            Address = TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Scope = "api1"
+        });
+
+        var introspectionResponse = await _client.IntrospectTokenAsync(new TokenIntrospectionRequest
+        {
+            Address = IntrospectionEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+
+            Token = tokenResponse.AccessToken
+        });
+
+        introspectionResponse.IsActive.Should().BeTrue();
+        introspectionResponse.IsError.Should().BeFalse();
+        introspectionResponse.Claims.Single(x => x.Type == "client_id").Value.Should().Be("client1");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task client_validation_with_refresh_token_should_succeed()
+    {
+        var tokenResponse = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
+        {
+            Address = TokenEndpoint,
+            ClientId = "ro.client",
+            ClientSecret = "secret",
+            UserName = "bob",
+            Password = "bob",
+            Scope = "api1 offline_access"
+        });
+
+        var introspectionResponse = await _client.IntrospectTokenAsync(new TokenIntrospectionRequest
+        {
+            Address = IntrospectionEndpoint,
+            ClientId = "ro.client",
+            ClientSecret = "secret",
+
+            Token = tokenResponse.RefreshToken
+        });
+
+        introspectionResponse.IsActive.Should().BeTrue();
+        introspectionResponse.IsError.Should().BeFalse();
+        introspectionResponse.Claims.Single(x => x.Type == "client_id").Value.Should().Be("ro.client");
+        introspectionResponse.Claims.Single(x => x.Type == "sub").Value.Should().Be("1");
+        introspectionResponse.Claims.Where(x => x.Type == "scope").Select(x => x.Value).Should().BeEquivalentTo(new[] { "api1", "offline_access" });
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task client_validation_with_revoked_refresh_token_should_fail()
+    {
+        var tokenResponse = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
+        {
+            Address = TokenEndpoint,
+            ClientId = "ro.client",
+            ClientSecret = "secret",
+            UserName = "bob",
+            Password = "bob",
+            Scope = "api1 offline_access"
+        });
+
+        var revocationResponse = await _client.RevokeTokenAsync(new TokenRevocationRequest
+        {
+            Address = RevocationEndpoint,
+            ClientId = "ro.client",
+            ClientSecret = "secret",
+
+            Token = tokenResponse.RefreshToken
+        });
+        revocationResponse.IsError.Should().BeFalse();
+
+        var introspectionResponse = await _client.IntrospectTokenAsync(new TokenIntrospectionRequest
+        {
+            Address = IntrospectionEndpoint,
+            ClientId = "ro.client",
+            ClientSecret = "secret",
+
+            Token = tokenResponse.RefreshToken
+        });
+
+        introspectionResponse.IsActive.Should().BeFalse();
+        introspectionResponse.IsError.Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task client_validation_with_access_token_for_different_client_should_fail()
+    {
+        var tokenResponse = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+        {
+            Address = TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Scope = "api1"
+        });
+
+        var introspectionResponse = await _client.IntrospectTokenAsync(new TokenIntrospectionRequest
+        {
+            Address = IntrospectionEndpoint,
+            ClientId = "client2",
+            ClientSecret = "secret",
+
+            Token = tokenResponse.AccessToken
+        });
+
+        introspectionResponse.IsActive.Should().BeFalse();
+        introspectionResponse.IsError.Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task client_validation_with_refresh_token_for_different_client_should_fail()
+    {
+        var tokenResponse = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
+        {
+            Address = TokenEndpoint,
+            ClientId = "ro.client",
+            ClientSecret = "secret",
+            UserName = "bob",
+            Password = "bob",
+            Scope = "api1 offline_access"
+        });
+
+        var introspectionResponse = await _client.IntrospectTokenAsync(new TokenIntrospectionRequest
+        {
+            Address = IntrospectionEndpoint,
+            ClientId = "ro.client2",
+            ClientSecret = "secret",
+
+            Token = tokenResponse.RefreshToken
+        });
+
+        introspectionResponse.IsActive.Should().BeFalse();
+        introspectionResponse.IsError.Should().BeFalse();
     }
 }
