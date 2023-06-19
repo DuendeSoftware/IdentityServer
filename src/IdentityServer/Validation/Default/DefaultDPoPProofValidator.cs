@@ -16,6 +16,8 @@ using Duende.IdentityServer.Services;
 using static Duende.IdentityServer.IdentityServerConstants;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.DataProtection;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -242,6 +244,33 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual async Task ValidatePayloadAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
+        if (context.ValidateAccessToken)
+        {
+            if (result.Payload.TryGetValue(JwtClaimTypes.DPoPAccessTokenHash, out var ath))
+            {
+                result.AccessTokenHash = ath as string;
+            }
+
+            if (String.IsNullOrEmpty(result.AccessTokenHash))
+            {
+                result.IsError = true;
+                result.ErrorDescription = "Invalid 'ath' value.";
+                return;
+            }
+
+            using var sha = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(context.AccessToken);
+            var hash = sha.ComputeHash(bytes);
+
+            var accessTokenHash = Base64Url.Encode(hash);
+            if (accessTokenHash != result.AccessTokenHash)
+            {
+                result.IsError = true;
+                result.ErrorDescription = "Invalid 'ath' value.";
+                return;
+            }
+        }
+
         if (result.Payload.TryGetValue(JwtClaimTypes.JwtId, out var jti))
         {
             result.TokenId = jti as string;
@@ -321,12 +350,12 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         }
 
         // get largest skew based on how client's freshness is validated
-        var validateIat = (context.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
-        var validateNonce = (context.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
+        var validateIat = (context.ExpirationValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
+        var validateNonce = (context.ExpirationValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
         var skew = TimeSpan.Zero;
-        if (validateIat && context.DPoPClockSkew > skew)
+        if (validateIat && context.ClientClockSkew > skew)
         {
-            skew = context.DPoPClockSkew;
+            skew = context.ClientClockSkew;
         }
         if (validateNonce && Options.DPoP.ServerClockSkew > skew)
         {
@@ -348,7 +377,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual async Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        var validateIat = (context.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
+        var validateIat = (context.ExpirationValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
         if (validateIat)
         {
             await ValidateIatAsync(context, result);
@@ -358,7 +387,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             }
         }
 
-        var validateNonce = (context.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
+        var validateNonce = (context.ExpirationValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
         if (validateNonce)
         {
             await ValidateNonceAsync(context, result);
@@ -374,7 +403,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual Task ValidateIatAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        if (IsExpired(context, result, context.DPoPClockSkew, result.IssuedAt.Value))
+        if (IsExpired(context, result, context.ClientClockSkew, result.IssuedAt.Value))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'iat' value.";

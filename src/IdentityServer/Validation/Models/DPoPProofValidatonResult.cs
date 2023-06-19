@@ -33,6 +33,11 @@ public class DPoPProofValidatonResult : ValidationResult
     public IDictionary<string, object>? Payload { get; internal set; }
 
     /// <summary>
+    /// The ath value read from the payload.
+    /// </summary>
+    public string? AccessTokenHash { get; set; }
+
+    /// <summary>
     /// The 'jti' value read from the payload.
     /// </summary>
     public string? TokenId { get; set; }

@@ -4,12 +4,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
+using IdentityModel;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -40,7 +43,7 @@ public class DPoPProofValidatorTests
 
     private DPoPProofValidatonContext _context = new DPoPProofValidatonContext
     { 
-        DPoPClockSkew = TimeSpan.Zero, 
+        ClientClockSkew = TimeSpan.Zero, 
         Url = "https://identityserver/connect/token", 
         Method = "POST" 
     };
@@ -137,12 +140,62 @@ Dictionary<string, object> _header;
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task ath_with_valid_access_token_should_pass_validation()
+    {
+        _context.ValidateAccessToken = true;
+        _context.AccessToken = "access_token";
+
+        using var sha = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(_context.AccessToken);
+        var hash = sha.ComputeHash(bytes);
+        var accessTokenHash = Base64Url.Encode(hash);
+        _payload["ath"] = accessTokenHash;
+        _context.ProofToken = CreateDPoPProofToken();
+
+        var result = await _subject.ValidateAsync(_context);
+
+        result.IsError.Should().BeFalse();
+        result.JsonWebKeyThumbprint.Should().Be(_JKT);
+        result.AccessTokenHash.Should().Be(accessTokenHash);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task missing_ath_should_fail()
+    {
+        _context.ValidateAccessToken = true;
+        _context.AccessToken = "access_token";
+
+        _context.ProofToken = CreateDPoPProofToken();
+
+        var result = await _subject.ValidateAsync(_context);
+
+        result.IsError.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task invalid_ath_should_fail()
+    {
+        _context.ValidateAccessToken = true;
+        _context.AccessToken = "access_token";
+
+        _payload["ath"] = "invalid";
+        _context.ProofToken = CreateDPoPProofToken();
+
+        var result = await _subject.ValidateAsync(_context);
+
+        result.IsError.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task server_clock_skew_should_allow_tokens_outside_normal_duration()
     {
         _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
         _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(5);
 
-        _context.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
+        _context.ExpirationValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         {
             // test 1: client behind server
@@ -174,7 +227,7 @@ Dictionary<string, object> _header;
         _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
         _options.DPoP.ServerClockSkew = TimeSpan.FromMinutes(5);
 
-        _context.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
+        _context.ExpirationValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         {
             // test 1: client behind server
@@ -217,7 +270,7 @@ Dictionary<string, object> _header;
     {
         _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
         
-        _context.DPoPClockSkew = TimeSpan.FromMinutes(5);
+        _context.ClientClockSkew = TimeSpan.FromMinutes(5);
 
         {
             // test 1: client behind server
@@ -246,7 +299,7 @@ Dictionary<string, object> _header;
     {
         _options.DPoP.ProofTokenValidityDuration = TimeSpan.FromMinutes(1);
         
-        _context.DPoPClockSkew = TimeSpan.FromMinutes(5);
+        _context.ClientClockSkew = TimeSpan.FromMinutes(5);
 
         {
             // test 1: client behind server
@@ -545,7 +598,7 @@ Dictionary<string, object> _header;
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
 
         _context.ProofToken = CreateDPoPProofToken();
-        _context.DPoPClockSkew = TimeSpan.FromMinutes(1);
+        _context.ClientClockSkew = TimeSpan.FromMinutes(1);
 
         var result = await _subject.ValidateAsync(_context);
 
@@ -556,7 +609,7 @@ Dictionary<string, object> _header;
     [Trait("Category", Category)]
     public async Task too_old_past_clock_skew_iat_should_fail_validation()
     {
-        _context.DPoPClockSkew = TimeSpan.FromMinutes(1);
+        _context.ClientClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
 
@@ -572,7 +625,7 @@ Dictionary<string, object> _header;
     [Trait("Category", Category)]
     public async Task too_new_but_within_clock_skew_iat_should_succeed()
     {
-        _context.DPoPClockSkew = TimeSpan.FromMinutes(1);
+        _context.ClientClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(59)).ToUnixTimeSeconds();
 
@@ -587,7 +640,7 @@ Dictionary<string, object> _header;
     [Trait("Category", Category)]
     public async Task too_new_past_clock_skew_iat_should_fail_validation()
     {
-        _context.DPoPClockSkew = TimeSpan.FromMinutes(1);
+        _context.ClientClockSkew = TimeSpan.FromMinutes(1);
 
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
 
@@ -619,7 +672,7 @@ Dictionary<string, object> _header;
     [Trait("Category", Category)]
     public async Task missing_nonce_when_required_should_fail_validation_and_issue_nonce()
     {
-        _context.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
+        _context.ExpirationValidationMode = DPoPTokenExpirationValidationMode.Nonce;
         _context.ProofToken = CreateDPoPProofToken();
 
         var result = await _subject.ValidateAsync(_context);
@@ -633,7 +686,7 @@ Dictionary<string, object> _header;
     [Trait("Category", Category)]
     public async Task nonce_provided_when_required_should_succeed()
     {
-        _context.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
+        _context.ExpirationValidationMode = DPoPTokenExpirationValidationMode.Nonce;
         _context.ProofToken = CreateDPoPProofToken();
 
         var result = await _subject.ValidateAsync(_context);
@@ -655,7 +708,7 @@ Dictionary<string, object> _header;
     public async Task invalid_nonce_provided_when_required_should_fail_validation()
     {
         _context.ProofToken = CreateDPoPProofToken();
-        _context.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
+        _context.ExpirationValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         var result = await _subject.ValidateAsync(_context);
 
@@ -676,7 +729,7 @@ Dictionary<string, object> _header;
     [Trait("Category", Category)]
     public async Task expired_nonce_provided_when_required_should_fail_validation()
     {
-        _context.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
+        _context.ExpirationValidationMode = DPoPTokenExpirationValidationMode.Nonce;
         _context.ProofToken = CreateDPoPProofToken();
 
         var result = await _subject.ValidateAsync(_context);
