@@ -128,7 +128,7 @@ public class DPoPProofValidatorTests
     public async Task valid_dpop_jwt_should_pass_validation()
     {
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeFalse();
@@ -150,7 +150,7 @@ public class DPoPProofValidatorTests
             var token = CreateDPoPProofToken();
             _now = _now.AddMinutes(5);
 
-            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
             var result = await _subject.ValidateAsync(ctx);
             result.IsError.Should().BeFalse();
         }
@@ -162,7 +162,7 @@ public class DPoPProofValidatorTests
             var token = CreateDPoPProofToken();
             _now = _now.AddMinutes(-5);
 
-            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
             var result = await _subject.ValidateAsync(ctx);
             result.IsError.Should().BeFalse();
         }
@@ -184,12 +184,12 @@ public class DPoPProofValidatorTests
             _now = _now.AddMinutes(5);
 
             {
-                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
                 var result = await _subject.ValidateAsync(ctx);
                 result.IsError.Should().BeFalse();
             }
             {
-                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
                 var result = await _subject.ValidateAsync(ctx);
                 result.IsError.Should().BeTrue();
             }
@@ -203,12 +203,12 @@ public class DPoPProofValidatorTests
             _now = _now.AddMinutes(-5);
 
             {
-                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
                 var result = await _subject.ValidateAsync(ctx);
                 result.IsError.Should().BeFalse();
             }
             {
-                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
                 var result = await _subject.ValidateAsync(ctx);
                 result.IsError.Should().BeTrue();
             }
@@ -228,7 +228,7 @@ public class DPoPProofValidatorTests
             var token = CreateDPoPProofToken();
             _now = _now.AddMinutes(5);
 
-            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
             var result = await _subject.ValidateAsync(ctx);
             result.IsError.Should().BeFalse();
         }
@@ -239,7 +239,7 @@ public class DPoPProofValidatorTests
             var token = CreateDPoPProofToken();
             _now = _now.AddMinutes(-5);
 
-            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
             var result = await _subject.ValidateAsync(ctx);
             result.IsError.Should().BeFalse();
         }
@@ -259,12 +259,12 @@ public class DPoPProofValidatorTests
             _now = _now.AddMinutes(5);
 
             {
-                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
                 var result = await _subject.ValidateAsync(ctx);
                 result.IsError.Should().BeFalse();
             }
             {
-                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
                 var result = await _subject.ValidateAsync(ctx);
                 result.IsError.Should().BeTrue();
             }
@@ -277,12 +277,12 @@ public class DPoPProofValidatorTests
             _now = _now.AddMinutes(-5);
 
             {
-                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
                 var result = await _subject.ValidateAsync(ctx);
                 result.IsError.Should().BeFalse();
             }
             {
-                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+                var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
                 var result = await _subject.ValidateAsync(ctx);
                 result.IsError.Should().BeTrue();
             }
@@ -299,12 +299,12 @@ public class DPoPProofValidatorTests
         var token = CreateDPoPProofToken();
 
         {
-            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
             var result = await _subject.ValidateAsync(ctx);
             result.IsError.Should().BeFalse();
         }
         {
-            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+            var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
             var result = await _subject.ValidateAsync(ctx);
             result.IsError.Should().BeTrue();
         }
@@ -315,7 +315,7 @@ public class DPoPProofValidatorTests
     public async Task empty_string_should_fail_validation()
     {
         var popToken = "";
-        var ctx = new DPoPProofValidatonContext { ProofToken = popToken, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = popToken, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
         result.IsError.Should().BeTrue();
         result.Error.Should().Be("invalid_dpop_proof");
@@ -326,7 +326,7 @@ public class DPoPProofValidatorTests
     public async Task malformed_dpop_jwt_should_fail_validation()
     {
         var token = "malformed";
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -340,7 +340,7 @@ public class DPoPProofValidatorTests
         _header["typ"] = "JWT";
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -356,7 +356,7 @@ public class DPoPProofValidatorTests
         CreateHeaderValuesFromPublicKey();
         var token = CreateDPoPProofToken("HS256", key);
 
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
         
         result.IsError.Should().BeTrue();
@@ -371,7 +371,7 @@ public class DPoPProofValidatorTests
         CreateHeaderValuesFromPublicKey();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -385,7 +385,7 @@ public class DPoPProofValidatorTests
         _header["typ"] = true;
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -399,7 +399,7 @@ public class DPoPProofValidatorTests
         _header.Remove("jwk");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -413,7 +413,7 @@ public class DPoPProofValidatorTests
         _header["jwk"] = "malformed";
         
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -429,7 +429,7 @@ public class DPoPProofValidatorTests
         _privateJWK = JsonSerializer.Serialize(jwk);
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
         
         result.IsError.Should().BeTrue();
@@ -443,7 +443,7 @@ public class DPoPProofValidatorTests
         _payload.Remove("jti");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -457,7 +457,7 @@ public class DPoPProofValidatorTests
         _payload.Remove("htm");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -471,7 +471,7 @@ public class DPoPProofValidatorTests
         _payload.Remove("htu");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -485,7 +485,7 @@ public class DPoPProofValidatorTests
         _payload["htu"] = "https://identityserver";
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -499,7 +499,7 @@ public class DPoPProofValidatorTests
         _payload.Remove("iat");
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -513,7 +513,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = "invalid";
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -527,7 +527,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -541,7 +541,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(1)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -557,7 +557,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeFalse();
@@ -572,7 +572,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = _clock.UtcNow.Subtract(TimeSpan.FromSeconds(121)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -588,7 +588,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(59)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeFalse();
@@ -603,7 +603,7 @@ public class DPoPProofValidatorTests
         _payload["iat"] = _clock.UtcNow.Add(TimeSpan.FromSeconds(61)).ToUnixTimeSeconds();
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -618,7 +618,7 @@ public class DPoPProofValidatorTests
         _payload["nonce"] = "nonce";
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -633,7 +633,7 @@ public class DPoPProofValidatorTests
         _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -648,7 +648,7 @@ public class DPoPProofValidatorTests
         _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -656,7 +656,7 @@ public class DPoPProofValidatorTests
         _payload["nonce"] = result.ServerIssuedNonce;
 
         token = CreateDPoPProofToken();
-        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeFalse();
@@ -670,7 +670,7 @@ public class DPoPProofValidatorTests
         _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -678,7 +678,7 @@ public class DPoPProofValidatorTests
         _payload["nonce"] = result.ServerIssuedNonce + "invalid_stuff";
 
         token = CreateDPoPProofToken();
-        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -693,7 +693,7 @@ public class DPoPProofValidatorTests
         _client.DPoPValidationMode = DPoPTokenExpirationValidationMode.Nonce;
 
         var token = CreateDPoPProofToken();
-        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        var ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         var result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -703,7 +703,7 @@ public class DPoPProofValidatorTests
         _now = _now.AddSeconds(61);
 
         token = CreateDPoPProofToken();
-        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();
@@ -716,7 +716,7 @@ public class DPoPProofValidatorTests
         _now = _now.AddSeconds(-61);
 
         token = CreateDPoPProofToken();
-        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client };
+        ctx = new DPoPProofValidatonContext { ProofToken = token, Client = _client, Url = "https://identityserver/connect/token", Method = "POST" };
         result = await _subject.ValidateAsync(ctx);
 
         result.IsError.Should().BeTrue();

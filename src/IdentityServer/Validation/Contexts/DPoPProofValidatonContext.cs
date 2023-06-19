@@ -18,6 +18,16 @@ public class DPoPProofValidatonContext
     public Client Client { get; set; } = default!;
 
     /// <summary>
+    /// The HTTP URL to validate
+    /// </summary>
+    public string Url { get; set; } = default!;
+
+    /// <summary>
+    /// The HTTP method to validate
+    /// </summary>
+    public string Method { get; set; } = default!;
+
+    /// <summary>
     /// The DPoP proof token to validate
     /// </summary>
     public string ProofToken { get; set; } = default!;

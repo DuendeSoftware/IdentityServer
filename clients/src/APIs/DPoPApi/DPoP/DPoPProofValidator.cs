@@ -116,14 +116,14 @@ public class DPoPProofValidator
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<string>("typ", out var typ) || typ != JwtClaimTypes.JwtTypes.DPoPProofToken)
+        if (!token.TryGetHeaderValue<string>(JwtClaimTypes.TokenType, out var typ) || typ != JwtClaimTypes.JwtTypes.DPoPProofToken)
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'typ' value.";
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<string>("alg", out var alg) || !SupportedDPoPSigningAlgorithms.Contains(alg))
+        if (!token.TryGetHeaderValue<string>(JwtClaimTypes.Algorithm, out var alg) || !SupportedDPoPSigningAlgorithms.Contains(alg))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'alg' value.";

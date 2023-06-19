@@ -254,15 +254,14 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return;
         }
 
-        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpMethod, out var htm) || !"POST".Equals(htm))
+        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpMethod, out var htm) || context.Method?.Equals(htm) == false)
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htm' value.";
             return;
         }
 
-        var tokenUrl = ServerUrls.BaseUrl.EnsureTrailingSlash() + ProtocolRoutePaths.Token;
-        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpUrl, out var htu) || !tokenUrl.Equals(htu))
+        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpUrl, out var htu) || context.Url?.Equals(htu) == false)
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htu' value.";
