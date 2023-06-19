@@ -4,6 +4,7 @@
 #nullable enable
 
 using Duende.IdentityServer.Models;
+using System;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -13,9 +14,21 @@ namespace Duende.IdentityServer.Validation;
 public class DPoPProofValidatonContext
 {
     /// <summary>
-    /// The client presenting the DPoP proof
+    /// Enum setting to control validation for the DPoP proof token expiration.
+    /// This supports both the client generated 'iat' value and/or the server generated 'nonce' value. 
+    /// Defaults to only using the 'iat' value.
     /// </summary>
-    public Client Client { get; set; } = default!;
+    public DPoPTokenExpirationValidationMode DPoPValidationMode { get; set; } = DPoPTokenExpirationValidationMode.Iat;
+
+    /// <summary>
+    /// Clock skew used in validating the DPoP proof token 'iat' claim value. Defaults to 5 minutes.
+    /// </summary>
+    public TimeSpan DPoPClockSkew { get; set; } = TimeSpan.FromMinutes(5);
+
+    ///// <summary>
+    ///// The client presenting the DPoP proof
+    ///// </summary>
+    //public Client Client { get; set; } = default!;
 
     /// <summary>
     /// The HTTP URL to validate

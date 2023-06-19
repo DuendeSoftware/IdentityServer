@@ -238,7 +238,8 @@ internal class TokenRequestValidator : ITokenRequestValidator
             var tokenUrl = _serverUrls.BaseUrl.EnsureTrailingSlash() + ProtocolRoutePaths.Token;
             var dpopContext = new DPoPProofValidatonContext
             {
-                Client = _validatedRequest.Client,
+                DPoPValidationMode = _validatedRequest.Client.DPoPValidationMode,
+                DPoPClockSkew = _validatedRequest.Client.DPoPClockSkew,
                 ProofToken = context.DPoPProofToken,
                 Url = tokenUrl,
                 Method = "POST",

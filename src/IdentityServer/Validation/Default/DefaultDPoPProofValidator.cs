@@ -321,12 +321,12 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         }
 
         // get largest skew based on how client's freshness is validated
-        var validateIat = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
-        var validateNonce = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
+        var validateIat = (context.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
+        var validateNonce = (context.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
         var skew = TimeSpan.Zero;
-        if (validateIat && context.Client.DPoPClockSkew > skew)
+        if (validateIat && context.DPoPClockSkew > skew)
         {
-            skew = context.Client.DPoPClockSkew;
+            skew = context.DPoPClockSkew;
         }
         if (validateNonce && Options.DPoP.ServerClockSkew > skew)
         {
@@ -348,7 +348,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual async Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        var validateIat = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
+        var validateIat = (context.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
         if (validateIat)
         {
             await ValidateIatAsync(context, result);
@@ -358,7 +358,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             }
         }
 
-        var validateNonce = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
+        var validateNonce = (context.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
         if (validateNonce)
         {
             await ValidateNonceAsync(context, result);
@@ -374,7 +374,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual Task ValidateIatAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        if (IsExpired(context, result, context.Client.DPoPClockSkew, result.IssuedAt.Value))
+        if (IsExpired(context, result, context.DPoPClockSkew, result.IssuedAt.Value))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'iat' value.";
