@@ -87,7 +87,7 @@ public class DPoPProofValidator
         }
         finally
         {
-            if (result.IsError)
+            if (result.IsError && String.IsNullOrWhiteSpace(result.Error))
             {
                 result.Error = OidcConstants.TokenErrors.InvalidDPoPProof;
             }
@@ -269,11 +269,11 @@ public class DPoPProofValidator
         {
             if (iat is int)
             {
-                result.IssuedAt = (int) iat;
+                result.IssuedAt = (int)iat;
             }
             if (iat is long)
             {
-                result.IssuedAt = (long) iat;
+                result.IssuedAt = (long)iat;
             }
         }
 
@@ -336,6 +336,9 @@ public class DPoPProofValidator
         // longer than the likelyhood of proof token expiration, which is done before replay
         skew *= 2;
         var cacheDuration = dpopOptions.ProofTokenValidityDuration + skew;
+        
+        Logger.LogDebug("Adding proof token with jti {jti} to replay cache for duration {cacheDuration}", result.TokenId, cacheDuration);
+
         await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, DateTimeOffset.UtcNow.Add(cacheDuration));
     }
 
@@ -446,11 +449,11 @@ public class DPoPProofValidator
                 return ValueTask.FromResult(iat);
             }
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             Logger.LogDebug("Error parsing DPoP 'nonce' value: {error}", ex.ToString());
         }
-
+        
         return ValueTask.FromResult<long>(0);
     }
 
