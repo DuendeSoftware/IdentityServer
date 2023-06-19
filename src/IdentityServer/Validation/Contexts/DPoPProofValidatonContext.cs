@@ -25,11 +25,6 @@ public class DPoPProofValidatonContext
     /// </summary>
     public TimeSpan DPoPClockSkew { get; set; } = TimeSpan.FromMinutes(5);
 
-    ///// <summary>
-    ///// The client presenting the DPoP proof
-    ///// </summary>
-    //public Client Client { get; set; } = default!;
-
     /// <summary>
     /// The HTTP URL to validate
     /// </summary>

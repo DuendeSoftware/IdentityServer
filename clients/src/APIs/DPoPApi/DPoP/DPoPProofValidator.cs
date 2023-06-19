@@ -82,7 +82,7 @@ public class DPoPProofValidator
                 return result;
             }
 
-            Logger.LogDebug("Successfully validated DPoP proof token");
+            Logger.LogDebug("Successfully validated DPoP proof token with thumbprint: {jkt}", result.JsonWebKeyThumbprint);
             result.IsError = false;
         }
         finally
