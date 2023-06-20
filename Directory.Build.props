@@ -29,10 +29,7 @@
 
     <PropertyGroup>
         <MinVerAutoIncrement>minor</MinVerAutoIncrement>
-<!--        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>-->
-        <!--<WarningsNotAsErrors>9057</WarningsNotAsErrors>-->
-
-        <!-- Errors in .NET 8-->
-<!--        <WarningsNotAsErrors>CS0618,ASP0019</WarningsNotAsErrors>-->
+        <!--todo: enable again once all warnings are addressed-->
+        <!--<TreatWarningsAsErrors>True</TreatWarningsAsErrors>-->
     </PropertyGroup>
 </Project>
