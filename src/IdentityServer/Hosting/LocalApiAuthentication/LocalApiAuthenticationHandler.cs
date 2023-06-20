@@ -114,7 +114,7 @@ public class LocalApiAuthenticationHandler : AuthenticationHandler<LocalApiAuthe
         if (wasDPoPToken)
         {
             var clientId = tokenResult.Claims.FirstOrDefault(x => x.Type == JwtClaimTypes.ClientId)?.Value;
-            var client = await _clientStore.FindClientByIdAsync(clientId);
+            var client = await _clientStore.FindEnabledClientByIdAsync(clientId);
             if (client == null)
             {
                 // invalid or missing client id
@@ -158,6 +158,7 @@ public class LocalApiAuthenticationHandler : AuthenticationHandler<LocalApiAuthe
             // client should have sent it as DPoP, so we fail the request
             if (tokenResult.Claims.Any(x => x.Type == JwtClaimTypes.Confirmation))
             {
+                Context.Items["Bearer-Error"] = "invalid_token";
                 Context.Items["Bearer-ErrorDescription"] = "Must use DPoP when using an access token with a 'cnf' claim";
                 return AuthenticateResult.Fail("Must use DPoP when using an access token with a 'cnf' claim");
             }
@@ -197,9 +198,11 @@ public class LocalApiAuthenticationHandler : AuthenticationHandler<LocalApiAuthe
         // Format:
         // WWW-Authenticate: DPoP error="invalid_dpop_proof", error_description="Invalid 'iat' value."
 
+        var sb = new StringBuilder();
+
         if (Options.TokenMode == LocalApiTokenMode.BearerOnly || Options.TokenMode == LocalApiTokenMode.DPoPAndBearer)
         {
-            var sb = new StringBuilder("Bearer");
+            sb.Append("Bearer");
 
             if (Context.Items.ContainsKey("Bearer-Error"))
             {
@@ -214,13 +217,12 @@ public class LocalApiAuthenticationHandler : AuthenticationHandler<LocalApiAuthe
                     sb.Append('\"');
                 }
             }
-
-            Response.Headers.Add(HeaderNames.WWWAuthenticate, sb.ToString());
         }
-        
+
         if (Options.TokenMode == LocalApiTokenMode.DPoPOnly || Options.TokenMode == LocalApiTokenMode.DPoPAndBearer)
         {
-            var sb = new StringBuilder("DPoP");
+            if (sb.Length > 0) sb.Append(", ");
+            sb.Append("DPoP");
 
             if (Context.Items.ContainsKey("DPoP-Error"))
             {
@@ -236,8 +238,6 @@ public class LocalApiAuthenticationHandler : AuthenticationHandler<LocalApiAuthe
                 }
             }
 
-            Response.Headers.Add(HeaderNames.WWWAuthenticate, sb.ToString());
-
             // Emit a nonce if we have it
             if (Context.Items.ContainsKey("DPoP-Nonce"))
             {
@@ -251,6 +251,11 @@ public class LocalApiAuthenticationHandler : AuthenticationHandler<LocalApiAuthe
                 var nonce = properties.Items["DPoP-Nonce"];
                 Context.Response.Headers[HttpHeaders.DPoPNonce] = nonce;
             }
+        }
+
+        if (sb.Length > 0)
+        {
+            Response.Headers.Add(HeaderNames.WWWAuthenticate, sb.ToString());
         }
 
         return Task.CompletedTask;
