@@ -45,11 +45,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     protected IReplayCache ReplayCache;
 
     /// <summary>
-    /// The server urls service
-    /// </summary>
-    protected readonly IServerUrls ServerUrls;
-
-    /// <summary>
     /// The data protection provider
     /// </summary>
     protected IDataProtector DataProtector { get; }
@@ -64,7 +59,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     public DefaultDPoPProofValidator(
         IdentityServerOptions options,
-        IServerUrls server,
         IReplayCache replayCache,
         IClock clock,
         IDataProtectionProvider dataProtectionProvider,
@@ -73,7 +67,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         Options = options;
         Clock = clock;
         ReplayCache = replayCache;
-        ServerUrls = server;
         DataProtector = dataProtectionProvider.CreateProtector(DataProtectorPurpose);
         Logger = logger;
     }
