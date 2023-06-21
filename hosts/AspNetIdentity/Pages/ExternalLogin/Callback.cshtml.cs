@@ -162,7 +162,7 @@ public class Callback : PageModel
         var identityResult = await _userManager.CreateAsync(user);
         if (!identityResult.Succeeded) throw new InvalidOperationException(identityResult.Errors.First().Description);
 
-        if (filtered.Any())
+        if (filtered.Count != 0)
         {
             identityResult = await _userManager.AddClaimsAsync(user, filtered);
             if (!identityResult.Succeeded) throw new InvalidOperationException(identityResult.Errors.First().Description);
