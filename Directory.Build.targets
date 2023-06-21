@@ -1,6 +1,6 @@
 <Project>
 
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
+    <!--<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
         <FrameworkVersion>6.0.0</FrameworkVersion>
         <ExtensionsVersion>6.0.0</ExtensionsVersion>
         <EntityFrameworkVersion>6.0.0</EntityFrameworkVersion>
@@ -11,6 +11,13 @@
         <FrameworkVersion>7.0.0</FrameworkVersion>
         <ExtensionsVersion>7.0.0</ExtensionsVersion>
         <EntityFrameworkVersion>7.0.0</EntityFrameworkVersion>
+        <WilsonVersion>6.15.1</WilsonVersion>
+    </PropertyGroup>-->
+
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0'">
+        <FrameworkVersion>8.0.0-preview.5.23302.2</FrameworkVersion>
+        <ExtensionsVersion>8.0.0-preview.5.23280.8</ExtensionsVersion>
+        <EntityFrameworkVersion>8.0.0-preview.5.23280.1</EntityFrameworkVersion>
         <WilsonVersion>6.15.1</WilsonVersion>
     </PropertyGroup>
 

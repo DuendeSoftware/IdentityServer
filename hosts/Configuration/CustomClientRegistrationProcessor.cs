@@ -10,7 +10,7 @@ using Duende.IdentityServer.Configuration.Models;
 
 namespace IdentityServerHost;
 
-internal class CustomClientRegistrationProcessor : DynamicClientRegistrationRequestProcessor
+internal sealed class CustomClientRegistrationProcessor : DynamicClientRegistrationRequestProcessor
 {
     private readonly ICollection<Client> _clients;
 

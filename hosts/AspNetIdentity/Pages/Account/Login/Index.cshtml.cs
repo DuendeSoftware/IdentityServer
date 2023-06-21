@@ -97,11 +97,11 @@ public class Index : PageModel
 
         if (ModelState.IsValid)
         {
-            var result = await _signInManager.PasswordSignInAsync(Input.Username, Input.Password, Input.RememberLogin, lockoutOnFailure: true);
+            var result = await _signInManager.PasswordSignInAsync(Input.Username!, Input.Password!, Input.RememberLogin, lockoutOnFailure: true);
             if (result.Succeeded)
             {
-                var user = await _userManager.FindByNameAsync(Input.Username);
-                await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
+                var user = await _userManager.FindByNameAsync(Input.Username!);
+                await _events.RaiseAsync(new UserLoginSuccessEvent(user!.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
 
                 if (context != null)
                 {
@@ -197,7 +197,7 @@ public class Index : PageModel
         if (client != null)
         {
             allowLocal = client.EnableLocalLogin;
-            if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Any())
+            if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Count != 0)
             {
                 providers = providers.Where(provider =>
                     provider.AuthenticationScheme != null &&
