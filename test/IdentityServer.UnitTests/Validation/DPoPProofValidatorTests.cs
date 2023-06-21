@@ -66,7 +66,6 @@ Dictionary<string, object> _header;
 
         _subject = new DefaultDPoPProofValidator(
             _options, 
-            new MockServerUrls() { BasePath = "/", Origin = "https://identityserver" },
             _testReplayCache,
             _clock,
             _stubDataProtectionProvider,
