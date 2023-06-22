@@ -1,8 +1,8 @@
+using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using FluentAssertions;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -46,7 +46,7 @@ namespace IdentityServer.UnitTests.Caches
 
             services.AddSingleton(typeof(MockCache<>));
             services.AddSingleton(typeof(ICache<>), typeof(MockCache<>));
-            services.AddSingleton<ISystemClock>(_mockClock);
+            services.AddSingleton<IClock>(_mockClock);
             
             _provider = services.BuildServiceProvider();
         }

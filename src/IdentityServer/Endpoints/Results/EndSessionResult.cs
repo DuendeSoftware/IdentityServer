@@ -12,7 +12,6 @@ using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer.Endpoints.Results;
@@ -38,7 +37,7 @@ public class EndSessionResult : IEndpointResult
     internal EndSessionResult(
         EndSessionValidationResult result,
         IdentityServerOptions options,
-        ISystemClock clock,
+        IClock clock,
         IServerUrls urls,
         IMessageStore<LogoutMessage> logoutMessageStore)
         : this(result)
@@ -50,14 +49,14 @@ public class EndSessionResult : IEndpointResult
     }
 
     private IdentityServerOptions _options;
-    private ISystemClock _clock;
+    private IClock _clock;
     private IServerUrls _urls;
     private IMessageStore<LogoutMessage> _logoutMessageStore;
 
     private void Init(HttpContext context)
     {
         _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-        _clock = _clock ?? context.RequestServices.GetRequiredService<ISystemClock>();
+        _clock = _clock ?? context.RequestServices.GetRequiredService<IClock>();
         _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
         _logoutMessageStore = _logoutMessageStore ?? context.RequestServices.GetRequiredService<IMessageStore<LogoutMessage>>();
     }

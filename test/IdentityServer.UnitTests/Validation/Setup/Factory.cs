@@ -14,9 +14,9 @@ using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Stores.Serialization;
 using Duende.IdentityServer.Validation;
 using UnitTests.Common;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Services.KeyManagement;
+using Duende.IdentityServer;
 
 namespace UnitTests.Validation.Setup;
 
@@ -278,7 +278,7 @@ internal static class Factory
         IProfileService profile = null,
         IIssuerNameService issuerNameService = null,
         IdentityServerOptions options = null, 
-        ISystemClock clock = null)
+        IClock clock = null)
     {
         options ??= TestIdentityServerOptions.Create();
         profile ??= new TestProfileService();
@@ -320,7 +320,7 @@ internal static class Factory
         IDeviceFlowCodeService service,
         IProfileService profile = null,
         IDeviceFlowThrottlingService throttlingService = null,
-        ISystemClock clock = null)
+        IClock clock = null)
     {
         profile = profile ?? new TestProfileService();
         throttlingService = throttlingService ?? new TestDeviceFlowThrottlingService();

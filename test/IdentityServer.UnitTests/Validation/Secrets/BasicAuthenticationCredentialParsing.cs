@@ -13,7 +13,6 @@ using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Xunit;
-using System.Text.Encodings.Web;
 
 namespace UnitTests.Validation.Secrets;
 

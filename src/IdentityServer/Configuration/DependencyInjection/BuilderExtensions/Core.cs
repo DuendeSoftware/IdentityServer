@@ -23,7 +23,6 @@ using System.Linq;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-using static Duende.IdentityServer.Constants;
 using static Duende.IdentityServer.IdentityServerConstants;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting.FederatedSignOut;
@@ -219,6 +218,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IScopeParser, DefaultScopeParser>();
         builder.Services.TryAddTransient<ISessionCoordinationService, DefaultSessionCoordinationService>();
         builder.Services.TryAddTransient<IReplayCache, DefaultReplayCache>();
+        builder.Services.TryAddTransient<IClock, DefaultClock>();
 
         builder.Services.TryAddTransient<IBackchannelAuthenticationThrottlingService, DistributedBackchannelAuthenticationThrottlingService>();
         builder.Services.TryAddTransient<IBackchannelAuthenticationUserNotificationService, NopBackchannelAuthenticationUserNotificationService>();

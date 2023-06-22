@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System;
 using Duende.IdentityServer.Extensions;
@@ -36,7 +35,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The replay cache
@@ -65,7 +64,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         IdentityServerOptions options,
         IServerUrls server,
         IReplayCache replayCache,
-        ISystemClock clock,
+        IClock clock,
         IDataProtectionProvider dataProtectionProvider,
         ILogger<DefaultDPoPProofValidator> logger)
     {

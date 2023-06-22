@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.Authentication;
 using System.Collections.Generic;
 
 namespace Duende.IdentityServer.ResponseHandling;
@@ -56,7 +55,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     /// <summary>
     ///  The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TokenResponseGenerator" /> class.
@@ -68,7 +67,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     /// <param name="resources">The resources.</param>
     /// <param name="clients">The clients.</param>
     /// <param name="logger">The logger.</param>
-    public TokenResponseGenerator(ISystemClock clock, ITokenService tokenService, IRefreshTokenService refreshTokenService, IScopeParser scopeParser, IResourceStore resources, IClientStore clients, ILogger<TokenResponseGenerator> logger)
+    public TokenResponseGenerator(IClock clock, ITokenService tokenService, IRefreshTokenService refreshTokenService, IScopeParser scopeParser, IResourceStore resources, IClientStore clients, ILogger<TokenResponseGenerator> logger)
     {
         Clock = clock;
         TokenService = tokenService;

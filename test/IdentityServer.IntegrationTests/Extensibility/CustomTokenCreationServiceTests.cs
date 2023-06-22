@@ -3,21 +3,17 @@
 
 
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using IdentityModel;
 using IdentityModel.Client;
 using IntegrationTests.Common;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -80,7 +76,7 @@ public class CustomTokenCreationServiceTests
 
 public class CustomTokenCreationService : DefaultTokenCreationService
 {
-    public CustomTokenCreationService(ISystemClock clock, IKeyMaterialService keys, IdentityServerOptions options, ILogger<DefaultTokenCreationService> logger) : base(clock, keys, options, logger)
+    public CustomTokenCreationService(IClock clock, IKeyMaterialService keys, IdentityServerOptions options, ILogger<DefaultTokenCreationService> logger) : base(clock, keys, options, logger)
     {
     }
 

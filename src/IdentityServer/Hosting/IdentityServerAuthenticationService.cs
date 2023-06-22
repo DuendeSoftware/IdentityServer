@@ -27,14 +27,14 @@ internal class IdentityServerAuthenticationService : IAuthenticationService
 {
     private readonly IAuthenticationService _inner;
     private readonly IAuthenticationSchemeProvider _schemes;
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
     private readonly IUserSession _session;
     private readonly ILogger<IdentityServerAuthenticationService> _logger;
 
     public IdentityServerAuthenticationService(
         Decorator<IAuthenticationService> decorator,
         IAuthenticationSchemeProvider schemes,
-        ISystemClock clock,
+        IClock clock,
         IUserSession session,
         ILogger<IdentityServerAuthenticationService> logger)
     {
