@@ -63,7 +63,7 @@ public class ApiScopeRepository
         {
             Name = scope.Name,
             DisplayName = scope.DisplayName,
-            UserClaims = scope.UserClaims.Any() ? scope.UserClaims.Select(x => x.Type).Aggregate((a, b) => $"{a} {b}") : null,
+            UserClaims = scope.UserClaims.Count != 0 ? scope.UserClaims.Select(x => x.Type).Aggregate((a, b) => $"{a} {b}") : null,
         };
     }
 
@@ -106,11 +106,11 @@ public class ApiScopeRepository
         var claimsToAdd = claims.Except(currentClaims).ToArray();
         var claimsToRemove = currentClaims.Except(claims).ToArray();
 
-        if (claimsToRemove.Any())
+        if (claimsToRemove.Length != 0)
         {
             scope.UserClaims.RemoveAll(x => claimsToRemove.Contains(x.Type));
         }
-        if (claimsToAdd.Any())
+        if (claimsToAdd.Length != 0)
         {
             scope.UserClaims.AddRange(claimsToAdd.Select(x => new ApiScopeClaim
             {

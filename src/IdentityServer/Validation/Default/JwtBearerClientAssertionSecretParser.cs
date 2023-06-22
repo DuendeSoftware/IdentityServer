@@ -110,9 +110,9 @@ public class JwtBearerClientAssertionSecretParser : ISecretParser
             var jwt = new JwtSecurityToken(token);
             return jwt.Subject;
         }
-        catch (Exception e)
+        catch
         {
-            _logger.LogWarning("Could not parse client assertion", e);
+            _logger.LogWarning("Could not parse client assertion");
             return null;
         }
     }
