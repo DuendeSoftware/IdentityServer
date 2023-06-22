@@ -7,6 +7,9 @@ using Duende.IdentityServer.Configuration;
 using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
 
@@ -21,8 +24,8 @@ internal static class HostingExtensions
 
         builder.Services.AddControllers();
         builder.Services.AddHealthChecks()
-                    .AddCheck<DiscoveryHealthCheck>("DiscoveryHealthCheck")
-                    .AddCheck<DiscoveryKeysHealthCheck>("DiscoveryKeysHealthCheck");
+            .AddCheck<DiscoveryHealthCheck>("DiscoveryHealthCheck")
+            .AddCheck<DiscoveryKeysHealthCheck>("DiscoveryKeysHealthCheck");
 
         // cookie policy to deal with temporary browser incompatibilities
         builder.Services.AddSameSiteCookiePolicy();
@@ -40,10 +43,42 @@ internal static class HostingExtensions
         });
 
 
-        // var apiKey = builder.Configuration["HoneyCombApiKey"];
-        // var dataset = "IdentityServerDev";
-        //
-        // builder.Services.AddOpenTelemetryTracing(builder =>
+        var apiKey = builder.Configuration["HoneyCombApiKey"];
+        var dataset = "IdentityServerDev";
+
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(b => { b.AddService("IdentityServerHost.Main"); })
+            .WithTracing(b =>
+            {
+                b.AddSource(IdentityServerConstants.Tracing.Basic);
+                b.AddSource(IdentityServerConstants.Tracing.Cache);
+                b.AddSource(IdentityServerConstants.Tracing.Services);
+                b.AddSource(IdentityServerConstants.Tracing.Stores);
+                b.AddSource(IdentityServerConstants.Tracing.Validation);
+
+                b.AddHttpClientInstrumentation();
+                b.AddAspNetCoreInstrumentation();
+                b.AddSqlClientInstrumentation();
+
+                b.AddOtlpExporter(option =>
+                {
+                    option.Endpoint = new Uri("https://api.honeycomb.io");
+                    option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+                });
+            })
+            .WithMetrics(b =>
+            {
+                b.AddAspNetCoreInstrumentation();
+                
+                b.AddOtlpExporter(option =>
+                {
+                    option.Endpoint = new Uri("https://api.honeycomb.io");
+                    option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+                });
+            });
+
+
+        // builder.Services.AddOpenTelemetry(builder =>
         // {
         //     builder
         //         .AddSource(IdentityServerConstants.Tracing.Basic)
@@ -51,11 +86,10 @@ internal static class HostingExtensions
         //         .AddSource(IdentityServerConstants.Tracing.Services)
         //         .AddSource(IdentityServerConstants.Tracing.Stores)
         //         .AddSource(IdentityServerConstants.Tracing.Validation)
-        //         
         //         .SetResourceBuilder(
         //             ResourceBuilder.CreateDefault()
         //                 .AddService("IdentityServerHost.Main"))
-        //         
+        //
         //         //.SetSampler(new AlwaysOnSampler())
         //         .AddHttpClientInstrumentation()
         //         .AddAspNetCoreInstrumentation()
@@ -157,7 +191,7 @@ internal static class HostingExtensions
 
         // health checks
         app.MapHealthChecks("/health");
-        
+
         // local API endpoints
         app.MapControllers()
             .RequireAuthorization(IdentityServerConstants.LocalApi.PolicyName);
