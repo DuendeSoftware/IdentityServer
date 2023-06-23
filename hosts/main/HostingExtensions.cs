@@ -68,7 +68,14 @@ internal static class HostingExtensions
             })
             .WithMetrics(b =>
             {
-                b.AddAspNetCoreInstrumentation();
+                //b.AddAspNetCoreInstrumentation();
+
+                b.AddMeter(IdentityServerConstants.Tracing.Basic);
+
+                b.AddConsoleExporter((exporterOptions, metricReaderOptions) =>
+                {
+                    metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 1000;
+                });
                 
                 b.AddOtlpExporter(option =>
                 {
