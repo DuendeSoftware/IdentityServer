@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>Duende.IdentityServer.EntityFramework</PackageId>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 
         <Description>EntityFramework persistence layer for Duende IdentityServer</Description>
         <AssemblyName>Duende.IdentityServer.EntityFramework</AssemblyName>

@@ -41,7 +41,8 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: |
-          8.0.100-preview.5.23303.2
+          6.0.x
+          7.0.x
       
     - run: dotnet --info
 

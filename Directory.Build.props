@@ -29,7 +29,7 @@
 
     <PropertyGroup>
         <MinVerAutoIncrement>minor</MinVerAutoIncrement>
-        <!--todo: enable again once all warnings are addressed-->
-        <!--<TreatWarningsAsErrors>True</TreatWarningsAsErrors>-->
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <!--<WarningsNotAsErrors>9057</WarningsNotAsErrors>-->
     </PropertyGroup>
 </Project>

@@ -35,8 +35,6 @@ public class ClientModel : CreateClientModel, IValidatableObject
     public string? FrontChannelLogoutUri { get; set; }
     public string? BackChannelLogoutUri { get; set; }
 
-    private static readonly string[] memberNames = new[] { "RedirectUri" };
-
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var errors = new List<ValidationResult>();
@@ -45,7 +43,7 @@ public class ClientModel : CreateClientModel, IValidatableObject
         {
             if (RedirectUri == null)
             {
-                errors.Add(new ValidationResult("Redirect URI is required.", memberNames));
+                errors.Add(new ValidationResult("Redirect URI is required.", new[] { "RedirectUri" }));
             }
         }
 
@@ -109,7 +107,7 @@ public class ClientRepository
             Name = client.ClientName,
             Flow = client.AllowedGrantTypes.Select(x => x.GrantType)
                 .Single() == GrantType.ClientCredentials ? Flow.ClientCredentials : Flow.CodeFlowWithPkce,
-            AllowedScopes = client.AllowedScopes.Count != 0 ? client.AllowedScopes.Select(x => x.Scope).Aggregate((a, b) => $"{a} {b}") : string.Empty,
+            AllowedScopes = client.AllowedScopes.Any() ? client.AllowedScopes.Select(x => x.Scope).Aggregate((a, b) => $"{a} {b}") : string.Empty,
             RedirectUri = client.RedirectUris.Select(x => x.RedirectUri).SingleOrDefault(),
             InitiateLoginUri = client.InitiateLoginUri,
             PostLogoutRedirectUri = client.PostLogoutRedirectUris.Select(x => x.PostLogoutRedirectUri).SingleOrDefault(),
@@ -164,11 +162,11 @@ public class ClientRepository
         var scopesToAdd = scopes.Except(currentScopes).ToArray();
         var scopesToRemove = currentScopes.Except(scopes).ToArray();
 
-        if (scopesToRemove.Length != 0)
+        if (scopesToRemove.Any())
         {
             client.AllowedScopes.RemoveAll(x => scopesToRemove.Contains(x.Scope));
         }
-        if (scopesToAdd.Length != 0)
+        if (scopesToAdd.Any())
         {
             client.AllowedScopes.AddRange(scopesToAdd.Select(x => new ClientScope
             {

@@ -206,7 +206,7 @@ public class Index : PageModel
         if (client != null)
         {
             allowLocal = client.EnableLocalLogin;
-            if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Count != 0)
+            if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Any())
             {
                 providers = providers.Where(provider => client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
             }

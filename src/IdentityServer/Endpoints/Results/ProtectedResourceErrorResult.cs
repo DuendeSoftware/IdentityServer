@@ -62,7 +62,7 @@ internal class ProtectedResourceErrorResultGenerator : IEndpointResultGenerator<
         var errorString = string.Format($"error=\"{error}\"");
         if (errorDescription.IsMissing())
         {
-            context.Response.Headers.Append(HeaderNames.WWWAuthenticate, new StringValues(new[] { "Bearer realm=\"IdentityServer\"", errorString }).ToString());
+            context.Response.Headers.Add(HeaderNames.WWWAuthenticate, new StringValues(new[] { "Bearer realm=\"IdentityServer\"", errorString }).ToString());
         }
         else
         {

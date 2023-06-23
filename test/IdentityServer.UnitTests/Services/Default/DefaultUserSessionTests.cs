@@ -15,7 +15,6 @@ using FluentAssertions;
 using UnitTests.Common;
 using Microsoft.AspNetCore.Authentication;
 using Xunit;
-using Microsoft.AspNetCore.Http;
 
 namespace UnitTests.Services.Default;
 
@@ -164,7 +163,7 @@ public class DefaultUserSessionTests
         _mockHttpContext.HttpContext.Response.Headers.Clear();
 
         string cookie = cookieContainer.GetCookieHeader(new Uri("http://server"));
-        _mockHttpContext.HttpContext.Request.Headers.Append("Cookie", cookie);
+        _mockHttpContext.HttpContext.Request.Headers.Add("Cookie", cookie);
 
         await _subject.RemoveSessionIdCookieAsync();
 

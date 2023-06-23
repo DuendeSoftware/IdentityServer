@@ -1,4 +1,4 @@
-// Copyright (c) Duende Software. All rights reserved.
+﻿// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -49,7 +49,7 @@ public class BearerTokenUsageValidation
     {
         var ctx = new DefaultHttpContext();
         ctx.Request.Method = "GET";
-        ctx.Request.Headers.Append("Authorization", new string[] { "Foo Bar" });
+        ctx.Request.Headers.Add("Authorization", new string[] { "Foo Bar" });
 
         var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
         var result = await validator.ValidateAsync(ctx);
@@ -63,7 +63,7 @@ public class BearerTokenUsageValidation
     {
         var ctx = new DefaultHttpContext();
         ctx.Request.Method = "GET";
-        ctx.Request.Headers.Append("Authorization", new string[] { "Bearer" });
+        ctx.Request.Headers.Add("Authorization", new string[] { "Bearer" });
 
         var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
         var result = await validator.ValidateAsync(ctx);
@@ -77,7 +77,7 @@ public class BearerTokenUsageValidation
     {
         var ctx = new DefaultHttpContext();
         ctx.Request.Method = "GET";
-        ctx.Request.Headers.Append("Authorization", new string[] { "Bearer           " });
+        ctx.Request.Headers.Add("Authorization", new string[] { "Bearer           " });
 
         var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
         var result = await validator.ValidateAsync(ctx);
@@ -91,7 +91,7 @@ public class BearerTokenUsageValidation
     {
         var ctx = new DefaultHttpContext();
         ctx.Request.Method = "GET";
-        ctx.Request.Headers.Append("Authorization", new string[] { "Bearer token" });
+        ctx.Request.Headers.Add("Authorization", new string[] { "Bearer token" });
 
         var validator = new BearerTokenUsageValidator(TestLogger.Create<BearerTokenUsageValidator>());
         var result = await validator.ValidateAsync(ctx);

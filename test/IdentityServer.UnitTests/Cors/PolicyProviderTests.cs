@@ -73,7 +73,7 @@ public class PolicyProviderTests
         ctx.Request.Scheme = "https";
         ctx.Request.Host = new HostString("server");
         ctx.Request.Path = new PathString(path);
-        ctx.Request.Headers.Append("Origin", "http://notserver");
+        ctx.Request.Headers.Add("Origin", "http://notserver");
 
         var response = await _subject.GetPolicyAsync(ctx, _options.Cors.CorsPolicyName);
 
@@ -101,7 +101,7 @@ public class PolicyProviderTests
         ctx.Request.Scheme = "https";
         ctx.Request.Host = new HostString("server");
         ctx.Request.Path = new PathString(path);
-        ctx.Request.Headers.Append("Origin", "http://notserver");
+        ctx.Request.Headers.Add("Origin", "http://notserver");
 
         var response = await _subject.GetPolicyAsync(ctx, _options.Cors.CorsPolicyName);
 
@@ -124,7 +124,7 @@ public class PolicyProviderTests
         ctx.Request.Scheme = "https";
         ctx.Request.Host = new HostString("server");
         ctx.Request.Path = new PathString("/foo");
-        ctx.Request.Headers.Append("Origin", "http://notserver");
+        ctx.Request.Headers.Add("Origin", "http://notserver");
 
         var response = await _subject.GetPolicyAsync(ctx, "wrong_name");
 
@@ -145,7 +145,7 @@ public class PolicyProviderTests
         ctx.Request.Scheme = "https";
         ctx.Request.Host = new HostString("server");
         ctx.Request.Path = new PathString("/foo");
-        ctx.Request.Headers.Append("Origin", "https://server");
+        ctx.Request.Headers.Add("Origin", "https://server");
 
         var response = await _subject.GetPolicyAsync(ctx, _options.Cors.CorsPolicyName);
 
@@ -168,7 +168,7 @@ public class PolicyProviderTests
         ctx.Request.Scheme = "https";
         ctx.Request.Host = new HostString("server");
         ctx.Request.Path = new PathString("/foo");
-        ctx.Request.Headers.Append("Origin", origin);
+        ctx.Request.Headers.Add("Origin", origin);
 
         var response = await _subject.GetPolicyAsync(ctx, _options.Cors.CorsPolicyName);
 

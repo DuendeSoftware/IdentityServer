@@ -111,7 +111,6 @@ public class Callback : PageModel
         return Redirect(returnUrl);
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1851:Possible multiple enumerations of 'IEnumerable' collection", Justification = "<Pending>")]
     private async Task<ApplicationUser> AutoProvisionUserAsync(string provider, string providerUserId, IEnumerable<Claim> claims)
     {
         var sub = Guid.NewGuid().ToString();
@@ -163,7 +162,7 @@ public class Callback : PageModel
         var identityResult = await _userManager.CreateAsync(user);
         if (!identityResult.Succeeded) throw new InvalidOperationException(identityResult.Errors.First().Description);
 
-        if (filtered.Count != 0)
+        if (filtered.Any())
         {
             identityResult = await _userManager.AddClaimsAsync(user, filtered);
             if (!identityResult.Succeeded) throw new InvalidOperationException(identityResult.Errors.First().Description);

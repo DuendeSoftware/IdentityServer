@@ -63,7 +63,7 @@ public class IdentityScopeRepository
         {
             Name = scope.Name,
             DisplayName = scope.DisplayName,
-            UserClaims = scope.UserClaims.Count != 0 ? scope.UserClaims.Select(x => x.Type).Aggregate((a, b) => $"{a} {b}") : null,
+            UserClaims = scope.UserClaims.Any() ? scope.UserClaims.Select(x => x.Type).Aggregate((a, b) => $"{a} {b}") : null,
         };
     }
 
@@ -106,11 +106,11 @@ public class IdentityScopeRepository
         var claimsToAdd = claims.Except(currentClaims).ToArray();
         var claimsToRemove = currentClaims.Except(claims).ToArray();
 
-        if (claimsToRemove.Length != 0)
+        if (claimsToRemove.Any())
         {
             scope.UserClaims.RemoveAll(x => claimsToRemove.Contains(x.Type));
         }
-        if (claimsToAdd.Length != 0)
+        if (claimsToAdd.Any())
         {
             scope.UserClaims.AddRange(claimsToAdd.Select(x => new IdentityResourceClaim
             {
