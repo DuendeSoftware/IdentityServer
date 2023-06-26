@@ -55,7 +55,7 @@ internal class DeviceAuthorizationEndpoint : IEndpointHandler
     /// <exception cref="System.NotImplementedException"></exception>
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Instrumentation.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.DeviceAuthorization + "Endpoint");
+        using var activity = Telemetry.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.DeviceAuthorization + "Endpoint");
         
         _logger.LogTrace("Processing device authorize request.");
 

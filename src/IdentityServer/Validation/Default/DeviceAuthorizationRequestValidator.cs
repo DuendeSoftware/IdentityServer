@@ -34,7 +34,7 @@ internal class DeviceAuthorizationRequestValidator : IDeviceAuthorizationRequest
 
     public async Task<DeviceAuthorizationRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
     {
-        using var activity = Instrumentation.BasicActivitySource.StartActivity("DeviceAuthorizationRequestValidator.Validate");
+        using var activity = Telemetry.BasicActivitySource.StartActivity("DeviceAuthorizationRequestValidator.Validate");
         
         _logger.LogDebug("Start device authorization request validation");
 

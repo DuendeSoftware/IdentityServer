@@ -42,7 +42,7 @@ public class DistributedBackchannelAuthenticationThrottlingService : IBackchanne
     /// <inheritdoc/>
     public async Task<bool> ShouldSlowDown(string requestId, BackChannelAuthenticationRequest details)
     {
-        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DistributedBackchannelAuthenticationThrottlingService.ShouldSlowDown");
+        using var activity = Telemetry.ServiceActivitySource.StartActivity("DistributedBackchannelAuthenticationThrottlingService.ShouldSlowDown");
         
         if (requestId == null)
         {

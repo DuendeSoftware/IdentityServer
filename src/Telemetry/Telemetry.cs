@@ -7,10 +7,10 @@ namespace Duende.IdentityServer;
 /// <summary>
 /// Constants for tracing
 /// </summary>
-internal static class Instrumentation
+public static class Telemetry
 {
+    private static readonly Version AssemblyVersion = typeof(Telemetry).Assembly.GetName().Version;
     public static string ServiceName => "Duende.IdentityServer";
-    private static readonly Version AssemblyVersion = typeof(Instrumentation).Assembly.GetName().Version;
 
     /// <summary>
     /// Service version
@@ -54,9 +54,14 @@ internal static class Instrumentation
     
     public static class Metrics
     {
-        public static readonly Meter Meter = new(Instrumentation.ServiceName, Instrumentation.ServiceVersion);
+        public static readonly Meter Meter = new(Telemetry.ServiceName, Telemetry.ServiceVersion);
     
-        public static readonly Counter<long> RequestCounter = Meter.CreateCounter<long>("ProtocolRequests");
+        public static readonly Counter<long> RequestCounter = Meter.CreateCounter<long>("requests.total");
+        public static readonly Counter<long> DiscoveryRequestCounter = Meter.CreateCounter<long>("discovery_requests.total");
+        
+        public static readonly Counter<long> TokenIssuedSuccess = Meter.CreateCounter<long>("token_issued_success.total");
+        
+        
     }
     
     public static class TraceNames
@@ -64,7 +69,7 @@ internal static class Instrumentation
         /// <summary>
         /// Service name for base traces
         /// </summary>
-        public static string Basic => Instrumentation.ServiceName;
+        public static string Basic => Telemetry.ServiceName;
 
         /// <summary>
         /// Service name for store traces

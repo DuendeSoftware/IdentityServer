@@ -41,7 +41,7 @@ public class DefaultBackChannelLogoutHttpClient : IBackChannelLogoutHttpClient
     /// <returns></returns>
     public async Task PostAsync(string url, Dictionary<string, string> payload)
     {
-        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultBackChannelLogoutHttpClient.Post");
+        using var activity = Telemetry.ServiceActivitySource.StartActivity("DefaultBackChannelLogoutHttpClient.Post");
         
         try
         {

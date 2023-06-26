@@ -49,7 +49,7 @@ public class ValidatingClientStore<T> : IClientStore
     /// </returns>
     public async Task<Client> FindClientByIdAsync(string clientId)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ValidatingClientStore.FindClientById");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ValidatingClientStore.FindClientById");
         
         var client = await _inner.FindClientByIdAsync(clientId);
 

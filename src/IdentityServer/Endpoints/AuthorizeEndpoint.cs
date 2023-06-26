@@ -35,7 +35,7 @@ internal class AuthorizeEndpoint : AuthorizeEndpointBase
 
     public override async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Instrumentation.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.Authorize + "Endpoint");
+        using var activity = Telemetry.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.Authorize + "Endpoint");
 
         Logger.LogDebug("Start authorize request");
 

@@ -60,8 +60,8 @@ public class CachingCorsPolicyService<T> : ICorsPolicyService
     /// <returns></returns>
     public virtual async Task<bool> IsOriginAllowedAsync(string origin)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("CachingCorsPolicyService.IsOriginAllowed");
-        activity?.SetTag(Instrumentation.Properties.Origin, origin);
+        using var activity = Telemetry.StoreActivitySource.StartActivity("CachingCorsPolicyService.IsOriginAllowed");
+        activity?.SetTag(Telemetry.Properties.Origin, origin);
         
         var entry = await CorsCache.GetOrAddAsync(origin,
             Options.Caching.CorsExpiration,

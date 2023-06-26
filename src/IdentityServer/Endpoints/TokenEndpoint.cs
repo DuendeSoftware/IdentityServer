@@ -65,7 +65,7 @@ internal class TokenEndpoint : IEndpointHandler
     /// <returns></returns>
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
-        using var activity = Instrumentation.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.Token + "Endpoint");
+        using var activity = Telemetry.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.Token + "Endpoint");
         
         _logger.LogTrace("Processing token request.");
 

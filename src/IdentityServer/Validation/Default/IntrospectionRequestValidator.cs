@@ -37,7 +37,7 @@ internal class IntrospectionRequestValidator : IIntrospectionRequestValidator
     /// <returns></returns>
     public async Task<IntrospectionRequestValidationResult> ValidateAsync(NameValueCollection parameters, ApiResource api)
     {
-        using var activity = Instrumentation.BasicActivitySource.StartActivity("IntrospectionRequestValidator.Validate");
+        using var activity = Telemetry.BasicActivitySource.StartActivity("IntrospectionRequestValidator.Validate");
         
         _logger.LogDebug("Introspection request validation started.");
 

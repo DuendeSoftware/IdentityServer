@@ -90,10 +90,10 @@ public class IdentityServerMiddleware
             if (endpoint != null)
             {
                 var endpointType = endpoint.GetType().FullName;
-                Instrumentation.Metrics.RequestCounter.Add(1);
+                Telemetry.Metrics.RequestCounter.Add(1);
                 
-                using var activity = Instrumentation.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
-                activity?.SetTag(Instrumentation.Properties.EndpointType, endpointType);
+                using var activity = Telemetry.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
+                activity?.SetTag(Telemetry.Properties.EndpointType, endpointType);
                 
                 LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 

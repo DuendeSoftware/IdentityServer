@@ -86,9 +86,9 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     /// <returns></returns>
     public virtual async Task<TokenResponse> ProcessAsync(TokenRequestValidationResult request)
     {
-        using var activity = Instrumentation.BasicActivitySource.StartActivity("TokenResponseGenerator.Process");
-        activity?.SetTag(Instrumentation.Properties.GrantType, request.ValidatedRequest.GrantType);
-        activity?.SetTag(Instrumentation.Properties.ClientId, request.ValidatedRequest.Client.ClientId);
+        using var activity = Telemetry.BasicActivitySource.StartActivity("TokenResponseGenerator.Process");
+        activity?.SetTag(Telemetry.Properties.GrantType, request.ValidatedRequest.GrantType);
+        activity?.SetTag(Telemetry.Properties.ClientId, request.ValidatedRequest.Client.ClientId);
         
         switch (request.ValidatedRequest.GrantType)
         {

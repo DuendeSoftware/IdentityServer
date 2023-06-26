@@ -30,7 +30,7 @@ public class InMemorySigningCredentialsStore : ISigningCredentialStore
     /// <returns></returns>
     public Task<SigningCredentials> GetSigningCredentialsAsync()
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemorySigningCredentialsStore.GetSigningCredentials");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("InMemorySigningCredentialsStore.GetSigningCredentials");
         
         return Task.FromResult(_credential);
     }

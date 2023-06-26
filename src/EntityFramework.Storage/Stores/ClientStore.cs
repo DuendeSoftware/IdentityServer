@@ -58,8 +58,8 @@ public class ClientStore : IClientStore
     /// </returns>
     public virtual async Task<Duende.IdentityServer.Models.Client> FindClientByIdAsync(string clientId)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ClientStore.FindClientById");
-        activity?.SetTag(Instrumentation.Properties.ClientId, clientId);
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ClientStore.FindClientById");
+        activity?.SetTag(Telemetry.Properties.ClientId, clientId);
         
         var query = Context.Clients
           .Where(x => x.ClientId == clientId)

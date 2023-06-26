@@ -5,6 +5,7 @@
 using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Validation;
 
@@ -196,5 +197,17 @@ public class TokenIssuedSuccessEvent : Event
         /// The token value.
         /// </value>
         public string TokenValue { get; }
+    }
+
+    protected internal override Task PrepareAsync()
+    {
+        foreach (var token in Tokens)
+        {
+            Telemetry.Metrics.TokenIssuedSuccess.Add(1,
+                new KeyValuePair<string, object>("token_type", token.TokenType));
+        }
+        
+        
+        return base.PrepareAsync();
     }
 }

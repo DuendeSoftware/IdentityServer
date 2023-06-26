@@ -28,8 +28,8 @@ public class DefaultScopeParser : IScopeParser
     /// <inheritdoc/>
     public ParsedScopesResult ParseScopeValues(IEnumerable<string> scopeValues)
     {
-        using var activity = Instrumentation.ValidationActivitySource.StartActivity("DefaultScopeParser.ParseScopeValues");
-        activity?.SetTag(Instrumentation.Properties.Scope, scopeValues.ToSpaceSeparatedString());
+        using var activity = Telemetry.ValidationActivitySource.StartActivity("DefaultScopeParser.ParseScopeValues");
+        activity?.SetTag(Telemetry.Properties.Scope, scopeValues.ToSpaceSeparatedString());
         
         if (scopeValues == null) throw new ArgumentNullException(nameof(scopeValues));
 

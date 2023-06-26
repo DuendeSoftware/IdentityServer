@@ -47,7 +47,7 @@ public class ApiSecretValidator : IApiSecretValidator
     /// <returns></returns>
     public async Task<ApiSecretValidationResult> ValidateAsync(HttpContext context)
     {
-        using var activity = Instrumentation.ValidationActivitySource.StartActivity("ApiSecretValidator.Validate");
+        using var activity = Telemetry.ValidationActivitySource.StartActivity("ApiSecretValidator.Validate");
         
         _logger.LogTrace("Start API validation");
 

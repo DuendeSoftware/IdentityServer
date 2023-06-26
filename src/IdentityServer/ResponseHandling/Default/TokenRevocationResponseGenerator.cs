@@ -59,7 +59,7 @@ public class TokenRevocationResponseGenerator : ITokenRevocationResponseGenerato
     /// <returns></returns>
     public virtual async Task<TokenRevocationResponse> ProcessAsync(TokenRevocationRequestValidationResult validationResult)
     {
-        using var activity = Instrumentation.BasicActivitySource.StartActivity("TokenRevocationResponseGenerator.Process");
+        using var activity = Telemetry.BasicActivitySource.StartActivity("TokenRevocationResponseGenerator.Process");
         
         var response = new TokenRevocationResponse
         {

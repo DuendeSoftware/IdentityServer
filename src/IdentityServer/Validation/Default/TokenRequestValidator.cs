@@ -92,7 +92,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
     /// <inheritdoc/>
     public async Task<TokenRequestValidationResult> ValidateRequestAsync(TokenRequestValidationContext context)
     {
-        using var activity = Instrumentation.BasicActivitySource.StartActivity("TokenRequestValidator.ValidateRequest");
+        using var activity = Telemetry.BasicActivitySource.StartActivity("TokenRequestValidator.ValidateRequest");
 
         _logger.LogDebug("Start token request validation");
 

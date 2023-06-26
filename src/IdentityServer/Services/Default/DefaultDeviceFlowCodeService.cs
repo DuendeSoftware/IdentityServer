@@ -33,7 +33,7 @@ public class DefaultDeviceFlowCodeService : IDeviceFlowCodeService
     /// <returns></returns>
     public async Task<string> StoreDeviceAuthorizationAsync(string userCode, DeviceCode data)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.SendLogoutNotifStoreDeviceAuthorization");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.SendLogoutNotifStoreDeviceAuthorization");
         
         var deviceCode = await _handleGenerationService.GenerateAsync();
 
@@ -49,7 +49,7 @@ public class DefaultDeviceFlowCodeService : IDeviceFlowCodeService
     /// <returns></returns>
     public Task<DeviceCode> FindByUserCodeAsync(string userCode)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.FindByUserCode");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.FindByUserCode");
         
         return _store.FindByUserCodeAsync(userCode.Sha256());
     }
@@ -61,7 +61,7 @@ public class DefaultDeviceFlowCodeService : IDeviceFlowCodeService
     /// <returns></returns>
     public Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.FindByDeviceCode");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.FindByDeviceCode");
         
         return _store.FindByDeviceCodeAsync(deviceCode.Sha256());
     }
@@ -74,7 +74,7 @@ public class DefaultDeviceFlowCodeService : IDeviceFlowCodeService
     /// <returns></returns>
     public Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.UpdateByUserCode");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.UpdateByUserCode");
         
         return _store.UpdateByUserCodeAsync(userCode.Sha256(), data);
     }
@@ -86,7 +86,7 @@ public class DefaultDeviceFlowCodeService : IDeviceFlowCodeService
     /// <returns></returns>
     public Task RemoveByDeviceCodeAsync(string deviceCode)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.RemoveByDeviceCode");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DefaultDeviceFlowCodeService.RemoveByDeviceCode");
         
         return _store.RemoveByDeviceCodeAsync(deviceCode.Sha256());
     }

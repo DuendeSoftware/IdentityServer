@@ -83,7 +83,7 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
     /// <inheritdoc/>
     public async Task<BackchannelUserLoginRequest> GetLoginRequestByInternalIdAsync(string id)
     {
-        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.GetLoginRequestByInternalId");
+        using var activity = Telemetry.ServiceActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.GetLoginRequestByInternalId");
         
         var request = await _requestStore.GetByInternalIdAsync(id);
         return await CreateAsync(request);
@@ -92,7 +92,7 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
     /// <inheritdoc/>
     public async Task<IEnumerable<BackchannelUserLoginRequest>> GetPendingLoginRequestsForCurrentUserAsync()
     {
-        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.GetPendingLoginRequestsForCurrentUser");
+        using var activity = Telemetry.ServiceActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.GetPendingLoginRequestsForCurrentUser");
         
         var list = new List<BackchannelUserLoginRequest>();
 
@@ -121,7 +121,7 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
     /// <inheritdoc/>
     public async Task CompleteLoginRequestAsync(CompleteBackchannelLoginRequest completionRequest)
     {
-        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.CompleteLoginRequest");
+        using var activity = Telemetry.ServiceActivitySource.StartActivity("DefaultBackchannelAuthenticationInteractionService.CompleteLoginRequest");
         
         if (completionRequest == null) throw new ArgumentNullException(nameof(completionRequest));
 

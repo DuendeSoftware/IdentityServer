@@ -204,13 +204,13 @@ public static class IdentityServerConstants
 
     public static class Tracing
     {
-        public static readonly string Basic = Duende.IdentityServer.Instrumentation.TraceNames.Basic;
-        public static readonly string Stores = Duende.IdentityServer.Instrumentation.TraceNames.Store;
-        public static readonly string Cache = Duende.IdentityServer.Instrumentation.TraceNames.Cache;
-        public static readonly string Validation = Duende.IdentityServer.Instrumentation.TraceNames.Validation;
-        public static readonly string Services = Duende.IdentityServer.Instrumentation.TraceNames.Services;
+        public static readonly string Basic = Duende.IdentityServer.Telemetry.TraceNames.Basic;
+        public static readonly string Stores = Duende.IdentityServer.Telemetry.TraceNames.Store;
+        public static readonly string Cache = Duende.IdentityServer.Telemetry.TraceNames.Cache;
+        public static readonly string Validation = Duende.IdentityServer.Telemetry.TraceNames.Validation;
+        public static readonly string Services = Duende.IdentityServer.Telemetry.TraceNames.Services;
 
-        public static readonly string ServiceVersion = Duende.IdentityServer.Instrumentation.ServiceVersion;
+        public static readonly string ServiceVersion = Duende.IdentityServer.Telemetry.ServiceVersion;
     }
 
     public static class EndpointNames

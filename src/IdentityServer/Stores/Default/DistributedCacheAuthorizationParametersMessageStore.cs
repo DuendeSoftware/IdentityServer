@@ -35,7 +35,7 @@ public class DistributedCacheAuthorizationParametersMessageStore : IAuthorizatio
     /// <inheritdoc/>
     public virtual async Task<string> WriteAsync(Message<IDictionary<string, string[]>> message)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DistributedCacheAuthorizationParametersMessageStore.Write");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DistributedCacheAuthorizationParametersMessageStore.Write");
         
         // since this store is trusted and the JWT request processing has provided redundant entries
         // in the NameValueCollection, we are removing the JWT "request_uri" param so that when they
@@ -59,7 +59,7 @@ public class DistributedCacheAuthorizationParametersMessageStore : IAuthorizatio
     /// <inheritdoc/>
     public virtual async Task<Message<IDictionary<string, string[]>>> ReadAsync(string id)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DistributedCacheAuthorizationParametersMessageStore.Read");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DistributedCacheAuthorizationParametersMessageStore.Read");
         
         var cacheKey = $"{CacheKeyPrefix}-{id}";
         var json = await _distributedCache.GetStringAsync(cacheKey);
@@ -75,7 +75,7 @@ public class DistributedCacheAuthorizationParametersMessageStore : IAuthorizatio
     /// <inheritdoc/>
     public virtual Task DeleteAsync(string id)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DistributedCacheAuthorizationParametersMessageStore.Delete");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DistributedCacheAuthorizationParametersMessageStore.Delete");
         
         var cacheKey = $"{CacheKeyPrefix}-{id}";
         return _distributedCache.RemoveAsync(cacheKey);

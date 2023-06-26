@@ -43,8 +43,8 @@ public class CachingClientStore<T> : IClientStore
     /// </returns>
     public async Task<Client> FindClientByIdAsync(string clientId)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("CachingClientStore.FindClientById");
-        activity?.SetTag(Instrumentation.Properties.ClientId, clientId);
+        using var activity = Telemetry.StoreActivitySource.StartActivity("CachingClientStore.FindClientById");
+        activity?.SetTag(Telemetry.Properties.ClientId, clientId);
         
         var client = await _cache.GetOrAddAsync(clientId,
             _options.Caching.ClientStoreExpiration,

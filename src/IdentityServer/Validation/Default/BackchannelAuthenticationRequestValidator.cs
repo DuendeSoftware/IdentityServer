@@ -49,7 +49,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
 
     public async Task<BackchannelAuthenticationRequestValidationResult> ValidateRequestAsync(NameValueCollection parameters, ClientSecretValidationResult clientValidationResult)
     {
-        using var activity = Instrumentation.BasicActivitySource.StartActivity("BackchannelAuthenticationRequestValidator.ValidateRequest");
+        using var activity = Telemetry.BasicActivitySource.StartActivity("BackchannelAuthenticationRequestValidator.ValidateRequest");
         
         if (clientValidationResult == null) throw new ArgumentNullException(nameof(clientValidationResult));
 

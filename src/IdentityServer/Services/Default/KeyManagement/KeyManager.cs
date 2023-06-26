@@ -66,7 +66,7 @@ public class KeyManager : IKeyManager
     /// <inheritdoc />
     public async Task<IEnumerable<KeyContainer>> GetCurrentKeysAsync()
     {
-        using var activity = Instrumentation.ServiceActivitySource.StartActivity("KeyManageer.GetCurrentKeys");
+        using var activity = Telemetry.ServiceActivitySource.StartActivity("KeyManageer.GetCurrentKeys");
         
         _logger.LogTrace("Getting the current key.");
 
@@ -89,7 +89,7 @@ public class KeyManager : IKeyManager
     /// <inheritdoc />
     public async Task<IEnumerable<KeyContainer>> GetAllKeysAsync()
     {
-        using var activity = Instrumentation.ServiceActivitySource.StartActivity("KeyManageer.GetAllKeys");
+        using var activity = Telemetry.ServiceActivitySource.StartActivity("KeyManageer.GetAllKeys");
         
         _logger.LogTrace("Getting all the keys.");
 

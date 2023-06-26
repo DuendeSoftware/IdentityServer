@@ -38,7 +38,7 @@ public class DefaultReferenceTokenStore : DefaultGrantStore<Token>, IReferenceTo
     /// <returns></returns>
     public Task<string> StoreReferenceTokenAsync(Token token)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.StoreReferenceToken");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.StoreReferenceToken");
         
         return CreateItemAsync(token, token.ClientId, token.SubjectId, token.SessionId, token.Description, token.CreationTime, token.Lifetime);
     }
@@ -50,7 +50,7 @@ public class DefaultReferenceTokenStore : DefaultGrantStore<Token>, IReferenceTo
     /// <returns></returns>
     public Task<Token> GetReferenceTokenAsync(string handle)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.GetReferenceToken");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.GetReferenceToken");
         
         return GetItemAsync(handle);
     }
@@ -62,7 +62,7 @@ public class DefaultReferenceTokenStore : DefaultGrantStore<Token>, IReferenceTo
     /// <returns></returns>
     public Task RemoveReferenceTokenAsync(string handle)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.RemoveReferenceToken");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.RemoveReferenceToken");
         
         return RemoveItemAsync(handle);
     }
@@ -75,7 +75,7 @@ public class DefaultReferenceTokenStore : DefaultGrantStore<Token>, IReferenceTo
     /// <returns></returns>
     public Task RemoveReferenceTokensAsync(string subjectId, string clientId)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.RemoveReferenceTokens");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("DefaultReferenceTokenStore.RemoveReferenceTokens");
         
         return RemoveAllAsync(subjectId, clientId);
     }

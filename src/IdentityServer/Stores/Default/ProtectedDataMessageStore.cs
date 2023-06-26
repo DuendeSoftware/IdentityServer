@@ -44,7 +44,7 @@ public class ProtectedDataMessageStore<TModel> : IMessageStore<TModel>
     /// <inheritdoc />
     public virtual Task<Message<TModel>> ReadAsync(string value)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ProtectedDataMessageStore.Read");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ProtectedDataMessageStore.Read");
         
         Message<TModel> result = null;
 
@@ -69,7 +69,7 @@ public class ProtectedDataMessageStore<TModel> : IMessageStore<TModel>
     /// <inheritdoc />
     public virtual Task<string> WriteAsync(Message<TModel> message)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ProtectedDataMessageStore.Write");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ProtectedDataMessageStore.Write");
         
         string value = null;
 

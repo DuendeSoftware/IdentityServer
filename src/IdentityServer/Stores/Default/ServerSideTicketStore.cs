@@ -53,7 +53,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public async Task<string> StoreAsync(AuthenticationTicket ticket)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ServerSideTicketStore.Store");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ServerSideTicketStore.Store");
 
         ArgumentNullException.ThrowIfNull(ticket);
 
@@ -89,7 +89,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public async Task<AuthenticationTicket> RetrieveAsync(string key)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ServerSideTicketStore.Retrieve");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ServerSideTicketStore.Retrieve");
         
         ArgumentNullException.ThrowIfNull(key);
 
@@ -119,7 +119,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public async Task RenewAsync(string key, AuthenticationTicket ticket)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ServerSideTicketStore.Renew");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ServerSideTicketStore.Renew");
         
         ArgumentNullException.ThrowIfNull(ticket);
 
@@ -161,7 +161,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public Task RemoveAsync(string key)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ServerSideTicketStore.Remove");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ServerSideTicketStore.Remove");
         
         ArgumentNullException.ThrowIfNull(key);
 
@@ -173,7 +173,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<UserSession>> GetSessionsAsync(SessionFilter filter, CancellationToken cancellationToken = default)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ServerSideTicketStore.GetSessions");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ServerSideTicketStore.GetSessions");
         
         var sessions = await _store.GetSessionsAsync(filter, cancellationToken);
 
@@ -184,7 +184,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc />
     public async Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ServerSideTicketStore.QuerySessions");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ServerSideTicketStore.QuerySessions");
         
         var results = await _store.QuerySessionsAsync(filter, cancellationToken);
 
@@ -207,7 +207,7 @@ public class ServerSideTicketStore : IServerSideTicketStore
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<UserSession>> GetAndRemoveExpiredSessionsAsync(int count, CancellationToken cancellationToken = default)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("ServerSideTicketStore.GetAndRemoveExpiredSessions");
+        using var activity = Telemetry.StoreActivitySource.StartActivity("ServerSideTicketStore.GetAndRemoveExpiredSessions");
         
         var sessions = await _store.GetAndRemoveExpiredSessionsAsync(count, cancellationToken);
 

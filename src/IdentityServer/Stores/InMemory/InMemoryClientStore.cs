@@ -40,8 +40,8 @@ public class InMemoryClientStore : IClientStore
     /// </returns>
     public Task<Client> FindClientByIdAsync(string clientId)
     {
-        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryClientStore.FindClientById");
-        activity?.SetTag(Instrumentation.Properties.ClientId, clientId);
+        using var activity = Telemetry.StoreActivitySource.StartActivity("InMemoryClientStore.FindClientById");
+        activity?.SetTag(Telemetry.Properties.ClientId, clientId);
         
         var query =
             from client in _clients
