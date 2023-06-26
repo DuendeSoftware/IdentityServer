@@ -69,7 +69,7 @@ public class DefaultTokenCreationService : ITokenCreationService
     /// </returns>
     public virtual async Task<string> CreateTokenAsync(Token token)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultTokenCreationService.CreateToken");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultTokenCreationService.CreateToken");
         
         var payload = await CreatePayloadAsync(token);
         var headerElements = await CreateHeaderElementsAsync(token);
@@ -126,7 +126,7 @@ public class DefaultTokenCreationService : ITokenCreationService
     protected virtual async Task<string> CreateJwtAsync(Token token, string payload,
         Dictionary<string, object> headerElements)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultTokenCreationService.CreateJwt");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultTokenCreationService.CreateJwt");
         
         var credential = await Keys.GetSigningCredentialsAsync(token.AllowedSigningAlgorithms);
 

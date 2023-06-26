@@ -34,7 +34,7 @@ public class DefaultClientConfigurationValidator : IClientConfigurationValidator
     /// <returns></returns>
     public async Task ValidateAsync(ClientConfigurationValidationContext context)
     {
-        using var activity = Tracing.ValidationActivitySource.StartActivity("DefaultClientConfigurationValidator.Validate");
+        using var activity = Instrumentation.ValidationActivitySource.StartActivity("DefaultClientConfigurationValidator.Validate");
         
         if (context.Client.ProtocolType == IdentityServerConstants.ProtocolTypes.OpenIdConnect)
         {

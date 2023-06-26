@@ -25,7 +25,7 @@ public class DefaultReplayCache : IReplayCache
     /// <inheritdoc />
     public async Task AddAsync(string purpose, string handle, DateTimeOffset expiration)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultReplayCache.Add");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultReplayCache.Add");
         
         var options = new DistributedCacheEntryOptions
         {
@@ -38,7 +38,7 @@ public class DefaultReplayCache : IReplayCache
     /// <inheritdoc />
     public async Task<bool> ExistsAsync(string purpose, string handle)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultReplayCache.Exists");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultReplayCache.Exists");
         
         return (await _cache.GetAsync(Prefix + purpose + handle, default)) != null;
     }

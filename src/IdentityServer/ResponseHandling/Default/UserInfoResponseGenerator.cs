@@ -59,7 +59,7 @@ public class UserInfoResponseGenerator : IUserInfoResponseGenerator
     /// <exception cref="System.InvalidOperationException">Profile service returned incorrect subject value</exception>
     public virtual async Task<Dictionary<string, object>> ProcessAsync(UserInfoRequestValidationResult validationResult)
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity("UserInfoResponseGenerator.Process");
+        using var activity = Instrumentation.BasicActivitySource.StartActivity("UserInfoResponseGenerator.Process");
         
         Logger.LogDebug("Creating userinfo response");
 

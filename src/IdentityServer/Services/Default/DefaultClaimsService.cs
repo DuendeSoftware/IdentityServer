@@ -52,7 +52,7 @@ public class DefaultClaimsService : IClaimsService
     /// </returns>
     public virtual async Task<IEnumerable<Claim>> GetIdentityTokenClaimsAsync(ClaimsPrincipal subject, ResourceValidationResult resources, bool includeAllIdentityClaims, ValidatedRequest request)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultClaimsService.GetIdentityTokenClaims");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultClaimsService.GetIdentityTokenClaims");
         
         Logger.LogDebug("Getting claims for identity token for subject: {subject} and client: {clientId}",
             subject.GetSubjectId(),
@@ -114,7 +114,7 @@ public class DefaultClaimsService : IClaimsService
     /// </returns>
     public virtual async Task<IEnumerable<Claim>> GetAccessTokenClaimsAsync(ClaimsPrincipal subject, ResourceValidationResult resourceResult, ValidatedRequest request)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultClaimsService.GetAccessTokenClaims");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultClaimsService.GetAccessTokenClaims");
         
         Logger.LogDebug("Getting claims for access token for client: {clientId}", request.Client.ClientId);
 

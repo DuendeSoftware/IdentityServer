@@ -53,7 +53,7 @@ internal class DeviceCodeValidator : IDeviceCodeValidator
     /// <returns></returns>
     public async Task ValidateAsync(DeviceCodeValidationContext context)
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity("DeviceCodeValidator.Validate");
+        using var activity = Instrumentation.BasicActivitySource.StartActivity("DeviceCodeValidator.Validate");
         
         var deviceCode = await _devices.FindByDeviceCodeAsync(context.DeviceCode);
 

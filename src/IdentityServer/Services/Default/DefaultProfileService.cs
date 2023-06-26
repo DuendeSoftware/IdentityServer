@@ -36,7 +36,7 @@ public class DefaultProfileService : IProfileService
     /// <returns></returns>
     public virtual Task GetProfileDataAsync(ProfileDataRequestContext context)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultProfileService.GetProfileData");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultProfileService.GetProfileData");
         
         context.LogProfileRequest(Logger);
         context.AddRequestedClaims(context.Subject.Claims);
@@ -53,7 +53,7 @@ public class DefaultProfileService : IProfileService
     /// <returns></returns>
     public virtual Task IsActiveAsync(IsActiveContext context)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultProfileService.IsActive");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultProfileService.IsActive");
         
         Logger.LogDebug("IsActive called from: {caller}", context.Caller);
 

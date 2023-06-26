@@ -59,7 +59,7 @@ public class SigningKeyStore : ISigningKeyStore
     /// <returns></returns>
     public async Task<IEnumerable<SerializedKey>> LoadKeysAsync()
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("SigningKeyStore.LoadKeys");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("SigningKeyStore.LoadKeys");
         
         var entities = await Context.Keys.Where(x => x.Use == Use)
             .AsNoTracking()
@@ -83,7 +83,7 @@ public class SigningKeyStore : ISigningKeyStore
     /// <returns></returns>
     public Task StoreKeyAsync(SerializedKey key)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("SigningKeyStore.StoreKey");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("SigningKeyStore.StoreKey");
         
         var entity = new Key
         {
@@ -107,7 +107,7 @@ public class SigningKeyStore : ISigningKeyStore
     /// <returns></returns>
     public async Task DeleteKeyAsync(string id)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("SigningKeyStore.DeleteKey");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("SigningKeyStore.DeleteKey");
         
         var item = await Context.Keys.Where(x => x.Use == Use && x.Id == id)
             .FirstOrDefaultAsync(CancellationTokenProvider.CancellationToken);

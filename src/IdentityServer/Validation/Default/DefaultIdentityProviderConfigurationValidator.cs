@@ -28,7 +28,7 @@ public class DefaultIdentityProviderConfigurationValidator : IIdentityProviderCo
     /// <inheritdoc/>
     public virtual async Task ValidateAsync(IdentityProviderConfigurationValidationContext context)
     {
-        using var activity = Tracing.ValidationActivitySource.StartActivity("DefaultIdentityProviderConfigurationValidator.Validate");
+        using var activity = Instrumentation.ValidationActivitySource.StartActivity("DefaultIdentityProviderConfigurationValidator.Validate");
         
         var type = _options.DynamicProviders.FindProviderType(context.IdentityProvider.Type);
         if (type == null)

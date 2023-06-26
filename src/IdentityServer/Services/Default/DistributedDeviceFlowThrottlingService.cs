@@ -53,7 +53,7 @@ public class DistributedDeviceFlowThrottlingService : IDeviceFlowThrottlingServi
     /// <exception cref="ArgumentNullException">deviceCode</exception>
     public async Task<bool> ShouldSlowDown(string deviceCode, DeviceCode details)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DistributedDeviceFlowThrottlingService.ShouldSlowDown");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DistributedDeviceFlowThrottlingService.ShouldSlowDown");
         
         if (deviceCode == null) throw new ArgumentNullException(nameof(deviceCode));
             

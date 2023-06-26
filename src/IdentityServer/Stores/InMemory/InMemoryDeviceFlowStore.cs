@@ -26,7 +26,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.StoreDeviceAuthorization");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.StoreDeviceAuthorization");
         
         lock (_repository)
         {
@@ -42,7 +42,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
     /// <param name="userCode">The user code.</param>
     public Task<DeviceCode> FindByUserCodeAsync(string userCode)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.FindByUserCode");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.FindByUserCode");
         
         DeviceCode foundDeviceCode;
 
@@ -60,7 +60,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
     /// <param name="deviceCode">The device code.</param>
     public Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.FindByDeviceCode");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.FindByDeviceCode");
         
         DeviceCode foundDeviceCode;
 
@@ -79,7 +79,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
     /// <param name="data">The data.</param>
     public Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.UpdateByUserCode");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.UpdateByUserCode");
         
         lock (_repository)
         {
@@ -101,7 +101,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     public Task RemoveByDeviceCodeAsync(string deviceCode)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.RemoveByDeviceCode");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.RemoveByDeviceCode");
         
         lock (_repository)
         {

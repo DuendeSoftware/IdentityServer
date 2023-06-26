@@ -101,7 +101,7 @@ public class EndSessionRequestValidator : IEndSessionRequestValidator
     /// <inheritdoc />
     public async Task<EndSessionValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject)
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity("EndSessionRequestValidator.Validate");
+        using var activity = Instrumentation.BasicActivitySource.StartActivity("EndSessionRequestValidator.Validate");
         
         Logger.LogDebug("Start end session request validation");
 

@@ -43,7 +43,7 @@ public class DefaultKeyMaterialService : IKeyMaterialService
     /// <inheritdoc/>
     public async Task<SigningCredentials> GetSigningCredentialsAsync(IEnumerable<string> allowedAlgorithms = null)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultKeyMaterialService.GetSigningCredentials");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultKeyMaterialService.GetSigningCredentials");
         
         if (IEnumerableExtensions.IsNullOrEmpty(allowedAlgorithms))
         {
@@ -80,7 +80,7 @@ public class DefaultKeyMaterialService : IKeyMaterialService
     /// <inheritdoc/>
     public async Task<IEnumerable<SigningCredentials>> GetAllSigningCredentialsAsync()
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultKeyMaterialService.GetAllSigningCredentials");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultKeyMaterialService.GetAllSigningCredentials");
         
         var credentials = new List<SigningCredentials>();
 
@@ -105,7 +105,7 @@ public class DefaultKeyMaterialService : IKeyMaterialService
     /// <inheritdoc/>
     public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultKeyMaterialService.GetValidationKeys");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultKeyMaterialService.GetValidationKeys");
         
         var keys = new List<SecurityKeyInfo>();
 

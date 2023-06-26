@@ -1,14 +1,21 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 namespace Duende.IdentityServer;
 
 /// <summary>
 /// Constants for tracing
 /// </summary>
-internal static class Tracing
+internal static class Instrumentation
 {
-    private static readonly Version AssemblyVersion = typeof(Tracing).Assembly.GetName().Version;
+    public static string ServiceName => "Duende.IdentityServer";
+    private static readonly Version AssemblyVersion = typeof(Instrumentation).Assembly.GetName().Version;
+
+    /// <summary>
+    /// Service version
+    /// </summary>
+    public static string ServiceVersion => $"{AssemblyVersion.Major}.{AssemblyVersion.Minor}.{AssemblyVersion.Build}";
 
     /// <summary>
     /// Base ActivitySource
@@ -45,17 +52,19 @@ internal static class Tracing
         TraceNames.Validation,
         ServiceVersion);
     
-    /// <summary>
-    /// Service version
-    /// </summary>
-    public static string ServiceVersion => $"{AssemblyVersion.Major}.{AssemblyVersion.Minor}.{AssemblyVersion.Build}";
-
+    public static class Metrics
+    {
+        public static readonly Meter Meter = new(Instrumentation.ServiceName, Instrumentation.ServiceVersion);
+    
+        public static readonly Counter<long> RequestCounter = Meter.CreateCounter<long>("ProtocolRequests");
+    }
+    
     public static class TraceNames
     {
         /// <summary>
         /// Service name for base traces
         /// </summary>
-        public static string Basic => "Duende.IdentityServer";
+        public static string Basic => Instrumentation.ServiceName;
 
         /// <summary>
         /// Service name for store traces

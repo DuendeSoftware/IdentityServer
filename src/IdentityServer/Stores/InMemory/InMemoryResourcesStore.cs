@@ -51,7 +51,7 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<Resources> GetAllResourcesAsync()
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryResourceStore.GetAllResources");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryResourceStore.GetAllResources");
         
         var result = new Resources(_identityResources, _apiResources, _apiScopes);
         return Task.FromResult(result);
@@ -60,8 +60,8 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByName");
-        activity?.SetTag(Tracing.Properties.ApiResourceNames, apiResourceNames.ToSpaceSeparatedString());
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByName");
+        activity?.SetTag(Instrumentation.Properties.ApiResourceNames, apiResourceNames.ToSpaceSeparatedString());
         
         if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
@@ -74,8 +74,8 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryResourceStore.FindIdentityResourcesByScopeName");
-        activity?.SetTag(Tracing.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryResourceStore.FindIdentityResourcesByScopeName");
+        activity?.SetTag(Instrumentation.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
         
         if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
@@ -89,8 +89,8 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByScopeName");
-        activity?.SetTag(Tracing.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryResourceStore.FindApiResourcesByScopeName");
+        activity?.SetTag(Instrumentation.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
         
         if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
@@ -104,8 +104,8 @@ public class InMemoryResourcesStore : IResourceStore
     /// <inheritdoc/>
     public Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryResourceStore.FindApiScopesByName");
-        activity?.SetTag(Tracing.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryResourceStore.FindApiScopesByName");
+        activity?.SetTag(Instrumentation.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
         
         if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 

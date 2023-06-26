@@ -51,7 +51,7 @@ public class IntrospectionResponseGenerator : IIntrospectionResponseGenerator
     /// <returns></returns>
     public virtual async Task<Dictionary<string, object>> ProcessAsync(IntrospectionRequestValidationResult validationResult)
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity("IntrospectionResponseGenerator.Process");
+        using var activity = Instrumentation.BasicActivitySource.StartActivity("IntrospectionResponseGenerator.Process");
         
         Logger.LogTrace("Creating introspection response");
 

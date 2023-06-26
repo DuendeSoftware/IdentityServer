@@ -66,7 +66,7 @@ public class DefaultConsentService : IConsentService
     /// </exception>
     public virtual async Task<bool> RequiresConsentAsync(ClaimsPrincipal subject, Client client, IEnumerable<ParsedScopeValue> parsedScopes)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultConsentService.RequiresConsent");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultConsentService.RequiresConsent");
         
         if (client == null) throw new ArgumentNullException(nameof(client));
         if (subject == null) throw new ArgumentNullException(nameof(subject));
@@ -156,7 +156,7 @@ public class DefaultConsentService : IConsentService
     /// </exception>
     public virtual async Task UpdateConsentAsync(ClaimsPrincipal subject, Client client, IEnumerable<ParsedScopeValue> parsedScopes)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultConsentService.UpdateConsent");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultConsentService.UpdateConsent");
         
         if (client == null) throw new ArgumentNullException(nameof(client));
         if (subject == null) throw new ArgumentNullException(nameof(subject));

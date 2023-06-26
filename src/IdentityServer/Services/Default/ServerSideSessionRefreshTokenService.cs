@@ -47,7 +47,7 @@ class ServerSideSessionRefreshTokenService : IRefreshTokenService
     {
         var result = await Inner.ValidateRefreshTokenAsync(tokenHandle, client);
 
-        using var activity = Tracing.ServiceActivitySource.StartActivity("ServerSideSessionRefreshTokenService.ValidateRefreshToken");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("ServerSideSessionRefreshTokenService.ValidateRefreshToken");
         
         if (!result.IsError)
         {

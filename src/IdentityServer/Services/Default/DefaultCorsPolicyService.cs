@@ -52,7 +52,7 @@ public class DefaultCorsPolicyService : ICorsPolicyService
     /// <returns></returns>
     public virtual Task<bool> IsOriginAllowedAsync(string origin)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultCorsPolicyService.IsOriginAllowed");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultCorsPolicyService.IsOriginAllowed");
         
         if (!String.IsNullOrWhiteSpace(origin))
         {

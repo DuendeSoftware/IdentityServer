@@ -38,7 +38,7 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public Task<QueryResult<UserSession>> QuerySessionsAsync(SessionQuery filter = null, CancellationToken cancellationToken = default)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultSessionManagementService.QuerySessions");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultSessionManagementService.QuerySessions");
 
         return _serverSideTicketStore.QuerySessionsAsync(filter, cancellationToken);
     }
@@ -53,7 +53,7 @@ public class DefaultSessionManagementService : ISessionManagementService
     /// <inheritdoc/>
     public async Task RemoveSessionsAsync(RemoveSessionsContext context, CancellationToken cancellationToken = default)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultSessionManagementService.RemoveSessions");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultSessionManagementService.RemoveSessions");
 
         if (context.RevokeTokens || context.RevokeConsents)
         {

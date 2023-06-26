@@ -54,7 +54,7 @@ public class IdentityProviderStore : IIdentityProviderStore
     /// <inheritdoc/>
     public async Task<IEnumerable<IdentityProviderName>> GetAllSchemeNamesAsync()
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("IdentityProviderStore.GetAllSchemeNames");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("IdentityProviderStore.GetAllSchemeNames");
         
         var query = Context.IdentityProviders.Select(x => new IdentityProviderName { 
             Enabled = x.Enabled,
@@ -68,8 +68,8 @@ public class IdentityProviderStore : IIdentityProviderStore
     /// <inheritdoc/>
     public async Task<IdentityProvider> GetBySchemeAsync(string scheme)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("IdentityProviderStore.GetByScheme");
-        activity?.SetTag(Tracing.Properties.Scheme, scheme);
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("IdentityProviderStore.GetByScheme");
+        activity?.SetTag(Instrumentation.Properties.Scheme, scheme);
         
         var idp = (await Context.IdentityProviders.AsNoTracking().Where(x => x.Scheme == scheme)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))

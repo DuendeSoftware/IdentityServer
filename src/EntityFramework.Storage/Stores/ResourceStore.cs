@@ -59,8 +59,8 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("ResourceStore.FindApiResourcesByName");
-        activity?.SetTag(Tracing.Properties.ApiResourceNames, apiResourceNames.ToSpaceSeparatedString());
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("ResourceStore.FindApiResourcesByName");
+        activity?.SetTag(Instrumentation.Properties.ApiResourceNames, apiResourceNames.ToSpaceSeparatedString());
         
         if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
@@ -99,8 +99,8 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("ResourceStore.FindApiResourcesByScopeName");
-        activity?.SetTag(Tracing.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("ResourceStore.FindApiResourcesByScopeName");
+        activity?.SetTag(Instrumentation.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
         
         var names = scopeNames.ToArray();
 
@@ -132,8 +132,8 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("ResourceStore.FindIdentityResourcesByScopeName");
-        activity?.SetTag(Tracing.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("ResourceStore.FindIdentityResourcesByScopeName");
+        activity?.SetTag(Instrumentation.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
         
         var scopes = scopeNames.ToArray();
 
@@ -162,8 +162,8 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("ResourceStore.FindApiScopesByName");
-        activity?.SetTag(Tracing.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("ResourceStore.FindApiScopesByName");
+        activity?.SetTag(Instrumentation.Properties.ScopeNames, scopeNames.ToSpaceSeparatedString());
         
         var scopes = scopeNames.ToArray();
 
@@ -191,7 +191,7 @@ public class ResourceStore : IResourceStore
     /// <returns></returns>
     public virtual async Task<Resources> GetAllResourcesAsync()
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("ResourceStore.GetAllResources");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("ResourceStore.GetAllResources");
         
         var identity = Context.IdentityResources
             .Include(x => x.UserClaims)

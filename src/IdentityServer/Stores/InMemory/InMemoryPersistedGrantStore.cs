@@ -22,7 +22,7 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task StoreAsync(PersistedGrant grant)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Store");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Store");
         
         _repository[grant.Key] = grant;
 
@@ -32,7 +32,7 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task<PersistedGrant> GetAsync(string key)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Get");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Get");
         
         if (key != null && _repository.TryGetValue(key, out PersistedGrant token))
         {
@@ -45,7 +45,7 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.GetAll");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.GetAll");
         
         filter.Validate();
             
@@ -57,7 +57,7 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task RemoveAsync(string key)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Remove");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Remove");
         
         _repository.TryRemove(key, out _);
 
@@ -67,7 +67,7 @@ public class InMemoryPersistedGrantStore : IPersistedGrantStore
     /// <inheritdoc/>
     public Task RemoveAllAsync(PersistedGrantFilter filter)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.RemoveAll");
+        using var activity = Instrumentation.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.RemoveAll");
         
         filter.Validate();
 

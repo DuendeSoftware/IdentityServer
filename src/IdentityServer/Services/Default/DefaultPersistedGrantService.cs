@@ -40,7 +40,7 @@ public class DefaultPersistedGrantService : IPersistedGrantService
     /// <inheritdoc/>
     public async Task<IEnumerable<Grant>> GetAllGrantsAsync(string subjectId)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultPersistedGrantService.GetAllGrants");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultPersistedGrantService.GetAllGrants");
         
         if (String.IsNullOrWhiteSpace(subjectId)) throw new ArgumentNullException(nameof(subjectId));
 
@@ -153,7 +153,7 @@ public class DefaultPersistedGrantService : IPersistedGrantService
     /// <inheritdoc/>
     public Task RemoveAllGrantsAsync(string subjectId, string clientId = null, string sessionId = null)
     {
-        using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultPersistedGrantService.RemoveAllGrants");
+        using var activity = Instrumentation.ServiceActivitySource.StartActivity("DefaultPersistedGrantService.RemoveAllGrants");
         
         if (String.IsNullOrWhiteSpace(subjectId)) throw new ArgumentNullException(nameof(subjectId));
 

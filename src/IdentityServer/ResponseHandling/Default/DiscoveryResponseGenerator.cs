@@ -95,7 +95,7 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
     /// <param name="issuerUri">The issuer URI.</param>
     public virtual async Task<Dictionary<string, object>> CreateDiscoveryDocumentAsync(string baseUrl, string issuerUri)
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity("DiscoveryResponseGenerator.CreateDiscoveryDocument");
+        using var activity = Instrumentation.BasicActivitySource.StartActivity("DiscoveryResponseGenerator.CreateDiscoveryDocument");
         
         baseUrl = baseUrl.EnsureTrailingSlash();
 
@@ -419,7 +419,7 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
     /// </summary>
     public virtual async Task<IEnumerable<Models.JsonWebKey>> CreateJwkDocumentAsync()
     {
-        using var activity = Tracing.BasicActivitySource.StartActivity("DiscoveryResponseGenerator.CreateJwkDocument");
+        using var activity = Instrumentation.BasicActivitySource.StartActivity("DiscoveryResponseGenerator.CreateJwkDocument");
         
         var webKeys = new List<Models.JsonWebKey>();
 
