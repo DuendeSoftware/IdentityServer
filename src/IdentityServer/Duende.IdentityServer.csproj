@@ -23,8 +23,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="..\Tracing\Tracing.cs">
-            <Link>Tracing.cs</Link>
+        <Compile Include="..\Instrumentation\Instrumentation.cs">
+            <Link>Instrumenation.cs</Link>
         </Compile>
     </ItemGroup>
     
