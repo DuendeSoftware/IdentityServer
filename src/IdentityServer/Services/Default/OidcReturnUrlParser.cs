@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+#nullable enable
 
 using System;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ internal class OidcReturnUrlParser : IReturnUrlParser
     private readonly IUserSession _userSession;
     private readonly IServerUrls _urls;
     private readonly ILogger _logger;
-    private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
+    private readonly IAuthorizationParametersMessageStore? _authorizationParametersMessageStore;
 
     public OidcReturnUrlParser(
         IdentityServerOptions options,
@@ -30,7 +31,7 @@ internal class OidcReturnUrlParser : IReturnUrlParser
         IUserSession userSession,
         IServerUrls urls,
         ILogger<OidcReturnUrlParser> logger,
-        IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
+        IAuthorizationParametersMessageStore? authorizationParametersMessageStore = null)
     {
         _options = options;
         _validator = validator;
@@ -40,7 +41,7 @@ internal class OidcReturnUrlParser : IReturnUrlParser
         _authorizationParametersMessageStore = authorizationParametersMessageStore;
     }
 
-    public async Task<AuthorizationRequest> ParseAsync(string returnUrl)
+    public async Task<AuthorizationRequest?> ParseAsync(string returnUrl)
     {
         using var activity = Tracing.ValidationActivitySource.StartActivity("OidcReturnUrlParser.Parse");
         
