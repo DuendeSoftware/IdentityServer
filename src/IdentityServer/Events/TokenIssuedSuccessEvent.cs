@@ -208,7 +208,6 @@ public class TokenIssuedSuccessEvent : Event
                 new KeyValuePair<string, object>(Telemetry.Properties.TokenType, token.TokenType));
         }
         
-        
         return base.PrepareAsync();
     }
 }

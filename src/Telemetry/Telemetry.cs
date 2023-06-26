@@ -60,8 +60,6 @@ public static class Telemetry
         public static readonly Counter<long> DiscoveryRequestCounter = Meter.CreateCounter<long>("discovery_requests.total");
         
         public static readonly Counter<long> TokenIssuedSuccess = Meter.CreateCounter<long>("token_issued_success.total");
-        
-        
     }
     
     public static class TraceNames
