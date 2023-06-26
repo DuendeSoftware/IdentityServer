@@ -199,12 +199,13 @@ public class TokenIssuedSuccessEvent : Event
         public string TokenValue { get; }
     }
 
+    /// <inheritdoc />
     protected internal override Task PrepareAsync()
     {
         foreach (var token in Tokens)
         {
             Telemetry.Metrics.TokenIssuedSuccess.Add(1,
-                new KeyValuePair<string, object>("token_type", token.TokenType));
+                new KeyValuePair<string, object>(Telemetry.Properties.TokenType, token.TokenType));
         }
         
         

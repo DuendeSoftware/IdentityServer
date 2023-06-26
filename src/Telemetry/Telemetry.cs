@@ -100,6 +100,7 @@ public static class Telemetry
         public const string GrantType = "grant_type";
         public const string Scope = "scope";
         public const string Resource = "resource";
+        public const string TokenType = "token_type";
         
         public const string Origin = "origin";
         public const string Scheme = "scheme";
