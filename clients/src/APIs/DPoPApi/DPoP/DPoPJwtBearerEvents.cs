@@ -1,5 +1,6 @@
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using System.Text;
@@ -130,7 +131,7 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
             }
         }
 
-        context.Response.Headers.Add(HeaderNames.WWWAuthenticate, sb.ToString());
+        context.Response.Headers.Append(HeaderNames.WWWAuthenticate, sb.ToString());
 
         
         if (context.HttpContext.Items.ContainsKey("DPoP-Nonce"))
