@@ -141,7 +141,7 @@ public class DefaultUserSession : IUserSession
             }
 
             var result = await handler.AuthenticateAsync();
-            if (result != null && result.Succeeded)
+            if (result != null && result.Succeeded && result.Principal.Identity.IsAuthenticated)
             {
                 Principal = result.Principal;
                 Properties = result.Properties;
