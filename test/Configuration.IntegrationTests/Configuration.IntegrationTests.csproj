@@ -32,7 +32,7 @@
     <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <!-- TODO - Deal with this dependency, maybe remove, or maybe add to the directory.build.targets -->
-    <PackageReference Include="ReportGenerator" Version="5.1.18" />
+    <PackageReference Include="ReportGenerator" Version="5.1.23" />
   </ItemGroup>
 
   <Target Name="Coverage">
