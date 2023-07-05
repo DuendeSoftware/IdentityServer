@@ -203,7 +203,7 @@ public class DefaultUserSessionTests
     }
 
     [Fact]
-    public async Task when_authenticated_GetIdentityServerUserAsync_should_should_return_authenticated_user()
+    public async Task when_authenticated_GetIdentityServerUserAsync_should_return_authenticated_user()
     {
         _mockAuthenticationHandler.Result = AuthenticateResult.Success(new AuthenticationTicket(_user, _props, "scheme"));
 
@@ -212,7 +212,7 @@ public class DefaultUserSessionTests
     }
 
     [Fact]
-    public async Task when_anonymous_GetIdentityServerUserAsync_should_should_return_null()
+    public async Task when_anonymous_GetIdentityServerUserAsync_should_return_null()
     {
         var user = await _subject.GetUserAsync();
         user.Should().BeNull();
