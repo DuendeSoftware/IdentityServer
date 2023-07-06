@@ -10,7 +10,7 @@ using Duende.IdentityServer.Configuration.Models;
 
 namespace IdentityServerHost;
 
-internal class CustomClientRegistrationProcessor : DynamicClientRegistrationRequestProcessor
+internal sealed class CustomClientRegistrationProcessor : DynamicClientRegistrationRequestProcessor
 {
     private readonly ICollection<Client> _clients;
 
@@ -27,17 +27,20 @@ internal class CustomClientRegistrationProcessor : DynamicClientRegistrationRequ
         if (context.Request.Extensions.TryGetValue("client_id", out var clientIdParameter))
         {
             var clientId = clientIdParameter.ToString();
-            if(_clients.Any(c => c.ClientId == clientId))
+            if (clientId != null)
             {
-                return new DynamicClientRegistrationError(
-                    "Duplicate client id", 
-                    "Attempt to register a client with a client id that has already been registered"
-                );
-            } 
-            else
-            {
-                context.Client.ClientId = clientId;
-                return new SuccessfulStep();
+                if (_clients.Any(c => c.ClientId == clientId))
+                {
+                    return new DynamicClientRegistrationError(
+                        "Duplicate client id",
+                        "Attempt to register a client with a client id that has already been registered"
+                    );
+                }
+                else
+                {
+                    context.Client.ClientId = clientId;
+                    return new SuccessfulStep();
+                }
             }
         }
         return await base.AddClientId(context);
@@ -48,14 +51,12 @@ internal class CustomClientRegistrationProcessor : DynamicClientRegistrationRequ
          if(context.Request.Extensions.TryGetValue("client_secret", out var secretParam))
         {
             var plainText = secretParam.ToString();
+            ArgumentNullException.ThrowIfNull(plainText);
             var secret = new Secret(plainText.Sha256());
 
             return (secret, plainText);
         }
-        else
-        {
-            return await base.GenerateSecret(context);
-        }
+        return await base.GenerateSecret(context);
 
     }
 }

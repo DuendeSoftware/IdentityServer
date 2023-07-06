@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Duende.IdentityServer.Configuration.Configuration;
-using  Duende.IdentityServer.Configuration.Licensing;
 
 namespace Duende.IdentityServer.Configuration;
 

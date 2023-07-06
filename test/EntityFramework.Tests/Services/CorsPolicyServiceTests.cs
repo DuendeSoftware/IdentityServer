@@ -54,11 +54,7 @@ public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, Co
         bool result;
         using (var context = new ConfigurationDbContext(options))
         {
-            var svcs = new ServiceCollection();
-            svcs.AddSingleton<IConfigurationDbContext>(context);
-            var provider = svcs.BuildServiceProvider();
-
-            var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
+            var service = new CorsPolicyService(context, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
             result = service.IsOriginAllowedAsync(testCorsOrigin).Result;
         }
 
@@ -82,11 +78,7 @@ public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, Co
         bool result;
         using (var context = new ConfigurationDbContext(options))
         {
-            var svcs = new ServiceCollection();
-            svcs.AddSingleton<IConfigurationDbContext>(context);
-            var provider = svcs.BuildServiceProvider();
-
-            var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
+            var service = new CorsPolicyService(context, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
             result = service.IsOriginAllowedAsync("InvalidOrigin").Result;
         }
 

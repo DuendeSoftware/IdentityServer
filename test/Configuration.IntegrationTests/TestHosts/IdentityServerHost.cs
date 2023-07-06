@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace IntegrationTests.TestHosts;
 
@@ -37,11 +36,6 @@ public class IdentityServerHost : GenericHost
     {
         services.AddRouting();
         services.AddAuthorization();
-
-        services.AddLogging(logging =>
-        {
-            logging.AddFilter("Duende", LogLevel.Debug);
-        });
 
         services.AddConfigurationDbContext<ConfigurationDbContext>(opt =>
             opt.ConfigureDbContext = builder =>

@@ -9,7 +9,7 @@
         <p>Below is the list of applications you have given permission to and the resources they have access to.</p>
     </div>
 
-    @if (Model.View.Grants.Any() == false)
+    @if (!Model.View.Grants.Any())
     {
         <div class="row">
             <div class="col-sm-8">
@@ -21,7 +21,7 @@
     }
     else
     {
-        foreach (var grant in Model.View.Grants)
+        foreach (var grant in Model.View.Grants) 
         {
             <div class="card">
                 <div class="card-header">

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -17,7 +17,7 @@ public class HttpRequestExtensionsTests
         var ctx = new DefaultHttpContext();
         ctx.Request.Scheme = "http";
         ctx.Request.Host = new HostString("foo");
-        ctx.Request.Headers.Add("Origin", "http://bar");
+        ctx.Request.Headers.Append("Origin", "http://bar");
 
         ctx.Request.GetCorsOrigin().Should().Be("http://bar");
     }
@@ -28,7 +28,7 @@ public class HttpRequestExtensionsTests
         var ctx = new DefaultHttpContext();
         ctx.Request.Scheme = "http";
         ctx.Request.Host = new HostString("foo");
-        ctx.Request.Headers.Add("Origin", "http://foo");
+        ctx.Request.Headers.Append("Origin", "http://foo");
 
         ctx.Request.GetCorsOrigin().Should().BeNull();
     }
