@@ -202,6 +202,7 @@ public class TokenIssuedSuccessEvent : Event
     /// <inheritdoc />
     protected internal override Task PrepareAsync()
     {
+        // example of a meter used within an event's Prepare method
         foreach (var token in Tokens)
         {
             Telemetry.Metrics.TokenIssuedSuccess.Add(1,

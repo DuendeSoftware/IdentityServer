@@ -90,6 +90,8 @@ public class IdentityServerMiddleware
             if (endpoint != null)
             {
                 var endpointType = endpoint.GetType().FullName;
+                
+                // example of a "built-in" meter
                 Telemetry.Metrics.RequestCounter.Add(1);
                 
                 using var activity = Telemetry.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");

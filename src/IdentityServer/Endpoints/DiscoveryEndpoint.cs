@@ -39,6 +39,8 @@ internal class DiscoveryEndpoint : IEndpointHandler
     public async Task<IEndpointResult> ProcessAsync(HttpContext context)
     {
         using var activity = Telemetry.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.Discovery + "Endpoint");
+        
+        // example of a "built-in" meter
         Telemetry.Metrics.DiscoveryRequestCounter.Add(1);
         
         _logger.LogTrace("Processing discovery request.");

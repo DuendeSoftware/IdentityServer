@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using System.Collections.Generic;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 
@@ -39,6 +40,14 @@ public class TokenIssuedFailureEvent : Event
         Endpoint = IdentityServerConstants.EndpointNames.Authorize;
         Error = error;
         ErrorDescription = description;
+        
+        // example of Meter used in ctor
+        Telemetry.Metrics.TokenIssuedFailure.Add(1, 
+            new KeyValuePair<string, object>[]
+            {
+                new KeyValuePair<string, object>("endpoint", "authorize"),
+                new("error", Error)
+            });
     }
 
     /// <summary>
@@ -64,6 +73,13 @@ public class TokenIssuedFailureEvent : Event
         Endpoint = IdentityServerConstants.EndpointNames.Token;
         Error = result.Error;
         ErrorDescription = result.ErrorDescription;
+        
+        Telemetry.Metrics.TokenIssuedFailure.Add(1, 
+            new KeyValuePair<string, object>[]
+            {
+                new KeyValuePair<string, object>("endpoint", "token"),
+                new("error", Error)
+            });
     }
 
     /// <summary>

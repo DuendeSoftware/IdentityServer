@@ -223,6 +223,8 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
 
     private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription)
     {
+        // todo: raise meter here instead?
+        
         return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
     }
 

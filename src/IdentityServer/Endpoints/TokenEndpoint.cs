@@ -117,6 +117,8 @@ internal class TokenEndpoint : IEndpointHandler
         var requestResult = await _requestValidator.ValidateRequestAsync(requestContext);
         if (requestResult.IsError)
         {
+            // todo: raise meter here instead?
+            
             await _events.RaiseAsync(new TokenIssuedFailureEvent(requestResult));
             var err = Error(requestResult.Error, requestResult.ErrorDescription, requestResult.CustomResponse);
             err.Response.DPoPNonce = requestResult.DPoPNonce;
