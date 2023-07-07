@@ -6,6 +6,7 @@
 using Duende.IdentityServer.Validation;
 using System.Collections.Generic;
 using System.Security.Claims;
+using Duende.IdentityServer.ResponseHandling;
 
 namespace Duende.IdentityServer.Models;
 
@@ -58,4 +59,9 @@ public class BackchannelUserLoginRequest
     /// Gets or sets the validated resources.
     /// </summary>
     public ResourceValidationResult ValidatedResources { get; set; } = default!;
+
+    /// <summary>
+    /// The response that will be sent to the client
+    /// </summary>
+    public BackchannelAuthenticationResponse Response { get; set; } = default!;
 }

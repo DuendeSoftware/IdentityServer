@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.ResponseHandling;
 
@@ -58,4 +59,12 @@ public class BackchannelAuthenticationResponse
     /// Gets or sets the interval.
     /// </summary>
     public int Interval { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the custom entries.
+    /// </summary>
+    /// <value>
+    /// The custom entries.
+    /// </value>
+    public Dictionary<string, object> Custom { get; set; } = new Dictionary<string, object>();
 }

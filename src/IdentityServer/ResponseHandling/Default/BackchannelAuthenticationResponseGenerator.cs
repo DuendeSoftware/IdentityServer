@@ -112,6 +112,7 @@ public class BackchannelAuthenticationResponseGenerator : IBackchannelAuthentica
             AuthenticationContextReferenceClasses = validationResult.ValidatedRequest.AuthenticationContextReferenceClasses,
             Tenant = validationResult.ValidatedRequest.Tenant,
             IdP = validationResult.ValidatedRequest.IdP,
+            Response = response
         });
 
         return response;
