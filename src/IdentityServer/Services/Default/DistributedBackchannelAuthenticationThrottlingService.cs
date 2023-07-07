@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Duende.IdentityServer.Services;
@@ -19,7 +18,7 @@ public class DistributedBackchannelAuthenticationThrottlingService : IBackchanne
 {
     private readonly IDistributedCache _cache;
     private readonly IClientStore _clientStore;
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
     private readonly IdentityServerOptions _options;
 
     private const string KeyPrefix = "backchannel_";
@@ -30,7 +29,7 @@ public class DistributedBackchannelAuthenticationThrottlingService : IBackchanne
     public DistributedBackchannelAuthenticationThrottlingService(
         IDistributedCache cache,
         IClientStore clientStore,
-        ISystemClock clock,
+        IClock clock,
         IdentityServerOptions options)
     {
         _cache = cache;

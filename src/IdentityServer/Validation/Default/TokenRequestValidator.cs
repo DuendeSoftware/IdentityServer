@@ -17,7 +17,6 @@ using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
-using Microsoft.AspNetCore.Authentication;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -37,7 +36,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
     private readonly IProfileService _profile;
     private readonly IDeviceCodeValidator _deviceCodeValidator;
     private readonly IBackchannelAuthenticationRequestIdValidator _backchannelAuthenticationRequestIdValidator;
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
     private readonly ILogger _logger;
 
     private ValidatedTokenRequest _validatedRequest;
@@ -57,7 +56,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         IRefreshTokenService refreshTokenService,
         IDPoPProofValidator dPoPProofValidator,
         IEventService events,
-        ISystemClock clock,
+        IClock clock,
         ILogger<TokenRequestValidator> logger)
     {
         _logger = logger;

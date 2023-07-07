@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using Microsoft.AspNetCore.Authentication;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,7 +13,7 @@ namespace Duende.IdentityServer.Services.KeyManagement;
 /// </summary>
 class InMemoryKeyStoreCache : ISigningKeyStoreCache
 {
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
 
     private object _lock = new object();
 
@@ -25,7 +24,7 @@ class InMemoryKeyStoreCache : ISigningKeyStoreCache
     /// Constructor for InMemoryKeyStoreCache.
     /// </summary>
     /// <param name="clock"></param>
-    public InMemoryKeyStoreCache(ISystemClock clock)
+    public InMemoryKeyStoreCache(IClock clock)
     {
         _clock = clock;
     }

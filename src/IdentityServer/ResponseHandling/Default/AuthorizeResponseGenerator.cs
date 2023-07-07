@@ -13,7 +13,6 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.Authentication;
 
 namespace Duende.IdentityServer.ResponseHandling;
 
@@ -51,7 +50,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The key material service
@@ -70,7 +69,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     /// <param name="events">The events.</param>
     public AuthorizeResponseGenerator(
         IdentityServerOptions options,
-        ISystemClock clock,
+        IClock clock,
         ITokenService tokenService,
         IKeyMaterialService keyMaterialService,
         IAuthorizationCodeStore authorizationCodeStore,

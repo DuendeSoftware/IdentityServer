@@ -3,11 +3,11 @@
 
 
 using System;
-using Microsoft.AspNetCore.Authentication;
+using Duende.IdentityServer;
 
 namespace IntegrationTests.Common;
 
-class MockClock : ISystemClock
+class MockClock : IClock
 {
     public DateTimeOffset UtcNow { get; set; } = DateTimeOffset.UtcNow;
 }

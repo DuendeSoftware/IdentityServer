@@ -11,7 +11,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Services;
@@ -29,7 +28,7 @@ public class DefaultConsentService : IConsentService
     /// <summary>
     ///  The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The logger
@@ -43,7 +42,7 @@ public class DefaultConsentService : IConsentService
     /// <param name="userConsentStore">The user consent store.</param>
     /// <param name="logger">The logger.</param>
     /// <exception cref="System.ArgumentNullException">store</exception>
-    public DefaultConsentService(ISystemClock clock, IUserConsentStore userConsentStore, ILogger<DefaultConsentService> logger)
+    public DefaultConsentService(IClock clock, IUserConsentStore userConsentStore, ILogger<DefaultConsentService> logger)
     {
         Clock = clock;
         UserConsentStore = userConsentStore;

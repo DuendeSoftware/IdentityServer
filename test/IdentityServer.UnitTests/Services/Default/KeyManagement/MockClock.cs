@@ -1,10 +1,9 @@
-
-using Microsoft.AspNetCore.Authentication;
+using Duende.IdentityServer;
 using System;
 
 namespace UnitTests.Services.Default.KeyManagement;
 
-class MockClock : ISystemClock
+class MockClock : IClock
 {
     public MockClock()
     {

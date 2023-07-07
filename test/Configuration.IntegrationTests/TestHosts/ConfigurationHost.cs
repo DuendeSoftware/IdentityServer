@@ -4,7 +4,6 @@
 using IntegrationTests.TestFramework;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.EntityFramework;
 using Duende.IdentityServer.EntityFramework.DbContexts;

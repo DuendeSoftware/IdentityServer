@@ -36,7 +36,7 @@ public class DefaultUserSession : IUserSession
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The server URL service.
@@ -103,7 +103,7 @@ public class DefaultUserSession : IUserSession
         IHttpContextAccessor httpContextAccessor,
         IAuthenticationHandlerProvider handlers,
         IdentityServerOptions options,
-        ISystemClock clock,
+        IClock clock,
         IServerUrls urls,
         ILogger<IUserSession> logger)
     {

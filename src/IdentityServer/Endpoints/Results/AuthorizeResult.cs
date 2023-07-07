@@ -8,7 +8,6 @@ using IdentityModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Microsoft.AspNetCore.Authentication;
 using System.Text.Encodings.Web;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Hosting;
@@ -34,7 +33,7 @@ internal class AuthorizeResult : IEndpointResult
         IUserSession userSession,
         IMessageStore<ErrorMessage> errorMessageStore,
         IServerUrls urls,
-        ISystemClock clock)
+        IClock clock)
         : this(response)
     {
         _options = options;
@@ -48,7 +47,7 @@ internal class AuthorizeResult : IEndpointResult
     private IUserSession _userSession;
     private IMessageStore<ErrorMessage> _errorMessageStore;
     private IServerUrls _urls;
-    private ISystemClock _clock;
+    private IClock _clock;
 
     private void Init(HttpContext context)
     {
@@ -56,7 +55,7 @@ internal class AuthorizeResult : IEndpointResult
         _userSession ??= context.RequestServices.GetRequiredService<IUserSession>();
         _errorMessageStore ??= context.RequestServices.GetRequiredService<IMessageStore<ErrorMessage>>();
         _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
-        _clock ??= context.RequestServices.GetRequiredService<ISystemClock>();
+        _clock ??= context.RequestServices.GetRequiredService<IClock>();
     }
 
     public async Task ExecuteAsync(HttpContext context)

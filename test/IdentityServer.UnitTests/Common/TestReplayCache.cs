@@ -3,8 +3,8 @@
 
 
 
+using Duende.IdentityServer;
 using Duende.IdentityServer.Services;
-using Microsoft.AspNetCore.Authentication;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,10 +13,10 @@ namespace UnitTests.Common;
 
 public class TestReplayCache : IReplayCache
 {
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
     Dictionary<string, DateTimeOffset> _values = new Dictionary<string, DateTimeOffset>();
 
-    public TestReplayCache(ISystemClock clock)
+    public TestReplayCache(IClock clock)
     {
         _clock = clock;
     }
