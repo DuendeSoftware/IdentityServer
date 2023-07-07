@@ -135,13 +135,12 @@ public class DeviceFlowStore : IDeviceFlowStore
             throw new InvalidOperationException("Could not update device code");
         }
 
-        var entity = ToEntity(data, existing.DeviceCode, userCode);
         Logger.LogDebug("{userCode} found in database", userCode);
 
         existing.SubjectId = data.Subject?.FindFirst(JwtClaimTypes.Subject).Value;
-        existing.Data = entity.Data;
         existing.SessionId = data.SessionId;
         existing.Description = data.Description;
+        existing.Data = Serializer.Serialize(data);
 
         try
         {
@@ -196,8 +195,6 @@ public class DeviceFlowStore : IDeviceFlowStore
     /// <returns></returns>
     protected DeviceFlowCodes ToEntity(DeviceCode model, string deviceCode, string userCode)
     {
-        // TODO: consider removing this in v7.0 since it's not properly/fully used
-
         if (model == null || deviceCode == null || userCode == null) return null;
 
         return new DeviceFlowCodes
