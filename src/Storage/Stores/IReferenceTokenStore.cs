@@ -39,6 +39,7 @@ public interface IReferenceTokenStore
     /// </summary>
     /// <param name="subjectId">The subject identifier.</param>
     /// <param name="clientId">The client identifier.</param>
+    /// <param name="sessionId">The session identifier.</param>
     /// <returns></returns>
-    Task RemoveReferenceTokensAsync(string subjectId, string clientId);
+    Task RemoveReferenceTokensAsync(string subjectId, string clientId, string? sessionId = null);
 }
