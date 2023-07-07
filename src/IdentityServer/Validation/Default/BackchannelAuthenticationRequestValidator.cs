@@ -447,7 +447,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
             var payloadClientId = jwtRequestValidationResult.Payload.SingleOrDefault(x => x.Type == JwtClaimTypes.ClientId)?.Value;
             if (payloadClientId.IsPresent() && _validatedRequest.Client.ClientId != payloadClientId)
             {
-                LogError("client_id found in the JWT request object does not match client_id used to authenticate", new { invalidClientId = payloadClientId, clientId = _validatedRequest.Client.ClientId });
+                LogError("client_id found in the JWT request object does not match client_id used to authenticate, {@values}", new { invalidClientId = payloadClientId, clientId = _validatedRequest.Client.ClientId });
                 return (false, Invalid(OidcConstants.AuthorizeErrors.InvalidRequestObject, "Invalid client_id in JWT request"));
             }
 
@@ -509,7 +509,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
                 }
                 else
                 {
-                    _logger.Log(logLevel, message + "{@values}, details: {@details}", values, details);
+                    _logger.Log(logLevel, message + ", details: {@details}", values, details);
                 }
 
             }
