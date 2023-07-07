@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -30,6 +30,14 @@ public class IntrospectionRequestValidationResult : ValidationResult
     /// The API.
     /// </value>
     public ApiResource Api { get; set; }
+ 
+    /// <summary>
+    /// Gets or sets the client.
+    /// </summary>
+    /// <value>
+    /// The client.
+    /// </value>
+    public Client Client { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the token is active.
