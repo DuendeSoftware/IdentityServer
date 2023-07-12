@@ -15,6 +15,7 @@ using FluentAssertions;
 using IdentityModel;
 using UnitTests.Common;
 using UnitTests.Validation.Setup;
+using Duende.IdentityServer.Events;
 using Xunit;
 
 namespace UnitTests.Validation.TokenRequest_Validation;
@@ -182,6 +183,48 @@ public class TokenRequestValidation_RefreshToken_Invalid
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task AlreadyConsumed_RefreshToken_SouldRaiseEvent()
+    {
+        var subjectClaim = new Claim(JwtClaimTypes.Subject, "foo");
+
+        var refreshToken = new RefreshToken
+        {
+            ClientId = "roclient",
+            Subject = new IdentityServerUser("foo").CreatePrincipal(),
+            Lifetime = 600,
+            CreationTime = DateTime.UtcNow,
+            ConsumedTime = DateTime.UtcNow
+        };
+
+        var grants = Factory.CreateRefreshTokenStore();
+        var handle = await grants.StoreRefreshTokenAsync(refreshToken);
+
+        var client = await _clients.FindEnabledClientByIdAsync("roclient");
+        var testEventService = new TestEventService();
+        var profileService = new TestProfileService(shouldBeActive: false);
+
+        var refreshTokenService = Factory.CreateRefreshTokenService(grants, profileService, testEventService);
+
+        var validator = Factory.CreateTokenRequestValidator(
+            refreshTokenStore: grants,
+            eventService: testEventService,
+            refreshTokenService: refreshTokenService,
+            profile: profileService);
+
+        var parameters = new NameValueCollection();
+        parameters.Add(OidcConstants.TokenRequest.GrantType, "refresh_token");
+        parameters.Add(OidcConstants.TokenRequest.RefreshToken, handle);
+
+        var result = await validator.ValidateRequestAsync(parameters, client.ToValidationResult());
+
+        testEventService.AssertEventWasRaised<RefreshTokenDoubleSpentEvent>();
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidGrant);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task invalid_resource_indicator()
     {
         var refreshToken = new RefreshToken
@@ -235,7 +278,7 @@ public class TokenRequestValidation_RefreshToken_Invalid
         var mockResourceValidator = new MockResourceValidator();
         var grants = Factory.CreateRefreshTokenStore();
         var client = (await _clients.FindEnabledClientByIdAsync("roclient")).ToValidationResult();
-            
+
         var validator = Factory.CreateTokenRequestValidator(refreshTokenStore: grants, resourceValidator: mockResourceValidator);
 
         {
@@ -278,8 +321,8 @@ public class TokenRequestValidation_RefreshToken_Invalid
             var parameters = new NameValueCollection();
             parameters.Add(OidcConstants.TokenRequest.GrantType, "refresh_token");
             parameters.Add(OidcConstants.TokenRequest.RefreshToken, handle);
-            parameters.Add("resource", "urn:api1"); 
-                
+            parameters.Add("resource", "urn:api1");
+
             mockResourceValidator.Result = new ResourceValidationResult
             {
                 InvalidResourceIndicators = { "foo" }

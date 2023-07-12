@@ -40,7 +40,9 @@ internal static class Factory
         IEnumerable<IExtensionGrantValidator> extensionGrantValidators = null,
         ICustomTokenRequestValidator customRequestValidator = null,
         IRefreshTokenService refreshTokenService = null,
-        IResourceValidator resourceValidator = null)
+        IResourceValidator resourceValidator = null,
+        IEventService eventService = null
+        )
     {
         if (options == null)
         {
@@ -82,7 +84,7 @@ internal static class Factory
             customRequestValidator = new DefaultCustomTokenRequestValidator();
         }
 
-        ExtensionGrantValidator aggregateExtensionGrantValidator;
+        ExtensionGrantValidator aggregateExtensionGrantValidator;    
         if (extensionGrantValidators == null)
         {
             aggregateExtensionGrantValidator = new ExtensionGrantValidator(new[] { new TestGrantValidator() }, TestLogger.Create<ExtensionGrantValidator>());
@@ -114,6 +116,11 @@ internal static class Factory
                 profile);
         }
 
+        if(eventService == null) 
+        {
+            eventService = new TestEventService();
+        }
+
         return new TokenRequestValidator(
             options,
             issuerNameService,
@@ -128,25 +135,28 @@ internal static class Factory
             resourceStore,
             refreshTokenService,
             new DefaultDPoPProofValidator(options, new MockServerUrls(), new MockReplayCache(), new StubClock(), new StubDataProtectionProvider(), new LoggerFactory().CreateLogger< DefaultDPoPProofValidator >()),
-            new TestEventService(),
+            eventService,
             new StubClock(),
             TestLogger.Create<TokenRequestValidator>());
     }
 
-    public static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store = null, IProfileService profile = null)
+    public static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store = null, IProfileService profile = null, IEventService eventService = null)
     {
         return CreateRefreshTokenService(store ?? CreateRefreshTokenStore(), 
-            profile ?? new TestProfileService(), 
+            profile ?? new TestProfileService(),
+            eventService,
             new PersistentGrantOptions());
     }
 
     private static IRefreshTokenService CreateRefreshTokenService(
         IRefreshTokenStore store, 
         IProfileService profile,
+        IEventService eventService,
         PersistentGrantOptions options)
     {
         var service = new DefaultRefreshTokenService(
             store,
+            eventService,
             profile,
             new StubClock(),
             options,

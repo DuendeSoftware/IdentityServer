@@ -27,5 +27,10 @@ public enum EventTypes
     /// <summary>
     /// Error event
     /// </summary>
-    Error = 4
+    Error = 4,
+
+    /// <summary>
+    /// Warning event
+    /// </summary>
+    Warning = 5
 }

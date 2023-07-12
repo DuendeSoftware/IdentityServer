@@ -20,6 +20,7 @@ namespace UnitTests.Services.Default;
 public class DefaultRefreshTokenServiceTests
 {
     private DefaultRefreshTokenService _subject;
+    private TestEventService _fakeEventService = new TestEventService();
     private DefaultRefreshTokenStore _store;
     private PersistentGrantOptions _options;
 
@@ -35,9 +36,10 @@ public class DefaultRefreshTokenServiceTests
             new PersistentGrantSerializer(),
             new DefaultHandleGenerationService(),
             TestLogger.Create<DefaultRefreshTokenStore>());
-
+        
         _subject = new DefaultRefreshTokenService(
             _store, 
+            _fakeEventService,
             new TestProfileService(),
             _clock,
             _options,

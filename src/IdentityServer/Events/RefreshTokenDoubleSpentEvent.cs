@@ -21,8 +21,8 @@ public class RefreshTokenDoubleSpentEvent : Event
     public RefreshTokenDoubleSpentEvent(string subjectId, string refreshTokenHandle, string clientId)
         : base(EventCategories.Error,
             "Refresh token misused",
-            EventTypes.Error,
-            EventIds.TokenIssuedFailure)
+            EventTypes.Warning,
+            EventIds.TokenMissuseEvent)
     {
         SubjectId = subjectId;
         ClientId = clientId;
