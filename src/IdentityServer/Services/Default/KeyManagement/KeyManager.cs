@@ -619,11 +619,11 @@ public class KeyManager : IKeyManager
         }
 
         // we order by the created date, in essence loading the oldest key
-        // this accomodates the scenario where 2 servers create keys at the same time
+        // this accommodates the scenario where 2 servers create keys at the same time
         // but the first server only reloads the one key it created (and only has the one key for 
         // discovery). we don't want the second server using a key that's not in the first server's
         // discovery document. this will be somewhat mitigated by the initial duration where we 
-        // deliberatly ignore the cache.
+        // deliberately ignore the cache.
         var result = keys.OrderBy(x => x.Created).First();
         return result;
     }

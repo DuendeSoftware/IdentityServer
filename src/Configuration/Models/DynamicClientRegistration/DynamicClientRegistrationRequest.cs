@@ -15,7 +15,7 @@ namespace Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
 public class DynamicClientRegistrationRequest
 {
     /// <summary>
-    /// List of redirection URI strings for use in redirect-based flows such as the authorization code and implicit flows.
+    /// List of redirection URI strings for use in redirect-based flows such as the authorization code flows.
     /// </summary>
     /// <remarks>
     /// Clients using flows with redirection must register their redirection URI values.
@@ -58,7 +58,7 @@ public class DynamicClientRegistrationRequest
     /// </summary>
     /// <remarks>
     /// <remark>
-    /// The default configuration endpoints do not use the software statement.
+    /// The default configuration endpoints do not use the jwks uri.
     /// It is included in this model to facilitate extensions to the
     /// configuration system.
     /// </remark>
@@ -73,14 +73,22 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// JWK Set document which contains the client's public keys.
     /// </summary>
+    /// <remark>
+    /// The <see cref="JwksUri"/> and <see cref="Jwks"/> parameters MUST NOT both be present in
+    /// the same request or response.
+    /// </remark>
     [JsonPropertyName(OidcConstants.ClientMetadata.Jwks)]
     public KeySet? Jwks { get; set; }
 
     /// <summary>
-    /// String containing a space-separated list of scope values that the client can use when requesting access tokens.
+    /// String containing a space-separated list of scope values that the client
+    /// can use when requesting access tokens.
     /// </summary>
     /// <remarks>
-    /// If omitted, an authorization server may register a client with a default set of scopes.
+    /// If omitted, the configuration API will register a client with the scopes
+    /// set by the <see
+    /// cref="Validation.DynamicClientRegistration.DynamicClientRegistrationValidator.SetDefaultScopes"
+    /// /> method, which defaults to no scopes
     /// </remarks>
     [JsonPropertyName(OidcConstants.ClientMetadata.Scope)]
     public string? Scope { get; set; }
@@ -117,7 +125,7 @@ public class DynamicClientRegistrationRequest
     /// <summary>
     /// Boolean value specifying whether the RP requires that a sid (session ID)
     /// Claim be included in the Logout Token to identify the RP session with
-    /// the OP when the backchannel_logout_uri is used.e
+    /// the OP when the backchannel_logout_uri is used.
     /// </summary>
     [JsonPropertyName(OidcConstants.ClientMetadata.BackchannelLogoutSessionRequired)]
     public bool? BackChannelLogoutSessionRequired { get; set; }

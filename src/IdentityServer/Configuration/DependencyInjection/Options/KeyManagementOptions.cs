@@ -174,7 +174,7 @@ public class SigningAlgorithmOptions
     public string Name { get; set; }
 
     /// <summary>
-    /// Indicates if a X509 certificate is to be used to contain the key. Defaults to false.
+    /// Indicates if an X.509 certificate is to be used to contain the key. Defaults to false.
     /// </summary>
     public bool UseX509Certificate { get; set; }
 
