@@ -1,7 +1,6 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
 using System.Linq;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using FluentAssertions;
@@ -12,12 +11,6 @@ namespace UnitTests.Mappers;
 
 public class ApiResourceMappersTests
 {
-    [Fact]
-    public void AutomapperConfigurationIsValid()
-    {
-        ApiResourceMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
-    }
-
     [Fact]
     public void Can_Map()
     {

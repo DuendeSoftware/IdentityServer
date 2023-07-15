@@ -1,8 +1,6 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
-using AutoMapper;
 using Duende.IdentityServer.EntityFramework.Entities;
 
 namespace Duende.IdentityServer.EntityFramework.Mappers;
@@ -12,22 +10,22 @@ namespace Duende.IdentityServer.EntityFramework.Mappers;
 /// </summary>
 public static class IdentityProviderMappers
 {
-    static IdentityProviderMappers()
-    {
-        Mapper = new MapperConfiguration(cfg => cfg.AddProfile<IdentityProviderMapperProfile>())
-            .CreateMapper();
-    }
-
-    internal static IMapper Mapper { get; }
-
     /// <summary>
     /// Maps an entity to a model.
     /// </summary>
     /// <param name="entity">The entity.</param>
     /// <returns></returns>
-    public static Models.IdentityProvider ToModel(this IdentityProvider entity)
+    public static Models.IdentityProvider ToModel(this Entities.IdentityProvider entity)
     {
-        return entity == null ? null : Mapper.Map<Models.IdentityProvider>(entity);
+        return entity == null ? null :
+            new Models.IdentityProvider(entity.Type)
+            {
+                Scheme = entity.Scheme,
+                DisplayName = entity.DisplayName,
+                Enabled = entity.Enabled,
+                Type = entity.Type,
+                Properties = PropertiesConverter.Convert(entity.Properties)
+            };
     }
 
     /// <summary>
@@ -37,6 +35,14 @@ public static class IdentityProviderMappers
     /// <returns></returns>
     public static Entities.IdentityProvider ToEntity(this Models.IdentityProvider model)
     {
-        return model == null ? null : Mapper.Map<IdentityProvider>(model);
+        return model == null ? null : 
+            new Entities.IdentityProvider
+            {
+                Scheme = model.Scheme,
+                DisplayName = model.DisplayName,
+                Enabled = model.Enabled,
+                Type = model.Type,
+                Properties = PropertiesConverter.Convert(model.Properties)
+            };
     }
 }

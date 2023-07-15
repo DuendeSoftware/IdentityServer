@@ -12,12 +12,6 @@ namespace UnitTests.Mappers;
 public class ScopesMappersTests
 {
     [Fact]
-    public void ScopeAutomapperConfigurationIsValid()
-    {
-        ScopeMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
-    }
-
-    [Fact]
     public void CanMapScope()
     {
         var model = new Duende.IdentityServer.Models.ApiScope();

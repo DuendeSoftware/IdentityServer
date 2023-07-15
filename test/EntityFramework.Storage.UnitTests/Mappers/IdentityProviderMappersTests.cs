@@ -1,7 +1,6 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.Models;
 using FluentAssertions;
@@ -11,12 +10,6 @@ namespace UnitTests.Mappers;
 
 public class IdentityProviderMappersTests
 {
-    [Fact]
-    public void IdentityProviderAutomapperConfigurationIsValid()
-    {
-        IdentityProviderMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
-    }
-
     [Fact]
     public void CanMapIdp()
     {

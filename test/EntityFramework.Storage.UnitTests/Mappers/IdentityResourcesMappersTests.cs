@@ -1,7 +1,6 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Xunit;
 
@@ -9,12 +8,6 @@ namespace UnitTests.Mappers;
 
 public class IdentityResourcesMappersTests
 {
-    [Fact]
-    public void IdentityResourceAutomapperConfigurationIsValid()
-    {
-        IdentityResourceMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
-    }
-
     [Fact]
     public void CanMapIdentityResources()
     {
