@@ -87,6 +87,8 @@ public class DefaultEventService : IEventService
                 return Options.Events.RaiseSuccessEvents;
             case EventTypes.Error:
                 return Options.Events.RaiseErrorEvents;
+            case EventTypes.Warning:
+                return Options.Events.RaiseWarningEvents;
             default:
                 throw new ArgumentOutOfRangeException(nameof(evtType));
         }

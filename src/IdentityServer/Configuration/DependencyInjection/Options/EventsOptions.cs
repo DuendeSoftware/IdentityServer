@@ -41,4 +41,12 @@ public class EventsOptions
     ///   <c>true</c> if error events should be raised; otherwise, <c>false</c>.
     /// </value>
     public bool RaiseErrorEvents { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to raise error events.
+    /// </summary>
+    /// <value>
+    ///   <c>true</c> if error events should be raised; otherwise, <c>false</c>.
+    /// </value>
+    public bool RaiseWarningEvents { get; set; } = false;
 }
