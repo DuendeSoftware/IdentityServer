@@ -2,11 +2,15 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
 using System.Linq;
 using System.Reflection;
 using Duende.IdentityServer.EntityFramework.Mappers;
+using Models = Duende.IdentityServer.Models;
+using Entities = Duende.IdentityServer.EntityFramework.Entities;
 using FluentAssertions;
 using Xunit;
+using System.Collections.Generic;
 
 namespace UnitTests.Mappers;
 
@@ -15,7 +19,7 @@ public class ScopesMappersTests
     [Fact]
     public void CanMapScope()
     {
-        var model = new Duende.IdentityServer.Models.ApiScope();
+        var model = new Models.ApiScope();
         var mappedEntity = model.ToEntity();
         var mappedModel = mappedEntity.ToModel();
 
@@ -24,9 +28,9 @@ public class ScopesMappersTests
     }
 
     [Fact]
-    public void All_Properties_Are_Mapped()
+    public void Mapping_model_to_entity_maps_all_properties()
     {
-        var model = new Duende.IdentityServer.Models.ApiScope()
+        var source = new Models.ApiScope()
         {
             Description = "description",
             DisplayName = "displayname",
@@ -47,18 +51,57 @@ public class ScopesMappersTests
             "NonEditable"
         };
 
-        var destination = model.ToEntity();
-        var destinationType = typeof(Duende.IdentityServer.EntityFramework.Entities.ApiScope);
-        var destinationProperties = destinationType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        var destination = source.ToEntity();
 
-        foreach (var property in destinationProperties)
+        MapperTestHelpers
+            .AllPropertiesAreMapped(source, destination, excludedProperties, out var unmappedMembers)
+            .Should()
+            .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
+    }
+
+    [Fact]
+    public void Mapping_entity_to_model_maps_all_properties()
+    {
+        var source = new Entities.ApiScope()
         {
-            if (!excludedProperties.Contains(property.Name))
-            {
-                var propertyValue = property.GetValue(destination);
-                propertyValue.Should().NotBeNull($"Property '{property.Name}' should be mapped.");
-            }
-        }
+            Description = "description",
+            DisplayName = "displayname",
+            Name = "foo",
+            UserClaims = new List<Entities.ApiScopeClaim> { 
+                new Entities.ApiScopeClaim
+                {
+                    Type = "c1",  
+                },
+                new Entities.ApiScopeClaim
+                {
+                    Type = "c2"
+                }
+            },
+            Properties = new List<Entities.ApiScopeProperty>  {
+                new Entities.ApiScopeProperty
+                {
+                    Key = "x",
+                    Value = "xx" 
+                },
+                new Entities.ApiScopeProperty
+                {
+                    Key = "y",
+                    Value = "yy" 
+                },
+            },
+            Enabled = false
+        };
+
+        var excludedProperties = new string[]
+        {
+        };
+
+        var destination = source.ToModel();
+
+        MapperTestHelpers
+            .AllPropertiesAreMapped(source, destination, excludedProperties, out var unmappedMembers)
+            .Should()
+            .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
     }
 
     [Fact]
