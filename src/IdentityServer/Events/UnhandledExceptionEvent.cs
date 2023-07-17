@@ -23,7 +23,6 @@ public class UnhandledExceptionEvent : Event
             EventIds.UnhandledException,
             ex.Message)
     {
-        Exception = ex;
         Details = ex.ToString();
     }
 
@@ -34,12 +33,4 @@ public class UnhandledExceptionEvent : Event
     /// The details.
     /// </value>
     public string Details { get; set; }
-
-    /// <summary>
-    /// Gets or sets the exception.
-    /// </summary>
-    /// <value>
-    /// The exception.
-    /// </value>
-    public Exception Exception { get; set; }
 }
