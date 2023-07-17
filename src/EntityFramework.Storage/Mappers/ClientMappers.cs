@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ public static class ClientMappers
     /// </summary>
     /// <param name="entity">The entity.</param>
     /// <returns></returns>
-    public static Models.Client ToModel(this Duende.IdentityServer.EntityFramework.Entities.Client entity)
+    public static Models.Client ToModel(this Entities.Client entity)
     {
         return new Models.Client
         {
@@ -99,7 +99,7 @@ public static class ClientMappers
     /// </summary>
     /// <param name="model">The model.</param>
     /// <returns></returns>
-    public static Duende.IdentityServer.EntityFramework.Entities.Client ToEntity(this Models.Client model)
+    public static Entities.Client ToEntity(this Models.Client model)
     {
         return new Entities.Client
         {

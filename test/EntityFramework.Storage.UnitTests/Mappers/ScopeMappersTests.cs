@@ -26,7 +26,7 @@ public class ScopesMappersTests
     }
 
     [Fact]
-    public void Mapping_model_to_entity_maps_all_properties()
+    public void mapping_model_to_entity_maps_all_properties()
     {
         var excludedProperties = new string[]
         {
@@ -43,14 +43,10 @@ public class ScopesMappersTests
     }
 
     [Fact]
-    public void Mapping_entity_to_model_maps_all_properties()
+    public void mapping_entity_to_model_maps_all_properties()
     {
-        var excludedProperties = new string[]
-        {
-        };
-
         MapperTestHelpers
-            .AllPropertiesAreMapped<Entities.ApiScope, Models.ApiScope>(source => source.ToModel(), excludedProperties, out var unmappedMembers)
+            .AllPropertiesAreMapped<Entities.ApiScope, Models.ApiScope>(source => source.ToModel(), out var unmappedMembers)
             .Should()
             .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
     }

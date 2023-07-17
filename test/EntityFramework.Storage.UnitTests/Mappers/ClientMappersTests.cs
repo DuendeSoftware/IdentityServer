@@ -7,7 +7,8 @@ using System.Linq;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using FluentAssertions;
 using Xunit;
-using Client = Duende.IdentityServer.Models.Client;
+using Models = Duende.IdentityServer.Models;
+using Entities = Duende.IdentityServer.EntityFramework.Entities;
 
 namespace UnitTests.Mappers;
 
@@ -16,7 +17,7 @@ public class ClientMappersTests
     [Fact]
     public void Can_Map()
     {
-        var model = new Client();
+        var model = new Models.Client();
         var mappedEntity = model.ToEntity();
         var mappedModel = mappedEntity.ToModel();
 
@@ -27,7 +28,7 @@ public class ClientMappersTests
     [Fact]
     public void Properties_Map()
     {
-        var model = new Client()
+        var model = new Models.Client()
         {
             Properties =
             {
@@ -77,23 +78,63 @@ public class ClientMappersTests
     [Fact]
     public void missing_values_should_use_defaults()
     {
-        var entity = new Duende.IdentityServer.EntityFramework.Entities.Client
+        var entity = new Entities.Client
         {
-            ClientSecrets = new System.Collections.Generic.List<Duende.IdentityServer.EntityFramework.Entities.ClientSecret>
+            ClientSecrets = new System.Collections.Generic.List<Entities.ClientSecret>
             {
-                new Duende.IdentityServer.EntityFramework.Entities.ClientSecret
+                new Entities.ClientSecret
                 {
                 }
             }
         };
 
-        var def = new Client
+        var def = new Models.Client
         {
-            ClientSecrets = { new Duende.IdentityServer.Models.Secret("foo") }
+            ClientSecrets = { new Models.Secret("foo") }
         };
 
         var model = entity.ToModel();
         model.ProtocolType.Should().Be(def.ProtocolType);
         model.ClientSecrets.First().Type.Should().Be(def.ClientSecrets.First().Type);
+    }
+
+
+    [Fact]
+    public void mapping_model_to_entity_maps_all_properties()
+    {
+        var excludedProperties = new string[]
+        {
+            "Updated",
+            "LastAccessed",
+        };
+
+        MapperTestHelpers
+            .AllPropertiesAreMapped<Models.Client, Entities.Client>(
+                source => source.AllowedIdentityTokenSigningAlgorithms.Add("RS256"), // We have to add values, otherwise the converter will produce null
+                source => source.ToEntity(),
+                excludedProperties,
+                out var unmappedMembers)
+            .Should()
+            .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
+    }
+
+    [Fact]
+    public void mapping_entity_to_model_maps_all_properties()
+    {
+        MapperTestHelpers
+            .AllPropertiesAreMapped<Entities.Client, Models.Client>(
+                //source =>
+                //{
+                //    source.Properties =
+                //    """
+                //    {
+                //        "foo": "bar"
+                //    }
+                //    """;
+                //},
+                source => source.ToModel(),
+                out var unmappedMembers)
+            .Should()
+            .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
     }
 }
