@@ -38,6 +38,7 @@ internal static class IdentityServerExtensions
                 options.RemoveConsumedTokens = true;
                 options.TokenCleanupInterval = 10; // interval in seconds
             })
+            .AddAppAuthRedirectUriValidator()
             .AddServerSideSessions()
             // this is something you will want in production to reduce load on and requests to the DB
             //.AddConfigurationStoreCache()
