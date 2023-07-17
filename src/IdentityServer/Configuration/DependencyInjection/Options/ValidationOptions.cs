@@ -13,7 +13,9 @@ namespace Duende.IdentityServer.Configuration;
 public class ValidationOptions
 {
     /// <summary>
-    ///  Collection of URI scheme prefixes that should never be used as custom URI schemes in the redirect_uri passed to tha authorize endpoint.
+    ///  Collection of URI scheme prefixes that should never be used as custom
+    ///  URI schemes in the redirect_uri passed to the authorize endpoint or the
+    ///  post_logout_redirect_uri passed to the end_session endpoint.
     /// </summary>
     public ICollection<string> InvalidRedirectUriPrefixes { get; } = new HashSet<string>
     {

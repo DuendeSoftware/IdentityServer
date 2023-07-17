@@ -285,7 +285,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <summary>
-    /// Sets scopes on the client when no scopes are requested. This default
+    /// Sets scopes on the client when no scopes are requested. The default
     /// implementation sets no scopes and is intended as an extension point.
     /// </summary>
     /// <param name="context">The dynamic client registration context, which
@@ -384,7 +384,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <summary>
-    /// Validates the requested client name uses it to set the name of the
+    /// Validates the requested client name and uses it to set the name of the
     /// client.
     /// </summary>
     /// <param name="context">The dynamic client registration context, which
@@ -452,7 +452,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <summary>
-    /// Validates the software statement of the request. This default
+    /// Validates the software statement of the request. The default
     /// implementation does nothing, and is included as an extension point.
     /// </summary>
     /// <param name="context">The dynamic client registration context, which

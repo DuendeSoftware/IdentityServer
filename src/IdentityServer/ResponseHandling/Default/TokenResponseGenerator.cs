@@ -109,7 +109,7 @@ public class TokenResponseGenerator : ITokenResponseGenerator
     }
 
     /// <summary>
-    /// Creates the response for an client credentials request.
+    /// Creates the response for a client credentials request.
     /// </summary>
     /// <param name="request">The request.</param>
     /// <returns></returns>

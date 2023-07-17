@@ -218,7 +218,9 @@ public class DefaultUserSession : IUserSession
     }
 
     /// <summary>
-    /// Ensures the session identifier cookie asynchronous.
+    /// Ensures the session identifier cookie is synchronized with the current
+    /// session identifier. If there is no sid, the cookie is removed. If there
+    /// is a sid, and the session identifier cookie is missing, it is issued. 
     /// </summary>
     /// <returns></returns>
     public virtual async Task EnsureSessionIdCookieAsync()
