@@ -4,13 +4,11 @@
 
 using System;
 using System.Linq;
-using System.Reflection;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Models = Duende.IdentityServer.Models;
 using Entities = Duende.IdentityServer.EntityFramework.Entities;
 using FluentAssertions;
 using Xunit;
-using System.Collections.Generic;
 
 namespace UnitTests.Mappers;
 
@@ -30,19 +28,6 @@ public class ScopesMappersTests
     [Fact]
     public void Mapping_model_to_entity_maps_all_properties()
     {
-        var source = new Models.ApiScope()
-        {
-            Description = "description",
-            DisplayName = "displayname",
-            Name = "foo",
-            UserClaims = { "c1", "c2" },
-            Properties = {
-                { "x", "xx" },
-                { "y", "yy" },
-            },
-            Enabled = false
-        };
-
         var excludedProperties = new string[]
         {
             "Updated",
@@ -51,10 +36,8 @@ public class ScopesMappersTests
             "NonEditable"
         };
 
-        var destination = source.ToEntity();
-
         MapperTestHelpers
-            .AllPropertiesAreMapped(source, destination, excludedProperties, out var unmappedMembers)
+            .AllPropertiesAreMapped<Models.ApiScope, Entities.ApiScope>(source => source.ToEntity(), excludedProperties, out var unmappedMembers)
             .Should()
             .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
     }
@@ -62,44 +45,12 @@ public class ScopesMappersTests
     [Fact]
     public void Mapping_entity_to_model_maps_all_properties()
     {
-        var source = new Entities.ApiScope()
-        {
-            Description = "description",
-            DisplayName = "displayname",
-            Name = "foo",
-            UserClaims = new List<Entities.ApiScopeClaim> { 
-                new Entities.ApiScopeClaim
-                {
-                    Type = "c1",  
-                },
-                new Entities.ApiScopeClaim
-                {
-                    Type = "c2"
-                }
-            },
-            Properties = new List<Entities.ApiScopeProperty>  {
-                new Entities.ApiScopeProperty
-                {
-                    Key = "x",
-                    Value = "xx" 
-                },
-                new Entities.ApiScopeProperty
-                {
-                    Key = "y",
-                    Value = "yy" 
-                },
-            },
-            Enabled = false
-        };
-
         var excludedProperties = new string[]
         {
         };
 
-        var destination = source.ToModel();
-
         MapperTestHelpers
-            .AllPropertiesAreMapped(source, destination, excludedProperties, out var unmappedMembers)
+            .AllPropertiesAreMapped<Entities.ApiScope, Models.ApiScope>(source => source.ToModel(), excludedProperties, out var unmappedMembers)
             .Should()
             .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
     }
