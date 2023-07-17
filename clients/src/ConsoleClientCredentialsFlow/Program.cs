@@ -17,6 +17,7 @@ namespace ConsoleClientCredentialsFlow
 
             Console.ReadLine();
             await CallServiceAsync(response.AccessToken);
+            Console.ReadLine();
         }
 
         static async Task<TokenResponse> RequestTokenAsync()

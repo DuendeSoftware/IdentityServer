@@ -3,6 +3,7 @@
 
 
 using System.Linq;
+using System.Reflection;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using FluentAssertions;
 using Xunit;
@@ -20,6 +21,44 @@ public class ScopesMappersTests
 
         Assert.NotNull(mappedModel);
         Assert.NotNull(mappedEntity);
+    }
+
+    [Fact]
+    public void All_Properties_Are_Mapped()
+    {
+        var model = new Duende.IdentityServer.Models.ApiScope()
+        {
+            Description = "description",
+            DisplayName = "displayname",
+            Name = "foo",
+            UserClaims = { "c1", "c2" },
+            Properties = {
+                { "x", "xx" },
+                { "y", "yy" },
+            },
+            Enabled = false
+        };
+
+        var excludedProperties = new string[]
+        {
+            "Updated",
+            "Created",
+            "LastAccessed",
+            "NonEditable"
+        };
+
+        var destination = model.ToEntity();
+        var destinationType = typeof(Duende.IdentityServer.EntityFramework.Entities.ApiScope);
+        var destinationProperties = destinationType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var property in destinationProperties)
+        {
+            if (!excludedProperties.Contains(property.Name))
+            {
+                var propertyValue = property.GetValue(destination);
+                propertyValue.Should().NotBeNull($"Property '{property.Name}' should be mapped.");
+            }
+        }
     }
 
     [Fact]
