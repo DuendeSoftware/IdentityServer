@@ -29,7 +29,6 @@ namespace ConsoleCibaClient
 
             Console.ReadLine();
             await CallServiceAsync(tokenResponse.AccessToken);
-            Console.ReadLine();
         }
 
         static async Task<BackchannelAuthenticationResponse> RequestBackchannelLoginAsync()
