@@ -43,8 +43,6 @@ internal class LicenseValidator<T>
 
     protected void Initalize(ILoggerFactory loggerFactory, string productName, string key)
     {
-        //if (Logger != null) throw new InvalidOperationException("LicenseValidator already initialized.");
-
         Logger = loggerFactory.CreateLogger($"Duende.{productName}.License");
 
         key ??= LoadFromFile();
