@@ -9,7 +9,7 @@ public static class MapperTestHelpers
         Func<TSource, TDestination> mapper,
         out List<string> unmappedMembers)
     {
-        return AllPropertiesAreMapped(DefaultConstructor<TSource>(), EmptyCustomization<TSource>(), mapper, Array.Empty<string>(), out unmappedMembers);
+        return AllPropertiesAreMapped(DefaultConstructor<TSource>(), NoExclusions, EmptyCustomization<TSource>(), mapper, Array.Empty<string>(), out unmappedMembers);
     }
 
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
@@ -17,7 +17,7 @@ public static class MapperTestHelpers
         Func<TSource, TDestination> mapper,
         out List<string> unmappedMembers)
     {
-        return AllPropertiesAreMapped(creator, EmptyCustomization<TSource>(), mapper, NoExclusions, out unmappedMembers);
+        return AllPropertiesAreMapped(creator, NoExclusions, EmptyCustomization<TSource>(), mapper, NoExclusions, out unmappedMembers);
     }
 
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
@@ -25,24 +25,34 @@ public static class MapperTestHelpers
         Func<TSource, TDestination> mapper,
         out List<string> unmappedMembers)
     {
-        return AllPropertiesAreMapped(DefaultConstructor<TSource>(), customizer, mapper, Array.Empty<string>(), out unmappedMembers);
+        return AllPropertiesAreMapped(DefaultConstructor<TSource>(), NoExclusions, customizer, mapper, Array.Empty<string>(), out unmappedMembers);
     }
 
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
         Func<TSource, TDestination> mapper,
-        IEnumerable<string> exclusions,
+        IEnumerable<string> notMapped,
         out List<string> unmappedMembers)
     {
-        return AllPropertiesAreMapped(DefaultConstructor<TSource>(), EmptyCustomization<TSource>(), mapper, exclusions, out unmappedMembers);
+        return AllPropertiesAreMapped(DefaultConstructor<TSource>(), NoExclusions, EmptyCustomization<TSource>(), mapper, notMapped, out unmappedMembers);
     }
 
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
         Action<TSource> customizer,
         Func<TSource, TDestination> mapper,
-        IEnumerable<string> exclusions,
+        IEnumerable<string> notMapped,
         out List<string> unmappedMembers)
     {
-        return AllPropertiesAreMapped(DefaultConstructor<TSource>(), customizer, mapper, exclusions, out unmappedMembers);
+        return AllPropertiesAreMapped(DefaultConstructor<TSource>(), NoExclusions, customizer, mapper, notMapped, out unmappedMembers);
+    }
+
+    public static bool AllPropertiesAreMapped<TSource, TDestination>(
+        IEnumerable<string> excludeFromAutoInitialization,
+        Action<TSource> customizer,
+        Func<TSource, TDestination> mapper,
+        IEnumerable<string> notMapped,
+        out List<string> unmappedMembers)
+    {
+        return AllPropertiesAreMapped(DefaultConstructor<TSource>(), excludeFromAutoInitialization, customizer, mapper, notMapped, out unmappedMembers);
     }
 
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
@@ -51,30 +61,33 @@ public static class MapperTestHelpers
         Func<TSource, TDestination> mapper,
         out List<string> unmappedMembers)
     {
-        return AllPropertiesAreMapped(creator, customizer, mapper, NoExclusions, out unmappedMembers);
+        return AllPropertiesAreMapped(creator, NoExclusions, customizer, mapper, NoExclusions, out unmappedMembers);
     }
 
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
         Func<TSource> creator,
         Func<TSource, TDestination> mapper,
-        IEnumerable<string> exclusions,
+        IEnumerable<string> notMapped,
         out List<string> unmappedMembers)
     {
-        return AllPropertiesAreMapped(creator, EmptyCustomization<TSource>(), mapper, exclusions, out unmappedMembers);
+        return AllPropertiesAreMapped(creator, NoExclusions, EmptyCustomization<TSource>(), mapper, notMapped, out unmappedMembers);
     }
 
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
         Func<TSource> creator,
+        IEnumerable<string> notAutoInitialized,
         Action<TSource> customizer,
         Func<TSource, TDestination> mapper,
-        IEnumerable<string> exclusions,
+        IEnumerable<string> notMapped,
         out List<string> unmappedMembers)
     {
 
         var sourceType = typeof(TSource);
         var source = creator();
-        var sourceProperties = sourceType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-        foreach(var property in sourceProperties)
+        var sourceProperties = sourceType.GetProperties(BindingFlags.Public | BindingFlags.Instance).ToList();
+
+
+        foreach(var property in sourceProperties.Where(p => !notAutoInitialized.Contains(p.Name)))
         {
             property.SetValue(source, GetNonDefaultValue(property.PropertyType));
         }
@@ -88,7 +101,7 @@ public static class MapperTestHelpers
 
         foreach (var property in destinationProperties)
         {
-            if (!exclusions.Contains(property.Name))
+            if (!notMapped.Contains(property.Name))
             {
                 var propertyValue = property.GetValue(destination);
 
@@ -139,7 +152,13 @@ public static class MapperTestHelpers
         {
             var itemType = type.GetGenericArguments()[0];
             var listType = typeof(List<>).MakeGenericType(itemType);
-            return Activator.CreateInstance(listType);
+            var collection = Activator.CreateInstance(listType);
+
+            // Add a non-default item to the collection
+            var nonDefaultValue = GetNonDefaultValue(itemType);
+            listType.GetMethod("Add")?.Invoke(collection, new[] { nonDefaultValue });
+
+            return collection;
         }
 
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>))
@@ -147,7 +166,14 @@ public static class MapperTestHelpers
             var keyType = type.GetGenericArguments()[0];
             var valueType = type.GetGenericArguments()[1];
             var dictionaryType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
-            return Activator.CreateInstance(dictionaryType);
+            var dictionary = Activator.CreateInstance(dictionaryType);
+
+            // Add a non-default item to the dictionary
+            var nonDefaultKey = GetNonDefaultValue(keyType);
+            var nonDefaultValue = GetNonDefaultValue(valueType);
+            dictionaryType.GetMethod("Add")?.Invoke(dictionary, new[] { nonDefaultKey, nonDefaultValue });
+
+            return dictionary;
         }
 
         if (type.IsValueType)

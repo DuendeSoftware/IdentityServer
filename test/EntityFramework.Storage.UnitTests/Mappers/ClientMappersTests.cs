@@ -9,6 +9,8 @@ using FluentAssertions;
 using Xunit;
 using Models = Duende.IdentityServer.Models;
 using Entities = Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.Models;
+using System.Collections.Generic;
 
 namespace UnitTests.Mappers;
 
@@ -102,17 +104,29 @@ public class ClientMappersTests
     [Fact]
     public void mapping_model_to_entity_maps_all_properties()
     {
-        var excludedProperties = new string[]
+        var notMapped = new string[]
         {
             "Updated",
             "LastAccessed",
         };
 
+        var notAutoInitialized = new string[]
+        {
+            "AllowedGrantTypes",
+        };
+
         MapperTestHelpers
             .AllPropertiesAreMapped<Models.Client, Entities.Client>(
-                source => source.AllowedIdentityTokenSigningAlgorithms.Add("RS256"), // We have to add values, otherwise the converter will produce null
+                notAutoInitialized,
+                source => {
+                    source.AllowedIdentityTokenSigningAlgorithms.Add("RS256"); // We have to add values, otherwise the converter will produce null
+                    source.AllowedGrantTypes = new List<string>
+                    {
+                        GrantType.AuthorizationCode // We need to set real values for the grant types, because they are validated
+                    };
+                },
                 source => source.ToEntity(),
-                excludedProperties,
+                notMapped,
                 out var unmappedMembers)
             .Should()
             .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
