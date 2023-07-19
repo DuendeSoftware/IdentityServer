@@ -4,6 +4,7 @@
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.EntityFramework;
 using IdentityModel;
+using IdentityServerHost.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace IdentityServerHost;
@@ -40,6 +41,7 @@ internal static class IdentityServerExtensions
             })
             .AddAppAuthRedirectUriValidator()
             .AddServerSideSessions()
+            .AddScopeParser<ParameterizedScopeParser>()
             // this is something you will want in production to reduce load on and requests to the DB
             //.AddConfigurationStoreCache()
             ;
