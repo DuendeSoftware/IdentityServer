@@ -65,7 +65,6 @@ public static class ClientMappers
             ConsentLifetime = entity.ConsentLifetime,
             AbsoluteRefreshTokenLifetime = entity.AbsoluteRefreshTokenLifetime,
             SlidingRefreshTokenLifetime = entity.SlidingRefreshTokenLifetime,
-            // TODO - should we defensively check that the usage is an actual enum value? What does automapper do?
             RefreshTokenUsage = (TokenUsage)entity.RefreshTokenUsage, 
             UpdateAccessTokenClaimsOnRefresh = entity.UpdateAccessTokenClaimsOnRefresh,
             RefreshTokenExpiration = (TokenExpiration)entity.RefreshTokenExpiration,
