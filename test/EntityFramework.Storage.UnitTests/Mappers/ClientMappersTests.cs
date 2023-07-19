@@ -123,15 +123,6 @@ public class ClientMappersTests
     {
         MapperTestHelpers
             .AllPropertiesAreMapped<Entities.Client, Models.Client>(
-                //source =>
-                //{
-                //    source.Properties =
-                //    """
-                //    {
-                //        "foo": "bar"
-                //    }
-                //    """;
-                //},
                 source => source.ToModel(),
                 out var unmappedMembers)
             .Should()

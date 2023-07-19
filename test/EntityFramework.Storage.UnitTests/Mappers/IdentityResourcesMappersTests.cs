@@ -44,15 +44,6 @@ public class IdentityResourcesMappersTests
     {
         MapperTestHelpers
             .AllPropertiesAreMapped<Entities.IdentityResource, Models.IdentityResource>(
-                //source =>
-                //{
-                //    source.Properties =
-                //    """
-                //    {
-                //        "foo": "bar"
-                //    }
-                //    """;
-                //},
                 source => source.ToModel(),
                 out var unmappedMembers)
             .Should()
