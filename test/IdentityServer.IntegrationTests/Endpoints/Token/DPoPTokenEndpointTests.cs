@@ -28,7 +28,6 @@ using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using Duende.IdentityServer;
-using Microsoft.AspNetCore.DataProtection;
 
 namespace IntegrationTests.Endpoints.Token;
 
@@ -1002,7 +1001,7 @@ public class DPoPTokenEndpointTests
 
     public class MockDPoPProofValidator : DefaultDPoPProofValidator
     {
-        public MockDPoPProofValidator(IdentityServerOptions options, IReplayCache replayCache, IClock clock, IDataProtectionProvider dataProtectionProvider, ILogger<DefaultDPoPProofValidator> logger) : base(options, replayCache, clock, dataProtectionProvider, logger)
+        public MockDPoPProofValidator(IdentityServerOptions options, IReplayCache replayCache, IClock clock, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, ILogger<DefaultDPoPProofValidator> logger) : base(options, replayCache, clock, dataProtectionProvider, logger)
         {
         }
 
