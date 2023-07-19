@@ -15,11 +15,10 @@ public static class MapperTestHelpers
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
         Func<TSource> creator,
         Func<TSource, TDestination> mapper,
-    out List<string> unmappedMembers)
+        out List<string> unmappedMembers)
     {
         return AllPropertiesAreMapped(creator, EmptyCustomization<TSource>(), mapper, NoExclusions, out unmappedMembers);
     }
-
 
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
         Action<TSource> customizer,
@@ -63,7 +62,6 @@ public static class MapperTestHelpers
     {
         return AllPropertiesAreMapped(creator, EmptyCustomization<TSource>(), mapper, exclusions, out unmappedMembers);
     }
-
 
     public static bool AllPropertiesAreMapped<TSource, TDestination>(
         Func<TSource> creator,
