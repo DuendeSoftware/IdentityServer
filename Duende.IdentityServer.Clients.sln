@@ -9,73 +9,73 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "APIs", "APIs", "{AFE7085F-051E-4829-955F-3426FE643BDD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClientCredentialsFlow", "src\ConsoleClientCredentialsFlow\ConsoleClientCredentialsFlow.csproj", "{6729A51B-A7D9-43F3-8F48-D55478254AB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClientCredentialsFlow", "clients\src\ConsoleClientCredentialsFlow\ConsoleClientCredentialsFlow.csproj", "{6729A51B-A7D9-43F3-8F48-D55478254AB7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Constants", "src\Constants\Constants.csproj", "{2096C1D4-5C89-46D5-874A-66E78C9E5A98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Constants", "clients\src\Constants\Constants.csproj", "{2096C1D4-5C89-46D5-874A-66E78C9E5A98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlow", "src\ConsoleResourceOwnerFlow\ConsoleResourceOwnerFlow.csproj", "{9BFE1F4E-C2F4-49FC-917E-BE25C0F42D84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlow", "clients\src\ConsoleResourceOwnerFlow\ConsoleResourceOwnerFlow.csproj", "{9BFE1F4E-C2F4-49FC-917E-BE25C0F42D84}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClientCredentialsFlowPostBody", "src\ConsoleClientCredentialsFlowPostBody\ConsoleClientCredentialsFlowPostBody.csproj", "{BEA2C25F-0551-4AFC-9961-7DB934724FF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClientCredentialsFlowPostBody", "clients\src\ConsoleClientCredentialsFlowPostBody\ConsoleClientCredentialsFlowPostBody.csproj", "{BEA2C25F-0551-4AFC-9961-7DB934724FF1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlowRefreshToken", "src\ConsoleResourceOwnerFlowRefreshToken\ConsoleResourceOwnerFlowRefreshToken.csproj", "{2952A3E3-8831-419B-B14C-448C409961A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlowRefreshToken", "clients\src\ConsoleResourceOwnerFlowRefreshToken\ConsoleResourceOwnerFlowRefreshToken.csproj", "{2952A3E3-8831-419B-B14C-448C409961A7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlowUserInfo", "src\ConsoleResourceOwnerFlowUserInfo\ConsoleResourceOwnerFlowUserInfo.csproj", "{120F561D-5670-4C80-8CAB-4D770204DC91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlowUserInfo", "clients\src\ConsoleResourceOwnerFlowUserInfo\ConsoleResourceOwnerFlowUserInfo.csproj", "{120F561D-5670-4C80-8CAB-4D770204DC91}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleIntrospectionClient", "src\ConsoleIntrospectionClient\ConsoleIntrospectionClient.csproj", "{395F9DF7-AE5A-403E-BE7A-4AF045B21BB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleIntrospectionClient", "clients\src\ConsoleIntrospectionClient\ConsoleIntrospectionClient.csproj", "{395F9DF7-AE5A-403E-BE7A-4AF045B21BB3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlowReference", "src\ConsoleResourceOwnerFlowReference\ConsoleResourceOwnerFlowReference.csproj", "{0E9145DB-CC70-44F9-B52B-1D7D4C2B2E5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlowReference", "clients\src\ConsoleResourceOwnerFlowReference\ConsoleResourceOwnerFlowReference.csproj", "{0E9145DB-CC70-44F9-B52B-1D7D4C2B2E5F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleExtensionGrant", "src\ConsoleCustomGrant\ConsoleExtensionGrant.csproj", "{546267CD-BE21-44E1-A06E-C7558864EE4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleExtensionGrant", "clients\src\ConsoleCustomGrant\ConsoleExtensionGrant.csproj", "{546267CD-BE21-44E1-A06E-C7558864EE4F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsOidc", "src\JsOidc\JsOidc.csproj", "{A29115B9-30E4-4967-AD5A-C32394B8A64C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsOidc", "clients\src\JsOidc\JsOidc.csproj", "{A29115B9-30E4-4967-AD5A-C32394B8A64C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlowPublic", "src\ConsoleResourceOwnerFlowPublic\ConsoleResourceOwnerFlowPublic.csproj", "{8648122C-EE91-4B3B-98CD-355C3F1B9FDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceOwnerFlowPublic", "clients\src\ConsoleResourceOwnerFlowPublic\ConsoleResourceOwnerFlowPublic.csproj", "{8648122C-EE91-4B3B-98CD-355C3F1B9FDF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsolePrivateKeyJwtClient", "src\ConsolePrivateKeyJwtClient\ConsolePrivateKeyJwtClient.csproj", "{1EC25581-781E-4FEA-A8AC-72BBD599FB87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsolePrivateKeyJwtClient", "clients\src\ConsolePrivateKeyJwtClient\ConsolePrivateKeyJwtClient.csproj", "{1EC25581-781E-4FEA-A8AC-72BBD599FB87}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleCode", "src\ConsoleCode\ConsoleCode.csproj", "{BB38F47A-1BBF-47E1-9872-088FC81DC825}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleCode", "clients\src\ConsoleCode\ConsoleCode.csproj", "{BB38F47A-1BBF-47E1-9872-088FC81DC825}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcHybridBackChannel", "src\MvcHybridBackChannel\MvcHybridBackChannel.csproj", "{57F395AD-48D2-48BF-A117-881E112D947E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcHybridBackChannel", "clients\src\MvcHybridBackChannel\MvcHybridBackChannel.csproj", "{57F395AD-48D2-48BF-A117-881E112D947E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleDeviceFlow", "src\ConsoleDeviceFlow\ConsoleDeviceFlow.csproj", "{879689CC-38F7-418F-9721-9D4158302B69}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleDeviceFlow", "clients\src\ConsoleDeviceFlow\ConsoleDeviceFlow.csproj", "{879689CC-38F7-418F-9721-9D4158302B69}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClientCredentialsFlowCallingIdentityServerApi", "src\ConsoleClientCredentialsFlowCallingIdentityServerApi\ConsoleClientCredentialsFlowCallingIdentityServerApi.csproj", "{141BD303-CD29-472F-B5D8-C1F28ED0621A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClientCredentialsFlowCallingIdentityServerApi", "clients\src\ConsoleClientCredentialsFlowCallingIdentityServerApi\ConsoleClientCredentialsFlowCallingIdentityServerApi.csproj", "{141BD303-CD29-472F-B5D8-C1F28ED0621A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleMTLSClient", "src\ConsoleMTLSClient\ConsoleMTLSClient.csproj", "{EA1583D5-80DE-4A11-9530-26A0ED1FBA2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleMTLSClient", "clients\src\ConsoleMTLSClient\ConsoleMTLSClient.csproj", "{EA1583D5-80DE-4A11-9530-26A0ED1FBA2C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcCode", "src\MvcCode\MvcCode.csproj", "{9FB83FF6-5A75-4036-80E6-11B302B921BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcCode", "clients\src\MvcCode\MvcCode.csproj", "{9FB83FF6-5A75-4036-80E6-11B302B921BE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcAutomaticTokenManagement", "src\MvcAutomaticTokenManagement\MvcAutomaticTokenManagement.csproj", "{8302E4DD-2A99-439C-9D0C-A4BCF48E3FA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcAutomaticTokenManagement", "clients\src\MvcAutomaticTokenManagement\MvcAutomaticTokenManagement.csproj", "{8302E4DD-2A99-439C-9D0C-A4BCF48E3FA3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleEphemeralMtlsClient", "src\ConsoleEphemeralMtlsClient\ConsoleEphemeralMtlsClient.csproj", "{47A706D4-4DF6-437E-9401-61878ECA243C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleEphemeralMtlsClient", "clients\src\ConsoleEphemeralMtlsClient\ConsoleEphemeralMtlsClient.csproj", "{47A706D4-4DF6-437E-9401-61878ECA243C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{158628D7-8B68-451E-AF22-B64F473C5943}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Console", "Console", "{D027D36B-262B-450A-B444-5B7893B5142E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleParameterizedScopeClient", "src\ConsoleParameterizedScopeClient\ConsoleParameterizedScopeClient.csproj", "{AE8D301D-BDDD-4E04-A487-FD08BAF18B75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleParameterizedScopeClient", "clients\src\ConsoleParameterizedScopeClient\ConsoleParameterizedScopeClient.csproj", "{AE8D301D-BDDD-4E04-A487-FD08BAF18B75}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApi", "src\APIs\SimpleApi\SimpleApi.csproj", "{215D863E-9D87-42F4-AD17-209C330C6ECB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApi", "clients\src\APIs\SimpleApi\SimpleApi.csproj", "{215D863E-9D87-42F4-AD17-209C330C6ECB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResourceBasedApi", "src\APIs\ResourceBasedApi\ResourceBasedApi.csproj", "{933613BD-35B0-4F79-A7A7-02F663C55B61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResourceBasedApi", "clients\src\APIs\ResourceBasedApi\ResourceBasedApi.csproj", "{933613BD-35B0-4F79-A7A7-02F663C55B61}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcJarJwt", "src\MvcJarJwt\MvcJarJwt.csproj", "{C371C605-087E-4523-BF15-DD75241283C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcJarJwt", "clients\src\MvcJarJwt\MvcJarJwt.csproj", "{C371C605-087E-4523-BF15-DD75241283C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleScopesResources", "src\ConsoleScopesResources\ConsoleScopesResources.csproj", "{68C3A94B-1CE1-4434-A59D-5119AF648C38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleScopesResources", "clients\src\ConsoleScopesResources\ConsoleScopesResources.csproj", "{68C3A94B-1CE1-4434-A59D-5119AF648C38}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceIndicators", "src\ConsoleResourceIndicators\ConsoleResourceIndicators.csproj", "{C07E9414-8AFF-4B71-8B28-76DA6250B94C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleResourceIndicators", "clients\src\ConsoleResourceIndicators\ConsoleResourceIndicators.csproj", "{C07E9414-8AFF-4B71-8B28-76DA6250B94C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcJarUriJwt", "src\MvcJarUriJwt\MvcJarUriJwt.csproj", "{0BC37D8C-5A67-4A4E-A562-AEBCC97A31D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcJarUriJwt", "clients\src\MvcJarUriJwt\MvcJarUriJwt.csproj", "{0BC37D8C-5A67-4A4E-A562-AEBCC97A31D9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleCibaClient", "src\ConsoleCibaClient\ConsoleCibaClient.csproj", "{5B89FD38-A096-4C9B-B39F-1FD6C591EE3D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleCibaClient", "clients\src\ConsoleCibaClient\ConsoleCibaClient.csproj", "{5B89FD38-A096-4C9B-B39F-1FD6C591EE3D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcDPoP", "src\MvcDPoP\MvcDPoP.csproj", "{68ACBCA3-3466-4AFB-9986-E8C8D840E0CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcDPoP", "clients\src\MvcDPoP\MvcDPoP.csproj", "{68ACBCA3-3466-4AFB-9986-E8C8D840E0CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DPoPApi", "src\APIs\DPoPApi\DPoPApi.csproj", "{8F1405C7-CF4D-4780-BDE1-852E743987C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DPoPApi", "clients\src\APIs\DPoPApi\DPoPApi.csproj", "{8F1405C7-CF4D-4780-BDE1-852E743987C6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleDcrClient", "src\ConsoleDcrClient\ConsoleDcrClient.csproj", "{D3FF035B-354A-45B9-B610-31BF2C13B360}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleDcrClient", "clients\src\ConsoleDcrClient\ConsoleDcrClient.csproj", "{D3FF035B-354A-45B9-B610-31BF2C13B360}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClientCredentialsFlowDPoP", "src\ConsoleClientCredentialsFlowDPoP\ConsoleClientCredentialsFlowDPoP.csproj", "{5864BB85-B0B3-4061-B7BD-98C67651C1B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClientCredentialsFlowDPoP", "clients\src\ConsoleClientCredentialsFlowDPoP\ConsoleClientCredentialsFlowDPoP.csproj", "{5864BB85-B0B3-4061-B7BD-98C67651C1B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
