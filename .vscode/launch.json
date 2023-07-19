@@ -229,7 +229,7 @@
         "type": "coreclr",
         "request": "launch",
         "preLaunchTask": "build-client-ConsoleCustomGrant",
-        "program": "${workspaceFolder}/clients/src/ConsoleCustomGrant/bin/Debug/net8.0/ConsoleCustomGrant.dll",
+        "program": "${workspaceFolder}/clients/src/ConsoleCustomGrant/bin/Debug/net8.0/ConsoleExtensionGrant.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/ConsoleCustomGrant",
         "console": "externalTerminal",

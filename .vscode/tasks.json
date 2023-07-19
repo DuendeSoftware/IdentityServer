@@ -165,7 +165,7 @@
       "command": "dotnet",
       "args": [
           "build",
-          "${workspaceFolder}/clients/src/ConsoleCustomGrant/ConsoleCustomGrant.csproj",
+          "${workspaceFolder}/clients/src/ConsoleCustomGrant/ConsoleExtensionGrant.csproj",
           "/property:GenerateFullPaths=true",
           "/consoleloggerparameters:NoSummary"
       ],
