@@ -92,8 +92,8 @@ public class IdentityServerMiddleware
                 
                 using var activity = Tracing.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
                 activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
-                
-                LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
+
+                IdentityServerLicenseValidator.Instance.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 
                 _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, context.Request.Path.ToString());
 

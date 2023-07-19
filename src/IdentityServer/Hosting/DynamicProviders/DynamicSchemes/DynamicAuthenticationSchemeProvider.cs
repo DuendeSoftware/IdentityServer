@@ -113,7 +113,7 @@ class DynamicAuthenticationSchemeProvider : IAuthenticationSchemeProvider
                 var providerType = _options.FindProviderType(idp.Type);
                 if (providerType != null)
                 {
-                    LicenseValidator.ValidateDynamicProviders();
+                    IdentityServerLicenseValidator.Instance.ValidateDynamicProviders();
                     dynamicScheme = new DynamicAuthenticationScheme(idp, providerType.HandlerType);
                     cache.Add(name, dynamicScheme);
                 }

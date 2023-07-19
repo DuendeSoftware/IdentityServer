@@ -34,9 +34,8 @@ public static class ConfigurationEndpointExtensions
         {
             var loggerFactory = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>();
             var options = endpoints.ServiceProvider.GetRequiredService<IOptions<IdentityServerConfigurationOptions>>().Value;
-                
-            LicenseValidator.Initalize(loggerFactory, options);
-            LicenseValidator.ValidateLicense();
+
+            ConfigurationLicenseValidator.Instance.Initalize(loggerFactory, options);
         }
 
         _licenseChecked = true;
