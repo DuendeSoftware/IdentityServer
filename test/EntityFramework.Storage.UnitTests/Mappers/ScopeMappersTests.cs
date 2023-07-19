@@ -30,6 +30,7 @@ public class ScopesMappersTests
     {
         var excludedProperties = new string[]
         {
+            "Id",
             "Updated",
             "Created",
             "LastAccessed",

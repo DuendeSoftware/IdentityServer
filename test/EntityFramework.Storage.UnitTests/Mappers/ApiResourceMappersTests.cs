@@ -80,8 +80,10 @@ public class ApiResourceMappersTests
     {
         var excludedProperties = new string[]
         {
+            "Id",
             "Updated",
             "LastAccessed",
+            "NonEditable"
         };
 
         MapperTestHelpers

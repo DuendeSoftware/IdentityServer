@@ -81,20 +81,27 @@ public static class MapperTestHelpers
         IEnumerable<string> notMapped,
         out List<string> unmappedMembers)
     {
-
-        var sourceType = typeof(TSource);
+        // Create the source object
         var source = creator();
+        
+        // Initialize the source object with non-default values in all of its properties
+        var sourceType = typeof(TSource);
         var sourceProperties = sourceType.GetProperties(BindingFlags.Public | BindingFlags.Instance).ToList();
-
-
         foreach(var property in sourceProperties.Where(p => !notAutoInitialized.Contains(p.Name)))
         {
             property.SetValue(source, GetNonDefaultValue(property.PropertyType));
         }
-
+        
+        // Customize properties as needed
         customizer(source);
+        
+        // Map from source to destination.
         var destination = mapper(source);
 
+        // Now look for members that have default values in the destination value.
+        // Everything that we included in our mapping will have mapped the 
+        // non-default values. So we just check each property to see if it has the
+        // default value.
         unmappedMembers = new List<string>();
         var destinationType = typeof(TDestination);
         var destinationProperties = destinationType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -105,7 +112,8 @@ public static class MapperTestHelpers
             {
                 var propertyValue = property.GetValue(destination);
 
-                if (propertyValue == GetDefaultValue(property.PropertyType))
+                if (propertyValue == null ||
+                    propertyValue.Equals(GetDefaultValue(property.PropertyType)) )
                 {
                     unmappedMembers.Add(property.Name);
                 }
@@ -122,11 +130,22 @@ public static class MapperTestHelpers
         {
             return null;
         }
+
         return Activator.CreateInstance(type);
     }
 
     private static object GetNonDefaultValue(Type type)
     {
+        if (type == typeof(int))
+        {
+            return int.MaxValue;
+        }
+
+        if(type == typeof(long))
+        {
+            return long.MaxValue;
+        }
+
         if (type == typeof(bool))
         {
             return true;
@@ -140,6 +159,11 @@ public static class MapperTestHelpers
         if (type == typeof(DateTime)) 
         {
             return DateTime.MaxValue;
+        }
+
+        if (type == typeof(TimeSpan))
+        {
+            return TimeSpan.MaxValue;
         }
 
         if (type.IsEnum)
@@ -184,7 +208,7 @@ public static class MapperTestHelpers
                 return GetNonDefaultValue(underlyingType);
             }
 
-            return Activator.CreateInstance(type);
+            throw new Exception($"Value type {type.Name} not initialized by test framework. Add a case to GetNonDefaultValue for the type that will be different from the default.");
         }
 
         return Activator.CreateInstance(type);

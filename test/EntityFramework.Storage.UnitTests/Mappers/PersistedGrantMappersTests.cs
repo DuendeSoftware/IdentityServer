@@ -34,6 +34,7 @@ public class PersistedGrantMappersTests
     {
         var excludedProperties = new string[]
         {
+            "Id",
             "Updated",
             "Created",
             "LastAccessed",

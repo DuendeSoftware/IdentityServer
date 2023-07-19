@@ -11,6 +11,7 @@ using Models = Duende.IdentityServer.Models;
 using Entities = Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.Models;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace UnitTests.Mappers;
 
@@ -106,8 +107,10 @@ public class ClientMappersTests
     {
         var notMapped = new string[]
         {
+            "Id",
             "Updated",
             "LastAccessed",
+            "NonEditable",
         };
 
         var notAutoInitialized = new string[]
@@ -141,5 +144,87 @@ public class ClientMappersTests
                 out var unmappedMembers)
             .Should()
             .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
+    }
+
+    enum TestEnum
+    {
+        Foo, Bar
+    }
+
+    class ExtendedClientEntity : Entities.Client
+    {
+        public int Number { get; set; }
+        public bool Flag { get; set; }
+        public TestEnum Enumeration { get; set; }
+        public IEnumerable<string> Enumerable { get; set; }
+        public List<string> List { get; set; }
+        public Dictionary<string, string> Dictionary { get; set; }
+
+        public ExtendedClientEntity(Entities.Client client)
+        {
+            var extendedType = typeof(ExtendedClientEntity);
+            var baseType = typeof(Entities.Client);
+
+            foreach (var baseProperty in baseType.GetProperties())
+            {
+                var derivedProperty = extendedType.GetProperty(baseProperty.Name);
+                if (derivedProperty != null && derivedProperty.CanWrite && baseProperty.CanRead)
+                {
+                    var value = baseProperty.GetValue(client);
+                    derivedProperty.SetValue(this, value);
+                }
+            }
+        }
+    }
+
+    class ExtendedClientModel : Models.Client
+    {
+        public ExtendedClientEntity ToExtendedEntity()
+        {
+            return new ExtendedClientEntity(this.ToEntity());
+        }
+    }
+
+    private static int CountForgottenProperties<TBase, TDerived>() where TDerived : TBase
+    {
+        var baseProperties = typeof(TBase).GetProperties();
+        var derivedProperties = typeof(TDerived).GetProperties();
+
+        return derivedProperties
+            .Count(derivedProperty => !baseProperties.Any(baseProp => baseProp.Name == derivedProperty.Name));
+    }
+
+    [Fact]
+    public void forgetting_to_map_properties_is_checked_by_tests()
+    {
+        var notMapped = new string[]
+        {
+            "Id",
+            "Updated",
+            "LastAccessed",
+            "NonEditable"
+        };
+
+        var notAutoInitialized = new string[]
+        {
+            "AllowedGrantTypes",
+        };
+
+        MapperTestHelpers
+            .AllPropertiesAreMapped<ExtendedClientModel, ExtendedClientEntity>(
+                notAutoInitialized,
+                source => {
+                    source.AllowedIdentityTokenSigningAlgorithms.Add("RS256"); // We have to add values, otherwise the converter will produce null
+                    source.AllowedGrantTypes = new List<string>
+                    {
+                        GrantType.AuthorizationCode // We need to set real values for the grant types, because they are validated
+                    };
+                },
+                source => source.ToExtendedEntity(),
+                notMapped,
+                out var unmappedMembers)
+            .Should()
+            .BeFalse();
+        unmappedMembers.Count.Should().Be(CountForgottenProperties<Entities.Client, ExtendedClientEntity>());
     }
 }

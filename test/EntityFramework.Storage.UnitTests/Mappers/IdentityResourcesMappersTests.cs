@@ -27,7 +27,9 @@ public class IdentityResourcesMappersTests
     {
         var excludedProperties = new string[]
         {
+            "Id",
             "Updated",
+            "NonEditable"
         };
 
         MapperTestHelpers
