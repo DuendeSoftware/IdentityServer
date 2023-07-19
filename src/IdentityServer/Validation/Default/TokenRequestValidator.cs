@@ -17,6 +17,7 @@ using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
+using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -24,6 +25,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
 {
     private readonly IdentityServerOptions _options;
     private readonly IIssuerNameService _issuerNameService;
+    private readonly IServerUrls _serverUrls;
     private readonly IAuthorizationCodeStore _authorizationCodeStore;
     private readonly ExtensionGrantValidator _extensionGrantValidator;
     private readonly ICustomTokenRequestValidator _customRequestValidator;
@@ -44,6 +46,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
     public TokenRequestValidator(
         IdentityServerOptions options,
         IIssuerNameService issuerNameService,
+        IServerUrls serverUrls,
         IAuthorizationCodeStore authorizationCodeStore,
         IResourceOwnerPasswordValidator resourceOwnerValidator,
         IProfileService profile,
@@ -62,6 +65,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
         _logger = logger;
         _options = options;
         _issuerNameService = issuerNameService;
+        _serverUrls = serverUrls;
         _clock = clock;
         _authorizationCodeStore = authorizationCodeStore;
         _resourceOwnerValidator = resourceOwnerValidator;
@@ -232,10 +236,14 @@ internal class TokenRequestValidator : ITokenRequestValidator
                 return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof);
             }
 
+            var tokenUrl = _serverUrls.BaseUrl.EnsureTrailingSlash() + ProtocolRoutePaths.Token;
             var dpopContext = new DPoPProofValidatonContext
             {
-                Client = _validatedRequest.Client,
+                ExpirationValidationMode = _validatedRequest.Client.DPoPValidationMode,
+                ClientClockSkew = _validatedRequest.Client.DPoPClockSkew,
                 ProofToken = context.DPoPProofToken,
+                Url = tokenUrl,
+                Method = "POST",
             };
             var dpopResult = await _dPoPProofValidator.ValidateAsync(dpopContext);
             if (dpopResult.IsError)

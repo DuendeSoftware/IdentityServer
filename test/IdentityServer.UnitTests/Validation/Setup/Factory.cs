@@ -30,6 +30,7 @@ internal static class Factory
     public static TokenRequestValidator CreateTokenRequestValidator(
         IdentityServerOptions options = null,
         IIssuerNameService issuerNameService = null,
+        IServerUrls serverUrls = null,
         IResourceStore resourceStore = null,
         IAuthorizationCodeStore authorizationCodeStore = null,
         IRefreshTokenStore refreshTokenStore = null,
@@ -50,6 +51,14 @@ internal static class Factory
         if (issuerNameService == null)
         {
             issuerNameService = new TestIssuerNameService(options.IssuerUri);
+        }
+
+        if (serverUrls == null)
+        {
+            serverUrls = new MockServerUrls()
+            {
+                Origin = options.IssuerUri ?? "https://identityserver",
+            };
         }
 
         if (resourceStore == null)
@@ -117,6 +126,7 @@ internal static class Factory
         return new TokenRequestValidator(
             options,
             issuerNameService,
+            serverUrls,
             authorizationCodeStore,
             resourceOwnerValidator,
             profile,
@@ -127,7 +137,7 @@ internal static class Factory
             resourceValidator,
             resourceStore,
             refreshTokenService,
-            new DefaultDPoPProofValidator(options, new MockServerUrls(), new MockReplayCache(), new StubClock(), new StubDataProtectionProvider(), new LoggerFactory().CreateLogger< DefaultDPoPProofValidator >()),
+            new DefaultDPoPProofValidator(options, new MockReplayCache(), new StubClock(), new StubDataProtectionProvider(), new LoggerFactory().CreateLogger< DefaultDPoPProofValidator >()),
             new TestEventService(),
             new StubClock(),
             TestLogger.Create<TokenRequestValidator>());

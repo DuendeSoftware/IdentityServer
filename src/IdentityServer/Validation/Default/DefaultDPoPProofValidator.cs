@@ -16,6 +16,8 @@ using Duende.IdentityServer.Services;
 using static Duende.IdentityServer.IdentityServerConstants;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.DataProtection;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -43,11 +45,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     protected IReplayCache ReplayCache;
 
     /// <summary>
-    /// The server urls service
-    /// </summary>
-    protected readonly IServerUrls ServerUrls;
-
-    /// <summary>
     /// The data protection provider
     /// </summary>
     protected IDataProtector DataProtector { get; }
@@ -62,7 +59,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     public DefaultDPoPProofValidator(
         IdentityServerOptions options,
-        IServerUrls server,
         IReplayCache replayCache,
         IClock clock,
         IDataProtectionProvider dataProtectionProvider,
@@ -71,7 +67,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         Options = options;
         Clock = clock;
         ReplayCache = replayCache;
-        ServerUrls = server;
         DataProtector = dataProtectionProvider.CreateProtector(DataProtectorPurpose);
         Logger = logger;
     }
@@ -242,6 +237,33 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual async Task ValidatePayloadAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
+        if (context.ValidateAccessToken)
+        {
+            if (result.Payload.TryGetValue(JwtClaimTypes.DPoPAccessTokenHash, out var ath))
+            {
+                result.AccessTokenHash = ath as string;
+            }
+
+            if (String.IsNullOrEmpty(result.AccessTokenHash))
+            {
+                result.IsError = true;
+                result.ErrorDescription = "Invalid 'ath' value.";
+                return;
+            }
+
+            using var sha = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(context.AccessToken);
+            var hash = sha.ComputeHash(bytes);
+
+            var accessTokenHash = Base64Url.Encode(hash);
+            if (accessTokenHash != result.AccessTokenHash)
+            {
+                result.IsError = true;
+                result.ErrorDescription = "Invalid 'ath' value.";
+                return;
+            }
+        }
+
         if (result.Payload.TryGetValue(JwtClaimTypes.JwtId, out var jti))
         {
             result.TokenId = jti as string;
@@ -254,15 +276,14 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return;
         }
 
-        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpMethod, out var htm) || !"POST".Equals(htm))
+        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpMethod, out var htm) || context.Method?.Equals(htm) == false)
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htm' value.";
             return;
         }
 
-        var tokenUrl = ServerUrls.BaseUrl.EnsureTrailingSlash() + ProtocolRoutePaths.Token;
-        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpUrl, out var htu) || !tokenUrl.Equals(htu))
+        if (!result.Payload.TryGetValue(JwtClaimTypes.DPoPHttpUrl, out var htu) || context.Url?.Equals(htu) == false)
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'htu' value.";
@@ -322,12 +343,12 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         }
 
         // get largest skew based on how client's freshness is validated
-        var validateIat = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
-        var validateNonce = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
+        var validateIat = (context.ExpirationValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
+        var validateNonce = (context.ExpirationValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
         var skew = TimeSpan.Zero;
-        if (validateIat && context.Client.DPoPClockSkew > skew)
+        if (validateIat && context.ClientClockSkew > skew)
         {
-            skew = context.Client.DPoPClockSkew;
+            skew = context.ClientClockSkew;
         }
         if (validateNonce && Options.DPoP.ServerClockSkew > skew)
         {
@@ -349,7 +370,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual async Task ValidateFreshnessAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        var validateIat = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
+        var validateIat = (context.ExpirationValidationMode & DPoPTokenExpirationValidationMode.Iat) == DPoPTokenExpirationValidationMode.Iat;
         if (validateIat)
         {
             await ValidateIatAsync(context, result);
@@ -359,7 +380,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             }
         }
 
-        var validateNonce = (context.Client.DPoPValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
+        var validateNonce = (context.ExpirationValidationMode & DPoPTokenExpirationValidationMode.Nonce) == DPoPTokenExpirationValidationMode.Nonce;
         if (validateNonce)
         {
             await ValidateNonceAsync(context, result);
@@ -375,7 +396,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     /// </summary>
     protected virtual Task ValidateIatAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
-        if (IsExpired(context, result, context.Client.DPoPClockSkew, result.IssuedAt.Value))
+        if (IsExpired(context, result, context.ClientClockSkew, result.IssuedAt.Value))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'iat' value.";

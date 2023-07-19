@@ -14,6 +14,11 @@ namespace Duende.IdentityServer.Hosting.LocalApiAuthentication;
 public class LocalApiAuthenticationOptions : AuthenticationSchemeOptions
 {
     /// <summary>
+    /// Indicates if bearer and/or DPoP tokens are accepted.
+    /// </summary>
+    public LocalApiTokenMode TokenMode { get; set; } = LocalApiTokenMode.BearerOnly;
+
+    /// <summary>
     /// Allows setting a specific required scope (optional)
     /// </summary>
     public string? ExpectedScope { get; set; }
