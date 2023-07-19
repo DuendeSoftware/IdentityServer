@@ -8,15 +8,14 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Hosting;
 
 /// <summary>
-/// Endpoint result
+/// Endpoint result generator
 /// </summary>
-public interface IEndpointResult
+public interface IEndpointResultGenerator<in T>
+    where T : IEndpointResult
 {
     /// <summary>
-    /// Executes the result.
+    /// Writes the endpoint result to the HTTP response.
     /// </summary>
-    /// <param name="context">The HTTP context.</param>
-    /// <returns></returns>
-    Task ExecuteAsync(HttpContext context);
+    Task ExecuteAsync(T result, HttpContext context);
 }
 
