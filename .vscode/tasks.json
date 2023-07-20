@@ -33,18 +33,6 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "build-host-main7",
-      "type": "process",
-      "command": "dotnet",
-      "args": [
-          "build",
-          "${workspaceFolder}/hosts/main7/Host.Main7.csproj",
-          "/property:GenerateFullPaths=true",
-          "/consoleloggerparameters:NoSummary"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
       "label": "build-host-entityframework",
       "type": "process",
       "command": "dotnet",
@@ -177,7 +165,7 @@
       "command": "dotnet",
       "args": [
           "build",
-          "${workspaceFolder}/clients/src/ConsoleCustomGrant/ConsoleCustomGrant.csproj",
+          "${workspaceFolder}/clients/src/ConsoleCustomGrant/ConsoleExtensionGrant.csproj",
           "/property:GenerateFullPaths=true",
           "/consoleloggerparameters:NoSummary"
       ],
