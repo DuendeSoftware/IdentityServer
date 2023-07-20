@@ -23,28 +23,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="coverlet.collector">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="CsQuery.NETStandard" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
-    <!-- TODO - Deal with this dependency, maybe remove, or maybe add to the directory.build.targets -->
-    <PackageReference Include="ReportGenerator" Version="5.1.18" />
   </ItemGroup>
-
-  <Target Name="Coverage">
-    <ItemGroup>
-      <CoverageFiles Include="TestResults\*\coverage.cobertura.xml" />
-    </ItemGroup>
-    <ReportGenerator 
-      ProjectDirectory="$(MSBuildProjectDirectory)" 
-      ReportFiles="@(CoverageFiles)" 
-      TargetDirectory="CoverageReports" 
-      ReportTypes="Html" 
-    />
-  </Target>
-
 </Project>
