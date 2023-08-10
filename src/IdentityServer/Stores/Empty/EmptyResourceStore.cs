@@ -1,3 +1,7 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
 using Duende.IdentityServer.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,3 +36,4 @@ internal class EmptyResourceStore : IResourceStore
         return Task.FromResult(new Resources() { OfflineAccess = true });
     }
 }
+

@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using Duende.IdentityServer.IntegrationTests.TestFramework;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
@@ -16,9 +17,8 @@ namespace Duende.IdentityServer.IntegrationTests.TestFramework
         public MockExternalAuthenticationHandler(
             IOptionsMonitor<MockExternalAuthenticationOptions> options, 
             ILoggerFactory logger, 
-            UrlEncoder encoder, 
-            ISystemClock clock) 
-            : base(options, logger, encoder, clock)
+            UrlEncoder encoder) 
+            : base(options, logger, encoder)
         {
         }
 

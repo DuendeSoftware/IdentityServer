@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende.IdentityServer.ResponseHandling;
@@ -546,6 +547,18 @@ public static class IdentityServerBuilderExtensionsAdditional
         where T : class, IBackchannelAuthenticationUserNotificationService
     {
         builder.Services.AddTransient<IBackchannelAuthenticationUserNotificationService, T>();
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the legacy clock based on the pre-.NET8 ISystemClock.
+    /// </summary>
+    /// <param name="builder">The builder.</param>
+    /// <returns></returns>
+    public static IIdentityServerBuilder AddLegacyClock(this IIdentityServerBuilder builder)
+    {
+        builder.Services.AddTransient<IClock, LegacyClock>();
 
         return builder;
     }

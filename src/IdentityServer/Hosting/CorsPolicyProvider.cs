@@ -73,7 +73,9 @@ internal class CorsPolicyProvider : ICorsPolicyProvider
             }
             else
             {
-                _logger.LogDebug("CORS request made for path: {path} from origin: {origin} but was ignored because path was not for an allowed IdentityServer CORS endpoint", path, origin);
+                _logger.LogDebug("IdentityServer CorsPolicyService didn't handle CORS request made for path: {path} from origin: {origin} " +
+                    "because it is not for an IdentityServer CORS endpoint. To allow CORS requests to non IdentityServer endpoints, please " +
+                    "set up your own Cors policy for your application by calling app.UseCors(\"MyPolicy\") in the pipeline setup.", path, origin);
             }
         }
 

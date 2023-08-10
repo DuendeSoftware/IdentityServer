@@ -4,11 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.IdentityModel.Tokens.Jwt;
-using IdentityModel.AspNetCore.AccessTokenManagement;
 using Microsoft.Extensions.Configuration;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
+using Duende.AccessTokenManagement;
 
 namespace MvcCode
 {
@@ -45,7 +42,7 @@ namespace MvcCode
                     options.Events.OnSigningOut = async e =>
                     {
                         // automatically revoke refresh token at signout time
-                        await e.HttpContext.RevokeUserRefreshTokenAsync();
+                        await e.HttpContext.RevokeRefreshTokenAsync();
                     };
                 })
                 .AddOpenIdConnect("oidc", options =>
@@ -81,8 +78,8 @@ namespace MvcCode
                 });
 
             // add automatic token management
-            services.AddAccessTokenManagement();
-            services.AddTransient<ITokenClientConfigurationService, AssertionConfigurationService>();
+            services.AddOpenIdConnectAccessTokenManagement();
+            services.AddTransient<IClientAssertionService, ClientAssertionService>();
 
             // add HTTP client to call protected API
             services.AddUserAccessTokenHttpClient("client", configureClient: client =>

@@ -1,10 +1,13 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
 
-using Microsoft.AspNetCore.Authentication;
+
+using Duende.IdentityServer;
 using System;
 
 namespace UnitTests.Services.Default.KeyManagement;
 
-class MockClock : ISystemClock
+class MockClock : IClock
 {
     public MockClock()
     {

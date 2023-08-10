@@ -8,7 +8,6 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using IdentityModel;
 using Duende.IdentityServer.Extensions;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Validation;
@@ -21,7 +20,7 @@ internal class DeviceCodeValidator : IDeviceCodeValidator
     private readonly IDeviceFlowCodeService _devices;
     private readonly IProfileService _profile;
     private readonly IDeviceFlowThrottlingService _throttlingService;
-    private readonly ISystemClock _systemClock;
+    private readonly IClock _systemClock;
     private readonly ILogger<DeviceCodeValidator> _logger;
 
     /// <summary>
@@ -36,7 +35,7 @@ internal class DeviceCodeValidator : IDeviceCodeValidator
         IDeviceFlowCodeService devices,
         IProfileService profile,
         IDeviceFlowThrottlingService throttlingService,
-        ISystemClock systemClock,
+        IClock systemClock,
         ILogger<DeviceCodeValidator> logger)
     {
         _devices = devices;

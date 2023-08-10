@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using System.Text.Json.Serialization;
 using Duende.IdentityServer.Models;
 using IdentityModel;
@@ -133,6 +134,41 @@ public class DynamicClientRegistrationResponse : DynamicClientRegistrationReques
 
         //// Extensions
         Extensions = request.Extensions;
+
+        //// Remove possible duplicate values from the extensions
+        // Some properties are not included in the request object, but are
+        // included in the response. Customizations might want to allow the
+        // request to specify those properties, and they can do so in the
+        // extensions dictionary. We want to echo back to the user any extension
+        // values that they set, but also avoid duplicating values between the
+        // elements of the Extensions dictionary and properties on the response
+        // model itself.
+        //
+        // If a value is added to the extensions that also is a property of the
+        // response object, then both values will be serialized. This at best is
+        // redundant, and at worst results in conflicting values.
+        //
+        // For example, if a customization used
+        // Request.Extensions["client_secret"] to set the Response.ClientSecret,
+        // we don't want to copy Request.Extensions["client_secret"] to
+        // Response.Extensions["client_secret"], because that will result in two
+        // redundant "client_secret" properties in the serialized response. And
+        // if a customization hasn't used Request.Extensions["client_secret"] to
+        // set Response.ClientSecret, we still don't want to copy
+        // Request.Extensions["client_secret"] to
+        // Response.Extensions["client_secret"], because that would result in
+        // two "client_secret" properties with inconsistent values in the
+        // serialized response.
+        //
+        // Thus, after we copy the Extensions from the request to the response,
+        // we remove any values from the Extensions that also have specific
+        // properties on the response object. We don't need to try to remove
+        // values from the Extensions that have specific properties in the
+        // request object, because those values will get bound to the
+        // properties, not the Extensions.
+        Extensions.Remove(OidcConstants.RegistrationResponse.ClientSecret);
+        Extensions.Remove(OidcConstants.RegistrationResponse.ClientSecretExpiresAt);
+        Extensions.Remove(OidcConstants.ClientMetadata.ResponseTypes);
     }
 
     private static Uri? ToUri(string? s) =>

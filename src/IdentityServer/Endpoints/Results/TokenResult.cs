@@ -9,39 +9,53 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
+using Duende.IdentityServer.Hosting;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class TokenResult : IEndpointResult
+/// <summary>
+/// Models a token result
+/// </summary>
+public class TokenResult : EndpointResult<TokenResult>
 {
-    public TokenResponse Response { get; set; }
+    /// <summary>
+    /// The response
+    /// </summary>
+    public TokenResponse Response { get; }
 
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="response"></param>
+    /// <exception cref="ArgumentNullException"></exception>
     public TokenResult(TokenResponse response)
     {
         Response = response ?? throw new ArgumentNullException(nameof(response));
     }
+}
 
-    public async Task ExecuteAsync(HttpContext context)
+internal class TokenResultGenerator : IEndpointResultGenerator<TokenResult>
+{
+    public async Task ExecuteAsync(TokenResult result, HttpContext context)
     {
         context.Response.SetNoCache();
 
-        if (Response.DPoPNonce.IsPresent())
+        if (result.Response.DPoPNonce.IsPresent())
         {
-            context.Response.Headers[OidcConstants.HttpHeaders.DPoPNonce] = Response.DPoPNonce;
+            context.Response.Headers[OidcConstants.HttpHeaders.DPoPNonce] = result.Response.DPoPNonce;
         }
 
         var dto = new ResultDto
         {
-            id_token = Response.IdentityToken,
-            access_token = Response.AccessToken,
-            refresh_token = Response.RefreshToken,
-            expires_in = Response.AccessTokenLifetime,
-            token_type = Response.AccessTokenType,
-            scope = Response.Scope,
-                
-            Custom = Response.Custom
+            id_token = result.Response.IdentityToken,
+            access_token = result.Response.AccessToken,
+            refresh_token = result.Response.RefreshToken,
+            expires_in = result.Response.AccessTokenLifetime,
+            token_type = result.Response.AccessTokenType,
+            scope = result.Response.Scope,
+
+            Custom = result.Response.Custom
         };
 
         await context.Response.WriteJsonAsync(dto);

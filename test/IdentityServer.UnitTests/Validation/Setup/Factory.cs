@@ -14,9 +14,9 @@ using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Stores.Serialization;
 using Duende.IdentityServer.Validation;
 using UnitTests.Common;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Services.KeyManagement;
+using Duende.IdentityServer;
 
 namespace UnitTests.Validation.Setup;
 
@@ -30,6 +30,7 @@ internal static class Factory
     public static TokenRequestValidator CreateTokenRequestValidator(
         IdentityServerOptions options = null,
         IIssuerNameService issuerNameService = null,
+        IServerUrls serverUrls = null,
         IResourceStore resourceStore = null,
         IAuthorizationCodeStore authorizationCodeStore = null,
         IRefreshTokenStore refreshTokenStore = null,
@@ -50,6 +51,14 @@ internal static class Factory
         if (issuerNameService == null)
         {
             issuerNameService = new TestIssuerNameService(options.IssuerUri);
+        }
+
+        if (serverUrls == null)
+        {
+            serverUrls = new MockServerUrls()
+            {
+                Origin = options.IssuerUri ?? "https://identityserver",
+            };
         }
 
         if (resourceStore == null)
@@ -117,6 +126,7 @@ internal static class Factory
         return new TokenRequestValidator(
             options,
             issuerNameService,
+            serverUrls,
             authorizationCodeStore,
             resourceOwnerValidator,
             profile,
@@ -127,15 +137,17 @@ internal static class Factory
             resourceValidator,
             resourceStore,
             refreshTokenService,
-            new DefaultDPoPProofValidator(options, new MockServerUrls(), new MockReplayCache(), new StubClock(), new StubDataProtectionProvider(), new LoggerFactory().CreateLogger< DefaultDPoPProofValidator >()),
+            new DefaultDPoPProofValidator(options, new MockReplayCache(), new StubClock(), new StubDataProtectionProvider(), new LoggerFactory().CreateLogger< DefaultDPoPProofValidator >()),
             new TestEventService(),
             new StubClock(),
             TestLogger.Create<TokenRequestValidator>());
     }
 
-    private static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store, IProfileService profile)
+    public static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store = null, IProfileService profile = null)
     {
-        return CreateRefreshTokenService(store, profile, new PersistentGrantOptions());
+        return CreateRefreshTokenService(store ?? CreateRefreshTokenStore(), 
+            profile ?? new TestProfileService(), 
+            new PersistentGrantOptions());
     }
 
     private static IRefreshTokenService CreateRefreshTokenService(
@@ -278,7 +290,7 @@ internal static class Factory
         IProfileService profile = null,
         IIssuerNameService issuerNameService = null,
         IdentityServerOptions options = null, 
-        ISystemClock clock = null)
+        IClock clock = null)
     {
         options ??= TestIdentityServerOptions.Create();
         profile ??= new TestProfileService();
@@ -320,7 +332,7 @@ internal static class Factory
         IDeviceFlowCodeService service,
         IProfileService profile = null,
         IDeviceFlowThrottlingService throttlingService = null,
-        ISystemClock clock = null)
+        IClock clock = null)
     {
         profile = profile ?? new TestProfileService();
         throttlingService = throttlingService ?? new TestDeviceFlowThrottlingService();

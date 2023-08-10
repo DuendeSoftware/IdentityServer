@@ -1,3 +1,7 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
 using System;
 using System.Collections.Generic;
 using Duende.IdentityServer.Configuration;
@@ -36,3 +40,4 @@ namespace IdentityServer.PerfTest.Infrastructure
         }
     }
 }
+

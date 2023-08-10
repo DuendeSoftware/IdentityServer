@@ -2,12 +2,12 @@
 // See LICENSE in the project root for license information.
 
 
-using Microsoft.AspNetCore.Authentication;
+using Duende.IdentityServer;
 using System;
 
 namespace UnitTests.Common;
 
-class MockSystemClock : ISystemClock
+class MockSystemClock : IClock
 {
     public DateTimeOffset Now { get; set; }
 

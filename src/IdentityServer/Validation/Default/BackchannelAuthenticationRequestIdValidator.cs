@@ -7,7 +7,6 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using IdentityModel;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,14 +21,14 @@ internal class BackchannelAuthenticationRequestIdValidator : IBackchannelAuthent
     private readonly IBackChannelAuthenticationRequestStore _backchannelAuthenticationStore;
     private readonly IProfileService _profile;
     private readonly IBackchannelAuthenticationThrottlingService _throttlingService;
-    private readonly ISystemClock _systemClock;
+    private readonly IClock _systemClock;
     private readonly ILogger<BackchannelAuthenticationRequestIdValidator> _logger;
 
     public BackchannelAuthenticationRequestIdValidator(
         IBackChannelAuthenticationRequestStore backchannelAuthenticationStore,
         IProfileService profile,
         IBackchannelAuthenticationThrottlingService throttlingService,
-        ISystemClock systemClock,
+        IClock systemClock,
         ILogger<BackchannelAuthenticationRequestIdValidator> logger)
     {
         _backchannelAuthenticationStore = backchannelAuthenticationStore;

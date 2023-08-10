@@ -140,7 +140,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
         _logger.LogTrace("Authorize request protocol validation successful");
 
-        LicenseValidator.ValidateClient(request.ClientId);
+        IdentityServerLicenseValidator.Instance.ValidateClient(request.ClientId);
 
         return Valid(request);
     }
@@ -648,8 +648,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope");
             }
         }
-            
-        LicenseValidator.ValidateResourceIndicators(resourceIndicators);
+
+        IdentityServerLicenseValidator.Instance.ValidateResourceIndicators(resourceIndicators);
 
         if (validatedResources.Resources.IdentityResources.Any() && !request.IsOpenIdRequest)
         {
@@ -751,10 +751,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
             else
             {
-                // TODO: change to error in a major release?
-                // https://github.com/DuendeSoftware/IdentityServer/issues/845#issuecomment-1405377531
-                // https://openid.net/specs/openid-connect-prompt-create-1_0.html#name-authorization-request
-                _logger.LogDebug("Unsupported prompt mode - ignored: " + prompt);
+                LogError("Unsupported prompt mode", request);
+                return Invalid(request, description: "Unsupported prompt mode");
             }
         }
 

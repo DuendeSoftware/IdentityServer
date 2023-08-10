@@ -1,12 +1,12 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
     private readonly IClientStore _clientStore;
     private readonly IUserSession _session;
     private readonly IResourceValidator _resourceValidator;
-    private readonly ISystemClock _systemClock;
+    private readonly IClock _systemClock;
     private readonly ILogger<DefaultBackchannelAuthenticationInteractionService> _logger;
 
     /// <summary>
@@ -36,7 +36,7 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
         IClientStore clients,
         IUserSession session,
         IResourceValidator resourceValidator,
-        ISystemClock systemClock,
+        IClock systemClock,
         ILogger<DefaultBackchannelAuthenticationInteractionService> logger
     )
     {

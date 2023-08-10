@@ -2,8 +2,11 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
 using System.Linq;
 using Duende.IdentityServer.EntityFramework.Mappers;
+using Models = Duende.IdentityServer.Models;
+using Entities = Duende.IdentityServer.EntityFramework.Entities;
 using FluentAssertions;
 using Xunit;
 
@@ -12,20 +15,41 @@ namespace UnitTests.Mappers;
 public class ScopesMappersTests
 {
     [Fact]
-    public void ScopeAutomapperConfigurationIsValid()
-    {
-        ScopeMappers.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
-    }
-
-    [Fact]
     public void CanMapScope()
     {
-        var model = new Duende.IdentityServer.Models.ApiScope();
+        var model = new Models.ApiScope();
         var mappedEntity = model.ToEntity();
         var mappedModel = mappedEntity.ToModel();
 
         Assert.NotNull(mappedModel);
         Assert.NotNull(mappedEntity);
+    }
+
+    [Fact]
+    public void mapping_model_to_entity_maps_all_properties()
+    {
+        var excludedProperties = new string[]
+        {
+            "Id",
+            "Updated",
+            "Created",
+            "LastAccessed",
+            "NonEditable"
+        };
+
+        MapperTestHelpers
+            .AllPropertiesAreMapped<Models.ApiScope, Entities.ApiScope>(source => source.ToEntity(), excludedProperties, out var unmappedMembers)
+            .Should()
+            .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
+    }
+
+    [Fact]
+    public void mapping_entity_to_model_maps_all_properties()
+    {
+        MapperTestHelpers
+            .AllPropertiesAreMapped<Entities.ApiScope, Models.ApiScope>(source => source.ToModel(), out var unmappedMembers)
+            .Should()
+            .BeTrue($"{string.Join(',', unmappedMembers)} should be mapped");
     }
 
     [Fact]

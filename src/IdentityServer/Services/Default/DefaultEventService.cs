@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Services;
-using Microsoft.AspNetCore.Authentication;
 
 namespace Duende.IdentityServer.Events;
 
@@ -36,7 +35,7 @@ public class DefaultEventService : IEventService
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultEventService"/> class.
@@ -45,7 +44,7 @@ public class DefaultEventService : IEventService
     /// <param name="context">The context.</param>
     /// <param name="sink">The sink.</param>
     /// <param name="clock">The clock.</param>
-    public DefaultEventService(IdentityServerOptions options, IHttpContextAccessor context, IEventSink sink, ISystemClock clock)
+    public DefaultEventService(IdentityServerOptions options, IHttpContextAccessor context, IEventSink sink, IClock clock)
     {
         Options = options;
         Context = context;
@@ -113,7 +112,7 @@ public class DefaultEventService : IEventService
     protected virtual async Task PrepareEventAsync(Event evt)
     {
         evt.ActivityId = Context.HttpContext.TraceIdentifier;
-        evt.TimeStamp = DateTime.UtcNow;
+        evt.TimeStamp = Clock.UtcNow.DateTime;
         evt.ProcessId = Process.GetCurrentProcess().Id;
 
         if (Context.HttpContext?.Connection.LocalIpAddress != null)

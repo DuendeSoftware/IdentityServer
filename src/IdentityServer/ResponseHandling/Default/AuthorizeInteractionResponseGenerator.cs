@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Configuration;
 
 namespace Duende.IdentityServer.ResponseHandling;
@@ -40,7 +39,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
         
     /// <summary>
     /// The options
@@ -57,7 +56,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// <param name="profile">The profile.</param>
     public AuthorizeInteractionResponseGenerator(
         IdentityServerOptions options,
-        ISystemClock clock,
+        IClock clock,
         ILogger<AuthorizeInteractionResponseGenerator> logger,
         IConsentService consent, 
         IProfileService profile)

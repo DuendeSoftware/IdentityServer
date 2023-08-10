@@ -6,18 +6,21 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Duende.IdentityServer.Extensions;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class CheckSessionResult : IEndpointResult
+/// <summary>
+/// The resukt of the check session endpoint
+/// </summary>
+public class CheckSessionResult : EndpointResult<CheckSessionResult>
 {
-    public CheckSessionResult()
-    {
-    }
+}
 
-    internal CheckSessionResult(IdentityServerOptions options)
+
+internal class CheckSessionResultGenerator : IEndpointResultGenerator<CheckSessionResult>
+{
+    public CheckSessionResultGenerator(IdentityServerOptions options)
     {
         _options = options;
     }
@@ -27,15 +30,8 @@ internal class CheckSessionResult : IEndpointResult
     private static readonly object Lock = new object();
     private static volatile string LastCheckSessionCookieName;
 
-    private void Init(HttpContext context)
+    public async Task ExecuteAsync(CheckSessionResult result, HttpContext context)
     {
-        _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-    }
-
-    public async Task ExecuteAsync(HttpContext context)
-    {
-        Init(context);
-
         AddCspHeaders(context);
 
         var html = GetHtml(_options.Authentication.CheckSessionCookieName);

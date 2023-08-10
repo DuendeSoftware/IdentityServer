@@ -1,5 +1,9 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
+using Duende.IdentityServer;
 using Duende.IdentityServer.Services;
-using Microsoft.AspNetCore.Authentication;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,7 +13,7 @@ namespace IdentityServer.UnitTests.Caches;
 public class MockCache<T> : ICache<T>
     where T : class
 {
-    public MockCache(ISystemClock clock)
+    public MockCache(IClock clock)
     {
         _clock = clock;
     }
@@ -22,7 +26,7 @@ public class MockCache<T> : ICache<T>
 
     public Dictionary<string, CacheItem> CacheItems = new Dictionary<string, CacheItem>();
 
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
 
     bool TryGetValue(string key, out T item)
     {
@@ -77,3 +81,4 @@ public class MockCache<T> : ICache<T>
         return Task.CompletedTask;
     }
 }
+

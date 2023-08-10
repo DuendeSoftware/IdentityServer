@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende.IdentityServer;
@@ -23,7 +24,6 @@ using System.Linq;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-using static Duende.IdentityServer.Constants;
 using static Duende.IdentityServer.IdentityServerConstants;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting.FederatedSignOut;
@@ -33,6 +33,7 @@ using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Hosting.DynamicProviders;
 using Duende.IdentityServer.Internal;
 using Duende.IdentityServer.Stores.Empty;
+using Duende.IdentityServer.Endpoints.Results;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -123,23 +124,52 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpoint<TokenEndpoint>(EndpointNames.Token, ProtocolRoutePaths.Token.EnsureLeadingSlash());
         builder.AddEndpoint<UserInfoEndpoint>(EndpointNames.UserInfo, ProtocolRoutePaths.UserInfo.EnsureLeadingSlash());
 
+        builder.AddEndpointResultGenerator<AuthorizeInteractionPageResult, AuthorizeInteractionPageResultGenerator>();
+        builder.AddEndpointResultGenerator<AuthorizeResult, AuthorizeResultGenerator>();
+        builder.AddEndpointResultGenerator<BackchannelAuthenticationResult, BackchannelAuthenticationResultGenerator>();
+        builder.AddEndpointResultGenerator<BadRequestResult, BadRequestResultGenerator>();
+        builder.AddEndpointResultGenerator<CheckSessionResult, CheckSessionResultGenerator>();
+        builder.AddEndpointResultGenerator<DeviceAuthorizationResult, DeviceAuthorizationResultGenerator>();
+        builder.AddEndpointResultGenerator<DiscoveryDocumentResult, DiscoveryDocumentResultGenerator>();
+        builder.AddEndpointResultGenerator<EndSessionCallbackResult, EndSessionCallbackResultGenerator>();
+        builder.AddEndpointResultGenerator<EndSessionResult, EndSessionResultGenerator>();
+        builder.AddEndpointResultGenerator<IntrospectionResult, IntrospectionResultGenerator>();
+        builder.AddEndpointResultGenerator<JsonWebKeysResult, JsonWebKeysResultGenerator>();
+        builder.AddEndpointResultGenerator<ProtectedResourceErrorResult, ProtectedResourceErrorResultGenerator>();
+        builder.AddEndpointResultGenerator<StatusCodeResult, StatusCodeResultGenerator>();
+        builder.AddEndpointResultGenerator<TokenErrorResult, TokenErrorResultGenerator>();
+        builder.AddEndpointResultGenerator<TokenResult, TokenResultGenerator>();
+        builder.AddEndpointResultGenerator<TokenRevocationErrorResult, TokenRevocationErrorResultGenerator>();
+        builder.AddEndpointResultGenerator<UserInfoResult, UserInfoResultGenerator>();
+
         return builder;
     }
 
     /// <summary>
     /// Adds the endpoint.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TEndpoint"></typeparam>
     /// <param name="builder">The builder.</param>
     /// <param name="name">The name.</param>
     /// <param name="path">The path.</param>
     /// <returns></returns>
-    public static IIdentityServerBuilder AddEndpoint<T>(this IIdentityServerBuilder builder, string name, PathString path)
-        where T : class, IEndpointHandler
+    public static IIdentityServerBuilder AddEndpoint<TEndpoint>(this IIdentityServerBuilder builder, string name, PathString path)
+        where TEndpoint : class, IEndpointHandler
     {
-        builder.Services.AddTransient<T>();
-        builder.Services.AddSingleton(new Duende.IdentityServer.Hosting.Endpoint(name, path, typeof(T)));
+        builder.Services.AddTransient<TEndpoint>();
+        builder.Services.AddSingleton(new Duende.IdentityServer.Hosting.Endpoint(name, path, typeof(TEndpoint)));
 
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the endpoint.
+    /// </summary>
+    public static IIdentityServerBuilder AddEndpointResultGenerator<TResult, TResultGenerator>(this IIdentityServerBuilder builder)
+        where TResult : class, IEndpointResult
+        where TResultGenerator : class, Duende.IdentityServer.Hosting.IEndpointResultGenerator<TResult>
+    {
+        builder.Services.AddTransient<Duende.IdentityServer.Hosting.IEndpointResultGenerator<TResult>, TResultGenerator>();
         return builder;
     }
 
@@ -174,6 +204,8 @@ public static class IdentityServerBuilderExtensionsCore
 
         builder.Services.TryAddTransient<IClientStore, EmptyClientStore>();
         builder.Services.TryAddTransient<IResourceStore, EmptyResourceStore>();
+
+        builder.Services.AddTransient(services => IdentityServerLicenseValidator.Instance.GetLicense());
 
         return builder;
     }
@@ -219,6 +251,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IScopeParser, DefaultScopeParser>();
         builder.Services.TryAddTransient<ISessionCoordinationService, DefaultSessionCoordinationService>();
         builder.Services.TryAddTransient<IReplayCache, DefaultReplayCache>();
+        builder.Services.TryAddTransient<IClock, DefaultClock>();
 
         builder.Services.TryAddTransient<IBackchannelAuthenticationThrottlingService, DistributedBackchannelAuthenticationThrottlingService>();
         builder.Services.TryAddTransient<IBackchannelAuthenticationUserNotificationService, NopBackchannelAuthenticationUserNotificationService>();

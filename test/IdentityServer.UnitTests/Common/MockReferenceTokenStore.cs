@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -21,7 +21,7 @@ class MockReferenceTokenStore : IReferenceTokenStore
         throw new NotImplementedException();
     }
 
-    public Task RemoveReferenceTokensAsync(string subjectId, string clientId)
+    public Task RemoveReferenceTokensAsync(string subjectId, string clientId, string sessionId = null)
     {
         throw new NotImplementedException();
     }

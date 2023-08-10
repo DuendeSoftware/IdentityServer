@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Configuration;
-using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Internal;
 using System.Security.Cryptography;
@@ -25,7 +24,7 @@ public class KeyManager : IKeyManager
     private readonly ISigningKeyStore _store;
     private readonly ISigningKeyStoreCache _cache;
     private readonly ISigningKeyProtector _protector;
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
     private readonly IConcurrencyLock<KeyManager> _newKeyLock;
     private readonly ILogger<KeyManager> _logger;
     private readonly IIssuerNameService _issuerNameService;
@@ -46,7 +45,7 @@ public class KeyManager : IKeyManager
         ISigningKeyStore store,
         ISigningKeyStoreCache cache,
         ISigningKeyProtector protector,
-        ISystemClock clock,
+        IClock clock,
         IConcurrencyLock<KeyManager> newKeyLock,
         ILogger<KeyManager> logger,
         IIssuerNameService issuerNameService)
@@ -620,11 +619,11 @@ public class KeyManager : IKeyManager
         }
 
         // we order by the created date, in essence loading the oldest key
-        // this accomodates the scenario where 2 servers create keys at the same time
+        // this accommodates the scenario where 2 servers create keys at the same time
         // but the first server only reloads the one key it created (and only has the one key for 
         // discovery). we don't want the second server using a key that's not in the first server's
         // discovery document. this will be somewhat mitigated by the initial duration where we 
-        // deliberatly ignore the cache.
+        // deliberately ignore the cache.
         var result = keys.OrderBy(x => x.Created).First();
         return result;
     }

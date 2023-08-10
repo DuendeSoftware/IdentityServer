@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -27,8 +27,9 @@ public class IntrospectionRequestValidatorTests
     {
         _referenceTokenStore = Factory.CreateReferenceTokenStore();
         var tokenValidator = Factory.CreateTokenValidator(_referenceTokenStore);
+        var refreshTokenService = Factory.CreateRefreshTokenService();
 
-        _subject = new IntrospectionRequestValidator(tokenValidator, TestLogger.Create<IntrospectionRequestValidator>());
+        _subject = new IntrospectionRequestValidator(tokenValidator, refreshTokenService, TestLogger.Create<IntrospectionRequestValidator>());
     }
 
     [Fact]
@@ -53,7 +54,13 @@ public class IntrospectionRequestValidatorTests
             { "token", handle}
         };
 
-        var result = await _subject.ValidateAsync(param, null);
+        var result = await _subject.ValidateAsync(
+            new IntrospectionRequestValidationContext
+            { 
+                Parameters = param,
+                Api = new ApiResource("api")
+            }
+        );
 
         result.IsError.Should().Be(false);
         result.IsActive.Should().Be(true);
@@ -74,8 +81,12 @@ public class IntrospectionRequestValidatorTests
     public async Task missing_token_should_error()
     {
         var param = new NameValueCollection();
-            
-        var result = await _subject.ValidateAsync(param, null);
+
+        var result = await _subject.ValidateAsync(new IntrospectionRequestValidationContext
+        {
+            Parameters = param, 
+            Api = new ApiResource("api")
+        });
 
         result.IsError.Should().Be(true);
         result.Error.Should().Be("missing_token");
@@ -93,7 +104,11 @@ public class IntrospectionRequestValidatorTests
             { "token", "invalid" }
         };
 
-        var result = await _subject.ValidateAsync(param, null);
+        var result = await _subject.ValidateAsync(new IntrospectionRequestValidationContext 
+        { 
+            Parameters = param, 
+            Api = new ApiResource("api") 
+        });
 
         result.IsError.Should().Be(false);
         result.IsActive.Should().Be(false);

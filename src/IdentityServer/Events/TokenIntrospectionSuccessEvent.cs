@@ -25,7 +25,8 @@ public class TokenIntrospectionSuccessEvent : Event
             EventTypes.Success,
             EventIds.TokenIntrospectionSuccess)
     {
-        ApiName = result.Api.Name;
+        ApiName = result.Api?.Name;
+        ClientName = result.Client?.ClientName;
         IsActive = result.IsActive;
 
         if (result.Token.IsPresent())
@@ -47,6 +48,14 @@ public class TokenIntrospectionSuccessEvent : Event
     /// The name of the API.
     /// </value>
     public string ApiName { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the name of the client.
+    /// </summary>
+    /// <value>
+    /// The name of the client.
+    /// </value>
+    public string ClientName { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this instance is active.

@@ -9,7 +9,6 @@ using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Models;
 using System.Linq;
 using Duende.IdentityServer.Configuration;
@@ -93,8 +92,8 @@ public class IdentityServerMiddleware
                 
                 using var activity = Tracing.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
                 activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
-                
-                LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
+
+                IdentityServerLicenseValidator.Instance.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 
                 _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, context.Request.Path.ToString());
 

@@ -14,22 +14,36 @@ using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class BackchannelAuthenticationResult : IEndpointResult
+/// <summary>
+/// Models the result of backchannel authentication 
+/// </summary>
+public class BackchannelAuthenticationResult : EndpointResult<BackchannelAuthenticationResult>
 {
-    public BackchannelAuthenticationResponse Response { get; set; }
+    /// <summary>
+    /// The response
+    /// </summary>
+    public BackchannelAuthenticationResponse Response { get; }
 
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="response"></param>
+    /// <exception cref="ArgumentNullException"></exception>
     public BackchannelAuthenticationResult(BackchannelAuthenticationResponse response)
     {
         Response = response ?? throw new ArgumentNullException(nameof(response));
     }
+}
 
-    public async Task ExecuteAsync(HttpContext context)
+internal class BackchannelAuthenticationResultGenerator : IEndpointResultGenerator<BackchannelAuthenticationResult>
+{
+    public async Task ExecuteAsync(BackchannelAuthenticationResult result, HttpContext context)
     {
         context.Response.SetNoCache();
 
-        if (Response.IsError)
+        if (result.Response.IsError)
         {
-            switch (Response.Error)
+            switch (result.Response.Error)
             {
                 case OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient:
                     context.Response.StatusCode = 401;
@@ -42,9 +56,10 @@ internal class BackchannelAuthenticationResult : IEndpointResult
                     break;
             }
 
-            await context.Response.WriteJsonAsync(new ErrorResultDto { 
-                error = Response.Error,
-                error_description = Response.ErrorDescription
+            await context.Response.WriteJsonAsync(new ErrorResultDto
+            {
+                error = result.Response.Error,
+                error_description = result.Response.ErrorDescription
             });
         }
         else
@@ -52,11 +67,10 @@ internal class BackchannelAuthenticationResult : IEndpointResult
             context.Response.StatusCode = 200;
             await context.Response.WriteJsonAsync(new SuccessResultDto
             {
-                auth_req_id = Response.AuthenticationRequestId,
-                expires_in = Response.ExpiresIn,
-                interval = Response.Interval,
-                
-                Custom = Response.Custom
+                auth_req_id = result.Response.AuthenticationRequestId,
+                expires_in = result.Response.ExpiresIn,
+                interval = result.Response.Interval,
+                Custom = result.Response.Custom
             });
         }
     }

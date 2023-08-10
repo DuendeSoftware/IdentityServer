@@ -18,8 +18,6 @@ using System.Collections.Generic;
 using System;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Session;
-using FluentAssertions.Common;
 using Duende.IdentityServer;
 using Microsoft.AspNetCore.DataProtection;
 using Duende.IdentityServer.Extensions;

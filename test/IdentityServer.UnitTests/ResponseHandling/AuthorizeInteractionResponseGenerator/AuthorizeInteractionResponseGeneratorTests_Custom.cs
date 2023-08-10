@@ -11,7 +11,6 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using FluentAssertions;
 using UnitTests.Common;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using static IdentityModel.OidcConstants;
@@ -22,7 +21,7 @@ public class CustomAuthorizeInteractionResponseGenerator : Duende.IdentityServer
 {
     public CustomAuthorizeInteractionResponseGenerator(
         IdentityServerOptions options,
-        ISystemClock clock, 
+        IClock clock, 
         ILogger<Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator> logger, 
         IConsentService consent, 
         IProfileService profile) : base(options, clock, logger, consent, profile)

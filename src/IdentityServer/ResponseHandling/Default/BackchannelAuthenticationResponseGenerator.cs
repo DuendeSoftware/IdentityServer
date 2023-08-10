@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Services;
@@ -38,7 +37,7 @@ public class BackchannelAuthenticationResponseGenerator : IBackchannelAuthentica
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The logger
@@ -56,7 +55,7 @@ public class BackchannelAuthenticationResponseGenerator : IBackchannelAuthentica
     public BackchannelAuthenticationResponseGenerator(IdentityServerOptions options,
         IBackChannelAuthenticationRequestStore backChannelAuthenticationRequestStore,
         IBackchannelAuthenticationUserNotificationService userLoginService,
-        ISystemClock clock, 
+        IClock clock, 
         ILogger<BackchannelAuthenticationResponseGenerator> logger)
     {
         Options = options;

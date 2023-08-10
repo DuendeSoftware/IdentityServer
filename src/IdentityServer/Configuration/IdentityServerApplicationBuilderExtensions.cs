@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende;
@@ -75,8 +76,7 @@ public static class IdentityServerApplicationBuilderExtensions
 
             var options = serviceProvider.GetRequiredService<IdentityServerOptions>();
             var env = serviceProvider.GetRequiredService<IHostEnvironment>();
-            LicenseValidator.Initalize(loggerFactory, options, env.IsDevelopment());
-            LicenseValidator.ValidateLicense();
+            IdentityServerLicenseValidator.Instance.Initalize(loggerFactory, options, env.IsDevelopment());
 
             TestService(serviceProvider, typeof(IPersistedGrantStore), logger, "No storage mechanism for grants specified. Use the 'AddInMemoryPersistedGrants' extension method to register a development version.");
             TestService(serviceProvider, typeof(IClientStore), logger, "No storage mechanism for clients specified. Use the 'AddInMemoryClients' extension method to register a development version.");
