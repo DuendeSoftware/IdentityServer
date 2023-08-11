@@ -83,7 +83,7 @@ public static class IdentityServerBuilderExtensions
         builder.AddResourceOwnerValidator<ResourceOwnerPasswordValidator<TUser>>();
         builder.AddProfileService<ProfileService<TUser>>();
 
-        builder.Services.AddSingleton<IPostConfigureOptions<IdentityServerOptions>, PostConfigureIdentityServerOptions>();
+        builder.Services.AddSingleton<IPostConfigureOptions<IdentityServerOptions>, UseAspNetIdentityCookieScheme>();
 
         return builder;
     }
