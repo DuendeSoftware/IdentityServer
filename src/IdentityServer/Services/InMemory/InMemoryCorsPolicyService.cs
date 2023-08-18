@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Services;
 
 /// <summary>
-/// CORS policy service that configures the allowed origins from a list of clients' redirect URLs.
+/// CORS policy service that configures the allowed origins to be the origins included in any client's AllowedCorsOrigins.
 /// </summary>
 public class InMemoryCorsPolicyService : ICorsPolicyService
 {
