@@ -13,7 +13,8 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Services;
 
 /// <summary>
-/// CORS policy service that configures the allowed origins to be the origins included in any client's AllowedCorsOrigins.
+/// An ICorsPolicyService for use with clients configured with AddInMemoryClients.
+/// This service will allow any origin included in any client's AllowedCorsOrigins.
 /// </summary>
 public class InMemoryCorsPolicyService : ICorsPolicyService
 {
