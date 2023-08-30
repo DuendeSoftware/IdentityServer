@@ -146,7 +146,7 @@ public static class TokenExtensions
 
         if (claim.ValueType == ClaimValueTypes.Integer64)
         {
-       return long.Parse(claim.Value);
+            return long.Parse(claim.Value);
         }
         
         if (claim.ValueType == ClaimValueTypes.Double)
