@@ -50,17 +50,19 @@ public class TokenExtensionsTests
     public void refresh_token_should_get_mtls_x5t_thumprint()
     {
         var expected = "some hash normally goes here";
+        
+        var cnf = new Dictionary<string, string>
+        {
+            { "x5t#S256", expected }
+        };
+
         var refreshToken = new RefreshToken()
         {
             AccessTokens = new Dictionary<string, Token>
             {
                 { "token", new Token()
                     {
-                        Confirmation = $$"""
-                        {
-                            "x5t#S256": "{{expected}}"
-                        }
-                        """
+                        Confirmation = JsonSerializer.Serialize(cnf)
                     }
                 }
             }
