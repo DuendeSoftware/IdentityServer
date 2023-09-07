@@ -186,7 +186,7 @@ public class LocalApiAuthenticationTests
         {
             //{ "alg", "RS265" }, // JsonWebTokenHandler requires adding this itself
             { "typ", JwtClaimTypes.JwtTypes.DPoPProofToken },
-            { JwtClaimTypes.JsonWebKey, jwk },
+            { JwtClaimTypes.JsonWebKey, JsonSerializer.Serialize(jwk) },
         };
 
         var payload = new Dictionary<string, object>
@@ -215,8 +215,8 @@ public class LocalApiAuthenticationTests
 
         var handler = new JsonWebTokenHandler() { SetDefaultTimesOnTokenCreation = false };
         var key = new SigningCredentials(jsonWebKey, jsonWebKey.Alg);
-        var proofToken = handler.CreateToken(JsonSerializer.Serialize(payload), key, header);
-        return proofToken;
+            var proofToken = handler.CreateToken(JsonSerializer.Serialize(payload), key, header);
+            return proofToken;
     }
 
     [Fact]
