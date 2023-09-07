@@ -73,8 +73,9 @@ public class DPoPTokenEndpointTests
                 RedirectUris = { "https://client1/callback" },
                 RequirePkce = false,
                 AllowOfflineAccess = true,
+                RefreshTokenUsage = TokenUsage.ReUse,
                 AllowedScopes = new List<string> { "openid", "profile", "scope1" },
-            },
+            }
         });
 
         _mockPipeline.Users.Add(new TestUser
@@ -688,6 +689,78 @@ public class DPoPTokenEndpointTests
         rtResponse.IsError.Should().BeTrue();
         rtResponse.Error.Should().Be("invalid_dpop_proof");
     }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task public_client_using_same_dpop_key_for_refresh_token_request_should_succeed()
+    {
+        _dpopClient.RequireClientSecret = false;
+
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "code",
+            responseMode: "query",
+            scope: "openid scope1 offline_access",
+            redirectUri: "https://client1/callback");
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+
+        var authorization = new AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeFalse();
+
+        var codeRequest = new AuthorizationCodeTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Code = authorization.Code,
+            RedirectUri = "https://client1/callback",
+        };
+        codeRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        var codeResponse = await _mockPipeline.BackChannelClient.RequestAuthorizationCodeTokenAsync(codeRequest);
+        codeResponse.IsError.Should().BeFalse();
+        codeResponse.TokenType.Should().Be("DPoP");
+        GetJKTFromAccessToken(codeResponse).Should().Be(_JKT);
+
+        var firstRefreshRequest = new RefreshTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            RefreshToken = codeResponse.RefreshToken
+        };
+        firstRefreshRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        var firstRefreshResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(firstRefreshRequest);
+        firstRefreshResponse.IsError.Should().BeFalse();
+        firstRefreshResponse.TokenType.Should().Be("DPoP");
+        GetJKTFromAccessToken(firstRefreshResponse).Should().Be(_JKT);
+
+        var secondRefreshRequest = new RefreshTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            RefreshToken = codeResponse.RefreshToken
+        };
+        secondRefreshRequest.Headers.Add("DPoP", CreateDPoPProofToken());
+
+        firstRefreshRequest.Headers.GetValues("DPoP").FirstOrDefault().Should().NotBe(
+            secondRefreshRequest.Headers.GetValues("DPoP").FirstOrDefault());
+
+        var secondRefreshResponse = await _mockPipeline.BackChannelClient.RequestRefreshTokenAsync(secondRefreshRequest);
+        secondRefreshResponse.IsError.Should().BeFalse(secondRefreshResponse.Error);
+        secondRefreshResponse.TokenType.Should().Be("DPoP");
+        GetJKTFromAccessToken(secondRefreshResponse).Should().Be(_JKT);
+    }
+
 
     [Fact]
     [Trait("Category", Category)]
