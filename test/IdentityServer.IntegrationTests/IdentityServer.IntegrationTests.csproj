@@ -12,6 +12,7 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Microsoft.AspNetCore.TestHost" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
 
         <PackageReference Include="CsQuery.NETStandard" Version="1.3.6.1" />
 
