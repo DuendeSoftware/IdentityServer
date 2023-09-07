@@ -32,7 +32,24 @@ public class DynamicProviderOptions
     /// <summary>
     /// Scheme for signout. Defaults to the constant IdentityServerConstants.DefaultCookieAuthenticationScheme.
     /// </summary>
-    public string SignOutScheme { get; set; } = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+    public string SignOutScheme 
+    { 
+        get 
+        {
+            return _signOutScheme ?? IdentityServerConstants.DefaultCookieAuthenticationScheme;
+        } 
+        set 
+        {
+            _signOutScheme = value;
+        }
+    }
+    
+    private string? _signOutScheme;
+
+    /// <summary>
+    /// Gets a value indicating if the SignOutScheme was set explicitly, either by application logic or by options binding.
+    /// </summary>
+    public bool SignOutSchemeSetExplicitly { get => _signOutScheme != null; }
 
     /// <summary>
     /// Registers a provider configuration model and authentication handler for the protocol type being used.
