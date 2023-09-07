@@ -255,6 +255,31 @@ public class DPoPTokenEndpointTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task valid_dpop_request_with_unusual_but_valid_proof_token_should_return_bound_access_token()
+    {
+        // The point here is to have an array in the payload, to exercise 
+        // the json serialization
+        _payload.Add("key_ops", new string[] { "sign", "verify" });
+        
+        var dpopToken = CreateDPoPProofToken();
+        var request = new ClientCredentialsTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Scope = "scope1",
+        };
+        request.Headers.Add("DPoP", dpopToken);
+
+        var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+        response.IsError.Should().BeFalse();
+        response.TokenType.Should().Be("DPoP");
+        var jkt = GetJKTFromAccessToken(response);
+        jkt.Should().Be(_JKT);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task dpop_proof_token_too_long_should_fail()
     {
         _payload.Add("foo", new string('x', 3000));
