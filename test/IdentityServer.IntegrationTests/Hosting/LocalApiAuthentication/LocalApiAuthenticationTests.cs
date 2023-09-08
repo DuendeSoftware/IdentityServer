@@ -170,11 +170,11 @@ public class LocalApiAuthenticationTests
         }
         else if (string.Equals(jsonWebKey.Kty, JsonWebAlgorithmsKeyTypes.RSA))
         {
-            jwk = new
+            jwk = new Dictionary<string, object>
             {
-                kty = jsonWebKey.Kty,
-                e = jsonWebKey.E,
-                n = jsonWebKey.N
+                { "kty", jsonWebKey.Kty },
+                { "e", jsonWebKey.E },
+                { "n", jsonWebKey.N }
             };
         }
         else
@@ -186,7 +186,7 @@ public class LocalApiAuthenticationTests
         {
             //{ "alg", "RS265" }, // JsonWebTokenHandler requires adding this itself
             { "typ", JwtClaimTypes.JwtTypes.DPoPProofToken },
-            { JwtClaimTypes.JsonWebKey, JsonSerializer.Serialize(jwk) },
+            { JwtClaimTypes.JsonWebKey, jwk },
         };
 
         var payload = new Dictionary<string, object>
