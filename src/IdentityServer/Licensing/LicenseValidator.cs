@@ -171,7 +171,7 @@ internal class LicenseValidator<T>
                 ValidateLifetime = false
             };
 
-            var validateResult = handler.ValidateToken(licenseKey, parms);
+            var validateResult = handler.ValidateTokenAsync(licenseKey, parms).Result;
             if (validateResult.IsValid)
             {
                 var license = new T();

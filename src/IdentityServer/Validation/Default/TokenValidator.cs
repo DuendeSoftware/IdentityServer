@@ -300,7 +300,7 @@ internal class TokenValidator : ITokenValidator
             }
         }
             
-        var result = handler.ValidateToken(jwtString, parameters);
+        var result = await handler.ValidateTokenAsync(jwtString, parameters);
         if (!result.IsValid)
         {
             if (result.Exception is SecurityTokenExpiredException expiredException)
