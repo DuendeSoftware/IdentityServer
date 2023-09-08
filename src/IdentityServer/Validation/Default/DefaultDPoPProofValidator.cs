@@ -154,14 +154,14 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<object>(JwtClaimTypes.JsonWebKey, out var jwkValues))
+        if (!token.TryGetHeaderValue<Dictionary<string, object>>(JwtClaimTypes.JsonWebKey, out var jwkValues))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'jwk' value.";
             return Task.CompletedTask;
         }
 
-        var jwkJson = jwkValues.ToString();
+        var jwkJson = JsonSerializer.Serialize(jwkValues);
 
         Microsoft.IdentityModel.Tokens.JsonWebKey jwk;
         try
