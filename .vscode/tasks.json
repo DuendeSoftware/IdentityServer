@@ -376,6 +376,18 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "build-client-MvcDPoP",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+          "build",
+          "${workspaceFolder}/clients/src/MvcDPoP/MvcDPoP.csproj",
+          "/property:GenerateFullPaths=true",
+          "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "build-client-MvcHybridBackChannel",
       "type": "process",
       "command": "dotnet",

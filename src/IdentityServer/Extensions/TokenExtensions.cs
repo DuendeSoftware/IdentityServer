@@ -179,11 +179,11 @@ public static class TokenExtensions
         {
             if (cnf.IsPresent())
             {
-                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(cnf);
+                var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(cnf);
 
                 if (data.TryGetValue(JwtClaimTypes.ConfirmationMethods.JwkThumbprint, out var jkt))
                 {
-                    var thumbprint = jkt as string;
+                    var thumbprint = jkt.ToString();
                     if (thumbprint.IsPresent())
                     {
                         return new ProofKeyThumbprint { Type = ProofType.DPoP, Thumbprint = thumbprint };
@@ -192,7 +192,7 @@ public static class TokenExtensions
 
                 if (data.TryGetValue("x5t#S256", out var x5t))
                 {
-                    var thumbprint = x5t as string;
+                    var thumbprint = x5t.ToString();
                     if (thumbprint.IsPresent())
                     {
                         return new ProofKeyThumbprint { Type = ProofType.ClientCertificate, Thumbprint = thumbprint };

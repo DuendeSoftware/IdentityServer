@@ -495,6 +495,26 @@
         }
       },
       {
+        "name": "client: MvcDPoP",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-client-MvcDPoP",
+        "program": "${workspaceFolder}/clients/src/MvcDPoP/bin/Debug/net8.0/MvcDPoP.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/clients/src/MvcDPoP",
+        "serverReadyAction": {
+            "action": "openExternally",
+            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        },
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "presentation": {
+          "hidden": false,
+          "group": "20-clients",
+        }
+      },
+      {
         "name": "client: MvcHybridBackChannel",
         "type": "coreclr",
         "request": "launch",

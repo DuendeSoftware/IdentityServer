@@ -8,7 +8,9 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using UnitTests.Common;
@@ -43,5 +45,30 @@ public class TokenExtensionsTests
         var payloadJson = JsonSerializer.Serialize(payloadDict);
 
         Assert.Contains(expected, payloadJson);
+    }
+
+    [Fact]
+    public void refresh_token_should_get_mtls_x5t_thumprint()
+    {
+        var expected = "some hash normally goes here";
+        
+        var cnf = new Dictionary<string, string>
+        {
+            { "x5t#S256", expected }
+        };
+
+        var refreshToken = new RefreshToken()
+        {
+            AccessTokens = new Dictionary<string, Token>
+            {
+                { "token", new Token()
+                    {
+                        Confirmation = JsonSerializer.Serialize(cnf)
+                    }
+                }
+            }
+        };
+        var thumbprint = refreshToken.GetProofKeyThumbprints().Single().Thumbprint;
+        Assert.Equal(expected, thumbprint);
     }
 }
