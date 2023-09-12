@@ -11,14 +11,14 @@
         <FrameworkVersion>7.0.0</FrameworkVersion>
         <ExtensionsVersion>7.0.0</ExtensionsVersion>
         <EntityFrameworkVersion>7.0.0</EntityFrameworkVersion>
-        <WilsonVersion>6.15.1</WilsonVersion>
+        <WilsonVersion>7.0.0</WilsonVersion>
     </PropertyGroup>-->
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0'">
         <FrameworkVersion>8.0.0-preview.6.23329.11</FrameworkVersion>
         <ExtensionsVersion>8.0.0-preview.6.23329.7</ExtensionsVersion>
         <EntityFrameworkVersion>8.0.0-preview.6.23329.4</EntityFrameworkVersion>
-        <WilsonVersion>6.15.1</WilsonVersion>
+        <WilsonVersion>7.0.0</WilsonVersion>
     </PropertyGroup>
 
     <ItemGroup>
