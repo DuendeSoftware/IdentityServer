@@ -161,10 +161,12 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
                 entries.Add(OidcConstants.Discovery.BackchannelAuthenticationEndpoint, baseUrl + ProtocolRoutePaths.BackchannelAuthentication);
             }
 
-            if (Options.EnablePushedAuthorizationRequests)
+            if (Options.PushedAuthorization.Enabled)
             {
-                // TODO - Add PAR to IdentityModel
+                // TODO - Add these PAR disco values to IdentityModel
                 entries.Add("pushed_authorization_request_endpoint", baseUrl + ProtocolRoutePaths.PushedAuthorization);
+
+                entries.Add("require_pushed_authorization_requests", Options.PushedAuthorization.Required);
             }
 
             if (Options.MutualTls.Enabled)

@@ -4,6 +4,7 @@
 
 #nullable enable
 
+using Duende.IdentityServer.Configuration.DependencyInjection.Options;
 using Duende.IdentityServer.Stores.Serialization;
 
 namespace Duende.IdentityServer.Configuration;
@@ -198,6 +199,5 @@ public class IdentityServerOptions
     /// </summary>
     public ServerSideSessionOptions ServerSideSessions { get; set; } = new ServerSideSessionOptions();
 
-
-    public bool EnablePushedAuthorizationRequests { get; set; } = false;
+    public PushedAuthorizationOptions PushedAuthorization { get; set; } = new PushedAuthorizationOptions();
 }
