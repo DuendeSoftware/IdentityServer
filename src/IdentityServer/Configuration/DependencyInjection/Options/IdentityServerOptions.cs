@@ -197,4 +197,7 @@ public class IdentityServerOptions
     /// Options for server-side sessions.
     /// </summary>
     public ServerSideSessionOptions ServerSideSessions { get; set; } = new ServerSideSessionOptions();
+
+
+    public bool EnablePushedAuthorizationRequests { get; set; } = false;
 }

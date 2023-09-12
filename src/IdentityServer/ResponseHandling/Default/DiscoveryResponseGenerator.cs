@@ -161,6 +161,12 @@ public class DiscoveryResponseGenerator : IDiscoveryResponseGenerator
                 entries.Add(OidcConstants.Discovery.BackchannelAuthenticationEndpoint, baseUrl + ProtocolRoutePaths.BackchannelAuthentication);
             }
 
+            if (Options.EnablePushedAuthorizationRequests)
+            {
+                // TODO - Add PAR to IdentityModel
+                entries.Add("pushed_authorization_request_endpoint", baseUrl + ProtocolRoutePaths.PushedAuthorization);
+            }
+
             if (Options.MutualTls.Enabled)
             {
                 var mtlsEndpoints = new Dictionary<string, string>();

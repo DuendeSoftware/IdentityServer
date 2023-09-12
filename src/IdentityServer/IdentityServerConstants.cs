@@ -264,6 +264,8 @@ public static class IdentityServerConstants
         public const string EndSessionCallback          = EndSession + "/callback";
         public const string CheckSession                = ConnectPathPrefix + "/checksession";
         public const string DeviceAuthorization         = ConnectPathPrefix + "/deviceauthorization";
+        public const string PushedAuthorization         = ConnectPathPrefix + "/pushedauthorization";
+
 
         public const string MtlsPathPrefix              = ConnectPathPrefix + "/mtls";
         public const string MtlsToken                   = MtlsPathPrefix + "/token";
