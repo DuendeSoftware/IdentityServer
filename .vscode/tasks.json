@@ -388,6 +388,18 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "build-client-MvcPar",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+          "build",
+          "${workspaceFolder}/clients/src/MvcPar/MvcPar.csproj",
+          "/property:GenerateFullPaths=true",
+          "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "build-client-MvcHybridBackChannel",
       "type": "process",
       "command": "dotnet",
