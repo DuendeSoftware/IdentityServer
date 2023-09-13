@@ -15,7 +15,6 @@ using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Stores;
-using Microsoft.AspNetCore.DataProtection;
 
 namespace Duende.IdentityServer.Endpoints;
 
@@ -30,10 +29,8 @@ internal class AuthorizeEndpoint : AuthorizeEndpointBase
         IAuthorizeResponseGenerator authorizeResponseGenerator,
         IUserSession userSession,
         IConsentMessageStore consentResponseStore,
-        IPushedAuthorizationRequestStore pushedAuthorizationRequestStore,
-        IDataProtectionProvider dataProtectionProvider,
         IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
-        : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession, consentResponseStore, pushedAuthorizationRequestStore, dataProtectionProvider, authorizationParametersMessageStore)
+        : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession, consentResponseStore, authorizationParametersMessageStore)
     {
     }
 

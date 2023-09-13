@@ -9,19 +9,17 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
 using Duende.IdentityServer.Events;
+using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
-using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Duende.IdentityServer.Stores;
-using Microsoft.AspNetCore.DataProtection;
-using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Endpoints;
 
@@ -37,8 +35,6 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
     private readonly IAuthorizeRequestValidator _validator;
 
     private readonly IConsentMessageStore _consentResponseStore;
-    private readonly IPushedAuthorizationRequestStore _pushedAuthorizationRequestStore;
-    private readonly IDataProtector _dataProtector;
     private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
     protected AuthorizeEndpointBase(
@@ -50,8 +46,6 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
         IAuthorizeResponseGenerator authorizeResponseGenerator,
         IUserSession userSession,
         IConsentMessageStore consentResponseStore,
-        IPushedAuthorizationRequestStore pushedAuthorizationRequestStore,
-        IDataProtectionProvider dataProtectionProvider,
         IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
     {
         _events = events;
@@ -62,8 +56,6 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
         _authorizeResponseGenerator = authorizeResponseGenerator;
         UserSession = userSession;
         _consentResponseStore = consentResponseStore;
-        _pushedAuthorizationRequestStore = pushedAuthorizationRequestStore;
-        _dataProtector = dataProtectionProvider.CreateProtector("PAR");
         _authorizationParametersMessageStore = authorizationParametersMessageStore;
     }
 
@@ -91,20 +83,6 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
             parameters = entry?.Data.FromFullDictionary() ?? new NameValueCollection();
 
             await _authorizationParametersMessageStore.DeleteAsync(messageStoreId);
-        }
-
-        if (parameters["request_uri"] != null)
-        {
-            var requestUri = parameters["request_uri"];
-            var pushedAuthoriztionRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
-            
-            // TODO - Validate expiry
-
-            // TODO - Validate binding of request to client
-
-            var unprotected = _dataProtector.Unprotect(pushedAuthoriztionRequest.Parameters);
-            var dictionary = ObjectSerializer.FromString<Dictionary<string, string[]>>(unprotected);
-            parameters = dictionary.FromFullDictionary();
         }
 
         // validate request

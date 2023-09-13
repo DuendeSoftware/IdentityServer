@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Services;
 using static Duende.IdentityServer.IdentityServerConstants;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
@@ -71,6 +72,9 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
     {
         var returnUrl = _urls.BasePath.EnsureTrailingSlash() + ProtocolRoutePaths.AuthorizeCallback;
 
+
+
+        //TODO - Verify that we can use both PAR and the parameter message store
         if (_authorizationParametersMessageStore != null)
         {
             var msg = new Message<IDictionary<string, string[]>>(result.Request.ToOptimizedFullDictionary());
@@ -79,7 +83,16 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
         }
         else
         {
-            returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
+            if (result.Request.RequestUri != null)
+            {
+                returnUrl = returnUrl
+                    .AddQueryString(OidcConstants.AuthorizeRequest.RequestUri, result.Request.RequestUri)
+                    .AddQueryString(OidcConstants.AuthorizeRequest.ClientId, result.Request.ClientId);
+            } 
+            else
+            {
+                returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
+            }
         }
 
         var url = result.RedirectUrl;

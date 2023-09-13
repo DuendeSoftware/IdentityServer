@@ -16,6 +16,8 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Services;
 using static Duende.IdentityServer.IdentityServerConstants;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -30,6 +32,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
     private readonly IUserSession _userSession;
     private readonly IJwtRequestValidator _jwtRequestValidator;
     private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
+    private readonly IPushedAuthorizationRequestStore _pushedAuthorizationRequestStore;
+    private readonly IDataProtector _dataProtector;
     private readonly ILogger _logger;
 
     private readonly ResponseTypeEqualityComparer
@@ -45,6 +49,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         IUserSession userSession,
         IJwtRequestValidator jwtRequestValidator,
         IJwtRequestUriHttpClient jwtRequestUriHttpClient,
+        IPushedAuthorizationRequestStore pushedAuthorizationRequestStore,
+        IDataProtectionProvider dataProtectionProvider,
         ILogger<AuthorizeRequestValidator> logger)
     {
         _options = options;
@@ -56,6 +62,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         _jwtRequestValidator = jwtRequestValidator;
         _userSession = userSession;
         _jwtRequestUriHttpClient = jwtRequestUriHttpClient;
+        _pushedAuthorizationRequestStore = pushedAuthorizationRequestStore;
+        _dataProtector = dataProtectionProvider.CreateProtector("PAR");
         _logger = logger;
     }
 
@@ -147,53 +155,72 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
     private async Task<AuthorizeRequestValidationResult> LoadRequestObjectAsync(ValidatedAuthorizeRequest request)
     {
-        var jwtRequest = request.Raw.Get(OidcConstants.AuthorizeRequest.Request);
-        var jwtRequestUri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
+        var requestObject = request.Raw.Get(OidcConstants.AuthorizeRequest.Request);
+        var requestUri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
 
-        if (jwtRequest.IsPresent() && jwtRequestUri.IsPresent())
+        if (requestObject.IsPresent() && requestUri.IsPresent())
         {
             LogError("Both request and request_uri are present", request);
             return Invalid(request, description: "Only one request parameter is allowed");
         }
 
-        if (_options.Endpoints.EnableJwtRequestUri)
+        if (requestUri.IsPresent())
         {
-            if (jwtRequestUri.IsPresent())
+            if(requestUri.StartsWith("urn:ietf:params:oauth:request_uri:"))
+            {
+                // PAR
+                request.RequestUri = requestUri;
+
+                var pushedAuthoriztionRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
+
+                    // TODO - Validate expiry
+
+                    // TODO - Validate binding of request to client
+
+                    // TODO - Support JAR + PAR together
+
+                    var unprotected = _dataProtector.Unprotect(pushedAuthoriztionRequest.Parameters);
+                    var dictionary = ObjectSerializer.FromString<Dictionary<string, string[]>>(unprotected);
+                    request.Raw = dictionary.FromFullDictionary();
+                    request.Raw[OidcConstants.AuthorizeRequest.RequestUri] = requestUri;
+
+            }
+            else if (_options.Endpoints.EnableJwtRequestUri)
             {
                 // 512 is from the spec
-                if (jwtRequestUri.Length > 512)
+                if (requestUri.Length > 512)
                 {
                     LogError("request_uri is too long", request);
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestUri, description: "request_uri is too long");
                 }
 
-                var jwt = await _jwtRequestUriHttpClient.GetJwtAsync(jwtRequestUri, request.Client);
+                var jwt = await _jwtRequestUriHttpClient.GetJwtAsync(requestUri, request.Client);
                 if (jwt.IsMissing())
                 {
                     LogError("no value returned from request_uri", request);
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestUri, description: "no value returned from request_uri");
                 }
 
-                jwtRequest = jwt;
+                requestObject = jwt;
             }
-        }
-        else if (jwtRequestUri.IsPresent())
-        {
-            LogError("request_uri present but config prohibits", request);
-            return Invalid(request, error: OidcConstants.AuthorizeErrors.RequestUriNotSupported);
+            else
+            {
+                LogError("request_uri present but config prohibits", request);
+                return Invalid(request, error: OidcConstants.AuthorizeErrors.RequestUriNotSupported);
+            }
         }
 
         // check length restrictions
-        if (jwtRequest.IsPresent())
+        if (requestObject.IsPresent())
         {
-            if (jwtRequest.Length >= _options.InputLengthRestrictions.Jwt)
+            if (requestObject.Length >= _options.InputLengthRestrictions.Jwt)
             {
                 LogError("request value is too long", request);
                 return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestObject, description: "Invalid request value");
             }
         }
 
-        request.RequestObject = jwtRequest;
+        request.RequestObject = requestObject;
         return Valid(request);
     }
 

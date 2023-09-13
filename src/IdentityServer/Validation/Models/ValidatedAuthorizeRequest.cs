@@ -211,7 +211,9 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// The thumbprint of the associated DPoP proof key, if one was used.
     /// </summary>
     public string? DPoPKeyThumbprint { get; set; }
-    
+
+    public string? RequestUri { get; set; }
+
     /// <summary>
     /// Gets a value indicating whether an access token was requested.
     /// </summary>

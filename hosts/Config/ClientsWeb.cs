@@ -129,6 +129,31 @@ public static class ClientsWeb
 
                 AllowedScopes = allowedScopes
             },
+
+            ///////////////////////////////////////////
+            // MVC PAR Sample
+            //////////////////////////////////////////
+            new Client
+            {
+                ClientId = "mvc.par",
+                ClientName = "MVC PAR Client",
+
+                ClientSecrets =
+                {
+                    new Secret("secret".Sha256())
+                },
+
+                RequireConsent = false,
+                AllowedGrantTypes = GrantTypes.Code,
+
+                RedirectUris = { "https://localhost:44305/signin-oidc" },
+                FrontChannelLogoutUri = "https://localhost:44305/signout-oidc",
+                PostLogoutRedirectUris = { "https://localhost:44305/signout-callback-oidc" },
+
+                AllowOfflineAccess = true,
+
+                AllowedScopes = allowedScopes
+            },
                 
             ///////////////////////////////////////////
             // MVC Hybrid Flow Sample (Back Channel logout)
