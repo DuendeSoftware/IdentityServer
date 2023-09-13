@@ -97,7 +97,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         //or equal to 2 ^ (-128) and SHOULD be less than or equal to 2 ^ (-160).
         var referenceValue = CryptoRandom.CreateUniqueId(32, CryptoRandom.OutputFormat.Base64Url);
         var requestUri = $"urn:ietf:params:oauth:request_uri:{referenceValue}";
-        var expiration = DateTime.UtcNow.AddSeconds(120); // TODO add new Client Configuration for this
+        var expiration = 120; // TODO add new Client Configuration for this
 
         // Serialize
         var serialized = ObjectSerializer.ToString(form.ToDictionary());
@@ -118,7 +118,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         var response = new PushedAuthorizationResponse
         {
             RequestUri = requestUri,
-            Expiration = expiration
+            ExpiresIn = expiration
         };
 
         // TODO - Logs and events here

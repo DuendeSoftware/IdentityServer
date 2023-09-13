@@ -6,6 +6,7 @@ using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Endpoints.Results;
@@ -27,7 +28,7 @@ internal class PushedAuthorizationResultGenerator : IEndpointResultGenerator<Pus
         context.Response.SetNoCache();
         var dto = new ResultDto
         {
-            Expiration = result.Response.Expiration,
+            ExpiresIn = result.Response.ExpiresIn,
             RequestUri = result.Response.RequestUri
         };
         await context.Response.WriteJsonAsync(dto);
@@ -36,7 +37,10 @@ internal class PushedAuthorizationResultGenerator : IEndpointResultGenerator<Pus
 
     internal class ResultDto
     {
+        [JsonPropertyName("request_uri")]
         public string RequestUri { get; set; }
-        public DateTime Expiration { get; set; }
+
+        [JsonPropertyName("expires_in")]
+        public int ExpiresIn { get; set; }
     }
 }

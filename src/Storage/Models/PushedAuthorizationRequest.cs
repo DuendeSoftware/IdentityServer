@@ -10,7 +10,7 @@ namespace Duende.IdentityServer.Storage.Models;
 public class PushedAuthorizationRequest
 {
     public string RequestUri { get; set; }
-    public DateTime Expiration { get; set; }
+    public int Expiration { get; set; }
 
     public string Parameters { get; set; }
 
