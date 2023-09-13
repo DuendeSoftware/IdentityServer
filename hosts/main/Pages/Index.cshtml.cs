@@ -11,7 +11,7 @@ namespace IdentityServerHost.Pages.Home;
 [AllowAnonymous]
 public class Index : PageModel
 {
-    public Index(IdentityServerLicense license)
+    public Index(IdentityServerLicense? license = null)
     {
         License = license;
     }
