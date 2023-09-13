@@ -1,12 +1,15 @@
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
+using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting;
+using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
@@ -22,18 +25,28 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 {
     private readonly IClientSecretValidator _clientValidator;
     private readonly IAuthorizeRequestValidator _requestValidator;
+    private readonly IDataProtector _dataProtector;
     private readonly IPushedAuthorizationRequestStore _store;
+    private readonly IdentityServerOptions _options;
+    private readonly IEventService _events;
     private readonly ILogger<PushedAuthorizationEndpoint> _logger;
 
     public PushedAuthorizationEndpoint(
         IClientSecretValidator clientValidator,
         IAuthorizeRequestValidator requestValidator,
+        IDataProtectionProvider dataProtectionProvider,
         IPushedAuthorizationRequestStore store,
-        ILogger<PushedAuthorizationEndpoint> logger)
+        IdentityServerOptions options,
+        IEventService events,
+        ILogger<PushedAuthorizationEndpoint> logger
+        )
     {
         _clientValidator = clientValidator;
         _requestValidator = requestValidator;
+        _dataProtector = dataProtectionProvider.CreateProtector("PAR");
         _store = store;
+        _options = options;
+        _events = events;
         _logger = logger;
     }
 
@@ -44,10 +57,11 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         _logger.LogDebug("Start pushed authorization request");
 
         NameValueCollection values;
-
+        IFormCollection form;
         if(HttpMethods.IsPost(context.Request.Method))
         {
-           values = context.Request.Form.AsNameValueCollection();
+            form = await context.Request.ReadFormAsync();
+            values = form.AsNameValueCollection();
         }
         else
         {
@@ -58,8 +72,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         var client = await _clientValidator.ValidateAsync(context);
         if(client.IsError)
         {
-            // TODO
-            // Can we reuse code between this and the token endpoint?
+            return ClientValidationError(client.Error, client.ErrorDescription);
         }
 
         // Validate Request
@@ -67,12 +80,15 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 
         if(validationResult.IsError)
         {
-            // TODO
-            // Would be nice if we could reuse the error response code from the authorize endpoint, I think.
+            return await CreateErrorResultAsync(
+                "Request validation failed",
+                validationResult.ValidatedRequest,
+                validationResult.Error,
+                validationResult.ErrorDescription);
         }
 
         // Create a reference value
-        // REVIEW - Is 160 bits the right amount?
+        // REVIEW - Is 32 the right length?
         //
         // The spec says 
         //
@@ -83,12 +99,18 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         var requestUri = $"urn:ietf:params:oauth:request_uri:{referenceValue}";
         var expiration = DateTime.UtcNow.AddSeconds(120); // TODO add new Client Configuration for this
 
+        // Serialize
+        var serialized = ObjectSerializer.ToString(form.ToDictionary());
+
+        // Data Protect
+        var protectedData = _dataProtector.Protect(serialized);
+
         // Persist 
         await _store.StoreAsync(new Storage.Models.PushedAuthorizationRequest
         {
             RequestUri = requestUri,
             Expiration = expiration,
-            // What do I store here? Original params? Or validation result?
+            Parameters = protectedData
         });
 
 
@@ -103,4 +125,56 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 
         return new PushedAuthorizationResult(response);
     }
+
+    // TODO - Copied from TokenEndpoint
+    private TokenErrorResult ClientValidationError(string error, string errorDescription = null, Dictionary<string, object> custom = null)
+    {
+        // TODO - Should we create new response and result classes?
+        var response = new TokenErrorResponse
+        {
+            Error = error,
+            ErrorDescription = errorDescription,
+            Custom = custom
+        };
+
+        return new TokenErrorResult(response);
+    }
+
+    // TODO - Copied from AuthorizeEndpointBase
+    private async Task<IEndpointResult> CreateErrorResultAsync(
+        string logMessage,
+        ValidatedAuthorizeRequest request = null,
+        string error = OidcConstants.AuthorizeErrors.ServerError,
+        string errorDescription = null,
+        bool logError = true)
+    {
+        if (logError)
+        {
+            _logger.LogError(logMessage);
+        }
+
+        if (request != null)
+        {
+            var details = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
+            _logger.LogInformation("{@validationDetails}", details);
+        }
+
+        // TODO: should we raise a token failure event for all errors to the authorize endpoint?
+        await RaiseFailureEventAsync(request, error, errorDescription);
+
+        return new AuthorizeResult(new AuthorizeResponse
+        {
+            Request = request,
+            Error = error,
+            ErrorDescription = errorDescription,
+            SessionState = request?.GenerateSessionStateValue()
+        });
+    }
+
+    // TODO - Copied from AuthorizeEndpointBase
+    private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription)
+    {
+        return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
+    }
+
 }
