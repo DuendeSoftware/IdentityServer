@@ -53,6 +53,9 @@ public static class IdentityServerServiceCollectionExtensions
         // provide default in-memory implementation, not suitable for most production scenarios
         builder.AddInMemoryPersistedGrants();
 
+        // TODO - Maybe only do this if feature enabled in config?
+        builder.AddInMemoryPushedAuthorizationRequests();
+
         return builder;
     }
 

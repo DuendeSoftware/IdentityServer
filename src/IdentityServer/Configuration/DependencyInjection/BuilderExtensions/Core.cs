@@ -120,6 +120,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpoint<EndSessionCallbackEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSessionCallback.EnsureLeadingSlash());
         builder.AddEndpoint<EndSessionEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSession.EnsureLeadingSlash());
         builder.AddEndpoint<IntrospectionEndpoint>(EndpointNames.Introspection, ProtocolRoutePaths.Introspection.EnsureLeadingSlash());
+        builder.AddEndpoint<PushedAuthorizationEndpoint>(EndpointNames.PushedAuthorization, ProtocolRoutePaths.PushedAuthorization.EnsureLeadingSlash());
         builder.AddEndpoint<TokenRevocationEndpoint>(EndpointNames.Revocation, ProtocolRoutePaths.Revocation.EnsureLeadingSlash());
         builder.AddEndpoint<TokenEndpoint>(EndpointNames.Token, ProtocolRoutePaths.Token.EnsureLeadingSlash());
         builder.AddEndpoint<UserInfoEndpoint>(EndpointNames.UserInfo, ProtocolRoutePaths.UserInfo.EnsureLeadingSlash());
@@ -136,6 +137,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpointResultGenerator<IntrospectionResult, IntrospectionResultGenerator>();
         builder.AddEndpointResultGenerator<JsonWebKeysResult, JsonWebKeysResultGenerator>();
         builder.AddEndpointResultGenerator<ProtectedResourceErrorResult, ProtectedResourceErrorResultGenerator>();
+        builder.AddEndpointResultGenerator<PushedAuthorizationResult, PushedAuthorizationResultGenerator>();
         builder.AddEndpointResultGenerator<StatusCodeResult, StatusCodeResultGenerator>();
         builder.AddEndpointResultGenerator<TokenErrorResult, TokenErrorResultGenerator>();
         builder.AddEndpointResultGenerator<TokenResult, TokenResultGenerator>();
