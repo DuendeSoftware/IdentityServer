@@ -17,7 +17,7 @@
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0'">
         <FrameworkVersion>8.0.0-preview.6.23329.11</FrameworkVersion>
         <ExtensionsVersion>8.0.0-preview.6.23329.7</ExtensionsVersion>
-        <EntityFrameworkVersion>8.0.0-preview.6.23329.4</EntityFrameworkVersion>
+        <EntityFrameworkVersion>8.0.0-rc.1.23419.6</EntityFrameworkVersion>
         <WilsonVersion>6.15.1</WilsonVersion>
     </PropertyGroup>
 
