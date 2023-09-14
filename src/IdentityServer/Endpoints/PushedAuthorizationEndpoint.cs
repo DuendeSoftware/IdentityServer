@@ -109,7 +109,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         await _store.StoreAsync(new Storage.Models.PushedAuthorizationRequest
         {
             RequestUri = requestUri,
-            Expiration = expiration,
+            ExpiresAtUtc = DateTime.UtcNow.AddSeconds(expiration),
             Parameters = protectedData
         });
 

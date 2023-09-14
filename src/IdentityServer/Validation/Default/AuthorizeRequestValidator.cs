@@ -173,17 +173,35 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
                 var pushedAuthoriztionRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
 
-                    // TODO - Validate expiry
 
-                    // TODO - Validate binding of request to client
 
-                    // TODO - Support JAR + PAR together
+                // TODO - Support JAR + PAR together
 
-                    var unprotected = _dataProtector.Unprotect(pushedAuthoriztionRequest.Parameters);
-                    var dictionary = ObjectSerializer.FromString<Dictionary<string, string[]>>(unprotected);
-                    request.Raw = dictionary.FromFullDictionary();
-                    request.Raw[OidcConstants.AuthorizeRequest.RequestUri] = requestUri;
+                var unprotected = _dataProtector.Unprotect(pushedAuthoriztionRequest.Parameters);
+                var rawPushedAuthorizationRequest = ObjectSerializer
+                    .FromString<Dictionary<string, string[]>>(unprotected)
+                    .FromFullDictionary();
 
+                // Validate binding of PAR to client
+                var parClientId = rawPushedAuthorizationRequest.Get(OidcConstants.AuthorizeRequest.ClientId);
+                if(parClientId != request.ClientId)
+                {
+                    // TODO - Check specs carefully to make sure this error code is correct
+                    return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "invalid client for pushed authorization request");
+                }
+
+                // Validate expiration of PAR
+                // TODO - Add to IdentityModel
+                if(DateTime.UtcNow > pushedAuthoriztionRequest.ExpiresAtUtc)
+                {
+                    // TODO - Check specs carefully to make sure this error code is correct
+                    return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "expired pushed authorization request");
+                }
+                
+
+
+                request.Raw = rawPushedAuthorizationRequest;
+                request.Raw[OidcConstants.AuthorizeRequest.RequestUri] = requestUri;
             }
             else if (_options.Endpoints.EnableJwtRequestUri)
             {
