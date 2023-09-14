@@ -216,6 +216,14 @@ public class Client
     /// </summary>
     public int? ConsentLifetime { get; set; } = null;
 
+    // REVIEW - Do we have client specific AND server-wide configuration options for PAR?
+    // If so, what takes precedence? In general, I think specific beats general, but
+    // RequirePushedAuthorization drives a global value in discovery. 
+
+    public int? PushedAuthorizationLifetime { get; set; }
+
+    public bool RequirePushedAuthorization { get; set; } = false;
+
     /// <summary>
     /// ReUse: the refresh token handle will stay the same when refreshing tokens
     /// OneTime: the refresh token handle will be updated when refreshing tokens

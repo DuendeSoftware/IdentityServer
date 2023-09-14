@@ -8,7 +8,7 @@ namespace Duende.IdentityServer.Configuration.DependencyInjection.Options;
 
 public class PushedAuthorizationOptions
 {
-    private bool _enabled;
+    private bool _enabled = false;
     public bool Enabled 
     {
         get => _enabled;
@@ -22,7 +22,7 @@ public class PushedAuthorizationOptions
         }
     }
 
-    private bool _required;
+    private bool _required = false;
     public bool Required 
     { 
         get => _required;
@@ -35,4 +35,7 @@ public class PushedAuthorizationOptions
             _required = value;
         }
     }
+
+    // TODO - Think about default lifetime
+    public int Lifetime { get; set; } = 120;
 }

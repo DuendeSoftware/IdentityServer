@@ -22,7 +22,7 @@ internal class AuthorizeEndpoint : AuthorizeEndpointBase
 {
     public AuthorizeEndpoint(
         IEventService events,
-        ILogger<AuthorizeCallbackEndpoint> logger,
+        ILogger<AuthorizeEndpoint> logger,
         IdentityServerOptions options,
         IAuthorizeRequestValidator validator,
         IAuthorizeInteractionResponseGenerator interactionGenerator,

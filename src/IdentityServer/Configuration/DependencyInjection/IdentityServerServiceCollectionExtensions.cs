@@ -53,7 +53,7 @@ public static class IdentityServerServiceCollectionExtensions
         // provide default in-memory implementation, not suitable for most production scenarios
         builder.AddInMemoryPersistedGrants();
 
-        // TODO - Maybe only do this if feature enabled in config?
+        // REVIEW - Do we want this for PAR, similar to what we do above for persisted grants?
         builder.AddInMemoryPushedAuthorizationRequests();
 
         return builder;

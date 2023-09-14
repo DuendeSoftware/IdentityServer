@@ -72,8 +72,6 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
     {
         var returnUrl = _urls.BasePath.EnsureTrailingSlash() + ProtocolRoutePaths.AuthorizeCallback;
 
-
-
         //TODO - Verify that we can use both PAR and the parameter message store
         if (_authorizationParametersMessageStore != null)
         {
@@ -83,6 +81,8 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
         }
         else
         {
+            // TODO - Verify that this is okay when we are using JAR Request URIs, but not PAR
+            // TODO - Consider changing the Request model to make it more obvious that this is for PAR
             if (result.Request.RequestUri != null)
             {
                 returnUrl = returnUrl

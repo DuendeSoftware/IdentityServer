@@ -174,6 +174,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 var pushedAuthoriztionRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
 
 
+                // TODO - support the required flag(s)
+
 
                 // TODO - Support JAR + PAR together
 
@@ -197,8 +199,6 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                     // TODO - Check specs carefully to make sure this error code is correct
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "expired pushed authorization request");
                 }
-                
-
 
                 request.Raw = rawPushedAuthorizationRequest;
                 request.Raw[OidcConstants.AuthorizeRequest.RequestUri] = requestUri;
