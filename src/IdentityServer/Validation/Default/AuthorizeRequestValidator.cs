@@ -176,7 +176,6 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
                 // TODO - support the required flag(s)
 
-
                 // TODO - Support JAR + PAR together
 
                 var unprotected = _dataProtector.Unprotect(pushedAuthoriztionRequest.Parameters);

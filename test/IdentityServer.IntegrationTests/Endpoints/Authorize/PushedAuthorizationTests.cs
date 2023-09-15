@@ -9,9 +9,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -37,7 +39,12 @@ public class PushedAuthorizationTests
     [Fact]
     public async Task happy_path()
     {
-        var response = await _mockPipeline.BackChannelClient.PostAsync(IdentityServerPipeline.ParEndpoint,
+        await _mockPipeline.LoginAsync("bob");
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+
+        var parResponse = await _mockPipeline.BackChannelClient.PostAsync(IdentityServerPipeline.ParEndpoint,
             new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 { "client_id", "client1" },
@@ -45,10 +52,32 @@ public class PushedAuthorizationTests
                 { "response_type", "id_token" },
                 { "scope", "openid profile" },
                 { "redirect_uri", "https://client1/callback" },
-                { "nonce", "123_nonce" }
+                { "nonce", "123_nonce" },
+                { "state", "123_state" }
+
             }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        parResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var parJson = await parResponse.Content.ReadFromJsonAsync<PushedAuthorizationResponse>();
+
+
+        var authorizeUrl = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            extra: new
+            {
+                request_uri = parJson.RequestUri
+            });
+
+        var response = await _mockPipeline.BrowserClient.GetAsync(authorizeUrl);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+
+        var authorization = new IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
+        authorization.IsError.Should().BeFalse();
+        authorization.IdentityToken.Should().NotBeNull();
+        authorization.State.Should().Be("123_state");
     }
 
 
@@ -112,4 +141,21 @@ public class PushedAuthorizationTests
             },
         });
     }
+
+
 }
+
+// TODO - Move to IdentityModel
+public class PushedAuthorizationRequest
+{ }
+
+// TODO - Move to IdentityModel
+public class PushedAuthorizationResponse
+{
+    [JsonPropertyName("request_uri")]
+    public string RequestUri { get; set; }
+
+    [JsonPropertyName("expires_in")]
+    public int ExpiresIn { get; set; }
+}
+
