@@ -37,12 +37,12 @@ internal class LicenseValidator<T>
         if (_copy == null && License != null)
         {
             _copy = new T();
-            _copy.Initalize(License.Claims.Clone());
+            _copy.Initialize(License.Claims.Clone());
         }
         return _copy;
     }
 
-    protected void Initalize(ILoggerFactory loggerFactory, string productName, string key)
+    protected void Initialize(ILoggerFactory loggerFactory, string productName, string key)
     {
         Logger = loggerFactory.CreateLogger($"Duende.{productName}.License");
 
@@ -166,11 +166,11 @@ internal class LicenseValidator<T>
                 ValidateLifetime = false
             };
 
-            var validateResult = handler.ValidateToken(licenseKey, parms);
+            var validateResult = handler.ValidateTokenAsync(licenseKey, parms).Result;
             if (validateResult.IsValid)
             {
                 var license = new T();
-                license.Initalize(new ClaimsPrincipal(validateResult.ClaimsIdentity));
+                license.Initialize(new ClaimsPrincipal(validateResult.ClaimsIdentity));
                 return license;
             }
             else

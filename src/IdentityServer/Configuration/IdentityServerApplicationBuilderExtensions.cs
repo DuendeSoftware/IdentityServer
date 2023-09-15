@@ -76,7 +76,7 @@ public static class IdentityServerApplicationBuilderExtensions
 
             var options = serviceProvider.GetRequiredService<IdentityServerOptions>();
             var env = serviceProvider.GetRequiredService<IHostEnvironment>();
-            IdentityServerLicenseValidator.Instance.Initalize(loggerFactory, options, env.IsDevelopment());
+            IdentityServerLicenseValidator.Instance.Initialize(loggerFactory, options, env.IsDevelopment());
 
             TestService(serviceProvider, typeof(IPersistedGrantStore), logger, "No storage mechanism for grants specified. Use the 'AddInMemoryPersistedGrants' extension method to register a development version.");
             TestService(serviceProvider, typeof(IClientStore), logger, "No storage mechanism for clients specified. Use the 'AddInMemoryClients' extension method to register a development version.");

@@ -15,9 +15,9 @@ internal class ConfigurationLicenseValidator : LicenseValidator<ConfigurationLic
 {
     internal readonly static ConfigurationLicenseValidator Instance = new ConfigurationLicenseValidator();
 
-    public void Initalize(ILoggerFactory loggerFactory, IdentityServerConfigurationOptions options)
+    public void Initialize(ILoggerFactory loggerFactory, IdentityServerConfigurationOptions options)
     {
-        Initalize(loggerFactory, "IdentityServer.Configuration", options.LicenseKey);
+        Initialize(loggerFactory, "IdentityServer.Configuration", options.LicenseKey);
         ValidateLicense();
     }
 

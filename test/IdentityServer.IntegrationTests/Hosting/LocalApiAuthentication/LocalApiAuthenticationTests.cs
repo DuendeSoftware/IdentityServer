@@ -170,11 +170,11 @@ public class LocalApiAuthenticationTests
         }
         else if (string.Equals(jsonWebKey.Kty, JsonWebAlgorithmsKeyTypes.RSA))
         {
-            jwk = new
+            jwk = new Dictionary<string, object>
             {
-                kty = jsonWebKey.Kty,
-                e = jsonWebKey.E,
-                n = jsonWebKey.N
+                { "kty", jsonWebKey.Kty },
+                { "e", jsonWebKey.E },
+                { "n", jsonWebKey.N }
             };
         }
         else
@@ -215,8 +215,8 @@ public class LocalApiAuthenticationTests
 
         var handler = new JsonWebTokenHandler() { SetDefaultTimesOnTokenCreation = false };
         var key = new SigningCredentials(jsonWebKey, jsonWebKey.Alg);
-        var proofToken = handler.CreateToken(JsonSerializer.Serialize(payload), key, header);
-        return proofToken;
+            var proofToken = handler.CreateToken(JsonSerializer.Serialize(payload), key, header);
+            return proofToken;
     }
 
     [Fact]
