@@ -193,7 +193,6 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 }
 
                 // Validate expiration of PAR
-                // TODO - Add to IdentityModel
                 if(DateTime.UtcNow > pushedAuthoriztionRequest.ExpiresAtUtc)
                 {
                     // TODO - Check specs carefully to make sure this error code is correct
