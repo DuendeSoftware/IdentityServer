@@ -1,15 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.ResponseHandling;
 
-public class PushedAuthorizationResponse
-{
-    public string RequestUri { get; set; }
+public abstract class PushedAuthorizationResponse
+{ }
 
-    public int ExpiresIn { get; set; }
+public class PushedAuthorizationFailure : PushedAuthorizationResponse
+{
+    public required string Error { get; set; }
+    public required string ErrorDescription { get; set; }
+}
+
+public class PushedAuthorizationSuccess : PushedAuthorizationResponse
+{
+    [JsonPropertyName("request_uri")]
+    public required string RequestUri { get; set; }
+
+    [JsonPropertyName("expires_in")]
+    public required int ExpiresIn { get; set; }
 }

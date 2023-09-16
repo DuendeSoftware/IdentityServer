@@ -6,7 +6,7 @@ using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Text.Json.Serialization;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Endpoints.Results;
@@ -25,22 +25,23 @@ internal class PushedAuthorizationResultGenerator : IEndpointResultGenerator<Pus
 {
     public async Task ExecuteAsync(PushedAuthorizationResult result, HttpContext context)
     {
-        context.Response.SetNoCache();
-        var dto = new ResultDto
+        if(result.Response is PushedAuthorizationSuccess success)
         {
-            ExpiresIn = result.Response.ExpiresIn,
-            RequestUri = result.Response.RequestUri
-        };
-        await context.Response.WriteJsonAsync(dto);
-
-    }
-
-    internal class ResultDto
-    {
-        [JsonPropertyName("request_uri")]
-        public string RequestUri { get; set; }
-
-        [JsonPropertyName("expires_in")]
-        public int ExpiresIn { get; set; }
+            context.Response.SetNoCache(); // REVIEW - Do we need cache control headers? 
+            context.Response.StatusCode = (int) HttpStatusCode.Created;
+            await context.Response.WriteJsonAsync(result.Response);
+            // TODO - Logs and maybe an event for PAR success
+        } 
+        else if(result.Response is PushedAuthorizationFailure failure)
+        {
+            context.Response.SetNoCache(); // REVIEW - Do we need cache control headers? 
+            context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+            await context.Response.WriteJsonAsync(result.Response);
+            // TODO - Logs and maybe an event for PAR failures
+        } 
+        else
+        {
+            throw new Exception("Can't happen!");
+        }
     }
 }

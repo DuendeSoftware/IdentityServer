@@ -75,6 +75,24 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
             return ClientValidationError(client.Error, client.ErrorDescription);
         }
 
+        //// Reject request_uri parameter
+        if (values.Get(OidcConstants.AuthorizeRequest.RequestUri).IsPresent())
+        {
+            return await CreateErrorResultAsync(
+                "Request validation failed",
+                request: null,
+                error: OidcConstants.AuthorizeErrors.InvalidRequest, 
+                // REVIEW - Make sure this is the correct error code
+                // Not clear what the error should be.
+                // PAR spec says you can't use request_uri, but doesn't say what to do about it
+                // https://datatracker.ietf.org/doc/html/rfc9126#name-request
+                // JAR spec has related error conditions, do we reuse those ?
+                // https://www.rfc-editor.org/rfc/rfc9101#name-authorization-server-respon
+
+                errorDescription: "Cannot use request_uri with PAR"
+                );
+        }
+
         // Validate Request
         var validationResult = await _requestValidator.ValidateAsync(values);
 
@@ -117,33 +135,30 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 
 
         // Return reference and expiration
-        var response = new PushedAuthorizationResponse
+        var response = new PushedAuthorizationSuccess
         {
             RequestUri = requestUri,
             ExpiresIn = expiration
         };
 
-        // TODO - Logs and events here
+        // TODO - Logs and events here?
 
         return new PushedAuthorizationResult(response);
     }
 
-    // TODO - Copied from TokenEndpoint
-    private TokenErrorResult ClientValidationError(string error, string errorDescription = null, Dictionary<string, object> custom = null)
+    private PushedAuthorizationResult ClientValidationError(string error, string errorDescription = null)
     {
-        // TODO - Should we create new response and result classes?
-        var response = new TokenErrorResponse
+        var response = new PushedAuthorizationFailure
         {
             Error = error,
             ErrorDescription = errorDescription,
-            Custom = custom
         };
 
-        return new TokenErrorResult(response);
+        return new PushedAuthorizationResult(response);
     }
 
     // TODO - Copied from AuthorizeEndpointBase
-    private async Task<IEndpointResult> CreateErrorResultAsync(
+    private async Task<PushedAuthorizationResult> CreateErrorResultAsync(
         string logMessage,
         ValidatedAuthorizeRequest request = null,
         string error = OidcConstants.AuthorizeErrors.ServerError,
@@ -161,19 +176,16 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
             _logger.LogInformation("{@validationDetails}", details);
         }
 
-        // TODO: should we raise a token failure event for all errors to the authorize endpoint?
+        // TODO: should we raise a failure event for all errors to the authorize endpoint?
         await RaiseFailureEventAsync(request, error, errorDescription);
 
-        return new AuthorizeResult(new AuthorizeResponse
+        return new PushedAuthorizationResult(new PushedAuthorizationFailure
         {
-            Request = request,
             Error = error,
             ErrorDescription = errorDescription,
-            SessionState = request?.GenerateSessionStateValue()
         });
     }
 
-    // TODO - Copied from AuthorizeEndpointBase
     private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription)
     {
         return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));

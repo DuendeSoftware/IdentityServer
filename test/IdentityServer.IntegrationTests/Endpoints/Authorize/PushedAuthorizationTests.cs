@@ -1,7 +1,10 @@
 using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
+using IdentityModel;
+using IdentityModel.Client;
 using IntegrationTests.Common;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -16,6 +19,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Sdk;
 
 namespace IntegrationTests.Endpoints.Authorize;
 
@@ -43,7 +47,6 @@ public class PushedAuthorizationTests
 
         _mockPipeline.BrowserClient.AllowAutoRedirect = false;
 
-
         var parResponse = await _mockPipeline.BackChannelClient.PostAsync(IdentityServerPipeline.ParEndpoint,
             new FormUrlEncodedContent(new Dictionary<string, string>
             {
@@ -57,7 +60,7 @@ public class PushedAuthorizationTests
 
             }));
 
-        parResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        parResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var parJson = await parResponse.Content.ReadFromJsonAsync<PushedAuthorizationResponse>();
 
@@ -71,7 +74,7 @@ public class PushedAuthorizationTests
 
         var response = await _mockPipeline.BrowserClient.GetAsync(authorizeUrl);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.StatusCode.Should().Be(HttpStatusCode.Found);
         response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
 
         var authorization = new IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
@@ -80,6 +83,24 @@ public class PushedAuthorizationTests
         authorization.State.Should().Be("123_state");
     }
 
+    [Theory]
+    [InlineData("urn:ietf:params:oauth:request_uri:foo")]
+    [InlineData("https://requests.example.com/bar")]
+    [InlineData("nonsense")]
+    public async Task pushed_authorization_with_a_request_uri_fails(string requestUri)
+    {
+        var parResponse = await _mockPipeline.BackChannelClient.PostAsync(IdentityServerPipeline.ParEndpoint,
+        new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+                    { "client_id", "client1" },
+                    { "client_secret", "secret" },
+                    { "request_uri", requestUri }
+        }));
+
+        parResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await parResponse.Content.ReadFromJsonAsync<PushedAuthorizationFailure>();
+        error?.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
+    }
 
     private void ConfigureScopesAndResources()
     {
