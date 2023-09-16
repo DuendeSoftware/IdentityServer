@@ -83,10 +83,10 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
         {
             // TODO - Verify that this is okay when we are using JAR Request URIs, but not PAR
             // TODO - Consider changing the Request model to make it more obvious that this is for PAR
-            if (result.Request.RequestUri != null)
+            if (result.Request.ParRequestUri != null)
             {
                 returnUrl = returnUrl
-                    .AddQueryString(OidcConstants.AuthorizeRequest.RequestUri, result.Request.RequestUri)
+                    .AddQueryString(OidcConstants.AuthorizeRequest.RequestUri, result.Request.ParRequestUri)
                     .AddQueryString(OidcConstants.AuthorizeRequest.ClientId, result.Request.ClientId);
             } 
             else

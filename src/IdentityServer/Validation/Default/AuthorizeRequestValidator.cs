@@ -168,8 +168,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if(requestUri.StartsWith("urn:ietf:params:oauth:request_uri:"))
             {
-                // PAR
-                request.RequestUri = requestUri;
+                request.ParRequestUri = requestUri;
 
                 var pushedAuthoriztionRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
 
