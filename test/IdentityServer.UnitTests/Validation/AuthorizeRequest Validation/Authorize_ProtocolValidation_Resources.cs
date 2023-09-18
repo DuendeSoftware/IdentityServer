@@ -57,6 +57,8 @@ public class Authorize_ProtocolValidation_Resources
             _mockUserSession,
             new JwtRequestValidator("aud", TestLogger.Create<JwtRequestValidator>()),
             new MockJwtRequestUriHttpClient(),
+            new InMemoryPushedAuthorizationRequestStore(),
+            new StubDataProtectionProvider(),
             TestLogger.Create<AuthorizeRequestValidator>());
     }
 

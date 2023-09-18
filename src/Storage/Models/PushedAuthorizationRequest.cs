@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Storage.Models;
 
+/// <summary>
+/// Represents a persisted Pushed Authorization Request.
+/// </summary>
 public class PushedAuthorizationRequest
 {
     public string RequestUri { get; set; }

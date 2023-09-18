@@ -17,6 +17,7 @@ using UnitTests.Common;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Services.KeyManagement;
 using Duende.IdentityServer;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace UnitTests.Validation.Setup;
 
@@ -221,7 +222,9 @@ internal static class Factory
         IRedirectUriValidator uriValidator = null,
         IResourceValidator resourceValidator = null,
         JwtRequestValidator jwtRequestValidator = null,
-        IJwtRequestUriHttpClient jwtRequestUriHttpClient = null)
+        IJwtRequestUriHttpClient jwtRequestUriHttpClient = null,
+        IPushedAuthorizationRequestStore parStore = null,
+        IDataProtectionProvider dataProtectionProvider = null)
     {
         if (options == null)
         {
@@ -268,7 +271,16 @@ internal static class Factory
             jwtRequestUriHttpClient = new DefaultJwtRequestUriHttpClient(new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options, new LoggerFactory(), new NoneCancellationTokenProvider());
         }
 
+        if (parStore == null)
+        {
+            parStore = new InMemoryPushedAuthorizationRequestStore();
+        }
 
+        if (dataProtectionProvider == null)
+        {
+            dataProtectionProvider = new StubDataProtectionProvider();
+        }
+    
         var userSession = new MockUserSession();
 
         return new AuthorizeRequestValidator(
@@ -281,6 +293,8 @@ internal static class Factory
             userSession,
             jwtRequestValidator,
             jwtRequestUriHttpClient,
+            parStore,
+            dataProtectionProvider,
             TestLogger.Create<AuthorizeRequestValidator>());
     }
 

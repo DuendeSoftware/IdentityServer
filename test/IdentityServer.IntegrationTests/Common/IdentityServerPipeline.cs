@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
@@ -81,7 +83,7 @@ public class IdentityServerPipeline
     {
         var builder = new WebHostBuilder();
         builder.ConfigureServices(ConfigureServices);
-        builder.Configure(app=>
+        builder.Configure(app =>
         {
             if (basePath != null)
             {
@@ -103,7 +105,7 @@ public class IdentityServerPipeline
 
         Server = new TestServer(builder);
         Handler = Server.CreateHandler();
-            
+
         BrowserClient = new BrowserClient(new BrowserHandler(Handler));
         BackChannelClient = new HttpClient(Handler);
     }
@@ -137,7 +139,7 @@ public class IdentityServerPipeline
                     RaiseSuccessEvents = true
                 };
                 options.KeyManagement.Enabled = false;
-                
+
                 Options = options;
             })
             .AddInMemoryClients(Clients)
@@ -380,13 +382,64 @@ public class IdentityServerPipeline
             extra: Parameters.FromObject(extra));
         return url;
     }
+    public async Task<(PushedAuthorizationResponse, HttpStatusCode)> PushAuthorizationRequest(
+        Dictionary<string, string> parameters)
+    { 
+        PushedAuthorizationResponse parsedResponse;
+        var httpResponse = await BackChannelClient.PostAsync(ParEndpoint,
+            new FormUrlEncodedContent(parameters));
+        var statusCode = httpResponse.StatusCode;
+        if(statusCode == HttpStatusCode.Created) 
+        {
+            parsedResponse = await httpResponse.Content.ReadFromJsonAsync<PushedAuthorizationSuccess>();   
+        }
+        else
+        {
+            parsedResponse = await httpResponse.Content.ReadFromJsonAsync<PushedAuthorizationFailure>();
+        }
 
-    public AuthorizeResponse ParseAuthorizationResponseUrl(string url)
-    {
-        return new AuthorizeResponse(url);
+        return (parsedResponse, statusCode);
     }
 
-    public async Task<AuthorizeResponse> RequestAuthorizationEndpointAsync(
+    public async Task<(PushedAuthorizationResponse, HttpStatusCode)> PushAuthorizationRequestAsync(
+        string clientId = "client1",
+        string clientSecret = "secret",
+        string responseType = "id_token",
+        string scope = "openid profile",
+        string redirectUri = "https://client1/callback",
+        string nonce = "123_nonce",
+        string state = "123_state",
+        Dictionary<string, string> extra = null //TODO refactor to allow anonymous objects instead
+    )
+    {
+        var parameters = new Dictionary<string, string>
+            {
+                { "client_id", clientId },
+                { "client_secret", clientSecret },
+                { "response_type", responseType },
+                { "scope", scope },
+                { "redirect_uri", redirectUri },
+                { "nonce", nonce },
+                { "state", state }
+            };
+
+        if(extra != null)
+        {
+            foreach(var (key, value) in extra)
+            {
+                parameters[key] = value;
+            }
+        }
+
+        return await PushAuthorizationRequest(parameters);
+    }
+
+    public IdentityModel.Client.AuthorizeResponse ParseAuthorizationResponseUrl(string url)
+    {
+        return new IdentityModel.Client.AuthorizeResponse(url);
+    }
+
+    public async Task<IdentityModel.Client.AuthorizeResponse> RequestAuthorizationEndpointAsync(
         string clientId,
         string responseType,
         string scope = null,
@@ -419,7 +472,7 @@ public class IdentityServerPipeline
             return null;
         }
 
-        return new AuthorizeResponse(redirect);
+        return new IdentityModel.Client.AuthorizeResponse(redirect);
     }
 
     public T Resolve<T>()

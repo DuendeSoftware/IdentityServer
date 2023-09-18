@@ -23,11 +23,11 @@ using Xunit.Sdk;
 
 namespace IntegrationTests.Endpoints.Authorize;
 
+
 public class PushedAuthorizationTests
 {
     private readonly IdentityServerPipeline _mockPipeline = new();
     private Client _client;
-
 
     public PushedAuthorizationTests()
     {
@@ -43,44 +43,36 @@ public class PushedAuthorizationTests
     [Fact]
     public async Task happy_path()
     {
+        // Login
         await _mockPipeline.LoginAsync("bob");
-
         _mockPipeline.BrowserClient.AllowAutoRedirect = false;
 
-        var parResponse = await _mockPipeline.BackChannelClient.PostAsync(IdentityServerPipeline.ParEndpoint,
-            new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                { "client_id", "client1" },
-                { "client_secret", "secret" },
-                { "response_type", "id_token" },
-                { "scope", "openid profile" },
-                { "redirect_uri", "https://client1/callback" },
-                { "nonce", "123_nonce" },
-                { "state", "123_state" }
+        // Push Authorization
+        var expectedCallback = _client.RedirectUris.First();
+        var expectedState = "123_state";
+        var (parJson, statusCode) = await _mockPipeline.PushAuthorizationRequestAsync(
+            redirectUri: expectedCallback,
+            state: expectedState
+        );
+        var parSuccess = parJson as PushedAuthorizationSuccess;
+        statusCode.Should().Be(HttpStatusCode.Created);
 
-            }));
-
-        parResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        var parJson = await parResponse.Content.ReadFromJsonAsync<PushedAuthorizationResponse>();
-
-
+        // Authorize using pushed request
         var authorizeUrl = _mockPipeline.CreateAuthorizeUrl(
             clientId: "client1",
             extra: new
             {
-                request_uri = parJson.RequestUri
+                request_uri = parSuccess.RequestUri
             });
-
         var response = await _mockPipeline.BrowserClient.GetAsync(authorizeUrl);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Found);
-        response.Headers.Location.ToString().Should().StartWith("https://client1/callback");
+        response.Should().Be302Found();
+        response.Should().HaveHeader("Location").And.Match($"{expectedCallback}*");
 
         var authorization = new IdentityModel.Client.AuthorizeResponse(response.Headers.Location.ToString());
         authorization.IsError.Should().BeFalse();
         authorization.IdentityToken.Should().NotBeNull();
-        authorization.State.Should().Be("123_state");
+        authorization.State.Should().Be(expectedState);
     }
 
     [Theory]
@@ -89,17 +81,15 @@ public class PushedAuthorizationTests
     [InlineData("nonsense")]
     public async Task pushed_authorization_with_a_request_uri_fails(string requestUri)
     {
-        var parResponse = await _mockPipeline.BackChannelClient.PostAsync(IdentityServerPipeline.ParEndpoint,
-        new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-                    { "client_id", "client1" },
-                    { "client_secret", "secret" },
-                    { "request_uri", requestUri }
-        }));
-
-        parResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        var error = await parResponse.Content.ReadFromJsonAsync<PushedAuthorizationFailure>();
-        error?.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
+        var (parJson, statusCode) = await _mockPipeline.PushAuthorizationRequestAsync(
+            extra: new Dictionary<string, string>
+            {
+                { "request_uri", requestUri }
+            });
+        statusCode.Should().Be(HttpStatusCode.BadRequest);
+        parJson.Should().NotBeNull()
+            .And.Subject.As<PushedAuthorizationFailure>().Error.Should()
+            .Be(OidcConstants.AuthorizeErrors.InvalidRequest);
     }
 
     private void ConfigureScopesAndResources()
@@ -165,18 +155,3 @@ public class PushedAuthorizationTests
 
 
 }
-
-// TODO - Move to IdentityModel
-public class PushedAuthorizationRequest
-{ }
-
-// TODO - Move to IdentityModel
-public class PushedAuthorizationResponse
-{
-    [JsonPropertyName("request_uri")]
-    public string RequestUri { get; set; }
-
-    [JsonPropertyName("expires_in")]
-    public int ExpiresIn { get; set; }
-}
-
