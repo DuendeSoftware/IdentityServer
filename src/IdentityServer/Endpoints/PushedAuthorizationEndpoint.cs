@@ -113,7 +113,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         //The probability of an attacker guessing generated tokens(and other
         //credentials not intended for handling by end - users) MUST be less than
         //or equal to 2 ^ (-128) and SHOULD be less than or equal to 2 ^ (-160).
-        var referenceValue = CryptoRandom.CreateUniqueId(32, CryptoRandom.OutputFormat.Base64Url);
+        var referenceValue = CryptoRandom.CreateUniqueId(32, CryptoRandom.OutputFormat.Hex);
         var requestUri = $"urn:ietf:params:oauth:request_uri:{referenceValue}";
         
         
