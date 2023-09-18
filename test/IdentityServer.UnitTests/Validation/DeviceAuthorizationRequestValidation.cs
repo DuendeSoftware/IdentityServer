@@ -31,13 +31,13 @@ public class DeviceAuthorizationRequestValidation
         
     [Fact]
     [Trait("Category", Category)]
-    public void Null_Parameter()
+    public async Task Null_Parameter()
     {
         var validator = Factory.CreateDeviceAuthorizationRequestValidator();
 
         Func<Task> act = () => validator.ValidateAsync(null, null);
 
-        act.Should().Throw<ArgumentNullException>();
+        await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]

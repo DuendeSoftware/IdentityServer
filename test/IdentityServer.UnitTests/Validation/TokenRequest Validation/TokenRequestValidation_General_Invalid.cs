@@ -25,18 +25,18 @@ public class TokenRequestValidation_General_Invalid
 
     [Fact]
     [Trait("Category", Category)]
-    public void Parameters_Null()
+    public async Task Parameters_Null()
     {
         var validator = Factory.CreateTokenRequestValidator();
 
         Func<Task> act = () => validator.ValidateRequestAsync(null, null);
 
-        act.Should().Throw<ArgumentNullException>();
+        await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
     [Trait("Category", Category)]
-    public void Client_Null()
+    public async Task Client_Null()
     {
         var validator = Factory.CreateTokenRequestValidator();
 
@@ -47,7 +47,7 @@ public class TokenRequestValidation_General_Invalid
 
         Func<Task> act = () => validator.ValidateRequestAsync(parameters, null);
 
-        act.Should().Throw<ArgumentNullException>();
+        await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]

@@ -64,7 +64,7 @@ public class MutualTlsSecretValidation
         };
 
         Func<Task> act = async () => await validator.ValidateAsync(client.ClientSecrets, secret);
-        act.Should().Throw<InvalidOperationException>();
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
@@ -151,7 +151,7 @@ public class MutualTlsSecretValidation
         };
 
         Func<Task> act = async () => await validator.ValidateAsync(client.ClientSecrets, secret);
-        act.Should().Throw<InvalidOperationException>();
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
