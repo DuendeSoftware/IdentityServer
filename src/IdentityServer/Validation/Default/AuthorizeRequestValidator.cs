@@ -197,6 +197,9 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "expired pushed authorization request");
                 }
 
+                // Support JAR + PAR together - if there is a request object within the PAR, extract it
+                requestObject = rawPushedAuthorizationRequest.Get(OidcConstants.AuthorizeRequest.Request);
+
                 request.Raw = rawPushedAuthorizationRequest;
                 request.Raw[OidcConstants.AuthorizeRequest.RequestUri] = requestUri;
             }
