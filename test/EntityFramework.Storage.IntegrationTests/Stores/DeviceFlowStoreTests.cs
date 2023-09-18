@@ -88,7 +88,7 @@ public class DeviceFlowStoreTests : IntegrationTest<DeviceFlowStoreTests, Persis
             foundDeviceFlowCodes.Should().NotBeNull();
             var deserializedData = new PersistentGrantSerializer().Deserialize<DeviceCode>(foundDeviceFlowCodes?.Data);
 
-            deserializedData.CreationTime.Should().BeCloseTo(data.CreationTime);
+            deserializedData.CreationTime.Should().BeCloseTo(data.CreationTime, TimeSpan.FromMicroseconds(1));
             deserializedData.ClientId.Should().Be(data.ClientId);
             deserializedData.Lifetime.Should().Be(data.Lifetime);
         }
