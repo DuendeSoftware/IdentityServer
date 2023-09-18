@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
@@ -132,7 +133,7 @@ public class GenericHost
     public async Task RevokeSessionCookieAsync()
     {
         var response = await BrowserClient.GetAsync(Url("__signout"));
-        response.StatusCode.Should().Be(204);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
 
@@ -166,7 +167,7 @@ public class GenericHost
     {
         _userToSignIn = new ClaimsPrincipal(new ClaimsIdentity(claims, "test", "name", "role"));
         var response = await BrowserClient.GetAsync(Url("__signin"));
-        response.StatusCode.Should().Be(204);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
     public Task IssueSessionCookieAsync(AuthenticationProperties props, params Claim[] claims)
     {

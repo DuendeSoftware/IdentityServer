@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -190,7 +190,7 @@ public class UserInfoResponseGeneratorTests
     }
 
     [Fact]
-    public void ProcessAsync_should_throw_if_incorrect_sub_issued_by_profile_service()
+    public async Task ProcessAsync_should_throw_if_incorrect_sub_issued_by_profile_service()
     {
         _identityResources.Add(new IdentityResource("id1", new[] { "foo" }));
         _identityResources.Add(new IdentityResource("id2", new[] { "bar" }));
@@ -216,8 +216,8 @@ public class UserInfoResponseGeneratorTests
 
         Func<Task> act = () => _subject.ProcessAsync(result);
 
-        act.Should().Throw<InvalidOperationException>()
-            .And.Message.Should().Contain("subject");
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*subject*");
     }
 
 }

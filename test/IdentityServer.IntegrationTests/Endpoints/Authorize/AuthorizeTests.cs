@@ -1159,7 +1159,7 @@ public class AuthorizeTests
             nonce: "123_nonce");
 
         Func<Task> a = () => _mockPipeline.BrowserClient.GetAsync(url);
-        a.Should().Throw<Exception>();
+        await a.Should().ThrowAsync<Exception>();
     }
 
     [Fact]
