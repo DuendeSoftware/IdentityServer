@@ -186,9 +186,9 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
                 request.ParRequestUri = requestUri;
 
-                var pushedAuthoriztionRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
+                var pushedAuthorizationRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
 
-                var unprotected = _dataProtector.Unprotect(pushedAuthoriztionRequest.Parameters);
+                var unprotected = _dataProtector.Unprotect(pushedAuthorizationRequest.Parameters);
                 var rawPushedAuthorizationRequest = ObjectSerializer
                     .FromString<Dictionary<string, string[]>>(unprotected)
                     .FromFullDictionary();
@@ -202,7 +202,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 }
 
                 // Validate expiration of PAR
-                if(DateTime.UtcNow > pushedAuthoriztionRequest.ExpiresAtUtc)
+                if(DateTime.UtcNow > pushedAuthorizationRequest.ExpiresAtUtc)
                 {
                     // TODO - Check specs carefully to make sure this error code is correct
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "expired pushed authorization request");
