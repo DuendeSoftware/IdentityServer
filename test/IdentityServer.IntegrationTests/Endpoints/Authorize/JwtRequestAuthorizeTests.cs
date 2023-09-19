@@ -362,6 +362,8 @@ public class JwtRequestAuthorizeTests
     [Trait("Category", Category)]
     public async Task authorize_should_accept_valid_JWT_request_object_parameters_using_rsa_jwk_and_pushed_authorization()
     {
+        _mockPipeline.Options.PushedAuthorization.Enabled = true;
+
         var requestJwt = CreateRequestJwt(
             issuer: _client.ClientId,
             audience: IdentityServerPipeline.BaseUrl,

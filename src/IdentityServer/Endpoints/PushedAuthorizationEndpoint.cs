@@ -55,6 +55,15 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         using var activity = Tracing.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.PushedAuthorization);
 
         _logger.LogDebug("Start pushed authorization request");
+        if(!_options.PushedAuthorization.Enabled)
+        {
+            return await CreateErrorResultAsync(
+                "Attempt to use Pushed Authorization when it is disabled globally",
+                request: null,
+                error: OidcConstants.AuthorizeErrors.InvalidRequest,
+                errorDescription: "Pushed authorization is disabled."
+            );
+        }
 
         NameValueCollection values;
         IFormCollection form;
@@ -90,7 +99,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
                 // https://www.rfc-editor.org/rfc/rfc9101#name-authorization-server-respon
 
                 errorDescription: "Cannot use request_uri with PAR"
-                );
+            );
         }
 
         // Validate Request
@@ -106,17 +115,10 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         }
 
         // Create a reference value
-        // REVIEW - Is 32 the right length?
-        //
-        // The spec says 
-        //
-        //The probability of an attacker guessing generated tokens(and other
-        //credentials not intended for handling by end - users) MUST be less than
-        //or equal to 2 ^ (-128) and SHOULD be less than or equal to 2 ^ (-160).
         var referenceValue = CryptoRandom.CreateUniqueId(32, CryptoRandom.OutputFormat.Hex);
         var requestUri = $"urn:ietf:params:oauth:request_uri:{referenceValue}";
         
-        
+        // Calculate the expiration
         var expiration = client.Client.PushedAuthorizationLifetime ?? _options.PushedAuthorization.Lifetime;
 
         // Serialize

@@ -164,18 +164,29 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             return Invalid(request, description: "Only one request parameter is allowed");
         }
 
+        var parPrefix = "urn:ietf:params:oauth:request_uri:";
+
+        var parRequired = _options.PushedAuthorization.Required || request.Client.RequirePushedAuthorization;
+        var parMissing = requestUri.IsMissing() || !requestUri.StartsWith(parPrefix);
+
+        if (parRequired && parMissing)
+        {
+            LogError("Pushed authorization is required", request);
+            return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, "Pushed authorization is required.");
+        }
+
         if (requestUri.IsPresent())
         {
-            if(requestUri.StartsWith("urn:ietf:params:oauth:request_uri:"))
+            if(requestUri.StartsWith(parPrefix))
             {
+                if (!_options.PushedAuthorization.Enabled)
+                {
+                    return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "Pushed authorization is disabled.");
+                }
+
                 request.ParRequestUri = requestUri;
 
                 var pushedAuthoriztionRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
-
-
-                // TODO - support the required flag(s)
-
-                // TODO - Support JAR + PAR together
 
                 var unprotected = _dataProtector.Unprotect(pushedAuthoriztionRequest.Parameters);
                 var rawPushedAuthorizationRequest = ObjectSerializer
