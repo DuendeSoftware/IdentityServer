@@ -34,7 +34,7 @@ namespace MvcPar
             var requestBody = new FormUrlEncodedContent(context.ProtocolMessage.Parameters);
             _httpClient.SetBasicAuthentication(clientId, "secret");
             // TODO - use discovery to determine endpoint
-            var response = await _httpClient.PostAsync("https://localhost:5001/connect/pushedauthorization", requestBody);
+            var response = await _httpClient.PostAsync("https://localhost:5001/connect/par", requestBody);
             var par = await response.Content.ReadFromJsonAsync<ParResponse>();
 
             // Remove all the parameters from the protocol message, and replace with what we got from the PAR response

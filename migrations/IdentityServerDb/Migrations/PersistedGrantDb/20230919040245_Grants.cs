@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace IdentityServerDb.Migrations.PersistedGrantDb
 {
+    /// <inheritdoc />
     public partial class Grants : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -66,6 +68,21 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PersistedGrants", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PushedAuthorizationRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RequestUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExpiresAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Parameters = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PushedAuthorizationRequests", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -159,6 +176,7 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 column: "SubjectId");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
@@ -169,6 +187,9 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
 
             migrationBuilder.DropTable(
                 name: "PersistedGrants");
+
+            migrationBuilder.DropTable(
+                name: "PushedAuthorizationRequests");
 
             migrationBuilder.DropTable(
                 name: "ServerSideSessions");
