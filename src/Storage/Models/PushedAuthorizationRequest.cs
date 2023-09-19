@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Duende.IdentityServer.Storage.Models;
+namespace Duende.IdentityServer.Models;
 
 /// <summary>
-/// Represents a persisted Pushed Authorization Request.
+/// Represents a <em>persisted</em> Pushed Authorization Request.
 /// </summary>
 public class PushedAuthorizationRequest
 {

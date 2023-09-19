@@ -128,7 +128,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         var protectedData = _dataProtector.Protect(serialized);
 
         // Persist 
-        await _store.StoreAsync(new Storage.Models.PushedAuthorizationRequest
+        await _store.StoreAsync(new Models.PushedAuthorizationRequest
         {
             RequestUri = requestUri,
             ExpiresAtUtc = DateTime.UtcNow.AddSeconds(expiration),

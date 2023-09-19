@@ -75,4 +75,6 @@ public class Client
     public DateTime? Updated { get; set; }
     public DateTime? LastAccessed { get; set; }
     public bool NonEditable { get; set; }
+    public int? PushedAuthorizationLifetime { get; internal set; }
+    public bool RequirePushedAuthorization { get; internal set; }
 }

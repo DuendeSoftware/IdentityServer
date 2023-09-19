@@ -107,7 +107,8 @@ public static class IdentityServerEntityFrameworkBuilderExtensions
         builder.AddPersistedGrantStore<PersistedGrantStore>();
         builder.AddDeviceFlowStore<DeviceFlowStore>();
         builder.AddServerSideSessionStore<ServerSideSessionStore>();
-            
+        builder.AddPushedAuthorizationRequestStore<PushedAuthorizationRequestStore>();
+
         builder.Services.AddSingleton<IHostedService, TokenCleanupHost>();
 
         return builder;

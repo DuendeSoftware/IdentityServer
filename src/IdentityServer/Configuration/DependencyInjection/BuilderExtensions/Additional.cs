@@ -188,9 +188,23 @@ public static class IdentityServerBuilderExtensionsAdditional
     }
 
     /// <summary>
+    /// Adds a pushed authorization request store.
+    /// </summary>
+    /// <typeparam name="T">The type of the concrete store that is registered in DI.</typeparam>
+    /// <param name="builder">The builder.</param>
+    /// <returns>The builder.</returns>
+    public static IIdentityServerBuilder AddPushedAuthorizationRequestStore<T>(this IIdentityServerBuilder builder)
+        where T : class, IPushedAuthorizationRequestStore
+    {
+        builder.Services.AddTransient<IPushedAuthorizationRequestStore, T>();
+
+        return builder;
+    }
+
+    /// <summary>
     /// Adds a CORS policy service.
     /// </summary>
-    /// <typeparam name="T">The type of the concrete scope store class that is registered in DI.</typeparam>
+    /// <typeparam name="T">The type of the concrete CORS policy service that is registered in DI.</typeparam>
     /// <param name="builder">The builder.</param>
     /// <returns></returns>
     public static IIdentityServerBuilder AddCorsPolicyService<T>(this IIdentityServerBuilder builder)
