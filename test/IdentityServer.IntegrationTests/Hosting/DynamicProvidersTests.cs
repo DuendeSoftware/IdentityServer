@@ -175,10 +175,7 @@ public class DynamicProvidersTests
                     options.ResponseMode = "query";
                     options.Scope.Clear();
                     options.Scope.Add("openid");
-                    options.SecurityTokenValidator = new JwtSecurityTokenHandler
-                    {
-                        MapInboundClaims = false
-                    };
+                    options.MapInboundClaims = false;
                     options.BackchannelHttpHandler = _idp2.Server.CreateHandler();
                 });
 

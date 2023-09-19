@@ -255,9 +255,14 @@ public class LocalApiAuthenticationHandler : AuthenticationHandler<LocalApiAuthe
 
         if (sb.Length > 0)
         {
-            Response.Headers.Add(HeaderNames.WWWAuthenticate, sb.ToString());
+            if(Response.Headers.ContainsKey(HeaderNames.WWWAuthenticate))
+            {
+
+                throw new InvalidOperationException("Attempted to set the WWW-Authenticate header when it is already set");
+            }
+            Response.Headers[HeaderNames.WWWAuthenticate] = sb.ToString();
         }
 
         return Task.CompletedTask;
     }
-}
+} 

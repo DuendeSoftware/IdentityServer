@@ -24,12 +24,12 @@ public class IdentityServerLicense : License
     // for testing
     internal IdentityServerLicense(params Claim[] claims)
     {
-        Initalize(new ClaimsPrincipal(new ClaimsIdentity(claims)));
+        Initialize(new ClaimsPrincipal(new ClaimsIdentity(claims)));
     }
 
-    internal override void Initalize(ClaimsPrincipal claims)
+    internal override void Initialize(ClaimsPrincipal claims)
     {
-        base.Initalize(claims);
+        base.Initialize(claims);
         
         RedistributionFeature = claims.HasClaim("feature", "isv") || claims.HasClaim("feature", "redistribution");
 

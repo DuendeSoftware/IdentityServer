@@ -22,11 +22,11 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
     ConcurrentDictionary<string, byte> _clientIds = new ConcurrentDictionary<string, byte>();
     ConcurrentDictionary<string, byte> _issuers = new ConcurrentDictionary<string, byte>();
 
-    public void Initalize(ILoggerFactory loggerFactory, IdentityServerOptions options, bool isDevelopment = false)
+    public void Initialize(ILoggerFactory loggerFactory, IdentityServerOptions options, bool isDevelopment = false)
     {
         _options = options;
 
-        Initalize(loggerFactory, "IdentityServer", options.LicenseKey);
+        Initialize(loggerFactory, "IdentityServer", options.LicenseKey);
 
         if (License?.RedistributionFeature == true && !isDevelopment)
         {

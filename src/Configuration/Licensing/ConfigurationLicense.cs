@@ -23,12 +23,12 @@ public class ConfigurationLicense : License
     // for testing
     internal ConfigurationLicense(params Claim[] claims)
     {
-        Initalize(new ClaimsPrincipal(new ClaimsIdentity(claims)));
+        Initialize(new ClaimsPrincipal(new ClaimsIdentity(claims)));
     }
 
-    internal override void Initalize(ClaimsPrincipal claims)
+    internal override void Initialize(ClaimsPrincipal claims)
     {
-        base.Initalize(claims);
+        base.Initialize(claims);
 
         ConfigApiFeature = claims.HasClaim("feature", "config_api");
         switch (Edition)

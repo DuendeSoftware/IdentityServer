@@ -25,7 +25,7 @@ public abstract class License
     /// <summary>
     /// Initializes the license from the claims in the key.
     /// </summary>
-    internal virtual void Initalize(ClaimsPrincipal claims)
+    internal virtual void Initialize(ClaimsPrincipal claims)
     {
         Claims = claims;
 
