@@ -206,7 +206,7 @@ public class Authorize_ProtocolValidation_Invalid
         var result = await validator.ValidateAsync(parameters);
 
         result.IsError.Should().BeTrue();
-        result.Error.Should().Be(OidcConstants.AuthorizeErrors.UnsupportedResponseType);
+        result.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
     }
 
     [Fact]
