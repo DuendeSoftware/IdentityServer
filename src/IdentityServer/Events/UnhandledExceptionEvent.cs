@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Text.Json.Serialization;
 
 namespace Duende.IdentityServer.Events;
 
@@ -41,5 +42,6 @@ public class UnhandledExceptionEvent : Event
     /// <value>
     /// The exception.
     /// </value>
+    [JsonIgnore] // Don't try to serialize exceptions, because System.Text.Json will fail (it doesn't support the pointers inside a call stack)
     public Exception Exception { get; set; }
 }
