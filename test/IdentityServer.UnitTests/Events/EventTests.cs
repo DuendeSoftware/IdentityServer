@@ -31,7 +31,7 @@ public class EventTests
     {
         try
         {
-            throw new Exception();
+            throw new InvalidOperationException("Boom");
         }
         catch (Exception ex)
         {
