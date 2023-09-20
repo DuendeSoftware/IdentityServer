@@ -392,7 +392,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         if (responseType.IsMissing())
         {
             LogError("Missing response_type", request);
-            return Invalid(request, OidcConstants.AuthorizeErrors.UnsupportedResponseType, "Missing response_type");
+            return Invalid(request, OidcConstants.AuthorizeErrors.InvalidRequest, "Missing response_type");
         }
 
         // The responseType may come in in an unconventional order.
