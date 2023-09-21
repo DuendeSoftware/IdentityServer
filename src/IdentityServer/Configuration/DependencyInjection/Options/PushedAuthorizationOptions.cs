@@ -37,5 +37,5 @@ public class PushedAuthorizationOptions
     }
 
     // TODO - Think about default lifetime
-    public int Lifetime { get; set; } = 120;
+    public int Lifetime { get; set; } = 5;
 }

@@ -44,6 +44,15 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         CancellationTokenProvider = cancellationTokenProvider;
     }
 
+    public async Task ConsumeAsync(string requestUri)
+    {
+        await Context.PushedAuthorizationRequests
+            .Where(par => par.RequestUri == requestUri)
+            .ExecuteUpdateAsync(setters => 
+                setters.SetProperty(par => par.Consumed, true), 
+                CancellationTokenProvider.CancellationToken);
+    }
+
     public virtual async Task<Models.PushedAuthorizationRequest> GetAsync(string requestUri)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PushedAuthorizationRequestStore.Get");

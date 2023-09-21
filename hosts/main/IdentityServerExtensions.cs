@@ -4,9 +4,11 @@
 using System.Security.Cryptography.X509Certificates;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Stores.Default;
 using IdentityModel;
 using IdentityServerHost.Configuration;
 using IdentityServerHost.Extensions;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServerHost;
@@ -15,6 +17,8 @@ internal static class IdentityServerExtensions
 {
     internal static WebApplicationBuilder ConfigureIdentityServer(this WebApplicationBuilder builder)
     {
+        IdentityModelEventSource.ShowPII = true;
+        
         var identityServer = builder.Services.AddIdentityServer(options =>
             {
                 options.Events.RaiseSuccessEvents = true;
@@ -57,7 +61,11 @@ internal static class IdentityServerExtensions
                     ResponseType = "id_token",
                     Scope = "openid profile"
                 }
-            });
+            })
+            .AddAuthorizationParametersMessageStore<DistributedCacheAuthorizationParametersMessageStore>();
+
+
+        builder.Services.AddDistributedMemoryCache();
 
         builder.Services.AddIdentityServerConfiguration(opt =>
         {

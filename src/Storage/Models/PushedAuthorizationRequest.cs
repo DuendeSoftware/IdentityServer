@@ -10,4 +10,5 @@ public class PushedAuthorizationRequest
     public string RequestUri { get; set; }
     public DateTime ExpiresAtUtc { get; set; }
     public string Parameters { get; set; }
+    public bool Consumed { get; set; }
 }

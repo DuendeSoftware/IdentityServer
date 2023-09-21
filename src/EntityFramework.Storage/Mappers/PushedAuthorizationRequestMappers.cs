@@ -23,6 +23,7 @@ public static class PushedAuthorizationRequestMappers
                 RequestUri = entity.RequestUri,
                 ExpiresAtUtc = entity.ExpiresAtUtc,
                 Parameters = entity.Parameters,
+                Consumed = entity.Consumed
             };
     }
 
@@ -39,6 +40,7 @@ public static class PushedAuthorizationRequestMappers
                 RequestUri = model.RequestUri,
                 ExpiresAtUtc = model.ExpiresAtUtc,
                 Parameters = model.Parameters,
+                Consumed = model.Consumed
             };
     }
 }

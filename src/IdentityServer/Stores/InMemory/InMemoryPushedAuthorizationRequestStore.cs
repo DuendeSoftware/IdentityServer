@@ -20,7 +20,7 @@ public class InMemoryPushedAuthorizationRequestStore : IPushedAuthorizationReque
     /// <inheritdoc/>
     public Task StoreAsync(PushedAuthorizationRequest pushedAuthorizationRequest)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Store");
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Store");
         
         _repository[pushedAuthorizationRequest.RequestUri] = pushedAuthorizationRequest;
 
@@ -30,16 +30,32 @@ public class InMemoryPushedAuthorizationRequestStore : IPushedAuthorizationReque
     /// <inheritdoc/>
     public Task<PushedAuthorizationRequest?> GetAsync(string requestUri)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Get");
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Get");
         _repository.TryGetValue(requestUri, out var request);
-        return Task.FromResult(request);
+
+        return Task.FromResult(request switch
+        {
+            { Consumed: false } => request,
+            _ => null
+        });
     }
 
     /// <inheritdoc/>
     public Task RemoveAsync(string requestUri)
     {
-        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPersistedGrantStoreResponseGenerator.Remove");
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Remove");
         _repository.TryRemove(requestUri, out _);
+        return Task.CompletedTask;
+    }
+
+    public Task ConsumeAsync(string requestUri)
+    {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Consume");
+        
+        if(_repository.TryGetValue(requestUri, out var request))
+        {
+            request.Consumed = true;
+        }
         return Task.CompletedTask;
     }
 }

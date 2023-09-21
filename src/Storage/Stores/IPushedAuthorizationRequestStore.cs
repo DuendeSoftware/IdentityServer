@@ -20,6 +20,8 @@ public interface IPushedAuthorizationRequestStore
     /// TODO - When this fails, do we need to send that failure to the caller?
     Task StoreAsync(PushedAuthorizationRequest pushedAuthorizationRequest);
 
+    Task ConsumeAsync(string requestUri);
+
     /// <summary>
     /// Gets the pushed authorization request.
     /// </summary>
