@@ -183,10 +183,12 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 {
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "Pushed authorization is disabled.");
                 }
-
-                request.ParRequestUri = requestUri;
-
                 var pushedAuthorizationRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
+                if(pushedAuthorizationRequest == null)
+                {
+                    return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "invalid or reused PAR request uri");
+                }
+                await _pushedAuthorizationRequestStore.ConsumeAsync(requestUri);
 
                 var unprotected = _dataProtector.Unprotect(pushedAuthorizationRequest.Parameters);
                 var rawPushedAuthorizationRequest = ObjectSerializer
@@ -211,8 +213,16 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 // Support JAR + PAR together - if there is a request object within the PAR, extract it
                 requestObject = rawPushedAuthorizationRequest.Get(OidcConstants.AuthorizeRequest.Request);
 
+                // Copy the PAR into the raw request so that validation will use the pushed parameters
                 request.Raw = rawPushedAuthorizationRequest;
+
+                // Don't include a JAR request object in the raw parameters, but do include the request_uri
+                // because later (in ValidateRequestObjectAsync), the presence of the request_uri
+                // let's us know that we should process the request object further and copy it over
+                // TODO - This seems kind of hairy. Maybe we can just set the raw parameters correctly at this time?
+                request.Raw.Remove(OidcConstants.AuthorizeRequest.Request);
                 request.Raw[OidcConstants.AuthorizeRequest.RequestUri] = requestUri;
+
             }
             else if (_options.Endpoints.EnableJwtRequestUri)
             {
@@ -336,7 +346,6 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             {
                 LogError("client_id is missing in JWT payload", request);
                 return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestObject, description: "Invalid JWT request");
-                    
             }
                 
             var ignoreKeys = new[]

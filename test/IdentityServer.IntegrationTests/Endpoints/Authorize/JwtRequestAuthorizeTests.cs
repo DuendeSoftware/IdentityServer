@@ -182,6 +182,9 @@ public class JwtRequestAuthorizeTests
             }
         });
 
+        _mockPipeline.OnPostConfigureServices += svcs => svcs.AddDistributedMemoryCache();
+        _mockPipeline.OnPostConfigureServices += svcs => svcs.AddSingleton<IAuthorizationParametersMessageStore, DistributedCacheAuthorizationParametersMessageStore>();
+
         _mockPipeline.Initialize();
     }
 
@@ -372,6 +375,7 @@ public class JwtRequestAuthorizeTests
     public async Task authorize_should_accept_valid_JWT_request_object_parameters_using_rsa_jwk_and_pushed_authorization()
     {
         _mockPipeline.Options.PushedAuthorization.Enabled = true;
+        _mockPipeline.Options.PushedAuthorization.Lifetime = 50000000; 
 
         var requestJwt = CreateRequestJwt(
             issuer: _client.ClientId,
@@ -392,9 +396,9 @@ public class JwtRequestAuthorizeTests
             });
 
         var (parResponse, statusCode) = await _mockPipeline.PushAuthorizationRequestAsync(
-            clientId: _client.ClientId,
-            extra: new() 
+            new Dictionary<string, string>() 
             {
+                { "client_id", _client.ClientId },
                 { "request", requestJwt }
             });
         statusCode.Should().Be(HttpStatusCode.Created);
@@ -403,7 +407,6 @@ public class JwtRequestAuthorizeTests
 
         var url = _mockPipeline.CreateAuthorizeUrl(
             clientId: _client.ClientId,
-            responseType: "id_token",
             extra: new
             {
                 request_uri = parJson.RequestUri

@@ -382,7 +382,7 @@ public class IdentityServerPipeline
             extra: Parameters.FromObject(extra));
         return url;
     }
-    public async Task<(PushedAuthorizationResponse, HttpStatusCode)> PushAuthorizationRequest(
+    public async Task<(PushedAuthorizationResponse, HttpStatusCode)> PushAuthorizationRequestAsync(
         Dictionary<string, string> parameters)
     { 
         PushedAuthorizationResponse parsedResponse;
@@ -431,7 +431,7 @@ public class IdentityServerPipeline
             }
         }
 
-        return await PushAuthorizationRequest(parameters);
+        return await PushAuthorizationRequestAsync(parameters);
     }
 
     public IdentityModel.Client.AuthorizeResponse ParseAuthorizationResponseUrl(string url)

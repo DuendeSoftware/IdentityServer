@@ -212,8 +212,6 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// </summary>
     public string? DPoPKeyThumbprint { get; set; }
 
-    public string? ParRequestUri { get; set; }
-
     /// <summary>
     /// Gets a value indicating whether an access token was requested.
     /// </summary>
