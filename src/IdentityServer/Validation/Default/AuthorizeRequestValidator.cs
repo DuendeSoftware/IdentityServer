@@ -210,11 +210,11 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "expired pushed authorization request");
                 }
 
-                // Support JAR + PAR together - if there is a request object within the PAR, extract it
-                requestObject = rawPushedAuthorizationRequest.Get(OidcConstants.AuthorizeRequest.Request);
-
                 // Copy the PAR into the raw request so that validation will use the pushed parameters
                 request.Raw = rawPushedAuthorizationRequest;
+
+                // Support JAR + PAR together - if there is a request object within the PAR, extract it
+                requestObject = rawPushedAuthorizationRequest.Get(OidcConstants.AuthorizeRequest.Request);
 
                 // Don't include a JAR request object in the raw parameters, but do include the request_uri
                 // because later (in ValidateRequestObjectAsync), the presence of the request_uri
@@ -222,7 +222,6 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 // TODO - This seems kind of hairy. Maybe we can just set the raw parameters correctly at this time?
                 request.Raw.Remove(OidcConstants.AuthorizeRequest.Request);
                 request.Raw[OidcConstants.AuthorizeRequest.RequestUri] = requestUri;
-
             }
             else if (_options.Endpoints.EnableJwtRequestUri)
             {
