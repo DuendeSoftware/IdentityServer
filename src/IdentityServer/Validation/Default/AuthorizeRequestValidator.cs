@@ -179,7 +179,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if(requestUri.StartsWith(parPrefix))
             {
-                if (!_options.PushedAuthorization.Enabled)
+                if (!_options.Endpoints.EnablePushedAuthorizationEndpoint)
                 {
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "Pushed authorization is disabled.");
                 }

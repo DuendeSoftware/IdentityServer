@@ -95,4 +95,6 @@ public class EndpointsOptions
     /// <c>true</c> if the backchannel authentication endpoint is enabled; otherwise, <c>false</c>.
     /// </value>
     public bool EnableBackchannelAuthenticationEndpoint { get; set; } = true;
+
+    public bool EnablePushedAuthorizationEndpoint { get; set; }
 }

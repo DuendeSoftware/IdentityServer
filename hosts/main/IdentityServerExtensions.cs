@@ -33,7 +33,7 @@ internal static class IdentityServerExtensions
 
                 options.UserInteraction.CreateAccountUrl = "/Account/Create";
 
-                options.PushedAuthorization.Enabled = true;
+                options.Endpoints.EnablePushedAuthorizationEndpoint = true;
             })
             //.AddServerSideSessions()
             .AddInMemoryClients(Clients.Get().ToList())

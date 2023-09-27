@@ -385,18 +385,16 @@ public class IdentityServerPipeline
     public async Task<(PushedAuthorizationResponse, HttpStatusCode)> PushAuthorizationRequestAsync(
         Dictionary<string, string> parameters)
     { 
-        PushedAuthorizationResponse parsedResponse;
         var httpResponse = await BackChannelClient.PostAsync(ParEndpoint,
             new FormUrlEncodedContent(parameters));
         var statusCode = httpResponse.StatusCode;
-        if(statusCode == HttpStatusCode.Created) 
+        PushedAuthorizationResponse parsedResponse = statusCode switch
         {
-            parsedResponse = await httpResponse.Content.ReadFromJsonAsync<PushedAuthorizationSuccess>();   
-        }
-        else
-        {
-            parsedResponse = await httpResponse.Content.ReadFromJsonAsync<PushedAuthorizationFailure>();
-        }
+            HttpStatusCode.Created => await httpResponse.Content.ReadFromJsonAsync<PushedAuthorizationSuccess>(),
+            HttpStatusCode.NotFound => new PushedAuthorizationFailure { Error = "Not Found", ErrorDescription = string.Empty },
+            HttpStatusCode.BadRequest => await httpResponse.Content.ReadFromJsonAsync<PushedAuthorizationFailure>(),
+            _ => new PushedAuthorizationFailure { Error = $"Unexpected HTTP status code {statusCode}", ErrorDescription = string.Empty }
+        };
 
         return (parsedResponse, statusCode);
     }

@@ -22,6 +22,7 @@ internal static class EndpointOptionsExtensions
             IdentityServerConstants.EndpointNames.Revocation => options.EnableTokenRevocationEndpoint,
             IdentityServerConstants.EndpointNames.Token => options.EnableTokenEndpoint,
             IdentityServerConstants.EndpointNames.UserInfo => options.EnableUserInfoEndpoint,
+            IdentityServerConstants.EndpointNames.PushedAuthorization => options.EnablePushedAuthorizationEndpoint,
             _ => true
         };
     }

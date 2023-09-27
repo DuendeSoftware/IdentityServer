@@ -374,8 +374,7 @@ public class JwtRequestAuthorizeTests
     [Trait("Category", Category)]
     public async Task authorize_should_accept_valid_JWT_request_object_parameters_using_rsa_jwk_and_pushed_authorization()
     {
-        _mockPipeline.Options.PushedAuthorization.Enabled = true;
-        _mockPipeline.Options.PushedAuthorization.Lifetime = 50000000; 
+        _mockPipeline.Options.Endpoints.EnablePushedAuthorizationEndpoint = true;
 
         var requestJwt = CreateRequestJwt(
             issuer: _client.ClientId,

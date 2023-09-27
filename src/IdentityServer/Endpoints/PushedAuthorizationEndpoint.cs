@@ -55,15 +55,6 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         using var activity = Tracing.BasicActivitySource.StartActivity(IdentityServerConstants.EndpointNames.PushedAuthorization);
 
         _logger.LogDebug("Start pushed authorization request");
-        if(!_options.PushedAuthorization.Enabled)
-        {
-            return await CreateErrorResultAsync(
-                "Attempt to use Pushed Authorization when it is disabled globally",
-                request: null,
-                error: OidcConstants.AuthorizeErrors.InvalidRequest,
-                errorDescription: "Pushed authorization is disabled."
-            );
-        }
 
         NameValueCollection values;
         IFormCollection form;

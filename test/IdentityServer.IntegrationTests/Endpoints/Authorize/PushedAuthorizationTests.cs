@@ -27,7 +27,7 @@ public class PushedAuthorizationTests
 
         _mockPipeline.Initialize();
 
-        _mockPipeline.Options.PushedAuthorization.Enabled = true;
+        _mockPipeline.Options.Endpoints.EnablePushedAuthorizationEndpoint = true;
     }
 
     [Fact]
@@ -68,12 +68,10 @@ public class PushedAuthorizationTests
     [Fact]
     public async Task using_pushed_authorization_when_it_is_globally_disabled_fails()
     {
-        _mockPipeline.Options.PushedAuthorization.Enabled = false;
+        _mockPipeline.Options.Endpoints.EnablePushedAuthorizationEndpoint = false;
         
-        var (parJson, statusCode) = await _mockPipeline.PushAuthorizationRequestAsync();
-        var parFailure = parJson as PushedAuthorizationFailure;
-        statusCode.Should().Be(HttpStatusCode.BadRequest);
-        parFailure.ErrorDescription.Should().Match("Pushed authorization is disabled.");
+        var (_, statusCode) = await _mockPipeline.PushAuthorizationRequestAsync();
+        statusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -99,7 +97,7 @@ public class PushedAuthorizationTests
     [Fact]
     public async Task not_using_pushed_authorization_when_it_is_required_for_client_fails()
     {
-        _mockPipeline.Options.PushedAuthorization.Enabled.Should().BeTrue();
+        _mockPipeline.Options.Endpoints.EnablePushedAuthorizationEndpoint.Should().BeTrue();
         _mockPipeline.Options.PushedAuthorization.Required.Should().BeFalse();
         _client.RequirePushedAuthorization = true;
 
@@ -128,7 +126,7 @@ public class PushedAuthorizationTests
         parSuccess.Should().NotBeNull();
 
         // ... But then is later disabled, and then we try to use the pushed request
-        _mockPipeline.Options.PushedAuthorization.Enabled = false;
+        _mockPipeline.Options.Endpoints.EnablePushedAuthorizationEndpoint = false;
 
         // Authorize using pushed request
         var authorizeUrl = _mockPipeline.CreateAuthorizeUrl(
