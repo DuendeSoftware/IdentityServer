@@ -35,7 +35,6 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
     private readonly IAuthorizeRequestValidator _validator;
 
     private readonly IConsentMessageStore _consentResponseStore;
-    private readonly IPushedAuthorizationRequestStore _pushedAuthorizationRequestStore;
     private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
     protected AuthorizeEndpointBase(
@@ -47,7 +46,6 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
         IAuthorizeResponseGenerator authorizeResponseGenerator,
         IUserSession userSession,
         IConsentMessageStore consentResponseStore,
-        IPushedAuthorizationRequestStore pushedAuthorizationRequestStore,
         IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
     {
         _events = events;
@@ -58,7 +56,6 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
         _authorizeResponseGenerator = authorizeResponseGenerator;
         UserSession = userSession;
         _consentResponseStore = consentResponseStore;
-        _pushedAuthorizationRequestStore = pushedAuthorizationRequestStore;
         _authorizationParametersMessageStore = authorizationParametersMessageStore;
     }
 
@@ -90,17 +87,6 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
 
         // validate request
         var result = await _validator.ValidateAsync(parameters, user);
-
-        // We always consume PAR request_uris immediately when we see them on the authorize or authorize callback endpoints
-        var requestUri = parameters[OidcConstants.AuthorizeRequest.RequestUri];
-        if(requestUri.IsPresent() && requestUri.Length > IdentityServerConstants.PushedAuthorizationRequestUri.Length)
-        {
-            var referenceValue = requestUri.Substring(IdentityServerConstants.PushedAuthorizationRequestUri.Length + 1); // +1 for the separator ':'
-            if (referenceValue.IsPresent())
-            {
-                await _pushedAuthorizationRequestStore.ConsumeAsync(referenceValue);
-            }
-        }
 
         if (result.IsError)
         {

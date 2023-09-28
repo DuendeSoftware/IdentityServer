@@ -195,8 +195,7 @@ public class AuthorizeEndpointBaseTests
             _stubInteractionGenerator,
             _stubAuthorizeResponseGenerator,
             _mockUserSession,
-            _mockUserConsentResponseMessageStore,
-            new InMemoryPushedAuthorizationRequestStore());
+            _mockUserConsentResponseMessageStore);
     }
 
     internal class TestAuthorizeEndpoint : AuthorizeEndpointBase
@@ -210,9 +209,8 @@ public class AuthorizeEndpointBaseTests
             IAuthorizeResponseGenerator authorizeResponseGenerator,
             IUserSession userSession,
             IConsentMessageStore consentResponseStore,
-            IPushedAuthorizationRequestStore pushedAuthorizationStore,
             IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
-            : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession, consentResponseStore, pushedAuthorizationStore, authorizationParametersMessageStore)
+            : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession, consentResponseStore, authorizationParametersMessageStore)
         {
         }
 

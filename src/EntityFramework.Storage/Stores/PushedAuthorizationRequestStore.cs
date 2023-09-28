@@ -82,12 +82,6 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         }
     }
 
-    public Task RotateAsync(string oldReferenceValue, string newReferenceValue)
-    {
-        // TODO (if we like this approach)
-        throw new System.NotImplementedException();
-    }
-
     public virtual async Task StoreAsync(Models.PushedAuthorizationRequest par)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PushedAuthorizationStore.Store");

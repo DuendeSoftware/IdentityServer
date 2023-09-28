@@ -235,7 +235,6 @@ public class AuthorizeCallbackEndpointTests
             _stubInteractionGenerator,
             _stubAuthorizeResponseGenerator,
             _mockUserSession,
-            _mockUserConsentResponseMessageStore,
-            new InMemoryPushedAuthorizationRequestStore());
+            _mockUserConsentResponseMessageStore);
     }
 }

@@ -88,20 +88,7 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
         }
         else
         {
-            if (result.Request.PushedAuthorizationReferenceValue != null)
-            {
-                var newReferenceValue = await _handleGeneration.GenerateAsync();
-                await _pushedAuthorizationRequestStore.RotateAsync(result.Request.PushedAuthorizationReferenceValue, newReferenceValue);
-                var newRequestUri = $"{PushedAuthorizationRequestUri}:{newReferenceValue}";
-
-                returnUrl = returnUrl
-                    .AddQueryString(OidcConstants.AuthorizeRequest.RequestUri, newRequestUri)
-                    .AddQueryString(OidcConstants.AuthorizeRequest.ClientId, result.Request.ClientId);
-            } 
-            else
-            {
-                returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
-            }
+            returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
         }
 
         var url = result.RedirectUrl;
