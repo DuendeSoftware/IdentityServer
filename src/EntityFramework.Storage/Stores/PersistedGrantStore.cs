@@ -120,24 +120,10 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     public virtual async Task RemoveAsync(string key)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Remove");
-        
-        var persistedGrant = (await Context.PersistedGrants.Where(x => x.Key == key)
-                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
-            .SingleOrDefault(x => x.Key == key);
-        if (persistedGrant!= null)
+
+        if (await Context.PersistedGrants.ExecuteDeleteAsync(x => x.Key == key) > 0)
         {
-            Logger.LogDebug("removing {persistedGrantKey} persisted grant from database", key);
-
-            Context.PersistedGrants.Remove(persistedGrant);
-
-            try
-            {
-                await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-            }
-            catch(DbUpdateConcurrencyException ex)
-            {
-                Logger.LogInformation("exception removing {persistedGrantKey} persisted grant from database: {error}", key, ex.Message);
-            }
+            Logger.LogDebug("removed {persistedGrantKey} persisted grant from database", key);
         }
         else
         {
