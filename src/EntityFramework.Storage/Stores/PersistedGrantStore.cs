@@ -71,6 +71,10 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
             Logger.LogDebug("removed {persistedGrantKey} persisted grant from database", key);
             await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
         }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            Logger.LogWarning("exception inserting or updating {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
+        }
     }
 
     /// <inheritdoc/>
