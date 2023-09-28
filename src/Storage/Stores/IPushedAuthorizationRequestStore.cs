@@ -20,19 +20,19 @@ public interface IPushedAuthorizationRequestStore
     /// TODO - When this fails, do we need to send that failure to the caller?
     Task StoreAsync(PushedAuthorizationRequest pushedAuthorizationRequest);
 
-    Task ConsumeAsync(string requestUri);
+    Task ConsumeAsync(string referenceValue);
 
     /// <summary>
     /// Gets the pushed authorization request.
     /// </summary>
-    /// <param name="requestUri">The request uri.</param>
+    /// <param name="referenceValue">The reference value.</param>
     /// <returns></returns>
-    Task<PushedAuthorizationRequest?> GetAsync(string requestUri);
+    Task<PushedAuthorizationRequest?> GetAsync(string referenceValue);
 
     /// <summary>
     /// Removes the pushed authorization request.
     /// </summary>
-    /// <param name="requestUri">The request uri.</param>
+    /// <param name="referenceValue">The reference value.</param> 
     /// <returns></returns>
-    Task RemoveAsync(string requestUri);
+    Task RemoveAsync(string referenceValue);
 }

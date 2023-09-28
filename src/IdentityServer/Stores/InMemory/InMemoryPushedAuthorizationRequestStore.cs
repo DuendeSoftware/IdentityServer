@@ -22,16 +22,16 @@ public class InMemoryPushedAuthorizationRequestStore : IPushedAuthorizationReque
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Store");
         
-        _repository[pushedAuthorizationRequest.RequestUri] = pushedAuthorizationRequest;
+        _repository[pushedAuthorizationRequest.ReferenceValue] = pushedAuthorizationRequest;
 
         return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public Task<PushedAuthorizationRequest?> GetAsync(string requestUri)
+    public Task<PushedAuthorizationRequest?> GetAsync(string referenceValue)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Get");
-        _repository.TryGetValue(requestUri, out var request);
+        _repository.TryGetValue(referenceValue, out var request);
 
         return Task.FromResult(request switch
         {
@@ -41,18 +41,18 @@ public class InMemoryPushedAuthorizationRequestStore : IPushedAuthorizationReque
     }
 
     /// <inheritdoc/>
-    public Task RemoveAsync(string requestUri)
+    public Task RemoveAsync(string referenceValue)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Remove");
-        _repository.TryRemove(requestUri, out _);
+        _repository.TryRemove(referenceValue, out _);
         return Task.CompletedTask;
     }
 
-    public Task ConsumeAsync(string requestUri)
+    public Task ConsumeAsync(string referenceValue)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Consume");
         
-        if(_repository.TryGetValue(requestUri, out var request))
+        if(_repository.TryGetValue(referenceValue, out var request))
         {
             request.Consumed = true;
         }

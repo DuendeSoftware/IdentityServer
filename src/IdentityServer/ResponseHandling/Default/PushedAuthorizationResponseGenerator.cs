@@ -57,7 +57,7 @@ public class PushedAuthorizationResponseGenerator : IPushedAuthorizationResponse
         // Persist 
         await _store.StoreAsync(new Models.PushedAuthorizationRequest
         {
-            RequestUri = requestUri,
+            ReferenceValue = referenceValue,
             ExpiresAtUtc = DateTime.UtcNow.AddSeconds(expiration),
             Parameters = protectedData
         });

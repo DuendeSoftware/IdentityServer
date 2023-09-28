@@ -44,37 +44,37 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         CancellationTokenProvider = cancellationTokenProvider;
     }
 
-    public async Task ConsumeAsync(string requestUri)
+    public async Task ConsumeAsync(string referenceValue)
     {
         await Context.PushedAuthorizationRequests
-            .Where(par => par.RequestUri == requestUri)
+            .Where(par => par.ReferenceValue == referenceValue)
             .ExecuteUpdateAsync(setters => 
                 setters.SetProperty(par => par.Consumed, true), 
                 CancellationTokenProvider.CancellationToken);
     }
 
-    public virtual async Task<Models.PushedAuthorizationRequest> GetAsync(string requestUri)
+    public virtual async Task<Models.PushedAuthorizationRequest> GetAsync(string referenceValue)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PushedAuthorizationRequestStore.Get");
         
         var par = (await Context.PushedAuthorizationRequests
-                .AsNoTracking().Where(x => x.RequestUri == requestUri)
+                .AsNoTracking().Where(x => x.ReferenceValue == referenceValue)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
-                .SingleOrDefault(x => x.RequestUri == requestUri);
+                .SingleOrDefault(x => x.ReferenceValue == referenceValue);
         var model = par?.ToModel();
 
-        // REVIEW - is it safe to log the request uri?
-        Logger.LogDebug("{requestUri} pushed authorization found in database: {requestUriFound}", requestUri, model != null);
+        // REVIEW - is it safe to log the reference value?
+        Logger.LogDebug("{referenceValue} pushed authorization found in database: {requestUriFound}", par.ReferenceValue, model != null);
 
         return model;
     }
 
-    public virtual async Task RemoveAsync(string requestUri)
+    public virtual async Task RemoveAsync(string referenceValue)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Remove");
-        Logger.LogDebug("removing {requestUri} pushed authorization from database", requestUri);
+        Logger.LogDebug("removing {referenceValue} pushed authorization from database", referenceValue);
         var numDeleted = await Context.PushedAuthorizationRequests
-            .Where(par => par.RequestUri == requestUri)
+            .Where(par => par.ReferenceValue == referenceValue)
             .ExecuteDeleteAsync(CancellationTokenProvider.CancellationToken);
         if(numDeleted != 1)
         {
@@ -95,7 +95,7 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         // I think it isn't, but what happens if we somehow two calls to StoreAsync with the same PAR are made?
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogWarning("exception updating {requestUri} pushed authorization in database: {error}", par.RequestUri, ex.Message);
+            Logger.LogWarning("exception updating {referenceValue} pushed authorization in database: {error}", par.ReferenceValue, ex.Message);
         }
     }
 }

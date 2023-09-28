@@ -183,7 +183,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 {
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "Pushed authorization is disabled.");
                 }
-                var pushedAuthorizationRequest = await _pushedAuthorizationRequestStore.GetAsync(requestUri);
+                var referenceValue = requestUri.Substring(parPrefix.Length);
+                var pushedAuthorizationRequest = await _pushedAuthorizationRequestStore.GetAsync(referenceValue);
                 if(pushedAuthorizationRequest == null)
                 {
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "invalid or reused PAR request uri");

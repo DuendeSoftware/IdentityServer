@@ -20,7 +20,7 @@ public static class PushedAuthorizationRequestMappers
         return entity == null ? null :
             new Models.PushedAuthorizationRequest
             {
-                RequestUri = entity.RequestUri,
+                ReferenceValue = entity.ReferenceValue,
                 ExpiresAtUtc = entity.ExpiresAtUtc,
                 Parameters = entity.Parameters,
                 Consumed = entity.Consumed
@@ -37,7 +37,7 @@ public static class PushedAuthorizationRequestMappers
         return model == null ? null : 
             new Entities.PushedAuthorizationRequest
             {
-                RequestUri = model.RequestUri,
+                ReferenceValue = model.ReferenceValue,
                 ExpiresAtUtc = model.ExpiresAtUtc,
                 Parameters = model.Parameters,
                 Consumed = model.Consumed
