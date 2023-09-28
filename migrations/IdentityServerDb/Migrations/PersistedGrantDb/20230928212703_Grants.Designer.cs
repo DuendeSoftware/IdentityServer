@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServerDb.Migrations.PersistedGrantDb
 {
     [DbContext(typeof(PersistedGrantDbContext))]
-    [Migration("20230919040245_Grants")]
+    [Migration("20230928212703_Grants")]
     partial class Grants
     {
         /// <inheritdoc />
@@ -184,13 +184,16 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Consumed")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("ExpiresAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Parameters")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RequestUri")
+                    b.Property<string>("ReferenceValue")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");

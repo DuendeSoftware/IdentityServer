@@ -35,6 +35,7 @@ namespace MvcPar
             _httpClient.SetBasicAuthentication(clientId, "secret");
             // TODO - use discovery to determine endpoint
             var response = await _httpClient.PostAsync("https://localhost:5001/connect/par", requestBody);
+            // TODO - PAR can fail! Handle errors
             var par = await response.Content.ReadFromJsonAsync<ParResponse>();
 
             // Remove all the parameters from the protocol message, and replace with what we got from the PAR response

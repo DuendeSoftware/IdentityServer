@@ -56,9 +56,10 @@ GO
 
 CREATE TABLE [PushedAuthorizationRequests] (
     [Id] int NOT NULL IDENTITY,
-    [RequestUri] nvarchar(max) NULL,
+    [ReferenceValue] nvarchar(max) NULL,
     [ExpiresAtUtc] datetime2 NOT NULL,
     [Parameters] nvarchar(max) NULL,
+    [Consumed] bit NOT NULL,
     CONSTRAINT [PK_PushedAuthorizationRequests] PRIMARY KEY ([Id])
 );
 GO
@@ -118,7 +119,7 @@ CREATE INDEX [IX_ServerSideSessions_SubjectId] ON [ServerSideSessions] ([Subject
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20230919040245_Grants', N'8.0.0-preview.7.23375.4');
+VALUES (N'20230928212703_Grants', N'8.0.0-preview.7.23375.4');
 GO
 
 COMMIT;

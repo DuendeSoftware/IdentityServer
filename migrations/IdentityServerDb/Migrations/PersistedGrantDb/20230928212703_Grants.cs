@@ -76,9 +76,10 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RequestUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReferenceValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExpiresAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Parameters = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Parameters = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Consumed = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

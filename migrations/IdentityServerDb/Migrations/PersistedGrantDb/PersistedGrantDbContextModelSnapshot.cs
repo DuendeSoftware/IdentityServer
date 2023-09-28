@@ -181,13 +181,16 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Consumed")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("ExpiresAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Parameters")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RequestUri")
+                    b.Property<string>("ReferenceValue")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
