@@ -64,16 +64,16 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
             await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
             Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
         }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            Logger.LogWarning("exception inserting or updating {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
+        }
         catch (DbUpdateException)
         {
             Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
             await Context.PersistedGrants.Where(x => x.Key == key).ExecuteDeleteAsync(CancellationTokenProvider.CancellationToken);
             Logger.LogDebug("removed {persistedGrantKey} persisted grant from database", key);
             await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            Logger.LogWarning("exception inserting or updating {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
         }
     }
 
