@@ -16,6 +16,7 @@ using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Duende.IdentityServer.Stores;
 
 namespace UnitTests.Endpoints.Authorize;
 
@@ -110,6 +111,7 @@ public class AuthorizeEndpointTests
             _stubInteractionGenerator,
             _stubAuthorizeResponseGenerator,
             _mockUserSession,
-            _mockUserConsentResponseMessageStore);
+            _mockUserConsentResponseMessageStore,
+            new InMemoryPushedAuthorizationRequestStore());
     }
 }
