@@ -55,31 +55,27 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     public virtual async Task StoreAsync(Duende.IdentityServer.Models.PersistedGrant token)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Store");
-        
-        var existing = (await Context.PersistedGrants.Where(x => x.Key == token.Key)
-                .ToArrayAsync(CancellationTokenProvider.CancellationToken))
-            .SingleOrDefault(x => x.Key == token.Key);
-        if (existing == null)
-        {
-            Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
 
-            var persistedGrant = token.ToEntity();
-            Context.PersistedGrants.Add(persistedGrant);
-        }
-        else
-        {
-            Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
-
-            token.UpdateEntity(existing);
-        }
+        var persistedGrant = token.ToEntity();
+        Context.PersistedGrants.Add(persistedGrant);
 
         try
         {
-            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+            if (await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken) > 0)
+            {
+                Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
+            }
+            else
+            {
+                Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
+                await Context.PersistedGrants.Where(x => x.Key == key).ExecuteDeleteAsync();
+                Logger.LogDebug("removed {persistedGrantKey} persisted grant from database", key);
+                await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken)
+            }
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogWarning("exception updating {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
+            Logger.LogWarning("exception upserting {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
         }
     }
 
@@ -121,7 +117,7 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Remove");
 
-        if (await Context.PersistedGrants.ExecuteDeleteAsync(x => x.Key == key) > 0)
+        if (await Context.PersistedGrants.Where(x => x.Key == key).ExecuteDeleteAsync() > 0)
         {
             Logger.LogDebug("removed {persistedGrantKey} persisted grant from database", key);
         }
