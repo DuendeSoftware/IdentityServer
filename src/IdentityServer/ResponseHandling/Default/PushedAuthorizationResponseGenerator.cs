@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
@@ -16,18 +17,21 @@ namespace Duende.IdentityServer.ResponseHandling;
 
 public class PushedAuthorizationResponseGenerator : IPushedAuthorizationResponseGenerator
 {
+    private readonly IHandleGenerationService _handleGeneration;
     private readonly IDataProtector _dataProtector;
     private readonly IPushedAuthorizationRequestStore _store;
     private readonly IdentityServerOptions _options;
     private readonly ILogger<PushedAuthorizationResponseGenerator> _logger;
 
     public PushedAuthorizationResponseGenerator(
+        IHandleGenerationService handleGeneration,
         IDataProtectionProvider dataProtectionProvider,
         IPushedAuthorizationRequestStore store,
         IdentityServerOptions options,
         ILogger<PushedAuthorizationResponseGenerator> logger
     )
     {
+        _handleGeneration = handleGeneration;
         _dataProtector = dataProtectionProvider.CreateProtector("PAR");
         _store = store;
         _options = options;
@@ -37,7 +41,8 @@ public class PushedAuthorizationResponseGenerator : IPushedAuthorizationResponse
     public async Task<PushedAuthorizationResponse> CreateResponseAsync(ValidatedPushedAuthorizationRequest request)
     {
         // Create a reference value
-        var referenceValue = CryptoRandom.CreateUniqueId(32, CryptoRandom.OutputFormat.Hex);
+        var referenceValue = await _handleGeneration.GenerateAsync(); 
+        
         var requestUri = $"urn:ietf:params:oauth:request_uri:{referenceValue}";
         
         // Calculate the expiration
