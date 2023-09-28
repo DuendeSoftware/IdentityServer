@@ -187,7 +187,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 {
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "invalid or reused PAR request uri");
                 }
-
+                
                 var unprotected = _dataProtector.Unprotect(pushedAuthorizationRequest.Parameters);
                 var rawPushedAuthorizationRequest = ObjectSerializer
                     .FromString<Dictionary<string, string[]>>(unprotected)
@@ -212,9 +212,12 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 request.Raw = rawPushedAuthorizationRequest;
 
                 // Hide the request uri, so that it looks like PAR didn't happen
+                // TODO - consider not doing this so that the Raw is correct,
+                // but add code to places that process request uris that will
+                // check for a PAR reference value on the request instead.
                 request.Raw.Remove(OidcConstants.AuthorizeRequest.RequestUri);
 
-                // But keep the reference value, so we can know that PAR did happen, and consume or rotate the request uri as needed
+                // But keep the reference value, so we can know that PAR did happen, and rotate the request uri as needed
                 request.PushedAuthorizationReferenceValue = pushedAuthorizationRequest.ReferenceValue;
 
                 // Support JAR + PAR together - if there is a request object within the PAR, extract it

@@ -144,6 +144,32 @@ public class PushedAuthorizationTests
         authorizeResponse.Should().HaveHeader("Location").And.Match("*/error*");
     }
 
+    [Fact]
+    public async Task reusing_pushed_authorization_request_uris_fails()
+    {
+        var (parJson, statusCode) = await _mockPipeline.PushAuthorizationRequestAsync();
+        statusCode.Should().Be(HttpStatusCode.Created);
+        parJson.Should().NotBeNull();
+
+        // Authorize using pushed request
+        var authorizeUrl = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            extra: new
+            {
+                request_uri = parJson.RootElement.GetProperty("request_uri").GetString()
+            });
+
+        // We expect to be redirected to the error page, as this is an interactive
+        // call to authorize. We don't want to follow redirects. Instead we'll just
+        // check for a 302 to the error page
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+        var firstAuthorizeResponse = await _mockPipeline.BrowserClient.GetAsync(authorizeUrl);
+        var secondAuthorizeResponse = await _mockPipeline.BrowserClient.GetAsync(authorizeUrl);
+
+        secondAuthorizeResponse.Should().Be302Found();
+        secondAuthorizeResponse.Should().HaveHeader("Location").And.Match("*/error*");
+    }
+
     [Theory]
     [InlineData("urn:ietf:params:oauth:request_uri:foo")]
     [InlineData("https://requests.example.com/bar")]

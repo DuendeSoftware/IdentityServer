@@ -29,8 +29,9 @@ internal class AuthorizeEndpoint : AuthorizeEndpointBase
         IAuthorizeResponseGenerator authorizeResponseGenerator,
         IUserSession userSession,
         IConsentMessageStore consentResponseStore,
+        IPushedAuthorizationRequestStore pushedAuthorizationRequestStore,
         IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
-        : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession, consentResponseStore, authorizationParametersMessageStore)
+        : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession, consentResponseStore, pushedAuthorizationRequestStore, authorizationParametersMessageStore)
     {
     }
 

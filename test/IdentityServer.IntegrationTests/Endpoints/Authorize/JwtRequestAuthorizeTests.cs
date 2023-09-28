@@ -183,7 +183,6 @@ public class JwtRequestAuthorizeTests
         });
 
         _mockPipeline.OnPostConfigureServices += svcs => svcs.AddDistributedMemoryCache();
-        _mockPipeline.OnPostConfigureServices += svcs => svcs.AddSingleton<IAuthorizationParametersMessageStore, DistributedCacheAuthorizationParametersMessageStore>();
 
         _mockPipeline.Initialize();
     }

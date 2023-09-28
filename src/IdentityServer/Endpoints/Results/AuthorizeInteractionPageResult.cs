@@ -56,14 +56,22 @@ public abstract class AuthorizeInteractionPageResult : EndpointResult<AuthorizeI
 class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<AuthorizeInteractionPageResult>
 {
     private readonly IServerUrls _urls;
+    private readonly IPushedAuthorizationRequestStore _pushedAuthorizationRequestStore;
+    private readonly IHandleGenerationService _handleGeneration;
     private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthorizeInteractionPageResult"/> class.
     /// </summary>
-    public AuthorizeInteractionPageResultGenerator(IServerUrls urls, IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
+    public AuthorizeInteractionPageResultGenerator(
+        IServerUrls urls, 
+        IPushedAuthorizationRequestStore pushedAuthorizationRequestStore, 
+        IHandleGenerationService handleGeneration,
+        IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
     {
         _urls = urls;
+        _pushedAuthorizationRequestStore = pushedAuthorizationRequestStore;
+        _handleGeneration = handleGeneration;
         _authorizationParametersMessageStore = authorizationParametersMessageStore;
     }
 
@@ -80,7 +88,20 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
         }
         else
         {
-            returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
+            if (result.Request.PushedAuthorizationReferenceValue != null)
+            {
+                var newReferenceValue = await _handleGeneration.GenerateAsync();
+                await _pushedAuthorizationRequestStore.RotateAsync(result.Request.PushedAuthorizationReferenceValue, newReferenceValue);
+                var newRequestUri = $"{PushedAuthorizationRequestUri}:{newReferenceValue}";
+
+                returnUrl = returnUrl
+                    .AddQueryString(OidcConstants.AuthorizeRequest.RequestUri, newRequestUri)
+                    .AddQueryString(OidcConstants.AuthorizeRequest.ClientId, result.Request.ClientId);
+            } 
+            else
+            {
+                returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
+            }
         }
 
         var url = result.RedirectUrl;

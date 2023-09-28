@@ -61,8 +61,7 @@ internal static class IdentityServerExtensions
                     ResponseType = "id_token",
                     Scope = "openid profile"
                 }
-            })
-            .AddAuthorizationParametersMessageStore<DistributedCacheAuthorizationParametersMessageStore>();
+            });
 
 
         builder.Services.AddDistributedMemoryCache();

@@ -5,6 +5,7 @@
 #nullable enable
 
 using Duende.IdentityServer.Models;
+using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
@@ -55,6 +56,25 @@ public class InMemoryPushedAuthorizationRequestStore : IPushedAuthorizationReque
         if(_repository.TryGetValue(referenceValue, out var request))
         {
             request.Consumed = true;
+        }
+        return Task.CompletedTask;
+    }
+
+    // TODO - Add a higher level abstraction to perform this operation
+    // Try to avoid unnecessary store operations when we do that
+    public Task RotateAsync(string oldReferenceValue, string newReferenceValue)
+    {
+        using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Consume");
+        
+        if(_repository.TryGetValue(oldReferenceValue, out var oldRequest))
+        {
+            _repository[newReferenceValue] = new PushedAuthorizationRequest
+            {
+                ReferenceValue = newReferenceValue,
+                Parameters = oldRequest.Parameters,
+                ExpiresAtUtc = DateTime.UtcNow.AddMinutes(15), // TODO - This should come from config, possibly passed in. 
+                Consumed = false
+            };
         }
         return Task.CompletedTask;
     }

@@ -35,4 +35,7 @@ public interface IPushedAuthorizationRequestStore
     /// <param name="referenceValue">The reference value.</param> 
     /// <returns></returns>
     Task RemoveAsync(string referenceValue);
+    
+    // TODO - Consider abstracting this operation in a service
+    Task RotateAsync(string oldReferenceValue, string newReferenceValue);
 }
