@@ -402,13 +402,11 @@ public class JwtRequestAuthorizeTests
             });
         statusCode.Should().Be(HttpStatusCode.Created);
 
-        var parJson = parResponse as PushedAuthorizationSuccess;
-
         var url = _mockPipeline.CreateAuthorizeUrl(
             clientId: _client.ClientId,
             extra: new
             {
-                request_uri = parJson.RequestUri
+                request_uri = parResponse.RootElement.GetProperty("request_uri").GetString()
             });
         var response = await _mockPipeline.BrowserClient.GetAsync(url);
 

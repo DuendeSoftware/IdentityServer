@@ -44,7 +44,6 @@ public class PushedAuthorizationTests
             redirectUri: expectedCallback,
             state: expectedState
         );
-        var parSuccess = parJson as PushedAuthorizationSuccess;
         statusCode.Should().Be(HttpStatusCode.Created);
 
         // Authorize using pushed request
@@ -52,7 +51,7 @@ public class PushedAuthorizationTests
             clientId: "client1",
             extra: new
             {
-                request_uri = parSuccess.RequestUri
+                request_uri = parJson.RootElement.GetProperty("request_uri").GetString()
             });
         var response = await _mockPipeline.BrowserClient.GetAsync(authorizeUrl);
 
@@ -121,9 +120,8 @@ public class PushedAuthorizationTests
     {
         // PAR is enabled when we push authorization...
         var (parJson, statusCode) = await _mockPipeline.PushAuthorizationRequestAsync();
-        var parSuccess = parJson as PushedAuthorizationSuccess;
         statusCode.Should().Be(HttpStatusCode.Created);
-        parSuccess.Should().NotBeNull();
+        parJson.Should().NotBeNull();
 
         // ... But then is later disabled, and then we try to use the pushed request
         _mockPipeline.Options.Endpoints.EnablePushedAuthorizationEndpoint = false;
@@ -133,7 +131,7 @@ public class PushedAuthorizationTests
             clientId: "client1",
             extra: new
             {
-                request_uri = parSuccess.RequestUri
+                request_uri = parJson.RootElement.GetProperty("request_uri").GetString()
             });
 
         // We expect to be redirected to the error page, as this is an interactive
@@ -158,9 +156,9 @@ public class PushedAuthorizationTests
                 { "request_uri", requestUri }
             });
         statusCode.Should().Be(HttpStatusCode.BadRequest);
-        parJson.Should().NotBeNull()
-            .And.Subject.As<PushedAuthorizationFailure>().Error.Should()
-            .Be(OidcConstants.AuthorizeErrors.InvalidRequest);
+        parJson.Should().NotBeNull();
+        parJson.RootElement.GetProperty("error").GetString()
+            .Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
     }
 
     private void ConfigureScopesAndResources()

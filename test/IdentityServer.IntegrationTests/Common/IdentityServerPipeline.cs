@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
@@ -382,24 +383,18 @@ public class IdentityServerPipeline
             extra: Parameters.FromObject(extra));
         return url;
     }
-    public async Task<(PushedAuthorizationResponse, HttpStatusCode)> PushAuthorizationRequestAsync(
+    public async Task<(JsonDocument, HttpStatusCode)> PushAuthorizationRequestAsync(
         Dictionary<string, string> parameters)
     { 
         var httpResponse = await BackChannelClient.PostAsync(ParEndpoint,
             new FormUrlEncodedContent(parameters));
         var statusCode = httpResponse.StatusCode;
-        PushedAuthorizationResponse parsedResponse = statusCode switch
-        {
-            HttpStatusCode.Created => await httpResponse.Content.ReadFromJsonAsync<PushedAuthorizationSuccess>(),
-            HttpStatusCode.NotFound => new PushedAuthorizationFailure { Error = "Not Found", ErrorDescription = string.Empty },
-            HttpStatusCode.BadRequest => await httpResponse.Content.ReadFromJsonAsync<PushedAuthorizationFailure>(),
-            _ => new PushedAuthorizationFailure { Error = $"Unexpected HTTP status code {statusCode}", ErrorDescription = string.Empty }
-        };
-
-        return (parsedResponse, statusCode);
+        var rawContent = await httpResponse.Content.ReadAsStringAsync();
+        var parsed = rawContent.IsPresent() ? JsonDocument.Parse(rawContent) : null;
+        return (parsed, statusCode);
     }
 
-    public async Task<(PushedAuthorizationResponse, HttpStatusCode)> PushAuthorizationRequestAsync(
+    public async Task<(JsonDocument, HttpStatusCode)> PushAuthorizationRequestAsync(
         string clientId = "client1",
         string clientSecret = "secret",
         string responseType = "id_token",

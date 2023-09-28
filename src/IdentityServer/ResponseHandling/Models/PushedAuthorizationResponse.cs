@@ -13,9 +13,6 @@ public class PushedAuthorizationFailure : PushedAuthorizationResponse
 
 public class PushedAuthorizationSuccess : PushedAuthorizationResponse
 {
-    [JsonPropertyName("request_uri")]
     public required string RequestUri { get; set; }
-
-    [JsonPropertyName("expires_in")]
     public required int ExpiresIn { get; set; }
 }

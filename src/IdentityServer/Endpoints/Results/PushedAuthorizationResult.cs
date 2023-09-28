@@ -7,15 +7,16 @@ using Duende.IdentityServer.ResponseHandling;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Net;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
 public class PushedAuthorizationResult : EndpointResult<PushedAuthorizationResult>
 {
-    public PushedAuthorizationResponse Response { get; }
+    public PushedAuthorizationSuccess Response { get; }
 
-    public PushedAuthorizationResult(PushedAuthorizationResponse response)
+    public PushedAuthorizationResult(PushedAuthorizationSuccess response)
     {
         Response = response ?? throw new ArgumentNullException(nameof(response));
     }
@@ -25,23 +26,20 @@ internal class PushedAuthorizationResultGenerator : IEndpointResultGenerator<Pus
 {
     public async Task ExecuteAsync(PushedAuthorizationResult result, HttpContext context)
     {
-        if(result.Response is PushedAuthorizationSuccess success)
+        context.Response.SetNoCache();
+        context.Response.StatusCode = (int) HttpStatusCode.Created;
+        var dto = new ResultDto
         {
-            context.Response.SetNoCache(); // REVIEW - Do we need cache control headers? 
-            context.Response.StatusCode = (int) HttpStatusCode.Created;
-            await context.Response.WriteJsonAsync(result.Response);
-            // TODO - Logs and maybe an event for PAR success
-        } 
-        else if(result.Response is PushedAuthorizationFailure failure)
-        {
-            context.Response.SetNoCache(); // REVIEW - Do we need cache control headers? 
-            context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
-            await context.Response.WriteJsonAsync(result.Response);
-            // TODO - Logs and maybe an event for PAR failures
-        } 
-        else
-        {
-            throw new Exception("Can't happen!");
-        }
+            request_uri = result.Response.RequestUri,
+            expires_in = result.Response.ExpiresIn
+        };
+        await context.Response.WriteJsonAsync(dto);
+        // TODO - Logs and maybe an event for PAR success
+    }
+
+    internal class ResultDto
+    {
+        public required string request_uri { get; set; }
+        public required int expires_in { get; set; }
     }
 }

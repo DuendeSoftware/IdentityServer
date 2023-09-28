@@ -24,28 +24,26 @@ namespace Duende.IdentityServer.Endpoints;
 internal class PushedAuthorizationEndpoint : IEndpointHandler
 {
     private readonly IClientSecretValidator _clientValidator;
-    private readonly IAuthorizeRequestValidator _requestValidator;
-    private readonly IDataProtector _dataProtector;
-    private readonly IPushedAuthorizationRequestStore _store;
+    private readonly IPushedAuthorizationRequestValidator _parValidator;
+    private readonly IAuthorizeRequestValidator _authorizeRequestValidator;
+    private readonly IPushedAuthorizationResponseGenerator _responseGenerator;
     private readonly IdentityServerOptions _options;
     private readonly IEventService _events;
     private readonly ILogger<PushedAuthorizationEndpoint> _logger;
 
     public PushedAuthorizationEndpoint(
         IClientSecretValidator clientValidator,
-        IAuthorizeRequestValidator requestValidator,
-        IDataProtectionProvider dataProtectionProvider,
-        IPushedAuthorizationRequestStore store,
-        IdentityServerOptions options,
+        IPushedAuthorizationRequestValidator parValidator,
+        IAuthorizeRequestValidator authorizeRequestValidator,
+        IPushedAuthorizationResponseGenerator responseGenerator,
         IEventService events,
         ILogger<PushedAuthorizationEndpoint> logger
         )
     {
         _clientValidator = clientValidator;
-        _requestValidator = requestValidator;
-        _dataProtector = dataProtectionProvider.CreateProtector("PAR");
-        _store = store;
-        _options = options;
+        _parValidator = parValidator;
+        _authorizeRequestValidator = authorizeRequestValidator;
+        _responseGenerator = responseGenerator;
         _events = events;
         _logger = logger;
     }
@@ -72,86 +70,46 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         var client = await _clientValidator.ValidateAsync(context);
         if(client.IsError)
         {
-            return ClientValidationError(client.Error, client.ErrorDescription);
-        }
-
-        //// Reject request_uri parameter
-        if (values.Get(OidcConstants.AuthorizeRequest.RequestUri).IsPresent())
-        {
             return await CreateErrorResultAsync(
-                "Request validation failed",
+                logMessage: "Client secret validation failed",
                 request: null,
-                error: OidcConstants.AuthorizeErrors.InvalidRequest, 
-                // REVIEW - Make sure this is the correct error code
-                // Not clear what the error should be.
-                // PAR spec says you can't use request_uri, but doesn't say what to do about it
-                // https://datatracker.ietf.org/doc/html/rfc9126#name-request
-                // JAR spec has related error conditions, do we reuse those ?
-                // https://www.rfc-editor.org/rfc/rfc9101#name-authorization-server-respon
-
-                errorDescription: "Cannot use request_uri with PAR"
-            );
+                client.Error,
+                client.ErrorDescription);
         }
 
-        // Validate Request
-        var validationResult = await _requestValidator.ValidateAsync(values);
-
-        if(validationResult.IsError)
+        // Perform validations specific to PAR
+        var parValidationResult = await _parValidator.ValidateAsync(new PushedAuthorizationRequestValidationContext(values, client.Client));
+        if (parValidationResult.IsError)
+        {
+            return await CreateErrorResultAsync(
+                logMessage: "Pushed authorization validation failed",
+                request: null,
+                parValidationResult.Error,
+                parValidationResult.ErrorDescription);
+        }
+       
+        // Validate the content of the pushed authorization request
+        var authValidationResult = await _authorizeRequestValidator.ValidateAsync(values);
+        if(authValidationResult.IsError)
         {
             return await CreateErrorResultAsync(
                 "Request validation failed",
-                validationResult.ValidatedRequest,
-                validationResult.Error,
-                validationResult.ErrorDescription);
+                authValidationResult.ValidatedRequest,
+                authValidationResult.Error,
+                authValidationResult.ErrorDescription);
         }
 
-        // Create a reference value
-        var referenceValue = CryptoRandom.CreateUniqueId(32, CryptoRandom.OutputFormat.Hex);
-        var requestUri = $"urn:ietf:params:oauth:request_uri:{referenceValue}";
-        
-        // Calculate the expiration
-        var expiration = client.Client.PushedAuthorizationLifetime ?? _options.PushedAuthorization.Lifetime;
+        var response = await _responseGenerator.CreateResponseAsync(parValidationResult.ValidatedRequest);
 
-        // Serialize
-        var serialized = ObjectSerializer.ToString(form.ToDictionary());
-
-        // Data Protect
-        var protectedData = _dataProtector.Protect(serialized);
-
-        // Persist 
-        await _store.StoreAsync(new Models.PushedAuthorizationRequest
+        return response switch
         {
-            RequestUri = requestUri,
-            ExpiresAtUtc = DateTime.UtcNow.AddSeconds(expiration),
-            Parameters = protectedData
-        });
-
-
-        // Return reference and expiration
-        var response = new PushedAuthorizationSuccess
-        {
-            RequestUri = requestUri,
-            ExpiresIn = expiration
+            PushedAuthorizationSuccess success => new PushedAuthorizationResult(success),
+            PushedAuthorizationFailure fail => new PushedAuthorizationErrorResult(fail),
+            _ => throw new Exception("Can't happen")
         };
-
-        // TODO - Logs and events here?
-
-        return new PushedAuthorizationResult(response);
     }
 
-    private PushedAuthorizationResult ClientValidationError(string error, string errorDescription = null)
-    {
-        var response = new PushedAuthorizationFailure
-        {
-            Error = error,
-            ErrorDescription = errorDescription,
-        };
-
-        return new PushedAuthorizationResult(response);
-    }
-
-    // TODO - Copied from AuthorizeEndpointBase
-    private async Task<PushedAuthorizationResult> CreateErrorResultAsync(
+    private async Task<PushedAuthorizationErrorResult> CreateErrorResultAsync(
         string logMessage,
         ValidatedAuthorizeRequest request = null,
         string error = OidcConstants.AuthorizeErrors.ServerError,
@@ -169,10 +127,9 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
             _logger.LogInformation("{@validationDetails}", details);
         }
 
-        // TODO: should we raise a failure event for all errors to the authorize endpoint?
         await RaiseFailureEventAsync(request, error, errorDescription);
 
-        return new PushedAuthorizationResult(new PushedAuthorizationFailure
+        return new PushedAuthorizationErrorResult(new PushedAuthorizationFailure
         {
             Error = error,
             ErrorDescription = errorDescription,
@@ -181,6 +138,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 
     private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription)
     {
+        // TODO - Replace this event with a new one, or maybe don't introduce an event...
         return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
     }
 

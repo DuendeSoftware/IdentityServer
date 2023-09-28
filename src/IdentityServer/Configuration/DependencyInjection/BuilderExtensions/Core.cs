@@ -138,6 +138,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpointResultGenerator<JsonWebKeysResult, JsonWebKeysResultGenerator>();
         builder.AddEndpointResultGenerator<ProtectedResourceErrorResult, ProtectedResourceErrorResultGenerator>();
         builder.AddEndpointResultGenerator<PushedAuthorizationResult, PushedAuthorizationResultGenerator>();
+        builder.AddEndpointResultGenerator<PushedAuthorizationErrorResult, PushedAuthorizationErrorResultGenerator>();
         builder.AddEndpointResultGenerator<StatusCodeResult, StatusCodeResultGenerator>();
         builder.AddEndpointResultGenerator<TokenErrorResult, TokenErrorResultGenerator>();
         builder.AddEndpointResultGenerator<TokenResult, TokenResultGenerator>();
@@ -335,8 +336,8 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IBackchannelAuthenticationRequestIdValidator, BackchannelAuthenticationRequestIdValidator>();
         builder.Services.TryAddTransient<IResourceValidator, DefaultResourceValidator>();
         builder.Services.TryAddTransient<IDPoPProofValidator, DefaultDPoPProofValidator>();
-
         builder.Services.TryAddTransient<IBackchannelAuthenticationRequestValidator, BackchannelAuthenticationRequestValidator>();
+        builder.Services.TryAddTransient<IPushedAuthorizationRequestValidator, PushedAuthorizationRequestValidator>();
 
         // optional
         builder.Services.TryAddTransient<ICustomTokenValidator, DefaultCustomTokenValidator>();
@@ -361,6 +362,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<ITokenRevocationResponseGenerator, TokenRevocationResponseGenerator>();
         builder.Services.TryAddTransient<IDeviceAuthorizationResponseGenerator, DeviceAuthorizationResponseGenerator>();
         builder.Services.TryAddTransient<IBackchannelAuthenticationResponseGenerator, BackchannelAuthenticationResponseGenerator>();
+        builder.Services.TryAddTransient<IPushedAuthorizationResponseGenerator, PushedAuthorizationResponseGenerator>();
 
         return builder;
     }
