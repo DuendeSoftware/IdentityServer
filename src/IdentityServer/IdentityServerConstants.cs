@@ -20,6 +20,8 @@ public static class IdentityServerConstants
 
     public const string JwtRequestClientKey = "idsrv.jwtrequesturi.client";
 
+    public const string PushedAuthorizationRequestUri = "urn:ietf:params:oauth:request_uri";
+
     /// <summary>
     /// Constants for local IdentityServer access token authentication.
     /// </summary>

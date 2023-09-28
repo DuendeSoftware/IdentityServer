@@ -164,10 +164,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             return Invalid(request, description: "Only one request parameter is allowed");
         }
 
-        var parPrefix = "urn:ietf:params:oauth:request_uri:";
-
         var parRequired = _options.PushedAuthorization.Required || request.Client.RequirePushedAuthorization;
-        var parMissing = requestUri.IsMissing() || !requestUri.StartsWith(parPrefix);
+        var parMissing = requestUri.IsMissing() || !requestUri.StartsWith(PushedAuthorizationRequestUri);
 
         if (parRequired && parMissing)
         {
@@ -177,13 +175,13 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
         if (requestUri.IsPresent())
         {
-            if(requestUri.StartsWith(parPrefix))
+            if(requestUri.StartsWith(PushedAuthorizationRequestUri))
             {
                 if (!_options.Endpoints.EnablePushedAuthorizationEndpoint)
                 {
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "Pushed authorization is disabled.");
                 }
-                var referenceValue = requestUri.Substring(parPrefix.Length);
+                var referenceValue = requestUri.Substring(PushedAuthorizationRequestUri.Length + 1); // +1 for the separator ':'
                 var pushedAuthorizationRequest = await _pushedAuthorizationRequestStore.GetAsync(referenceValue);
                 if(pushedAuthorizationRequest == null)
                 {

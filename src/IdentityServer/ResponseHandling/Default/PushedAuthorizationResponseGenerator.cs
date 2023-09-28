@@ -43,7 +43,7 @@ public class PushedAuthorizationResponseGenerator : IPushedAuthorizationResponse
         // Create a reference value
         var referenceValue = await _handleGeneration.GenerateAsync(); 
         
-        var requestUri = $"urn:ietf:params:oauth:request_uri:{referenceValue}";
+        var requestUri = $"{IdentityServerConstants.PushedAuthorizationRequestUri}:{referenceValue}";
         
         // Calculate the expiration
         var expiration = request.Client.PushedAuthorizationLifetime ?? _options.PushedAuthorization.Lifetime;
