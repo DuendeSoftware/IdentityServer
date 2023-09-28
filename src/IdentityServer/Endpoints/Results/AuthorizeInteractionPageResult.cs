@@ -88,7 +88,17 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
         }
         else
         {
-            returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
+            if (result.Request.PushedAuthorizationReferenceValue != null)
+            {
+                var requestUri = $"{PushedAuthorizationRequestUri}:{result.Request.PushedAuthorizationReferenceValue}";
+                returnUrl = returnUrl
+                    .AddQueryString(OidcConstants.AuthorizeRequest.RequestUri, requestUri)
+                    .AddQueryString(OidcConstants.AuthorizeRequest.ClientId, result.Request.ClientId);
+            } 
+            else
+            {
+                returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
+            }
         }
 
         var url = result.RedirectUrl;
