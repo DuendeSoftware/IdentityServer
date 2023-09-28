@@ -189,7 +189,6 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 {
                     return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, description: "invalid or reused PAR request uri");
                 }
-                await _pushedAuthorizationRequestStore.ConsumeAsync(requestUri);
 
                 var unprotected = _dataProtector.Unprotect(pushedAuthorizationRequest.Parameters);
                 var rawPushedAuthorizationRequest = ObjectSerializer
@@ -214,15 +213,14 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 // Copy the PAR into the raw request so that validation will use the pushed parameters
                 request.Raw = rawPushedAuthorizationRequest;
 
+                // Hide the request uri, so that it looks like PAR didn't happen
+                request.Raw.Remove(OidcConstants.AuthorizeRequest.RequestUri);
+
+                // But keep the reference value, so we can know that PAR did happen, and consume or rotate the request uri as needed
+                request.PushedAuthorizationReferenceValue = pushedAuthorizationRequest.ReferenceValue;
+
                 // Support JAR + PAR together - if there is a request object within the PAR, extract it
                 requestObject = rawPushedAuthorizationRequest.Get(OidcConstants.AuthorizeRequest.Request);
-
-                // Don't include a JAR request object in the raw parameters, but do include the request_uri
-                // because later (in ValidateRequestObjectAsync), the presence of the request_uri
-                // let's us know that we should process the request object further and copy it over
-                // TODO - This seems kind of hairy. Maybe we can just set the raw parameters correctly at this time?
-                request.Raw.Remove(OidcConstants.AuthorizeRequest.Request);
-                request.Raw[OidcConstants.AuthorizeRequest.RequestUri] = requestUri;
             }
             else if (_options.Endpoints.EnableJwtRequestUri)
             {
