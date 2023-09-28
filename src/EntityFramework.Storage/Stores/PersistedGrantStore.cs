@@ -61,21 +61,15 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
 
         try
         {
-            if (await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken) > 0)
-            {
-                Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
-            }
-            else
-            {
-                Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
-                await Context.PersistedGrants.Where(x => x.Key == key).ExecuteDeleteAsync();
-                Logger.LogDebug("removed {persistedGrantKey} persisted grant from database", key);
-                await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken)
-            }
+            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
+            Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateException)
         {
-            Logger.LogWarning("exception upserting {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
+            Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
+            await Context.PersistedGrants.Where(x => x.Key == key).ExecuteDeleteAsync(CancellationTokenProvider.CancellationToken);
+            Logger.LogDebug("removed {persistedGrantKey} persisted grant from database", key);
+            await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
         }
     }
 
@@ -117,7 +111,7 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Remove");
 
-        if (await Context.PersistedGrants.Where(x => x.Key == key).ExecuteDeleteAsync() > 0)
+        if (await Context.PersistedGrants.Where(x => x.Key == key).ExecuteDeleteAsync(CancellationTokenProvider.CancellationToken) > 0)
         {
             Logger.LogDebug("removed {persistedGrantKey} persisted grant from database", key);
         }
