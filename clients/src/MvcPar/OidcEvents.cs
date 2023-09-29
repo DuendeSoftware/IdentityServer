@@ -36,15 +36,15 @@ namespace MvcPar
 
             // Now send our PAR request
             
-            // Private Key Jwt Auth
-            var parParameters = context.ProtocolMessage.Parameters
-                .Append(KeyValuePair.Create("client_assertion_type", OidcConstants.ClientAssertionTypes.JwtBearer))
-                .Append(KeyValuePair.Create("client_assertion", _assertionService.CreateClientToken()));
-            
-            // Or basic auth with client id and secret
-            // _httpClient.SetBasicAuthentication(clientId, "secret");
-            
-            var requestBody = new FormUrlEncodedContent(parParameters);
+            var requestObject = _assertionService.SignAuthorizationRequest(context.ProtocolMessage);
+            var parameters = new Dictionary<string, string>
+            {
+                { "client_id", context.ProtocolMessage.ClientId },
+                { "client_assertion_type", OidcConstants.ClientAssertionTypes.JwtBearer },
+                { "client_assertion", _assertionService.CreateClientToken() },
+                { "request", requestObject }
+            };
+            var requestBody = new FormUrlEncodedContent(parameters);
             
             // TODO - use discovery to determine endpoint
             var response = await _httpClient.PostAsync("https://localhost:5001/connect/par", requestBody);

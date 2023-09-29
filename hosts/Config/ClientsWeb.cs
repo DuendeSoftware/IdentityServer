@@ -140,7 +140,6 @@ public static class ClientsWeb
 
                 ClientSecrets =
                 {
-                    // new Secret("secret".Sha256())
                     new Secret
                     {
                         Type = IdentityServerConstants.SecretTypes.JsonWebKey,
@@ -153,6 +152,8 @@ public static class ClientsWeb
                                 """
                     }
                 },
+
+                RequireRequestObject = true,
 
                 RequireConsent = true,
                 AllowedGrantTypes = GrantTypes.Code,
