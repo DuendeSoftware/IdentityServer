@@ -64,6 +64,34 @@ public class PersistedGrantStoreTests : IntegrationTest<PersistedGrantStoreTests
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task StoreAsync_WhenPersistedGrantAlreadyExists_ExpectOriginalUpdated(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        var persistedGrant = CreateTestObject();
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            var store = new PersistedGrantStore(context, FakeLogger<PersistedGrantStore>.Create(), new NoneCancellationTokenProvider());
+            await store.StoreAsync(persistedGrant);
+        }
+
+        var duplicateGrant = CreateTestObject();
+        duplicateGrant.Key = persistedGrant.Key;
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            var store = new PersistedGrantStore(context, FakeLogger<PersistedGrantStore>.Create(), new NoneCancellationTokenProvider());
+            await store.StoreAsync(duplicateGrant);
+        }
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            var foundGrant = context.PersistedGrants.FirstOrDefault(x => x.Key == persistedGrant.Key);
+            Assert.NotNull(foundGrant);
+            Assert.Equal(duplicateGrant.SubjectId, foundGrant.SubjectId);
+        }
+    }
+
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
     public async Task GetAsync_WithKeyAndPersistedGrantExists_ExpectPersistedGrantReturned(DbContextOptions<PersistedGrantDbContext> options)
     {
         var persistedGrant = CreateTestObject();
