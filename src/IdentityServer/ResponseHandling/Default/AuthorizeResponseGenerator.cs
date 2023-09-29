@@ -41,7 +41,6 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     /// The event service
     /// </summary>
     protected readonly IEventService Events;
-    private readonly IPushedAuthorizationRequestStore _pushedAuthorizationRequestStore;
 
     /// <summary>
     /// The logger
@@ -68,7 +67,6 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     /// <param name="keyMaterialService"></param>
     /// <param name="authorizationCodeStore">The authorization code store.</param>
     /// <param name="events">The events.</param>
-    /// <param name="pushedAuthorizationRequestStore">The pushed authorization request store</param>
     public AuthorizeResponseGenerator(
         IdentityServerOptions options,
         IClock clock,
@@ -76,8 +74,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
         IKeyMaterialService keyMaterialService,
         IAuthorizationCodeStore authorizationCodeStore,
         ILogger<AuthorizeResponseGenerator> logger,
-        IEventService events,
-        IPushedAuthorizationRequestStore pushedAuthorizationRequestStore)
+        IEventService events)
     {
         Options = options;
         Clock = clock;
@@ -86,7 +83,6 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
         AuthorizationCodeStore = authorizationCodeStore;
         Logger = logger;
         Events = events;
-        _pushedAuthorizationRequestStore = pushedAuthorizationRequestStore;
     }
 
     /// <summary>
@@ -98,13 +94,6 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     public virtual async Task<AuthorizeResponse> CreateResponseAsync(ValidatedAuthorizeRequest request)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeResponseGenerator.CreateResponse");
-
-        // Consume PAR request_uris
-        var referenceValue = request.PushedAuthorizationReferenceValue;
-        if(referenceValue.IsPresent())
-        {
-            await _pushedAuthorizationRequestStore.ConsumeAsync(referenceValue);
-        }
 
         if (request.GrantType == GrantType.AuthorizationCode)
         {

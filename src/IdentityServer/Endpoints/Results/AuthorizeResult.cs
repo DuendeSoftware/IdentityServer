@@ -43,12 +43,14 @@ internal class AuthorizeResultGenerator : IEndpointResultGenerator<AuthorizeResu
     public AuthorizeResultGenerator(
         IdentityServerOptions options,
         IUserSession userSession,
+        IPushedAuthorizationRequestStore pushedAuthorizationStore,
         IMessageStore<ErrorMessage> errorMessageStore,
         IServerUrls urls,
         IClock clock)
     {
         _options = options;
         _userSession = userSession;
+        _pushedAuthorizationStore = pushedAuthorizationStore;
         _errorMessageStore = errorMessageStore;
         _urls = urls;
         _clock = clock;
@@ -56,12 +58,15 @@ internal class AuthorizeResultGenerator : IEndpointResultGenerator<AuthorizeResu
 
     private IdentityServerOptions _options;
     private IUserSession _userSession;
+    private readonly IPushedAuthorizationRequestStore _pushedAuthorizationStore;
     private IMessageStore<ErrorMessage> _errorMessageStore;
     private IServerUrls _urls;
     private IClock _clock;
 
     public async Task ExecuteAsync(AuthorizeResult result, HttpContext context)
     {
+        await ConsumePushedAuthorizationRequest(result);
+
         if (result.Response.IsError)
         {
             await ProcessErrorAsync(result.Response, context);
@@ -71,6 +76,16 @@ internal class AuthorizeResultGenerator : IEndpointResultGenerator<AuthorizeResu
             await ProcessResponseAsync(result.Response, context);
         }
     }
+
+    private async Task ConsumePushedAuthorizationRequest(AuthorizeResult result)
+    {
+        var referenceValue = result.Response?.Request?.PushedAuthorizationReferenceValue;
+        if(referenceValue.IsPresent())
+        {
+            await _pushedAuthorizationStore.ConsumeAsync(referenceValue);
+        }
+    }
+
 
     private async Task ProcessErrorAsync(AuthorizeResponse response, HttpContext context)
     {

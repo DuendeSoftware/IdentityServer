@@ -46,11 +46,15 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
 
     public async Task ConsumeAsync(string referenceValue)
     {
-        await Context.PushedAuthorizationRequests
+        using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Remove");
+        Logger.LogDebug("removing {referenceValue} pushed authorization from database", referenceValue);
+        var numDeleted = await Context.PushedAuthorizationRequests
             .Where(par => par.ReferenceValue == referenceValue)
-            .ExecuteUpdateAsync(setters => 
-                setters.SetProperty(par => par.Consumed, true), 
-                CancellationTokenProvider.CancellationToken);
+            .ExecuteDeleteAsync(CancellationTokenProvider.CancellationToken);
+        if(numDeleted != 1)
+        {
+            // TODO - is this an error? Something weird is probably going on.
+        }
     }
 
     public virtual async Task<Models.PushedAuthorizationRequest> GetAsync(string referenceValue)
@@ -67,19 +71,6 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         Logger.LogDebug("{referenceValue} pushed authorization found in database: {requestUriFound}", par.ReferenceValue, model != null);
 
         return model;
-    }
-
-    public virtual async Task RemoveAsync(string referenceValue)
-    {
-        using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Remove");
-        Logger.LogDebug("removing {referenceValue} pushed authorization from database", referenceValue);
-        var numDeleted = await Context.PushedAuthorizationRequests
-            .Where(par => par.ReferenceValue == referenceValue)
-            .ExecuteDeleteAsync(CancellationTokenProvider.CancellationToken);
-        if(numDeleted != 1)
-        {
-            // TODO - is this an error? Something weird is probably going on.
-        }
     }
 
     public virtual async Task StoreAsync(Models.PushedAuthorizationRequest par)

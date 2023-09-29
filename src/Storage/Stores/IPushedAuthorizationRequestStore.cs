@@ -28,11 +28,4 @@ public interface IPushedAuthorizationRequestStore
     /// <param name="referenceValue">The reference value.</param>
     /// <returns></returns>
     Task<PushedAuthorizationRequest?> GetAsync(string referenceValue);
-
-    /// <summary>
-    /// Removes the pushed authorization request.
-    /// </summary>
-    /// <param name="referenceValue">The reference value.</param> 
-    /// <returns></returns>
-    Task RemoveAsync(string referenceValue);
 }
