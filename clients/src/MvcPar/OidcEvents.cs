@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -13,11 +15,13 @@ namespace MvcPar
     public class OidcEvents : OpenIdConnectEvents
     {
         private readonly HttpClient _httpClient;
+        private readonly AssertionService _assertionService;
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-        public OidcEvents(HttpClient httpClient)
+        public OidcEvents(HttpClient httpClient, AssertionService assertionService)
         {
             _httpClient = httpClient;
+            _assertionService = assertionService;
         }
         public override async Task RedirectToIdentityProvider(RedirectContext context)
         {
@@ -26,13 +30,22 @@ namespace MvcPar
 
             // Construct State, we also need that (this chunk copied from the OIDC handler)
             var message = context.ProtocolMessage;
-            // When redeeming a 'code' for an AccessToken, this value is needed
+            // When redeeming a code for an AccessToken, this value is needed
             context.Properties.Items.Add(OpenIdConnectDefaults.RedirectUriForCodePropertiesKey, message.RedirectUri);
             message.State = context.Options.StateDataFormat.Protect(context.Properties);
 
             // Now send our PAR request
-            var requestBody = new FormUrlEncodedContent(context.ProtocolMessage.Parameters);
-            _httpClient.SetBasicAuthentication(clientId, "secret");
+            
+            // Private Key Jwt Auth
+            var parParameters = context.ProtocolMessage.Parameters
+                .Append(KeyValuePair.Create("client_assertion_type", OidcConstants.ClientAssertionTypes.JwtBearer))
+                .Append(KeyValuePair.Create("client_assertion", _assertionService.CreateClientToken()));
+            
+            // Or basic auth with client id and secret
+            // _httpClient.SetBasicAuthentication(clientId, "secret");
+            
+            var requestBody = new FormUrlEncodedContent(parParameters);
+            
             // TODO - use discovery to determine endpoint
             var response = await _httpClient.PostAsync("https://localhost:5001/connect/par", requestBody);
             // TODO - PAR can fail! Handle errors
@@ -86,6 +99,19 @@ namespace MvcPar
 
             throw new NotImplementedException($"An unsupported authentication method has been configured: {context.Options.AuthenticationMethod}");
 
+        }
+
+        public override Task AuthorizationCodeReceived(AuthorizationCodeReceivedContext context)
+        {
+            context.TokenEndpointRequest.ClientAssertionType = OidcConstants.ClientAssertionTypes.JwtBearer;
+            context.TokenEndpointRequest.ClientAssertion = _assertionService.CreateClientToken();
+
+            return Task.CompletedTask;
+        }
+
+        public override Task TokenResponseReceived(TokenResponseReceivedContext context)
+        {
+            return base.TokenResponseReceived(context);
         }
 
         private class ParResponse

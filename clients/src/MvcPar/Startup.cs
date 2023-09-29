@@ -20,6 +20,7 @@ namespace MvcPar
         
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<AssertionService>();
             services.AddTransient<OidcEvents>();
 
             // add MVC
@@ -50,7 +51,7 @@ namespace MvcPar
                     options.RequireHttpsMetadata = false;
 
                     options.ClientId = "mvc.par";
-                    options.ClientSecret = "secret";
+                    // options.ClientSecret = "secret";
 
                     // code flow + PKCE (PKCE is turned on by default)
                     options.ResponseType = "code";
