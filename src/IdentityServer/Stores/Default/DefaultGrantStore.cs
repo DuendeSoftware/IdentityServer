@@ -129,7 +129,12 @@ public class DefaultGrantStore<T>
     /// <returns></returns>
     protected virtual async Task<T> GetItemByHashedKeyAsync(string hashedKey)
     {
-        var grant = await Store.GetAsync(hashedKey);
+        return await GetItemByFactory(hashedKey, async key => await Store.GetAsync(key));
+    }
+
+    private async Task<T> GetItemByFactory(string key, Func<string, Task<PersistedGrant>> factory)
+    {
+        var grant = await factory(key);
         if (grant != null && grant.Type == GrantType)
         {
             try
@@ -144,7 +149,7 @@ public class DefaultGrantStore<T>
 
         return default;
     }
-
+    
     /// <summary>
     /// Gets the items.
     /// </summary>
@@ -236,6 +241,22 @@ public class DefaultGrantStore<T>
     {
         key = GetHashedKey(key);
         return RemoveItemByHashedKeyAsync(key);
+    }
+
+    /// <summary>
+    /// Gets and removes the item.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <returns></returns>
+    protected virtual async Task<T> GetAndRemoveItemAsync(string key)
+    {
+        var hashedKey = GetHashedKey(key);
+        var item = await GetItemByFactory(hashedKey, async t => await Store.GetAndRemoveAsync(t));
+        if (item == null)
+        {
+            Logger.LogDebug("{grantType} grant with value: {key} not found in store.", GrantType, key);
+        }
+        return item;
     }
         
     /// <summary>

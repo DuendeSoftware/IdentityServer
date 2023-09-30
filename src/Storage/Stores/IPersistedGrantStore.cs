@@ -44,6 +44,21 @@ public interface IPersistedGrantStore
     Task RemoveAsync(string key);
 
     /// <summary>
+    /// Removes the grant by key.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <returns></returns>
+    async Task<PersistedGrant?> GetAndRemoveAsync(string key)
+    {
+        if (await GetAsync(key) is { } authCode)
+        {
+            await RemoveAsync(key);
+            return authCode;
+        }
+        return null;
+    }
+
+    /// <summary>
     /// Removes all grants based on the filter.
     /// </summary>
     /// <param name="filter">The filter.</param>

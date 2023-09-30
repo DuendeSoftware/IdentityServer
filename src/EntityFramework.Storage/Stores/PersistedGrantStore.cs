@@ -126,6 +126,18 @@ public class PersistedGrantStore : Duende.IdentityServer.Stores.IPersistedGrantS
     }
 
     /// <inheritdoc/>
+    public virtual async Task<Models.PersistedGrant> GetAndRemoveAsync(string key)
+    {
+        using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Remove");
+        using var transaction = Context.Database.BeginTransactionAsync();
+
+        var result = await GetAsync(key);
+        await RemoveAsync(key);
+        await Context.Database.CommitTransactionAsync();
+        return result;
+    }
+
+    /// <inheritdoc/>
     public virtual async Task RemoveAllAsync(PersistedGrantFilter filter)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.RemoveAll");

@@ -335,7 +335,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
         _validatedRequest.AuthorizationCodeHandle = code;
 
-        var authZcode = await _authorizationCodeStore.GetAuthorizationCodeAsync(code);
+        var authZcode = await _authorizationCodeStore.GetAndDeleteAuthorizationCodeAsync(code);
         if (authZcode == null)
         {
             LogError("Invalid authorization code", new { code });
@@ -368,10 +368,6 @@ internal class TokenRequestValidator : ITokenRequestValidator
                 return Invalid(OidcConstants.TokenErrors.InvalidDPoPProof, "The DPoP proof token used on the token endpoint does not match the original used on the authorize endpoint.");
             }
         }
-
-        // remove code from store
-        // todo: set to consumed in the future?
-        await _authorizationCodeStore.RemoveAuthorizationCodeAsync(code);
 
         if (authZcode.CreationTime.HasExceeded(authZcode.Lifetime, _clock.UtcNow.UtcDateTime))
         {

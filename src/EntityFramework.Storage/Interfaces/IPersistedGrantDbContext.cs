@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Duende.IdentityServer.EntityFramework.Interfaces;
 
@@ -50,6 +51,11 @@ public interface IPersistedGrantDbContext : IDisposable
     /// </value>
     DbSet<ServerSideSession> ServerSideSessions { get; set; }
 
+    /// <summary>
+    /// Gets the database facade
+    /// </summary>
+    DatabaseFacade Database { get; }
+    
     /// <summary>
     /// Saves the changes.
     /// </summary>

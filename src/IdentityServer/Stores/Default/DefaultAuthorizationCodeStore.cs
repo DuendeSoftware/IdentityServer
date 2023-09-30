@@ -57,6 +57,18 @@ public class DefaultAuthorizationCodeStore : DefaultGrantStore<AuthorizationCode
     }
 
     /// <summary>
+    /// Gets and deletes authorization code.
+    /// </summary>
+    /// <param name="code">The code.</param>
+    /// <returns></returns>
+    public async Task<AuthorizationCode> GetAndDeleteAuthorizationCodeAsync(string code)
+    {
+        using var activity = Tracing.StoreActivitySource.StartActivity("DefaultAuthorizationCodeStore.GetAndDeleteAuthorizationCode");
+
+        return await GetAndRemoveItemAsync(code);
+    }
+
+    /// <summary>
     /// Removes the authorization code asynchronous.
     /// </summary>
     /// <param name="code">The code.</param>

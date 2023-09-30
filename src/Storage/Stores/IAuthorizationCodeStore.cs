@@ -27,6 +27,21 @@ public interface IAuthorizationCodeStore
     /// <param name="code">The code.</param>
     /// <returns></returns>
     Task<AuthorizationCode?> GetAuthorizationCodeAsync(string code);
+    
+    /// <summary>
+    /// Gets and deletes authorization code.
+    /// </summary>
+    /// <param name="code">The code.</param>
+    /// <returns></returns>
+    async Task<AuthorizationCode?> GetAndDeleteAuthorizationCodeAsync(string code)
+    {
+        if (await GetAuthorizationCodeAsync(code) is { } authCode)
+        {
+            await RemoveAuthorizationCodeAsync(code);
+            return authCode;
+        }
+        return null;
+    }
 
     /// <summary>
     /// Removes the authorization code.
