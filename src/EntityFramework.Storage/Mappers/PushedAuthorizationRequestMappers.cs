@@ -23,7 +23,6 @@ public static class PushedAuthorizationRequestMappers
                 ReferenceValue = entity.ReferenceValue,
                 ExpiresAtUtc = entity.ExpiresAtUtc,
                 Parameters = entity.Parameters,
-                Consumed = entity.Consumed
             };
     }
 
@@ -40,7 +39,6 @@ public static class PushedAuthorizationRequestMappers
                 ReferenceValue = model.ReferenceValue,
                 ExpiresAtUtc = model.ExpiresAtUtc,
                 Parameters = model.Parameters,
-                Consumed = model.Consumed
             };
     }
 }

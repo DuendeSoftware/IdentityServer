@@ -36,6 +36,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         IPushedAuthorizationRequestValidator parValidator,
         IAuthorizeRequestValidator authorizeRequestValidator,
         IPushedAuthorizationResponseGenerator responseGenerator,
+        IdentityServerOptions options,
         IEventService events,
         ILogger<PushedAuthorizationEndpoint> logger
         )
@@ -44,6 +45,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         _parValidator = parValidator;
         _authorizeRequestValidator = authorizeRequestValidator;
         _responseGenerator = responseGenerator;
+        _options = options;
         _events = events;
         _logger = logger;
     }
@@ -123,6 +125,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 
         if (request != null)
         {
+            // TODO - is this the correct sensitive values filter? Is there a possibility of sensitive values that would normally be sent to the token endpoint here (for authorization of the client?)
             var details = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
             _logger.LogInformation("{@validationDetails}", details);
         }

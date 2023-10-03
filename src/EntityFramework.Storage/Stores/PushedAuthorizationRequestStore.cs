@@ -13,6 +13,7 @@ using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer.EntityFramework.Stores;
 
+/// <inheritdoc />
 public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
 {
 
@@ -43,7 +44,8 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         Logger = logger;
         CancellationTokenProvider = cancellationTokenProvider;
     }
-
+    
+    /// <inheritdoc />
     public async Task ConsumeAsync(string referenceValue)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Remove");
@@ -57,6 +59,7 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         }
     }
 
+    /// <inheritdoc />
     public virtual async Task<Models.PushedAuthorizationRequest> GetAsync(string referenceValue)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PushedAuthorizationRequestStore.Get");
@@ -73,6 +76,8 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         return model;
     }
 
+
+    /// <inheritdoc />
     public virtual async Task StoreAsync(Models.PushedAuthorizationRequest par)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PushedAuthorizationStore.Store");

@@ -9,10 +9,11 @@ using IdentityModel;
 namespace Duende.IdentityServer.Validation;
 
 /// <summary>
-/// Validates API secrets using the registered secret validators and parsers
+/// Default validator for pushed authorization requests.
 /// </summary>
 public class PushedAuthorizationRequestValidator : IPushedAuthorizationRequestValidator
 {
+    /// <inheritdoc />
     public Task<PushedAuthorizationValidationResult> ValidateAsync(PushedAuthorizationRequestValidationContext context)
     {
         // Reject request_uri parameter

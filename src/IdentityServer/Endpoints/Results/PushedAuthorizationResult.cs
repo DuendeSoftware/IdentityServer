@@ -12,10 +12,20 @@ using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
+/// <summary>
+/// Represents a successful result from the pushed authorization endpoint that can be written to the http response.
+/// </summary>
 public class PushedAuthorizationResult : EndpointResult<PushedAuthorizationResult>
 {
+    /// <summary>
+    /// The successful response model.
+    /// </summary>
     public PushedAuthorizationSuccess Response { get; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PushedAuthorizationResult"/> class.
+    /// </summary>
+    /// <param name="response">The successful response model.</param>
     public PushedAuthorizationResult(PushedAuthorizationSuccess response)
     {
         Response = response ?? throw new ArgumentNullException(nameof(response));

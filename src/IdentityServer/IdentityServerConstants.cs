@@ -179,7 +179,6 @@ public static class IdentityServerConstants
         public const string UserConsent = "user_consent";
         public const string DeviceCode = "device_code";
         public const string UserCode = "user_code";
-        public const string PushedAuthorizationRequest = "pushed_authorization_request";
     }
 
     public static class UserCodeTypes

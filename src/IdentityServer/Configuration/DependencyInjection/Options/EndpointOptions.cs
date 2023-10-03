@@ -96,5 +96,11 @@ public class EndpointsOptions
     /// </value>
     public bool EnableBackchannelAuthenticationEndpoint { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the pushed authorization endpoint is enabled.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if the pushed authorization endpoint is enabled; otherwise, <c>false</c>.
+    /// </value>
     public bool EnablePushedAuthorizationEndpoint { get; set; }
 }

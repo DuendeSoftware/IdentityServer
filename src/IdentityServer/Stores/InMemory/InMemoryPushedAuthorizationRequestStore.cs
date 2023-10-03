@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Stores;
 
 /// <summary>
-/// In-memory persisted grant store
+/// In-memory implementation of the pushed authorization request store
 /// </summary>
 public class InMemoryPushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
 {
@@ -33,11 +33,7 @@ public class InMemoryPushedAuthorizationRequestStore : IPushedAuthorizationReque
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Get");
         _repository.TryGetValue(referenceValue, out var request);
 
-        return Task.FromResult(request switch
-        {
-            { Consumed: false } => request,
-            _ => null
-        });
+        return Task.FromResult(request);
     }
 
     /// <inheritdoc/>

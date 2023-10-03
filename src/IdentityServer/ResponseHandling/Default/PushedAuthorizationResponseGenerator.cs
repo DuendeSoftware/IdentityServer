@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.ResponseHandling;
 
+/// <inheritdoc />
 public class PushedAuthorizationResponseGenerator : IPushedAuthorizationResponseGenerator
 {
     private readonly IHandleGenerationService _handleGeneration;
@@ -23,6 +24,16 @@ public class PushedAuthorizationResponseGenerator : IPushedAuthorizationResponse
     private readonly IdentityServerOptions _options;
     private readonly ILogger<PushedAuthorizationResponseGenerator> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PushedAuthorizationResponseGenerator"/> class.
+    /// </summary>
+    /// <param name="handleGeneration">The handle generation service, used for creation of request uri reference values.
+    /// </param>
+    /// <param name="dataProtectionProvider">The data protection provider, used to create a data protector so that the
+    /// pushed request parameters can be protected at rest.</param>
+    /// <param name="store">The pushed authorization request store</param>
+    /// <param name="options">The IdentityServer options</param>
+    /// <param name="logger">The logger</param>
     public PushedAuthorizationResponseGenerator(
         IHandleGenerationService handleGeneration,
         IDataProtectionProvider dataProtectionProvider,
@@ -38,6 +49,7 @@ public class PushedAuthorizationResponseGenerator : IPushedAuthorizationResponse
         _logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task<PushedAuthorizationResponse> CreateResponseAsync(ValidatedPushedAuthorizationRequest request)
     {
         // Create a reference value

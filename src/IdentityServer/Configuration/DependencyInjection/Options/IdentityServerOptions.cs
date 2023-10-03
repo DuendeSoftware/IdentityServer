@@ -199,5 +199,8 @@ public class IdentityServerOptions
     /// </summary>
     public ServerSideSessionOptions ServerSideSessions { get; set; } = new ServerSideSessionOptions();
 
+    /// <summary>
+    /// Options for Pushed Authorization Requests (PAR).
+    /// </summary>
     public PushedAuthorizationOptions PushedAuthorization { get; set; } = new PushedAuthorizationOptions();
 }

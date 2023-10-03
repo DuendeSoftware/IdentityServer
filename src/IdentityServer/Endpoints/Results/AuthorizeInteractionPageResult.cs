@@ -56,22 +56,16 @@ public abstract class AuthorizeInteractionPageResult : EndpointResult<AuthorizeI
 class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<AuthorizeInteractionPageResult>
 {
     private readonly IServerUrls _urls;
-    private readonly IPushedAuthorizationRequestStore _pushedAuthorizationRequestStore;
-    private readonly IHandleGenerationService _handleGeneration;
     private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthorizeInteractionPageResult"/> class.
     /// </summary>
     public AuthorizeInteractionPageResultGenerator(
-        IServerUrls urls, 
-        IPushedAuthorizationRequestStore pushedAuthorizationRequestStore, 
-        IHandleGenerationService handleGeneration,
+        IServerUrls urls,
         IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
     {
         _urls = urls;
-        _pushedAuthorizationRequestStore = pushedAuthorizationRequestStore;
-        _handleGeneration = handleGeneration;
         _authorizationParametersMessageStore = authorizationParametersMessageStore;
     }
 

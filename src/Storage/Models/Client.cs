@@ -216,12 +216,18 @@ public class Client
     /// </summary>
     public int? ConsentLifetime { get; set; } = null;
 
-    // REVIEW - Do we have client specific AND server-wide configuration options for PAR?
-    // If so, what takes precedence? In general, I think specific beats general, but
-    // RequirePushedAuthorization drives a global value in discovery. 
-
+    /// <summary>
+    /// Lifetime of pushed authorization requests for this client. If this lifetime is set, it takes precedence over
+    /// the global configuration in PushedAuthorizationOptions. Defaults to null, which means the global
+    /// configuration will be used.
+    /// </summary>
     public int? PushedAuthorizationLifetime { get; set; }
 
+    /// <summary>
+    /// Specifies whether pushed authorization requests are required for this client. There is also a global
+    /// configuration flag to require pushed authorization in PushedAuthorizationOptions. Pushed authorization is
+    /// required for a client if either the global configuration flag is enabled or if this flag is set for that client.
+    /// </summary>
     public bool RequirePushedAuthorization { get; set; } = false;
 
     /// <summary>
@@ -231,7 +237,7 @@ public class Client
     public TokenUsage RefreshTokenUsage { get; set; } = TokenUsage.OneTimeOnly;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the access token (and its claims) should be updated on a refresh token request.
+    /// Specifics whether the access token (and its claims) should be updated on a refresh token request.
     /// Defaults to <c>false</c>.
     /// </summary>
     /// <value>

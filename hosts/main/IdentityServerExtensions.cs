@@ -17,8 +17,6 @@ internal static class IdentityServerExtensions
 {
     internal static WebApplicationBuilder ConfigureIdentityServer(this WebApplicationBuilder builder)
     {
-        IdentityModelEventSource.ShowPII = true;
-        
         var identityServer = builder.Services.AddIdentityServer(options =>
             {
                 options.Events.RaiseSuccessEvents = true;

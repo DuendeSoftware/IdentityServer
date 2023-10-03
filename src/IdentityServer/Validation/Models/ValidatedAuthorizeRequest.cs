@@ -212,6 +212,12 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// </summary>
     public string? DPoPKeyThumbprint { get; set; }
 
+    /// <summary>
+    /// The reference value of the pushed authorization request, if one was used. Pushed authorization requests are
+    /// passed by reference using the request_uri parameter, which is in the form
+    /// urn:ietf:params:oauth:request_uri:{ReferenceValue}, where ReferenceValue is a random identifier. If a
+    /// request_uri in that format is passed, the reference value portion will be extracted and saved here.
+    /// </summary>
     public string? PushedAuthorizationReferenceValue { get; set; }
 
     /// <summary>
