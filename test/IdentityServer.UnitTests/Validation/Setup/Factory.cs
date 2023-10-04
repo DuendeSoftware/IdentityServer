@@ -280,7 +280,7 @@ internal static class Factory
         JwtRequestValidator jwtRequestValidator = null,
         IJwtRequestUriHttpClient jwtRequestUriHttpClient = null,
         IPushedAuthorizationRequestStore parStore = null,
-        IDataProtectionProvider dataProtectionProvider = null,
+        IPushedAuthorizationService pushedAuthorizationService = null,
         IdentityServerOptions options = null)
     {
         jwtRequestValidator ??= new JwtRequestValidator("https://identityserver",
@@ -288,18 +288,15 @@ internal static class Factory
         jwtRequestUriHttpClient ??= new DefaultJwtRequestUriHttpClient(
             new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options,
             new LoggerFactory(), new NoneCancellationTokenProvider());
-        parStore ??= new InMemoryPushedAuthorizationRequestStore();
-        dataProtectionProvider ??= new StubDataProtectionProvider();
+        pushedAuthorizationService ??= new TestPushedAuthorizationService();
         options ??= TestIdentityServerOptions.Create();
 
         return new RequestObjectValidator(
             jwtRequestValidator,
             jwtRequestUriHttpClient,
-            parStore,
-            dataProtectionProvider,
+            pushedAuthorizationService,
             options,
             TestLogger.Create<RequestObjectValidator>());
-
     }
 
     public static TokenValidator CreateTokenValidator(
@@ -420,7 +417,7 @@ internal static class Factory
     {
         return new DefaultDeviceFlowCodeService(new InMemoryDeviceFlowStore(), new DefaultHandleGenerationService());
     }
-        
+
     public static IUserConsentStore CreateUserConsentStore()
     {
         return new DefaultUserConsentStore(new InMemoryPersistedGrantStore(),
