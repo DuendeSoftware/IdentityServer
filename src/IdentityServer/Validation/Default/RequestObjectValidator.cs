@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Logging.Models;
+using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using IdentityModel;
@@ -16,7 +18,7 @@ namespace Duende.IdentityServer.Validation;
 internal interface IRequestObjectValidator
 {
     Task<AuthorizeRequestValidationResult> LoadRequestObjectAsync(ValidatedAuthorizeRequest request);
-    Task<AuthorizeRequestValidationResult> ValidatePushedAuthorizationRequest(ValidatedAuthorizeRequest request, string requestUri);
+    Task<AuthorizeRequestValidationResult> ValidatePushedAuthorizationRequest(ValidatedAuthorizeRequest request);
     Task<AuthorizeRequestValidationResult> ValidateRequestObjectAsync(ValidatedAuthorizeRequest request);
 }
 
@@ -57,23 +59,19 @@ internal class RequestObjectValidator : IRequestObjectValidator
             return Invalid(request, description: "Only one request parameter is allowed");
         }
 
-        // BEGIN TODO - Move into a function
         var parRequired = _options.PushedAuthorization.Required || request.Client.RequirePushedAuthorization;
         var parMissing = requestUri.IsMissing() || !requestUri.StartsWith(IdentityServerConstants.PushedAuthorizationRequestUri);
-
         if (parRequired && parMissing)
         {
             LogError("Pushed authorization is required", request);
             return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, "Pushed authorization is required.");
         }
-        // END TODO 
-        
         
         if (requestUri.IsPresent())
         {
-            if(requestUri.StartsWith(IdentityServerConstants.PushedAuthorizationRequestUri))
+            if(IsParRequestUri(requestUri))
             {
-                var validationError = await ValidatePushedAuthorizationRequest(request, requestUri);
+                var validationError = await ValidatePushedAuthorizationRequest(request);
                 if (validationError != null)
                 {
                     return validationError;
@@ -120,14 +118,20 @@ internal class RequestObjectValidator : IRequestObjectValidator
         return Valid(request);
     }
 
+    private static bool IsParRequestUri(string requestUri)
+    {
+        return requestUri.StartsWith(IdentityServerConstants.PushedAuthorizationRequestUri);
+    }
+
     private string LoadRequestObjectFromPushedAuthorizationRequest(ValidatedAuthorizeRequest request)
     {
         return request.Raw.Get(OidcConstants.AuthorizeRequest.Request);
     }
 
-    public async Task<AuthorizeRequestValidationResult> ValidatePushedAuthorizationRequest(ValidatedAuthorizeRequest request, string requestUri)
+    public async Task<AuthorizeRequestValidationResult> ValidatePushedAuthorizationRequest(ValidatedAuthorizeRequest request)
     {
-        AuthorizeRequestValidationResult validationResult;
+        // Check that the endpoint is still enabled at the time of validation, in case an existing PAR record 
+        // is used after PAR is disabled.
         if (!_options.Endpoints.EnablePushedAuthorizationEndpoint)
         {
             {
@@ -136,9 +140,9 @@ internal class RequestObjectValidator : IRequestObjectValidator
             }
         }
 
-        var referenceValue = requestUri.Substring(IdentityServerConstants.PushedAuthorizationRequestUri.Length + 1); // +1 for the separator ':'
-        var pushedAuthorizationRequest = await _pushedAuthorizationRequestStore.GetAsync(referenceValue);
-        if (pushedAuthorizationRequest == null)
+        var requestUri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
+        var pushedAuthorizationRequest = await GetPushedRequest(requestUri);
+        if(pushedAuthorizationRequest == null)
         {
             {
                 return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest,
@@ -146,13 +150,10 @@ internal class RequestObjectValidator : IRequestObjectValidator
             }
         }
 
-        var unprotected = _dataProtector.Unprotect(pushedAuthorizationRequest.Parameters);
-        var rawPushedAuthorizationRequest = ObjectSerializer
-            .FromString<Dictionary<string, string[]>>(unprotected)
-            .FromFullDictionary();
+        SetPushedParameters(request, pushedAuthorizationRequest);
 
         // Validate binding of PAR to client
-        var parClientId = rawPushedAuthorizationRequest.Get(OidcConstants.AuthorizeRequest.ClientId);
+        var parClientId = request.Raw.Get(OidcConstants.AuthorizeRequest.ClientId);
         if (parClientId != request.ClientId)
         {
             // TODO - Check specs carefully to make sure this error code is correct
@@ -172,13 +173,41 @@ internal class RequestObjectValidator : IRequestObjectValidator
             }
         }
 
+        return null;
+    }
+    
+    /// <summary>
+    /// Updates the validated request to use the pushed parameters in future validation steps, and also captures the
+    /// fact that pushed authorization occured.
+    /// </summary>
+    private void SetPushedParameters(ValidatedAuthorizeRequest request, PushedAuthorizationRequest pushedAuthorizationRequest)
+    {
+        var pushedParameters = DeserializePushedParameters(pushedAuthorizationRequest);
         // Copy the PAR into the raw request so that validation will use the pushed parameters
-        request.Raw = rawPushedAuthorizationRequest;
-
+        request.Raw = pushedParameters;
         // Record the reference value, so we can know that PAR did happen
         request.PushedAuthorizationReferenceValue = pushedAuthorizationRequest.ReferenceValue;
-        
-        return null;
+    }
+
+    /// <summary>
+    /// Gets a pushed request, given a request uri
+    /// </summary>
+    private async Task<PushedAuthorizationRequest> GetPushedRequest(string requestUri)
+    {
+        var referenceValue =
+            requestUri.Substring(IdentityServerConstants.PushedAuthorizationRequestUri.Length + 1); // +1 for the separator ':'
+        return await _pushedAuthorizationRequestStore.GetAsync(referenceValue);
+    }
+    
+    /// <summary>
+    /// Unprotects and deserializes the pushed authorization parameters
+    /// </summary>
+    private NameValueCollection DeserializePushedParameters(PushedAuthorizationRequest request)
+    {
+        var unprotected = _dataProtector.Unprotect(request.Parameters);
+        return ObjectSerializer
+            .FromString<Dictionary<string, string[]>>(unprotected)
+            .FromFullDictionary();
     }
 
     public async Task<AuthorizeRequestValidationResult> ValidateRequestObjectAsync(ValidatedAuthorizeRequest request)
