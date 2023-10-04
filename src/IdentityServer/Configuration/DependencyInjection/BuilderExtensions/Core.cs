@@ -322,6 +322,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IEndSessionRequestValidator, EndSessionRequestValidator>();
         builder.Services.TryAddTransient<ITokenRevocationRequestValidator, TokenRevocationRequestValidator>();
         builder.Services.TryAddTransient<IAuthorizeRequestValidator, AuthorizeRequestValidator>();
+        builder.Services.TryAddTransient<IRequestObjectValidator, RequestObjectValidator>();
         builder.Services.TryAddTransient<ITokenRequestValidator, TokenRequestValidator>();
         builder.Services.TryAddTransient<IRedirectUriValidator, StrictRedirectUriValidator>();
         builder.Services.TryAddTransient<ITokenValidator, TokenValidator>();

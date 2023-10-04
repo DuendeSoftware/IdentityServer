@@ -217,14 +217,10 @@ internal static class Factory
         IIssuerNameService issuerNameService = null,
         IResourceStore resourceStore = null,
         IClientStore clients = null,
-        IProfileService profile = null,
         ICustomAuthorizeRequestValidator customValidator = null,
         IRedirectUriValidator uriValidator = null,
         IResourceValidator resourceValidator = null,
-        JwtRequestValidator jwtRequestValidator = null,
-        IJwtRequestUriHttpClient jwtRequestUriHttpClient = null,
-        IPushedAuthorizationRequestStore parStore = null,
-        IDataProtectionProvider dataProtectionProvider = null)
+        IRequestObjectValidator requestObjectValidator = null)
     {
         if (options == null)
         {
@@ -260,29 +256,14 @@ internal static class Factory
         {
             resourceValidator = CreateResourceValidator(resourceStore);
         }
-
-        if (jwtRequestValidator == null)
-        {
-            jwtRequestValidator = new JwtRequestValidator("https://identityserver", new LoggerFactory().CreateLogger<JwtRequestValidator>());
-        }
-
-        if (jwtRequestUriHttpClient == null)
-        {
-            jwtRequestUriHttpClient = new DefaultJwtRequestUriHttpClient(new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options, new LoggerFactory(), new NoneCancellationTokenProvider());
-        }
-
-        if (parStore == null)
-        {
-            parStore = new InMemoryPushedAuthorizationRequestStore();
-        }
-
-        if (dataProtectionProvider == null)
-        {
-            dataProtectionProvider = new StubDataProtectionProvider();
-        }
     
         var userSession = new MockUserSession();
 
+        if (requestObjectValidator == null)
+        {
+            requestObjectValidator = CreateRequestObjectValidator();
+        }
+        
         return new AuthorizeRequestValidator(
             options,
             issuerNameService,
@@ -291,11 +272,34 @@ internal static class Factory
             uriValidator,
             resourceValidator,
             userSession,
+            requestObjectValidator,
+            TestLogger.Create<AuthorizeRequestValidator>());
+    }
+
+    public static RequestObjectValidator CreateRequestObjectValidator(        
+        JwtRequestValidator jwtRequestValidator = null,
+        IJwtRequestUriHttpClient jwtRequestUriHttpClient = null,
+        IPushedAuthorizationRequestStore parStore = null,
+        IDataProtectionProvider dataProtectionProvider = null,
+        IdentityServerOptions options = null)
+    {
+        jwtRequestValidator ??= new JwtRequestValidator("https://identityserver",
+            new LoggerFactory().CreateLogger<JwtRequestValidator>());
+        jwtRequestUriHttpClient ??= new DefaultJwtRequestUriHttpClient(
+            new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options,
+            new LoggerFactory(), new NoneCancellationTokenProvider());
+        parStore ??= new InMemoryPushedAuthorizationRequestStore();
+        dataProtectionProvider ??= new StubDataProtectionProvider();
+        options ??= TestIdentityServerOptions.Create();
+
+        return new RequestObjectValidator(
             jwtRequestValidator,
             jwtRequestUriHttpClient,
             parStore,
             dataProtectionProvider,
-            TestLogger.Create<AuthorizeRequestValidator>());
+            options,
+            TestLogger.Create<RequestObjectValidator>());
+
     }
 
     public static TokenValidator CreateTokenValidator(

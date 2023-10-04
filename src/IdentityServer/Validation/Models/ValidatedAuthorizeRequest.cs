@@ -220,6 +220,8 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// </summary>
     public string? PushedAuthorizationReferenceValue { get; set; }
 
+    public bool IsPushedAuthorizationRequest => PushedAuthorizationReferenceValue is not null;
+
     /// <summary>
     /// Gets a value indicating whether an access token was requested.
     /// </summary>
