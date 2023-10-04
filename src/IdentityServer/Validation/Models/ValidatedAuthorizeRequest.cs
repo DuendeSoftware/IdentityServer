@@ -220,6 +220,9 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// </summary>
     public string? PushedAuthorizationReferenceValue { get; set; }
 
+    /// <summary>
+    /// Gets a value indicator if the authorize request's parameters where pushed using PAR. 
+    /// </summary>
     public bool IsPushedAuthorizationRequest => PushedAuthorizationReferenceValue is not null;
 
     /// <summary>

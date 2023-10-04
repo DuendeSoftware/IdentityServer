@@ -24,7 +24,7 @@ internal class TestPushedAuthorizationService : IPushedAuthorizationService
         return string.Empty;
     }
 
-    public Task<PushedAuthorizationRequest> GetPushedAuthorizationRequest(ValidatedAuthorizeRequest requestUri)
+    public Task<PushedAuthorizationRequest> GetPushedAuthorizationRequest(ValidatedAuthorizeRequest request)
     {
         return Task.FromResult(PushedAuthorizationRequest);
     }

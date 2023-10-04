@@ -10,11 +10,19 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Duende.IdentityServer.Services;
 
+/// <summary>
+/// Default implementation of <see cref="IPushedAuthorizationService"/>.
+/// </summary>
 public class PushedAuthorizationService : IPushedAuthorizationService
 {
     private readonly IDataProtector _dataProtector;
-    private IPushedAuthorizationRequestStore _pushedAuthorizationRequestStore;
+    private readonly IPushedAuthorizationRequestStore _pushedAuthorizationRequestStore;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PushedAuthorizationService"/>. 
+    /// </summary>
+    /// <param name="dataProtectionProvider">The data protection provider.</param>
+    /// <param name="pushedAuthorizationRequestStore">The pushed authorization request store.</param>
     public PushedAuthorizationService(
         IDataProtectionProvider dataProtectionProvider, 
         IPushedAuthorizationRequestStore pushedAuthorizationRequestStore)
@@ -23,9 +31,7 @@ public class PushedAuthorizationService : IPushedAuthorizationService
         _dataProtector = dataProtectionProvider.CreateProtector("PAR");
     }
 
-    /// <summary>
-    /// Unprotects and deserializes the pushed authorization parameters
-    /// </summary>
+    /// <inheritdoc />
     public NameValueCollection DeserializePushedParameters(string raw)
     {
         var unprotected = _dataProtector.Unprotect(raw);
@@ -34,6 +40,7 @@ public class PushedAuthorizationService : IPushedAuthorizationService
             .FromFullDictionary();
     }
     
+    /// <inheritdoc />
     public string Serialize(NameValueCollection raw)
     {
         // Serialize
@@ -44,6 +51,7 @@ public class PushedAuthorizationService : IPushedAuthorizationService
         return protectedData;
     }
     
+    /// <inheritdoc />
     public async Task<PushedAuthorizationRequest> GetPushedAuthorizationRequest(ValidatedAuthorizeRequest request)
     {
         var requestUri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
