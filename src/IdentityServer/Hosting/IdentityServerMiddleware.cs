@@ -12,6 +12,8 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Models;
 using System.Linq;
 using Duende.IdentityServer.Configuration;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Hosting;
 
@@ -89,13 +91,15 @@ public class IdentityServerMiddleware
             if (endpoint != null)
             {
                 var endpointType = endpoint.GetType().FullName;
-                
+                var requestPath = context.Request.Path.ToString();
+
+                Telemetry.Metrics.RequestCounter.Add(1, new("endpoint", endpointType), new("path", requestPath));
                 using var activity = Tracing.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
                 activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
 
                 IdentityServerLicenseValidator.Instance.ValidateIssuer(await issuerNameService.GetCurrentAsync());
 
-                _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, context.Request.Path.ToString());
+                _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, requestPath);
 
                 var result = await endpoint.ProcessAsync(context);
 
@@ -104,6 +108,8 @@ public class IdentityServerMiddleware
                     _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);
                     await result.ExecuteAsync(context);
                 }
+
+                Telemetry.Metrics.RequestCounter.Add(-1, new("endpoint", endpointType), new("path", requestPath));
 
                 return;
             }

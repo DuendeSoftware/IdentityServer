@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="..\Tracing\Tracing.cs">
+        <Compile Include="..\Telemetry\Tracing.cs">
             <Link>Tracing.cs</Link>
         </Compile>
     </ItemGroup>
