@@ -16,8 +16,6 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.Services;
 using static Duende.IdentityServer.IdentityServerConstants;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.DataProtection;
 
 namespace Duende.IdentityServer.Validation;
 

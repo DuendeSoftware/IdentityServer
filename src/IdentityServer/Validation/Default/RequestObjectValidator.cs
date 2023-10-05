@@ -11,13 +11,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Validation;
 
-internal interface IRequestObjectValidator
-{
-    Task<AuthorizeRequestValidationResult> LoadRequestObjectAsync(ValidatedAuthorizeRequest request);
-    Task<AuthorizeRequestValidationResult> ValidatePushedAuthorizationRequest(ValidatedAuthorizeRequest request);
-    Task<AuthorizeRequestValidationResult> ValidateRequestObjectAsync(ValidatedAuthorizeRequest request);
-}
-
 internal class RequestObjectValidator : IRequestObjectValidator
 {
     private readonly IJwtRequestValidator _jwtRequestValidator;
@@ -169,7 +162,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
     
     /// <summary>
     /// Updates the validated request to use the pushed parameters in future validation steps, and also captures the
-    /// fact that pushed authorization occured.
+    /// fact that pushed authorization occurred.
     /// </summary>
     private void SetPushedParameters(ValidatedAuthorizeRequest request, PushedAuthorizationRequest pushedAuthorizationRequest)
     {

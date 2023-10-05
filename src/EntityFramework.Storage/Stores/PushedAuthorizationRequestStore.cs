@@ -16,7 +16,6 @@ namespace Duende.IdentityServer.EntityFramework.Stores;
 /// <inheritdoc />
 public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
 {
-
     /// <summary>
     /// The DbContext.
     /// </summary>
