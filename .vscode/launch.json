@@ -535,6 +535,26 @@
         }
       },
       {
+        "name": "client: MvcJarPar",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-client-MvcJarPar",
+        "program": "${workspaceFolder}/clients/src/MvcJarPar/bin/Debug/net8.0/MvcJarPar.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/clients/src/MvcJarPar",
+        "serverReadyAction": {
+            "action": "openExternally",
+            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        },
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "presentation": {
+          "hidden": false,
+          "group": "20-clients",
+        }
+      },
+      {
         "name": "client: MvcHybridBackChannel",
         "type": "coreclr",
         "request": "launch",

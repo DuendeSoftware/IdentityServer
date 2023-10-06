@@ -140,6 +140,34 @@ public static class ClientsWeb
 
                 ClientSecrets =
                 {
+                    new Secret("secret".Sha256())
+                },
+
+                RequireRequestObject = false,
+
+                RequireConsent = true,
+                AllowedGrantTypes = GrantTypes.Code,
+
+                RedirectUris = { "https://localhost:44305/signin-oidc" },
+                FrontChannelLogoutUri = "https://localhost:44305/signout-oidc",
+                PostLogoutRedirectUris = { "https://localhost:44305/signout-callback-oidc" },
+
+                AllowOfflineAccess = true,
+
+                AllowedScopes = allowedScopes
+            },
+
+
+            //////////////////////////////////////////////////////
+            // MVC PAR Sample with JAR and Jwt Private Key Auth
+            //////////////////////////////////////////////////////
+            new Client
+            {
+                ClientId = "mvc.jar.par",
+                ClientName = "MVC PAR Client with JAR",
+
+                ClientSecrets =
+                {
                     new Secret
                     {
                         Type = IdentityServerConstants.SecretTypes.JsonWebKey,
@@ -158,15 +186,15 @@ public static class ClientsWeb
                 RequireConsent = true,
                 AllowedGrantTypes = GrantTypes.Code,
 
-                RedirectUris = { "https://localhost:44305/signin-oidc" },
-                FrontChannelLogoutUri = "https://localhost:44305/signout-oidc",
-                PostLogoutRedirectUris = { "https://localhost:44305/signout-callback-oidc" },
+                RedirectUris = { "https://localhost:44306/signin-oidc" },
+                FrontChannelLogoutUri = "https://localhost:44306/signout-oidc",
+                PostLogoutRedirectUris = { "https://localhost:44306/signout-callback-oidc" },
 
                 AllowOfflineAccess = true,
 
                 AllowedScopes = allowedScopes
             },
-                
+
             ///////////////////////////////////////////
             // MVC Hybrid Flow Sample (Back Channel logout)
             //////////////////////////////////////////

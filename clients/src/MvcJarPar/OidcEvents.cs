@@ -10,16 +10,18 @@ using IdentityModel;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
-namespace MvcPar
+namespace MvcJarAndPar
 {
     public class OidcEvents : OpenIdConnectEvents
     {
         private readonly HttpClient _httpClient;
+        private readonly AssertionService _assertionService;
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-        public OidcEvents(HttpClient httpClient)
+        public OidcEvents(HttpClient httpClient, AssertionService assertionService)
         {
             _httpClient = httpClient;
+            _assertionService = assertionService;
         }
         public override async Task RedirectToIdentityProvider(RedirectContext context)
         {
@@ -33,8 +35,16 @@ namespace MvcPar
             message.State = context.Options.StateDataFormat.Protect(context.Properties);
 
             // Now send our PAR request
-            var requestBody = new FormUrlEncodedContent(context.ProtocolMessage.Parameters);
-            _httpClient.SetBasicAuthentication(clientId, "secret");
+            
+            var requestObject = _assertionService.SignAuthorizationRequest(context.ProtocolMessage);
+            var parameters = new Dictionary<string, string>
+            {
+                { "client_id", context.ProtocolMessage.ClientId },
+                { "client_assertion_type", OidcConstants.ClientAssertionTypes.JwtBearer },
+                { "client_assertion", _assertionService.CreateClientToken() },
+                { "request", requestObject }
+            };
+            var requestBody = new FormUrlEncodedContent(parameters);
             
             // TODO - use discovery to determine endpoint
             var response = await _httpClient.PostAsync("https://localhost:5001/connect/par", requestBody);
@@ -89,6 +99,14 @@ namespace MvcPar
 
             throw new NotImplementedException($"An unsupported authentication method has been configured: {context.Options.AuthenticationMethod}");
 
+        }
+
+        public override Task AuthorizationCodeReceived(AuthorizationCodeReceivedContext context)
+        {
+            context.TokenEndpointRequest.ClientAssertionType = OidcConstants.ClientAssertionTypes.JwtBearer;
+            context.TokenEndpointRequest.ClientAssertion = _assertionService.CreateClientToken();
+
+            return Task.CompletedTask;
         }
 
         public override Task TokenResponseReceived(TokenResponseReceivedContext context)

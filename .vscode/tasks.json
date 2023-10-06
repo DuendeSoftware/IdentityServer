@@ -400,6 +400,18 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "build-client-MvcJarPar",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+          "build",
+          "${workspaceFolder}/clients/src/MvcJarPar/MvcJarPar.csproj",
+          "/property:GenerateFullPaths=true",
+          "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "build-client-MvcHybridBackChannel",
       "type": "process",
       "command": "dotnet",

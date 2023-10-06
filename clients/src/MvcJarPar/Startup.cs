@@ -7,7 +7,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Duende.AccessTokenManagement;
 
-namespace MvcPar
+namespace MvcJarAndPar
 {
     public class Startup
     {
@@ -20,6 +20,7 @@ namespace MvcPar
         
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<AssertionService>();
             services.AddTransient<OidcEvents>();
 
             // add MVC
@@ -33,7 +34,7 @@ namespace MvcPar
             })
                 .AddCookie("cookie", options =>
                 {
-                    options.Cookie.Name = "mvc.par";
+                    options.Cookie.Name = "mvc.jar.par";
 
                     options.ExpireTimeSpan = TimeSpan.FromHours(8);
                     options.SlidingExpiration = false;
@@ -49,8 +50,8 @@ namespace MvcPar
                     options.Authority = Constants.Authority;
                     options.RequireHttpsMetadata = false;
 
-                    options.ClientId = "mvc.par";
-                    options.ClientSecret = "secret";
+                    options.ClientId = "mvc.jar.par";
+                    // options.ClientSecret = "secret";
 
                     // code flow + PKCE (PKCE is turned on by default)
                     options.ResponseType = "code";

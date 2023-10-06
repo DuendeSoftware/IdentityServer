@@ -7,7 +7,7 @@ using IdentityModel;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
-namespace MvcPar
+namespace MvcJarAndPar
 {
     public class AssertionService
     {
