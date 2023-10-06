@@ -215,11 +215,6 @@ public class ConfigurationStoreOptions
     public TableConfiguration IdentityProvider { get; set; } = new TableConfiguration("IdentityProviders");
 
     /// <summary>
-    /// Gets or sets the pushed authorization requests configuration.
-    /// </summary>
-    public TableConfiguration PushedAuthorizationRequests { get; set; } = new TableConfiguration("PushedAuthorizationRequests");
-
-    /// <summary>
     /// Gets or set if EF DbContext pooling is enabled.
     /// </summary>
     public bool EnablePooling { get; set; } = false;

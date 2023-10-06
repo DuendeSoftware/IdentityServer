@@ -82,6 +82,7 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
         }
         
         modelBuilder.ConfigurePersistedGrantContext(StoreOptions);
+        modelBuilder.ConfigurePushedAuthorizationRequestContext(StoreOptions);
 
         base.OnModelCreating(modelBuilder);
     }

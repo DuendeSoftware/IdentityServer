@@ -76,10 +76,9 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ReferenceValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReferenceValueHash = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     ExpiresAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Parameters = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Consumed = table.Column<bool>(type: "bit", nullable: false)
+                    Parameters = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -149,6 +148,12 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 name: "IX_PersistedGrants_SubjectId_SessionId_Type",
                 table: "PersistedGrants",
                 columns: new[] { "SubjectId", "SessionId", "Type" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PushedAuthorizationRequests_ReferenceValueHash",
+                table: "PushedAuthorizationRequests",
+                column: "ReferenceValueHash",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ServerSideSessions_DisplayName",

@@ -376,7 +376,7 @@ public static class ModelBuilderExtensions
     /// </summary>
     /// <param name="modelBuilder">The model builder.</param>
     /// <param name="storeOptions">The store options.</param>
-    public static void ConfigurePushedAuthorizationRequestContext(this ModelBuilder modelBuilder, ConfigurationStoreOptions storeOptions)
+    public static void ConfigurePushedAuthorizationRequestContext(this ModelBuilder modelBuilder, OperationalStoreOptions storeOptions)
     {
         if (!string.IsNullOrWhiteSpace(storeOptions.DefaultSchema)) modelBuilder.HasDefaultSchema(storeOptions.DefaultSchema);
 
