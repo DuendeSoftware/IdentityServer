@@ -279,7 +279,6 @@ internal static class Factory
     public static RequestObjectValidator CreateRequestObjectValidator(        
         JwtRequestValidator jwtRequestValidator = null,
         IJwtRequestUriHttpClient jwtRequestUriHttpClient = null,
-        IPushedAuthorizationRequestStore parStore = null,
         IPushedAuthorizationService pushedAuthorizationService = null,
         IdentityServerOptions options = null)
     {

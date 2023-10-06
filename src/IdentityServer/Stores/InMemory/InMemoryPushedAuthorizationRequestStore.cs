@@ -22,25 +22,25 @@ public class InMemoryPushedAuthorizationRequestStore : IPushedAuthorizationReque
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Store");
         
-        _repository[pushedAuthorizationRequest.ReferenceValue] = pushedAuthorizationRequest;
+        _repository[pushedAuthorizationRequest.ReferenceValueHash] = pushedAuthorizationRequest;
 
         return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public Task<PushedAuthorizationRequest?> GetAsync(string referenceValue)
+    public Task<PushedAuthorizationRequest?> GetByHashAsync(string referenceValueHash)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Get");
-        _repository.TryGetValue(referenceValue, out var request);
+        _repository.TryGetValue(referenceValueHash, out var request);
 
         return Task.FromResult(request);
     }
 
     /// <inheritdoc/>
-    public Task ConsumeAsync(string referenceValue)
+    public Task ConsumeByHashAsync(string referenceValueHash)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryPushedAuthorizationRequestStore.Remove");
-        _repository.TryRemove(referenceValue, out _);
+        _repository.TryRemove(referenceValueHash, out _);
         return Task.CompletedTask;
     }
 }

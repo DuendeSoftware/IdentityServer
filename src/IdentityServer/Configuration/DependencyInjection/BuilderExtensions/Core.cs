@@ -245,6 +245,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IBackChannelAuthenticationRequestStore, DefaultBackChannelAuthenticationRequestStore>();
         builder.Services.TryAddTransient<IHandleGenerationService, DefaultHandleGenerationService>();
         builder.Services.TryAddTransient<IPersistentGrantSerializer, PersistentGrantSerializer>();
+        builder.Services.TryAddTransient<IPushedAuthorizationSerializer, PushedAuthorizationSerializer>();
         builder.Services.TryAddTransient<IPushedAuthorizationService, PushedAuthorizationService>();
         builder.Services.TryAddTransient<IEventService, DefaultEventService>();
         builder.Services.TryAddTransient<IEventSink, DefaultEventSink>();

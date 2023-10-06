@@ -24,21 +24,26 @@ public interface IPushedAuthorizationRequestStore
     Task StoreAsync(PushedAuthorizationRequest pushedAuthorizationRequest);
 
     /// <summary>
-    /// Consumes the pushed authorization request, indicating that it should not be used again. Repeated use
-    /// could indicate some form of replay attack, but also could indicate that an end user refreshed their
-    /// browser or otherwise retried a request that consumed the pushed authorization request.
+    /// Consumes the pushed authorization request, indicating that it should not
+    /// be used again. Repeated use could indicate some form of replay attack,
+    /// but also could indicate that an end user refreshed their browser or
+    /// otherwise retried a request that consumed the pushed authorization
+    /// request.
     /// </summary>
-    /// <param name="referenceValue">The reference value of the pushed authorization request. This is the identifier
+    /// <param name="referenceValueHash">The hash of the reference value of the
+    /// pushed authorization request. The reference value is the identifier
     /// within the request_uri parameter.</param>
     /// <returns></returns>
-    Task ConsumeAsync(string referenceValue);
+    Task ConsumeByHashAsync(string referenceValueHash);
 
     /// <summary>
     /// Gets the pushed authorization request.
     /// </summary>
-    /// <param name="referenceValue">The reference value of the pushed authorization request. This is the identifier
+    /// <param name="referenceValueHash">The hash of the reference value of the
+    /// pushed authorization request. The reference value is the identifier
     /// within the request_uri parameter.</param>
-    /// <returns>The pushed authorization request, or null if the request does not exist or was previously consumed.
+    /// <returns>The pushed authorization request, or null if the request does
+    /// not exist or was previously consumed.
     /// </returns>
-    Task<PushedAuthorizationRequest?> GetAsync(string referenceValue);
+    Task<PushedAuthorizationRequest?> GetByHashAsync(string referenceValueHash);
 }

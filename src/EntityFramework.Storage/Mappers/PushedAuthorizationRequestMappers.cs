@@ -20,7 +20,7 @@ public static class PushedAuthorizationRequestMappers
         return entity == null ? null :
             new Models.PushedAuthorizationRequest
             {
-                ReferenceValue = entity.ReferenceValue,
+                ReferenceValueHash = entity.ReferenceValueHash,
                 ExpiresAtUtc = entity.ExpiresAtUtc,
                 Parameters = entity.Parameters,
             };
@@ -36,7 +36,7 @@ public static class PushedAuthorizationRequestMappers
         return model == null ? null : 
             new Entities.PushedAuthorizationRequest
             {
-                ReferenceValue = model.ReferenceValue,
+                ReferenceValueHash = model.ReferenceValueHash,
                 ExpiresAtUtc = model.ExpiresAtUtc,
                 Parameters = model.Parameters,
             };

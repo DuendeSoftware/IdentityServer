@@ -45,12 +45,12 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
     }
     
     /// <inheritdoc />
-    public async Task ConsumeAsync(string referenceValue)
+    public async Task ConsumeByHashAsync(string referenceValueHash)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PersistedGrantStore.Remove");
-        Logger.LogDebug("removing {referenceValue} pushed authorization from database", referenceValue);
+        Logger.LogDebug("removing {referenceValueHash} pushed authorization from database", referenceValueHash);
         var numDeleted = await Context.PushedAuthorizationRequests
-            .Where(par => par.ReferenceValue == referenceValue)
+            .Where(par => par.ReferenceValueHash == referenceValueHash)
             .ExecuteDeleteAsync(CancellationTokenProvider.CancellationToken);
         if(numDeleted != 1)
         {
@@ -59,18 +59,18 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
     }
 
     /// <inheritdoc />
-    public virtual async Task<Models.PushedAuthorizationRequest> GetAsync(string referenceValue)
+    public virtual async Task<Models.PushedAuthorizationRequest> GetByHashAsync(string referenceValueHash)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PushedAuthorizationRequestStore.Get");
         
         var par = (await Context.PushedAuthorizationRequests
-                .AsNoTracking().Where(x => x.ReferenceValue == referenceValue)
+                .AsNoTracking().Where(x => x.ReferenceValueHash == referenceValueHash)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
-                .SingleOrDefault(x => x.ReferenceValue == referenceValue);
+                .SingleOrDefault(x => x.ReferenceValueHash == referenceValueHash);
         var model = par?.ToModel();
 
         // REVIEW - is it safe to log the reference value?
-        Logger.LogDebug("{referenceValue} pushed authorization found in database: {requestUriFound}", par.ReferenceValue, model != null);
+        Logger.LogDebug("{referenceValueHash} pushed authorization found in database: {requestUriFound}", par.ReferenceValueHash, model != null);
 
         return model;
     }
@@ -90,7 +90,7 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         // I think it isn't, but what happens if we somehow two calls to StoreAsync with the same PAR are made?
         catch (DbUpdateConcurrencyException ex)
         {
-            Logger.LogWarning("exception updating {referenceValue} pushed authorization in database: {error}", par.ReferenceValue, ex.Message);
+            Logger.LogWarning("exception updating {referenceValueHash} pushed authorization in database: {error}", par.ReferenceValueHash, ex.Message);
         }
     }
 }

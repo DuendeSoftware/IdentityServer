@@ -384,11 +384,11 @@ public static class ModelBuilderExtensions
         {
             entity.ToTable(storeOptions.PushedAuthorizationRequests).HasKey(x => x.Id);
 
-            entity.Property(x => x.ReferenceValue).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ReferenceValueHash).HasMaxLength(64).IsRequired();
             entity.Property(x => x.ExpiresAtUtc).IsRequired();
             entity.Property(x => x.Parameters).IsRequired();
 
-            entity.HasIndex(x => x.ReferenceValue).IsUnique();
+            entity.HasIndex(x => x.ReferenceValueHash).IsUnique();
         });
     }
 }

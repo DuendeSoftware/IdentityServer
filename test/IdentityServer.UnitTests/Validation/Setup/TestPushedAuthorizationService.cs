@@ -1,9 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
-using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Validation;
 using IdentityModel;
 
 namespace UnitTests.Validation.Setup;
@@ -14,55 +13,24 @@ namespace UnitTests.Validation.Setup;
 /// </summary>
 internal class TestPushedAuthorizationService : IPushedAuthorizationService
 {
-    public NameValueCollection DeserializePushedParameters(string parameters)
+    Dictionary<string, DeserializedPushedAuthorizationRequest> pushedRequests = new();
+
+
+    public Task ConsumeAsync(string referenceValue)
     {
-        return Raw;
+        pushedRequests.Remove(referenceValue);
+        return Task.CompletedTask;
     }
 
-    public string Serialize(NameValueCollection raw)
+    public Task<DeserializedPushedAuthorizationRequest> GetPushedAuthorizationRequestAsync(string referenceValue)
     {
-        return string.Empty;
+        pushedRequests.TryGetValue(referenceValue, out var par);
+        return Task.FromResult(par);
     }
 
-    public Task<PushedAuthorizationRequest> GetPushedAuthorizationRequest(ValidatedAuthorizeRequest request)
+    public Task StoreAsync(DeserializedPushedAuthorizationRequest request)
     {
-        return Task.FromResult(PushedAuthorizationRequest);
-    }
-
-    public NameValueCollection Raw { get; private set; }
-
-    public PushedAuthorizationRequest PushedAuthorizationRequest { get; private set; }
-
-    public void PushRequest(NameValueCollection raw)
-    {
-        Raw = raw;
-        PushedAuthorizationRequest = new PushedAuthorizationRequest();
-    }
-
-    public void PushRequest(NameValueCollection raw, PushedAuthorizationRequest request)
-    {
-        Raw = raw;
-        PushedAuthorizationRequest = request;
-    }
-
-    public void PushRequest(string clientId)
-    {
-        Raw = new NameValueCollection
-        {
-            { OidcConstants.AuthorizeRequest.ClientId, clientId }
-        };
-        PushedAuthorizationRequest = new PushedAuthorizationRequest();
-    }
-
-    public void PushRequest(string clientId, DateTime expiresUtc)
-    {
-        Raw = new NameValueCollection
-        {
-            { OidcConstants.AuthorizeRequest.ClientId, clientId }
-        };
-        PushedAuthorizationRequest = new PushedAuthorizationRequest
-        {
-            ExpiresAtUtc = expiresUtc
-        };
+        pushedRequests[request.ReferenceValue] = request;
+        return Task.CompletedTask;
     }
 }

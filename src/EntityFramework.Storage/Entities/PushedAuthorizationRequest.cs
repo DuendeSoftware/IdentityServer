@@ -11,7 +11,7 @@ namespace Duende.IdentityServer.EntityFramework.Entities;
 public class PushedAuthorizationRequest
 {
     public int Id { get; set; }
-    public string ReferenceValue { get; set; }
+    public string ReferenceValueHash { get; set; }
     public DateTime ExpiresAtUtc { get; set; }
     public string Parameters { get; set; }
     // REVIEW - Should we include the creation timestamp?
