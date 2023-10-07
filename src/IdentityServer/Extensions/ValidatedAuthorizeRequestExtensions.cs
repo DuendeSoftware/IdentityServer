@@ -165,8 +165,9 @@ public static class ValidatedAuthorizeRequestExtensions
             {
                 // https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests 
                 // requires client id and response type to always be in URL
+                // REVIEW - Does this apply to pushed requests?
                 if (key == OidcConstants.AuthorizeRequest.ClientId ||
-                    key == OidcConstants.AuthorizeRequest.ResponseType ||  // TODO - DO we want this with PAR?
+                    key == OidcConstants.AuthorizeRequest.ResponseType ||  
                     request.RequestObjectValues.All(x => x.Type != key))
                 {
                     foreach(var value in request.Raw.GetValues(key))

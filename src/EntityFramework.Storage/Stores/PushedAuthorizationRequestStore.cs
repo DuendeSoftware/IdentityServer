@@ -54,7 +54,7 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
             .ExecuteDeleteAsync(CancellationTokenProvider.CancellationToken);
         if(numDeleted != 1)
         {
-            // TODO - is this an error? Something weird is probably going on.
+            Logger.LogWarning("attempted to remove {referenceValueHash} pushed authorization request because it was consumed, but no records were actually deleted.", referenceValueHash);
         }
     }
 
@@ -69,7 +69,6 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
                 .SingleOrDefault(x => x.ReferenceValueHash == referenceValueHash);
         var model = par?.ToModel();
 
-        // REVIEW - is it safe to log the reference value?
         Logger.LogDebug("{referenceValueHash} pushed authorization found in database: {requestUriFound}", par.ReferenceValueHash, model != null);
 
         return model;

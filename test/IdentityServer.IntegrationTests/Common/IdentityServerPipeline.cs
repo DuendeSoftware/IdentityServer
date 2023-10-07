@@ -402,7 +402,7 @@ public class IdentityServerPipeline
         string redirectUri = "https://client1/callback",
         string nonce = "123_nonce",
         string state = "123_state",
-        Dictionary<string, string> extra = null //TODO refactor to allow anonymous objects instead
+        Dictionary<string, string> extra = null
     )
     {
         var parameters = new Dictionary<string, string>

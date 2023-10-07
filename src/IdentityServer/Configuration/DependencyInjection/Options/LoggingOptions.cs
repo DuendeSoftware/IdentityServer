@@ -54,6 +54,14 @@ public class LoggingOptions
             OidcConstants.AuthorizeRequest.IdTokenHint
         };
 
+    public ICollection<string> PushedAuthorizationSensitiveValuesFilter { get; set; } =
+        new HashSet<string>
+        {
+            OidcConstants.TokenRequest.ClientSecret,
+            OidcConstants.TokenRequest.ClientAssertion
+            // REVIEW - Should we filter request objects?
+        };
+
     /// <summary>
     /// Called when the IdentityServer middleware detects an unhandled exception, and is used to determine if the exception is logged.
     /// Returns true to emit the log, false to suppress.

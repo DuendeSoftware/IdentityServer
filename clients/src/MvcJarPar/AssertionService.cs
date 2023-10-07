@@ -29,12 +29,12 @@ namespace MvcJarAndPar
             var now = DateTime.UtcNow;
 
             var token = new JwtSecurityToken(
-                "mvc.par",
+                "mvc.jar.par",
                 Constants.Authority + "/connect/token",
                 new List<Claim>()
                 {
                     new Claim(JwtClaimTypes.JwtId, Guid.NewGuid().ToString()),
-                    new Claim(JwtClaimTypes.Subject, "mvc.par"),
+                    new Claim(JwtClaimTypes.Subject, "mvc.jar.par"),
                     new Claim(JwtClaimTypes.IssuedAt, now.ToEpochTime().ToString(), ClaimValueTypes.Integer64)
                 },
                 now,

@@ -20,7 +20,6 @@ public interface IPushedAuthorizationRequestStore
     /// </summary>
     /// <param name="pushedAuthorizationRequest">The request.</param>
     /// <returns></returns>
-    /// TODO - When this fails, do we need to send that failure to the caller?
     Task StoreAsync(PushedAuthorizationRequest pushedAuthorizationRequest);
 
     /// <summary>

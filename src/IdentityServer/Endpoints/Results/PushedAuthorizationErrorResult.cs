@@ -45,7 +45,6 @@ internal class PushedAuthorizationErrorResultGenerator : IEndpointResultGenerato
         };
 
         await context.Response.WriteJsonAsync(dto);
-        // TODO - Logs and maybe an event for PAR failures
     }
 
     internal class ResultDto

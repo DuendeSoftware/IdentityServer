@@ -126,7 +126,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
         if (!_options.Endpoints.EnablePushedAuthorizationEndpoint)
         {
             {
-                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest,
+                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestUri,
                     description: "Pushed authorization is disabled.");
             }
         }
@@ -134,38 +134,25 @@ internal class RequestObjectValidator : IRequestObjectValidator
         if(pushedAuthorizationRequest == null)
         {
             {
-                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest,
+                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestUri,
                     description: "invalid or reused PAR request uri");
             }
         }
 
         // Record the reference value, so we can know that PAR did happen
         request.PushedAuthorizationReferenceValue = GetReferenceValue(request);
-
         // Copy the PAR into the raw request so that validation will use the pushed parameters
         request.Raw = pushedAuthorizationRequest.PushedParameters;
 
-        // Validate binding of PAR to client
         var bindingError = ValidatePushedAuthorizationBindingToClient(pushedAuthorizationRequest, request);
         if (bindingError != null)
         {
             return bindingError;
         }
-        
         var expirationError = ValidatePushedAuthorizationExpiration(pushedAuthorizationRequest, request);
         if (expirationError != null)
         {
             return expirationError;
-        }
-        
-        // Validate expiration of PAR
-        if (DateTime.UtcNow > pushedAuthorizationRequest.ExpiresAtUtc)
-        {
-            // TODO - Check specs carefully to make sure this error code is correct
-            {
-                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest,
-                    description: "expired pushed authorization request");
-            }
         }
 
         return null;
@@ -176,9 +163,8 @@ internal class RequestObjectValidator : IRequestObjectValidator
         var parClientId = pushedAuthorizationRequest.PushedParameters.Get(OidcConstants.AuthorizeRequest.ClientId);
         if (parClientId != authorizeRequest.ClientId)
         {
-            // TODO - Check specs carefully to make sure this error code is correct
             {
-                return Invalid(authorizeRequest, error: OidcConstants.AuthorizeErrors.InvalidRequest,
+                return Invalid(authorizeRequest, error: OidcConstants.AuthorizeErrors.InvalidRequestUri,
                     description: "invalid client for pushed authorization request");
             }
         }
@@ -189,9 +175,8 @@ internal class RequestObjectValidator : IRequestObjectValidator
     {
         if (DateTime.UtcNow > pushedAuthorizationRequest.ExpiresAtUtc)
         {
-            // TODO - Check specs carefully to make sure this error code is correct
             {
-                return Invalid(authorizeRequest, error: OidcConstants.AuthorizeErrors.InvalidRequest,
+                return Invalid(authorizeRequest, error: OidcConstants.AuthorizeErrors.InvalidRequestUri,
                     description: "expired pushed authorization request");
             }
         }

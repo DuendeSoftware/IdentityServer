@@ -44,7 +44,6 @@ internal class PushedAuthorizationResultGenerator : IEndpointResultGenerator<Pus
             expires_in = result.Response.ExpiresIn
         };
         await context.Response.WriteJsonAsync(dto);
-        // TODO - Logs and maybe an event for PAR success
     }
 
     internal class ResultDto

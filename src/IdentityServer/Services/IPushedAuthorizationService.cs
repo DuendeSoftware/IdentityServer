@@ -22,7 +22,6 @@ public interface IPushedAuthorizationService
     /// <param name="expiresAtUtc"></param>
     /// <param name="parameters"></param>
     /// <returns></returns>
-    /// TODO - When this fails, do we need to send that failure to the caller?
     Task StoreAsync(DeserializedPushedAuthorizationRequest pushedAuthorizationRequest);
 
     /// <summary>

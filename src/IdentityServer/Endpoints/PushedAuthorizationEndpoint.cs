@@ -1,23 +1,17 @@
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
-using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Endpoints;
@@ -125,12 +119,9 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 
         if (request != null)
         {
-            // TODO - is this the correct sensitive values filter? Is there a possibility of sensitive values that would normally be sent to the token endpoint here (for authorization of the client?)
-            var details = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
+            var details = new AuthorizeRequestValidationLog(request, _options.Logging.PushedAuthorizationSensitiveValuesFilter);
             _logger.LogInformation("{@validationDetails}", details);
         }
-
-        await RaiseFailureEventAsync(request, error, errorDescription);
 
         return new PushedAuthorizationErrorResult(new PushedAuthorizationFailure
         {
@@ -138,11 +129,4 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
             ErrorDescription = errorDescription,
         });
     }
-
-    private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription)
-    {
-        // TODO - Replace this event with a new one, or maybe don't introduce an event...
-        return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
-    }
-
 }

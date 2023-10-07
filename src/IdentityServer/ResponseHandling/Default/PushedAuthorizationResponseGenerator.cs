@@ -57,8 +57,6 @@ public class PushedAuthorizationResponseGenerator : IPushedAuthorizationResponse
             PushedParameters = request.Raw
         });
 
-        // TODO - Catch errors and return PushedAuthorizationFailure?
-
         // Return reference and expiration
         return new PushedAuthorizationSuccess
         {
