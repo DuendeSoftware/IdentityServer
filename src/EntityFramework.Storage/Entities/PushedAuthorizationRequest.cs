@@ -14,6 +14,4 @@ public class PushedAuthorizationRequest
     public string ReferenceValueHash { get; set; }
     public DateTime ExpiresAtUtc { get; set; }
     public string Parameters { get; set; }
-    // REVIEW - Should we include the creation timestamp?
-    // public DateTime CreatedAtUtc { get; set; }
 }

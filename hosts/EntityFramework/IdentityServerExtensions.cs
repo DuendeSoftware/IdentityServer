@@ -36,7 +36,7 @@ internal static class IdentityServerExtensions
                 options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
 
                 // this enables automatic token cleanup. this is optional.
-                options.EnableTokenCleanup = false;
+                options.EnableTokenCleanup = true;
                 options.RemoveConsumedTokens = true;
                 options.TokenCleanupInterval = 10; // interval in seconds
             })

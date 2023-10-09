@@ -21,7 +21,7 @@ public class PushedAuthorizationOptions
     /// client.
     /// </remarks>
     public bool Required { get; set; }
- 
+
     /// <summary>
     /// Lifetime of pushed authorization requests in seconds.
     ///

@@ -69,7 +69,7 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
                 .SingleOrDefault(x => x.ReferenceValueHash == referenceValueHash);
         var model = par?.ToModel();
 
-        Logger.LogDebug("{referenceValueHash} pushed authorization found in database: {requestUriFound}", par.ReferenceValueHash, model != null);
+        Logger.LogDebug("{referenceValueHash} pushed authorization found in database: {requestUriFound}", referenceValueHash, model != null);
 
         return model;
     }

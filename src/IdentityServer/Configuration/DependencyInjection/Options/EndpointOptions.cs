@@ -102,5 +102,5 @@ public class EndpointsOptions
     /// <value>
     /// <c>true</c> if the pushed authorization endpoint is enabled; otherwise, <c>false</c>.
     /// </value>
-    public bool EnablePushedAuthorizationEndpoint { get; set; }
+    public bool EnablePushedAuthorizationEndpoint { get; set; } = true;
 }
