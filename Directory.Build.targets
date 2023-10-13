@@ -34,7 +34,7 @@
         <!--tests -->
         <PackageReference Update="FluentAssertions" Version="6.5.1"/>
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.7.2"/>
-        <PackageReference Update="xunit" Version="2.5.0"/>
+        <PackageReference Update="xunit" Version="2.5.2"/>
         <PackageReference Update="xunit.runner.visualstudio" Version="2.5.1" PrivateAssets="All"/>
 
         <!-- testing -->
