@@ -237,7 +237,7 @@ public class Client
     public TokenUsage RefreshTokenUsage { get; set; } = TokenUsage.OneTimeOnly;
 
     /// <summary>
-    /// Specifics whether the access token (and its claims) should be updated on a refresh token request.
+    /// Specifies whether the access token (and its claims) should be updated on a refresh token request.
     /// Defaults to <c>false</c>.
     /// </summary>
     /// <value>
