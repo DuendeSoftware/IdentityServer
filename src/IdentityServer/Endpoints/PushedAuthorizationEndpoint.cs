@@ -4,7 +4,6 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Logging.Models;
 using Duende.IdentityServer.ResponseHandling;
-using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
 using Microsoft.AspNetCore.Http;
@@ -22,7 +21,6 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
     private readonly IAuthorizeRequestValidator _authorizeRequestValidator;
     private readonly IPushedAuthorizationResponseGenerator _responseGenerator;
     private readonly IdentityServerOptions _options;
-    private readonly IEventService _events;
     private readonly ILogger<PushedAuthorizationEndpoint> _logger;
 
     public PushedAuthorizationEndpoint(
@@ -31,7 +29,6 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         IAuthorizeRequestValidator authorizeRequestValidator,
         IPushedAuthorizationResponseGenerator responseGenerator,
         IdentityServerOptions options,
-        IEventService events,
         ILogger<PushedAuthorizationEndpoint> logger
         )
     {
@@ -40,7 +37,6 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         _authorizeRequestValidator = authorizeRequestValidator;
         _responseGenerator = responseGenerator;
         _options = options;
-        _events = events;
         _logger = logger;
     }
 
