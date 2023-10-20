@@ -1,9 +1,10 @@
-using System;
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
-using IdentityModel;
 
 namespace UnitTests.Validation.Setup;
 
