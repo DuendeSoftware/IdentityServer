@@ -18,7 +18,6 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 {
     private readonly IClientSecretValidator _clientValidator;
     private readonly IPushedAuthorizationRequestValidator _parValidator;
-    private readonly IAuthorizeRequestValidator _authorizeRequestValidator;
     private readonly IPushedAuthorizationResponseGenerator _responseGenerator;
     private readonly IdentityServerOptions _options;
     private readonly ILogger<PushedAuthorizationEndpoint> _logger;
@@ -34,7 +33,6 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
     {
         _clientValidator = clientValidator;
         _parValidator = parValidator;
-        _authorizeRequestValidator = authorizeRequestValidator;
         _responseGenerator = responseGenerator;
         _options = options;
         _logger = logger;
@@ -75,20 +73,9 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         {
             return await CreateErrorResultAsync(
                 logMessage: "Pushed authorization validation failed",
-                request: null,
+                request: parValidationResult.ValidatedRequest,
                 parValidationResult.Error,
                 parValidationResult.ErrorDescription);
-        }
-       
-        // Validate the content of the pushed authorization request
-        var authValidationResult = await _authorizeRequestValidator.ValidateAsync(values);
-        if(authValidationResult.IsError)
-        {
-            return await CreateErrorResultAsync(
-                "Request validation failed",
-                authValidationResult.ValidatedRequest,
-                authValidationResult.Error,
-                authValidationResult.ErrorDescription);
         }
 
         var response = await _responseGenerator.CreateResponseAsync(parValidationResult.ValidatedRequest);
@@ -103,7 +90,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 
     private async Task<PushedAuthorizationErrorResult> CreateErrorResultAsync(
         string logMessage,
-        ValidatedAuthorizeRequest request = null,
+        ValidatedPushedAuthorizationRequest request = null,
         string error = OidcConstants.AuthorizeErrors.ServerError,
         string errorDescription = null,
         bool logError = true)

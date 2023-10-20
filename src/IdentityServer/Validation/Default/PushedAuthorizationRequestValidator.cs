@@ -2,6 +2,8 @@
 // See LICENSE in the project root for license information.
 
 
+#nullable enable
+
 using System.Threading.Tasks;
 using Duende.IdentityServer.Extensions;
 using IdentityModel;
@@ -9,12 +11,58 @@ using IdentityModel;
 namespace Duende.IdentityServer.Validation;
 
 /// <summary>
-/// Default validator for pushed authorization requests.
+/// Default validator for pushed authorization requests. This validator performs
+/// checks that are specific to pushed authorization and also invokes the <see
+/// cref="IAuthorizeRequestValidator"/> to validate the pushed parameters as if
+/// they had been sent to the authorize endpoint directly. 
 /// </summary>
 public class PushedAuthorizationRequestValidator : IPushedAuthorizationRequestValidator
 {
+
+    private readonly IAuthorizeRequestValidator _authorizeRequestValidator;
+
+    /// <summary>
+    /// Initializes a new instance of the <see
+    /// cref="PushedAuthorizationRequestValidator"/> class. 
+    /// </summary>
+    /// <param name="authorizeRequestValidator">The authorize request validator,
+    /// used to validate the pushed authorization parameters as if they were
+    /// used directly at the authorize endpoint.</param>
+    public PushedAuthorizationRequestValidator(IAuthorizeRequestValidator authorizeRequestValidator)
+    {
+        _authorizeRequestValidator = authorizeRequestValidator;
+    }
+
     /// <inheritdoc />
-    public Task<PushedAuthorizationValidationResult> ValidateAsync(PushedAuthorizationRequestValidationContext context)
+    public async Task<PushedAuthorizationValidationResult> ValidateAsync(PushedAuthorizationRequestValidationContext context)
+    {
+        var validatedRequest = await ValidateRequestUriAsync(context);
+        if(validatedRequest.IsError)
+        {
+            return validatedRequest;
+        }
+
+        var authorizeRequestValidation = await _authorizeRequestValidator.ValidateAsync(context.RequestParameters);
+        if(authorizeRequestValidation.IsError)
+        {
+            return new PushedAuthorizationValidationResult(
+                authorizeRequestValidation.Error,
+                authorizeRequestValidation.ErrorDescription,
+                authorizeRequestValidation.ValidatedRequest);
+        }
+
+        return validatedRequest;
+    }
+
+    /// <summary>
+    /// Validates a PAR request to ensure that it does not contain a request
+    /// URI, which is explicitly disallowed by RFC 9126.
+    /// </summary>
+    /// <param name="context">The pushed authorization validation
+    /// context.</param>
+    /// <returns>A task containing the <see
+    /// cref="PushedAuthorizationValidationResult"/>.</returns>
+    protected virtual Task<PushedAuthorizationValidationResult> ValidateRequestUriAsync(PushedAuthorizationRequestValidationContext context)
     {
         // Reject request_uri parameter
         if (context.RequestParameters.Get(OidcConstants.AuthorizeRequest.RequestUri).IsPresent())
@@ -23,11 +71,12 @@ public class PushedAuthorizationRequestValidator : IPushedAuthorizationRequestVa
         }
         else
         {
-            return Task.FromResult(new PushedAuthorizationValidationResult(new ValidatedPushedAuthorizationRequest
-            {
-                Raw = context.RequestParameters,
-                Client = context.Client
-            }));
+            return Task.FromResult(new PushedAuthorizationValidationResult(
+                new ValidatedPushedAuthorizationRequest
+                {
+                    Raw = context.RequestParameters,
+                    Client = context.Client
+                }));
         }
     }
 }

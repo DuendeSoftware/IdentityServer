@@ -9,9 +9,12 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Validation;
 
 /// <summary>
-/// Validation service for pushed authorization requests. Note that the pushed authorization parameters are additionally
-/// validated using the <see cref="AuthorizeRequestValidator"/>. This service performs validation that is specific to
-/// pushed authorization requests. 
+/// Validation service for pushed authorization requests. Note that, in addition
+/// to validation performed specially for pushed authorization requests, the
+/// pushed parameters should be validated in the same way as an authorization
+/// request sent to the authorization endpoint. Typical implementations of this
+/// service will delegate to the <see cref="IAuthorizeRequestValidator"/> for
+/// this purpose.
 /// </summary>
 public interface IPushedAuthorizationRequestValidator
 {
@@ -19,7 +22,8 @@ public interface IPushedAuthorizationRequestValidator
     /// Validates the pushed authorization request.
     /// </summary>
     /// <param name="context">The validation context</param>
-    /// <returns>A pushed authorization result that either wraps the validated request values or indicates the
-    /// error code and description.</returns>
+    /// <returns>A  task containing a pushed authorization result that either
+    /// wraps the validated request values or indicates the error code and
+    /// description.</returns>
     Task<PushedAuthorizationValidationResult> ValidateAsync(PushedAuthorizationRequestValidationContext context);
 }
