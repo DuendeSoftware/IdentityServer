@@ -37,8 +37,8 @@ public class PushedAuthorizationOptions
     /// too low will likely cause login failures for interactive users, if
     /// pushed authorization requests expire before those users complete
     /// authentication. Some security profiles, such as the FAPI 2.0 Security
-    /// Profile recommend an within 10 minutes to prevent attackers from
-    /// pre-generating requests. To balance these constraints, the Lifetime
+    /// Profile recommend an expiration within 10 minutes to prevent attackers
+    /// from pre-generating requests. To balance these constraints, the Lifetime
     /// defaults to 10 minutes.
     /// </summary>
     /// <remarks>There is also a per-client configuration setting that takes
