@@ -31,19 +31,20 @@ public class PushedAuthorizationOptions
     ///
     /// The pushed authorization request's lifetime begins when the request to
     /// the PAR endpoint is received, and is validated until the authorize
-    /// endpoint returns a response back to the client. Note that user
+    /// endpoint returns a response to the client application. Note that user
     /// interaction, such as entering credentials or granting consent, may need
-    /// to occur before the authorize endpoint can do so. Setting the
-    /// lifetime too low will likely cause login failures for interactive
-    /// users, if pushed authorization requests expire before those users
-    /// complete authentication. For this reason, the lifetime defaults to 900
-    /// seconds = 15 minutes. Note that this is consistent with .NET client
-    /// applications that have a default remote authentication timeout of 15
-    /// minutes. 
+    /// to occur before the authorize endpoint can do so. Setting the lifetime
+    /// too low will likely cause login failures for interactive users, if
+    /// pushed authorization requests expire before those users complete
+    /// authentication. Some security profiles, such as the FAPI 2.0 Security
+    /// Profile recommend an expiration of less than 10 minutes to prevent
+    /// attackers from pre-generating requests. To balance these constraints,
+    /// the Lifetime defaults to the largest possible timeout less than 10
+    /// minutes (599 seconds).
     /// </summary>
     /// <remarks>There is also a per-client configuration setting that takes
     /// precedence over this global configuration.
     /// </remarks>
-    public int Lifetime { get; set; } = 60*15;
+    public int Lifetime { get; set; } = 60*10-1;
 }
 
