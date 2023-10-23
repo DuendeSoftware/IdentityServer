@@ -193,7 +193,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
         return null;
     }
     
-    private string GetReferenceValue(ValidatedAuthorizeRequest request)
+    private string? GetReferenceValue(ValidatedAuthorizeRequest request)
     {
         var requestUri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
         if (requestUri.IsPresent())
@@ -230,7 +230,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
             if (responseType != null)
             {
                 var payloadResponseType =
-                    jwtRequestValidationResult.Payload.SingleOrDefault(c =>
+                    jwtRequestValidationResult.Payload?.SingleOrDefault(c =>
                         c.Type == OidcConstants.AuthorizeRequest.ResponseType)?.Value;
 
                 if (!string.IsNullOrEmpty(payloadResponseType))
@@ -245,7 +245,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
 
             // validate client_id mismatch
             var payloadClientId =
-                jwtRequestValidationResult.Payload.SingleOrDefault(c =>
+                jwtRequestValidationResult.Payload?.SingleOrDefault(c =>
                     c.Type == OidcConstants.AuthorizeRequest.ClientId)?.Value;
 
             if (!string.IsNullOrEmpty(payloadClientId))
@@ -302,7 +302,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
         return Valid(request);
     }
     
-    private AuthorizeRequestValidationResult Invalid(ValidatedAuthorizeRequest request, string error = OidcConstants.AuthorizeErrors.InvalidRequest, string description = null)
+    private AuthorizeRequestValidationResult Invalid(ValidatedAuthorizeRequest request, string error = OidcConstants.AuthorizeErrors.InvalidRequest, string? description = null)
     {
         return new AuthorizeRequestValidationResult(request, error, description);
     }
