@@ -54,12 +54,15 @@ public class LoggingOptions
             OidcConstants.AuthorizeRequest.IdTokenHint
         };
 
+    /// <summary>
+    /// Gets or sets the collection of keys that will be used to redact sensitive values from a pushed authorization request log.
+    /// </summary>
+    /// <remarks>Please be aware that initializing this property could expose sensitive information in your logs.</remarks>
     public ICollection<string> PushedAuthorizationSensitiveValuesFilter { get; set; } =
         new HashSet<string>
         {
             OidcConstants.TokenRequest.ClientSecret,
             OidcConstants.TokenRequest.ClientAssertion
-            // REVIEW - Should we filter request objects?
         };
 
     /// <summary>

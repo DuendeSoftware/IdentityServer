@@ -10,7 +10,7 @@ namespace Duende.IdentityServer.EntityFramework.Entities;
 
 public class PushedAuthorizationRequest
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
     public string ReferenceValueHash { get; set; }
     public DateTime ExpiresAtUtc { get; set; }
     public string Parameters { get; set; }
