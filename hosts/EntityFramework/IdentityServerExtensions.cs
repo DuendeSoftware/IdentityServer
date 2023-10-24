@@ -22,6 +22,7 @@ internal static class IdentityServerExtensions
             options.ServerSideSessions.RemoveExpiredSessions = true;
             options.ServerSideSessions.RemoveExpiredSessionsFrequency = TimeSpan.FromSeconds(10);
             options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout = true;
+            options.Endpoints.EnablePushedAuthorizationEndpoint = true;
         })
             .AddTestUsers(TestUsers.Users)
             // this adds the config data from DB (clients, resources, CORS)
@@ -35,7 +36,7 @@ internal static class IdentityServerExtensions
                 options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
 
                 // this enables automatic token cleanup. this is optional.
-                options.EnableTokenCleanup = false;
+                options.EnableTokenCleanup = true;
                 options.RemoveConsumedTokens = true;
                 options.TokenCleanupInterval = 10; // interval in seconds
             })

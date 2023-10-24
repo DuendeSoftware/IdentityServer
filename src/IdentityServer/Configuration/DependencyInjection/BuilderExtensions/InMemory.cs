@@ -181,4 +181,15 @@ public static class IdentityServerBuilderExtensionsInMemory
 
         return builder;
     }
+
+    /// <summary>
+    /// Adds the in memory pushed authorization request store.
+    /// </summary>
+    /// <param name="builder">The builder.</param>
+    /// <returns></returns>
+    public static IIdentityServerBuilder AddInMemoryPushedAuthorizationRequests(this IIdentityServerBuilder builder) 
+    {
+        builder.Services.TryAddSingleton<IPushedAuthorizationRequestStore, InMemoryPushedAuthorizationRequestStore>();
+        return builder;
+    }
 }

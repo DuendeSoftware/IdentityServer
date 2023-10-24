@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Xunit;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer;
+using Duende.IdentityServer.Stores;
+using UnitTests.Validation.Setup;
 
 namespace UnitTests.Endpoints.Results;
 
@@ -45,7 +47,7 @@ public class AuthorizeResultTests
         _options.UserInteraction.ErrorUrl = "~/error";
         _options.UserInteraction.ErrorIdParameter = "errorId";
 
-        _subject = new AuthorizeResultGenerator(_options, _mockUserSession, _mockErrorMessageStore, _urls, new StubClock());
+        _subject = new AuthorizeResultGenerator(_options, _mockUserSession, new TestPushedAuthorizationService(), _mockErrorMessageStore, _urls, new StubClock());
     }
 
     [Fact]

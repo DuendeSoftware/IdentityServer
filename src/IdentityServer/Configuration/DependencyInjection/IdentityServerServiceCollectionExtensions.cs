@@ -50,8 +50,9 @@ public static class IdentityServerServiceCollectionExtensions
             .AddDefaultSecretParsers()
             .AddDefaultSecretValidators();
 
-        // provide default in-memory implementation, not suitable for most production scenarios
+        // provide default in-memory implementations, not suitable for most production scenarios
         builder.AddInMemoryPersistedGrants();
+        builder.AddInMemoryPushedAuthorizationRequests();
 
         return builder;
     }

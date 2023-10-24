@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Services;
 using static Duende.IdentityServer.IdentityServerConstants;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
@@ -60,7 +61,9 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthorizeInteractionPageResult"/> class.
     /// </summary>
-    public AuthorizeInteractionPageResultGenerator(IServerUrls urls, IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
+    public AuthorizeInteractionPageResultGenerator(
+        IServerUrls urls,
+        IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
     {
         _urls = urls;
         _authorizationParametersMessageStore = authorizationParametersMessageStore;
@@ -79,7 +82,17 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
         }
         else
         {
-            returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
+            if (result.Request.PushedAuthorizationReferenceValue != null)
+            {
+                var requestUri = $"{PushedAuthorizationRequestUri}:{result.Request.PushedAuthorizationReferenceValue}";
+                returnUrl = returnUrl
+                    .AddQueryString(OidcConstants.AuthorizeRequest.RequestUri, requestUri)
+                    .AddQueryString(OidcConstants.AuthorizeRequest.ClientId, result.Request.ClientId);
+            } 
+            else
+            {
+                returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
+            }
         }
 
         var url = result.RedirectUrl;

@@ -4,9 +4,11 @@
 using System.Security.Cryptography.X509Certificates;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Stores.Default;
 using IdentityModel;
 using IdentityServerHost.Configuration;
 using IdentityServerHost.Extensions;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServerHost;
@@ -28,6 +30,8 @@ internal static class IdentityServerExtensions
                 options.ServerSideSessions.UserDisplayNameClaimType = JwtClaimTypes.Name;
 
                 options.UserInteraction.CreateAccountUrl = "/Account/Create";
+
+                options.Endpoints.EnablePushedAuthorizationEndpoint = true;
             })
             //.AddServerSideSessions()
             .AddInMemoryClients(Clients.Get().ToList())
@@ -56,6 +60,9 @@ internal static class IdentityServerExtensions
                     Scope = "openid profile"
                 }
             });
+
+
+        builder.Services.AddDistributedMemoryCache();
 
         builder.Services.AddIdentityServerConfiguration(opt =>
         {

@@ -43,6 +43,7 @@ internal class AuthorizeResultGenerator : IEndpointResultGenerator<AuthorizeResu
     public AuthorizeResultGenerator(
         IdentityServerOptions options,
         IUserSession userSession,
+        IPushedAuthorizationService pushedAuthorizationService,
         IMessageStore<ErrorMessage> errorMessageStore,
         IServerUrls urls,
         IClock clock)
@@ -52,16 +53,20 @@ internal class AuthorizeResultGenerator : IEndpointResultGenerator<AuthorizeResu
         _errorMessageStore = errorMessageStore;
         _urls = urls;
         _clock = clock;
+        _pushedAuthorizationService = pushedAuthorizationService;
     }
 
-    private IdentityServerOptions _options;
-    private IUserSession _userSession;
-    private IMessageStore<ErrorMessage> _errorMessageStore;
-    private IServerUrls _urls;
-    private IClock _clock;
+    private readonly IdentityServerOptions _options;
+    private readonly IUserSession _userSession;
+    private readonly IPushedAuthorizationService _pushedAuthorizationService;
+    private readonly IMessageStore<ErrorMessage> _errorMessageStore;
+    private readonly IServerUrls _urls;
+    private readonly IClock _clock;
 
     public async Task ExecuteAsync(AuthorizeResult result, HttpContext context)
     {
+        await ConsumePushedAuthorizationRequest(result);
+
         if (result.Response.IsError)
         {
             await ProcessErrorAsync(result.Response, context);
@@ -71,6 +76,16 @@ internal class AuthorizeResultGenerator : IEndpointResultGenerator<AuthorizeResu
             await ProcessResponseAsync(result.Response, context);
         }
     }
+
+    private async Task ConsumePushedAuthorizationRequest(AuthorizeResult result)
+    {
+        var referenceValue = result.Response?.Request?.PushedAuthorizationReferenceValue;
+        if(referenceValue.IsPresent())
+        {
+            await _pushedAuthorizationService.ConsumeAsync(referenceValue);
+        }
+    }
+
 
     private async Task ProcessErrorAsync(AuthorizeResponse response, HttpContext context)
     {

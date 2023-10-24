@@ -55,6 +55,17 @@ public class LoggingOptions
         };
 
     /// <summary>
+    /// Gets or sets the collection of keys that will be used to redact sensitive values from a pushed authorization request log.
+    /// </summary>
+    /// <remarks>Please be aware that initializing this property could expose sensitive information in your logs.</remarks>
+    public ICollection<string> PushedAuthorizationSensitiveValuesFilter { get; set; } =
+        new HashSet<string>
+        {
+            OidcConstants.TokenRequest.ClientSecret,
+            OidcConstants.TokenRequest.ClientAssertion
+        };
+
+    /// <summary>
     /// Called when the IdentityServer middleware detects an unhandled exception, and is used to determine if the exception is logged.
     /// Returns true to emit the log, false to suppress.
     /// </summary>

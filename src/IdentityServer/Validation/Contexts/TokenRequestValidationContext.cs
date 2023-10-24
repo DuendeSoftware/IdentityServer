@@ -18,7 +18,7 @@ public class TokenRequestValidationContext
     public NameValueCollection RequestParameters { get; set; }
 
     /// <summary>
-    /// The validaiton result of client authentication
+    /// The validation result of client authentication
     /// </summary>
     public ClientSecretValidationResult ClientValidationResult { get; set; }
 

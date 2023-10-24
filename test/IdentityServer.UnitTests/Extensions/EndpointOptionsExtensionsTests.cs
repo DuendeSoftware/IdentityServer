@@ -131,6 +131,19 @@ public class EndpointOptionsExtensionsTests
                 CreateTestEndpoint(IdentityServerConstants.EndpointNames.UserInfo)));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void IsEndpointEnabledShouldReturnExpectedForPushedAuthorizationEndpoint(bool expectedIsEndpointEnabled)
+    {
+        _options.EnablePushedAuthorizationEndpoint = expectedIsEndpointEnabled;
+
+        Assert.Equal(
+            expectedIsEndpointEnabled,
+            _options.IsEndpointEnabled(
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.PushedAuthorization)));
+    }
+
     private Endpoint CreateTestEndpoint(string name)
     {
         return new Endpoint(name, "", null);

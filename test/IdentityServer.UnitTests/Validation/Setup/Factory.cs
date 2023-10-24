@@ -17,6 +17,7 @@ using UnitTests.Common;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Services.KeyManagement;
 using Duende.IdentityServer;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace UnitTests.Validation.Setup;
 
@@ -216,12 +217,10 @@ internal static class Factory
         IIssuerNameService issuerNameService = null,
         IResourceStore resourceStore = null,
         IClientStore clients = null,
-        IProfileService profile = null,
         ICustomAuthorizeRequestValidator customValidator = null,
         IRedirectUriValidator uriValidator = null,
         IResourceValidator resourceValidator = null,
-        JwtRequestValidator jwtRequestValidator = null,
-        IJwtRequestUriHttpClient jwtRequestUriHttpClient = null)
+        IRequestObjectValidator requestObjectValidator = null)
     {
         if (options == null)
         {
@@ -257,20 +256,14 @@ internal static class Factory
         {
             resourceValidator = CreateResourceValidator(resourceStore);
         }
-
-        if (jwtRequestValidator == null)
-        {
-            jwtRequestValidator = new JwtRequestValidator("https://identityserver", new LoggerFactory().CreateLogger<JwtRequestValidator>());
-        }
-
-        if (jwtRequestUriHttpClient == null)
-        {
-            jwtRequestUriHttpClient = new DefaultJwtRequestUriHttpClient(new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options, new LoggerFactory(), new NoneCancellationTokenProvider());
-        }
-
-
+    
         var userSession = new MockUserSession();
 
+        if (requestObjectValidator == null)
+        {
+            requestObjectValidator = CreateRequestObjectValidator();
+        }
+        
         return new AuthorizeRequestValidator(
             options,
             issuerNameService,
@@ -279,9 +272,30 @@ internal static class Factory
             uriValidator,
             resourceValidator,
             userSession,
+            requestObjectValidator,
+            TestLogger.Create<AuthorizeRequestValidator>());
+    }
+
+    public static RequestObjectValidator CreateRequestObjectValidator(        
+        JwtRequestValidator jwtRequestValidator = null,
+        IJwtRequestUriHttpClient jwtRequestUriHttpClient = null,
+        IPushedAuthorizationService pushedAuthorizationService = null,
+        IdentityServerOptions options = null)
+    {
+        jwtRequestValidator ??= new JwtRequestValidator("https://identityserver",
+            new LoggerFactory().CreateLogger<JwtRequestValidator>());
+        jwtRequestUriHttpClient ??= new DefaultJwtRequestUriHttpClient(
+            new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options,
+            new LoggerFactory(), new NoneCancellationTokenProvider());
+        pushedAuthorizationService ??= new TestPushedAuthorizationService();
+        options ??= TestIdentityServerOptions.Create();
+
+        return new RequestObjectValidator(
             jwtRequestValidator,
             jwtRequestUriHttpClient,
-            TestLogger.Create<AuthorizeRequestValidator>());
+            pushedAuthorizationService,
+            options,
+            TestLogger.Create<RequestObjectValidator>());
     }
 
     public static TokenValidator CreateTokenValidator(
@@ -402,7 +416,7 @@ internal static class Factory
     {
         return new DefaultDeviceFlowCodeService(new InMemoryDeviceFlowStore(), new DefaultHandleGenerationService());
     }
-        
+
     public static IUserConsentStore CreateUserConsentStore()
     {
         return new DefaultUserConsentStore(new InMemoryPersistedGrantStore(),

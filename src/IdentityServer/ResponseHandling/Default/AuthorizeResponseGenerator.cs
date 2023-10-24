@@ -81,8 +81,8 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
         TokenService = tokenService;
         KeyMaterialService = keyMaterialService;
         AuthorizationCodeStore = authorizationCodeStore;
-        Events = events;
         Logger = logger;
+        Events = events;
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     public virtual async Task<AuthorizeResponse> CreateResponseAsync(ValidatedAuthorizeRequest request)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeResponseGenerator.CreateResponse");
-        
+
         if (request.GrantType == GrantType.AuthorizationCode)
         {
             return await CreateCodeFlowResponseAsync(request);

@@ -55,8 +55,7 @@ public class Authorize_ProtocolValidation_Resources
             new StrictRedirectUriValidator(),
             _mockResourceValidator,
             _mockUserSession,
-            new JwtRequestValidator("aud", TestLogger.Create<JwtRequestValidator>()),
-            new MockJwtRequestUriHttpClient(),
+            Factory.CreateRequestObjectValidator(),
             TestLogger.Create<AuthorizeRequestValidator>());
     }
 

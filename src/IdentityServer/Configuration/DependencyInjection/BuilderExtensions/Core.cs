@@ -120,6 +120,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpoint<EndSessionCallbackEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSessionCallback.EnsureLeadingSlash());
         builder.AddEndpoint<EndSessionEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSession.EnsureLeadingSlash());
         builder.AddEndpoint<IntrospectionEndpoint>(EndpointNames.Introspection, ProtocolRoutePaths.Introspection.EnsureLeadingSlash());
+        builder.AddEndpoint<PushedAuthorizationEndpoint>(EndpointNames.PushedAuthorization, ProtocolRoutePaths.PushedAuthorization.EnsureLeadingSlash());
         builder.AddEndpoint<TokenRevocationEndpoint>(EndpointNames.Revocation, ProtocolRoutePaths.Revocation.EnsureLeadingSlash());
         builder.AddEndpoint<TokenEndpoint>(EndpointNames.Token, ProtocolRoutePaths.Token.EnsureLeadingSlash());
         builder.AddEndpoint<UserInfoEndpoint>(EndpointNames.UserInfo, ProtocolRoutePaths.UserInfo.EnsureLeadingSlash());
@@ -136,6 +137,8 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpointResultGenerator<IntrospectionResult, IntrospectionResultGenerator>();
         builder.AddEndpointResultGenerator<JsonWebKeysResult, JsonWebKeysResultGenerator>();
         builder.AddEndpointResultGenerator<ProtectedResourceErrorResult, ProtectedResourceErrorResultGenerator>();
+        builder.AddEndpointResultGenerator<PushedAuthorizationResult, PushedAuthorizationResultGenerator>();
+        builder.AddEndpointResultGenerator<PushedAuthorizationErrorResult, PushedAuthorizationErrorResultGenerator>();
         builder.AddEndpointResultGenerator<StatusCodeResult, StatusCodeResultGenerator>();
         builder.AddEndpointResultGenerator<TokenErrorResult, TokenErrorResultGenerator>();
         builder.AddEndpointResultGenerator<TokenResult, TokenResultGenerator>();
@@ -242,6 +245,8 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IBackChannelAuthenticationRequestStore, DefaultBackChannelAuthenticationRequestStore>();
         builder.Services.TryAddTransient<IHandleGenerationService, DefaultHandleGenerationService>();
         builder.Services.TryAddTransient<IPersistentGrantSerializer, PersistentGrantSerializer>();
+        builder.Services.TryAddTransient<IPushedAuthorizationSerializer, PushedAuthorizationSerializer>();
+        builder.Services.TryAddTransient<IPushedAuthorizationService, PushedAuthorizationService>();
         builder.Services.TryAddTransient<IEventService, DefaultEventService>();
         builder.Services.TryAddTransient<IEventSink, DefaultEventSink>();
         builder.Services.TryAddTransient<IUserCodeService, DefaultUserCodeService>();
@@ -319,6 +324,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IEndSessionRequestValidator, EndSessionRequestValidator>();
         builder.Services.TryAddTransient<ITokenRevocationRequestValidator, TokenRevocationRequestValidator>();
         builder.Services.TryAddTransient<IAuthorizeRequestValidator, AuthorizeRequestValidator>();
+        builder.Services.TryAddTransient<IRequestObjectValidator, RequestObjectValidator>();
         builder.Services.TryAddTransient<ITokenRequestValidator, TokenRequestValidator>();
         builder.Services.TryAddTransient<IRedirectUriValidator, StrictRedirectUriValidator>();
         builder.Services.TryAddTransient<ITokenValidator, TokenValidator>();
@@ -333,8 +339,8 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IBackchannelAuthenticationRequestIdValidator, BackchannelAuthenticationRequestIdValidator>();
         builder.Services.TryAddTransient<IResourceValidator, DefaultResourceValidator>();
         builder.Services.TryAddTransient<IDPoPProofValidator, DefaultDPoPProofValidator>();
-
         builder.Services.TryAddTransient<IBackchannelAuthenticationRequestValidator, BackchannelAuthenticationRequestValidator>();
+        builder.Services.TryAddTransient<IPushedAuthorizationRequestValidator, PushedAuthorizationRequestValidator>();
 
         // optional
         builder.Services.TryAddTransient<ICustomTokenValidator, DefaultCustomTokenValidator>();
@@ -359,6 +365,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<ITokenRevocationResponseGenerator, TokenRevocationResponseGenerator>();
         builder.Services.TryAddTransient<IDeviceAuthorizationResponseGenerator, DeviceAuthorizationResponseGenerator>();
         builder.Services.TryAddTransient<IBackchannelAuthenticationResponseGenerator, BackchannelAuthenticationResponseGenerator>();
+        builder.Services.TryAddTransient<IPushedAuthorizationResponseGenerator, PushedAuthorizationResponseGenerator>();
 
         return builder;
     }

@@ -515,6 +515,46 @@
         }
       },
       {
+        "name": "client: MvcPar",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-client-MvcPar",
+        "program": "${workspaceFolder}/clients/src/MvcPar/bin/Debug/net8.0/MvcPar.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/clients/src/MvcPar",
+        "serverReadyAction": {
+            "action": "openExternally",
+            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        },
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "presentation": {
+          "hidden": false,
+          "group": "20-clients",
+        }
+      },
+      {
+        "name": "client: MvcJarPar",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-client-MvcJarPar",
+        "program": "${workspaceFolder}/clients/src/MvcJarPar/bin/Debug/net8.0/MvcJarPar.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/clients/src/MvcJarPar",
+        "serverReadyAction": {
+            "action": "openExternally",
+            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        },
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "presentation": {
+          "hidden": false,
+          "group": "20-clients",
+        }
+      },
+      {
         "name": "client: MvcHybridBackChannel",
         "type": "coreclr",
         "request": "launch",

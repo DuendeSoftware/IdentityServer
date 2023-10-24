@@ -166,7 +166,7 @@ public static class ValidatedAuthorizeRequestExtensions
                 // https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests 
                 // requires client id and response type to always be in URL
                 if (key == OidcConstants.AuthorizeRequest.ClientId ||
-                    key == OidcConstants.AuthorizeRequest.ResponseType || 
+                    key == OidcConstants.AuthorizeRequest.ResponseType ||  
                     request.RequestObjectValues.All(x => x.Type != key))
                 {
                     foreach(var value in request.Raw.GetValues(key))

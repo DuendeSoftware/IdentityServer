@@ -33,7 +33,10 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" />
 
         <PackageReference Include="Serilog.AspNetCore" />
-        
+
+        <!-- This may not be necessary long term, once asp.net core updates its wilson dependencies  -->
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+
     </ItemGroup>
 
     <ItemGroup>

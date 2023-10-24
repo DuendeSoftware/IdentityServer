@@ -20,6 +20,8 @@ public static class IdentityServerConstants
 
     public const string JwtRequestClientKey = "idsrv.jwtrequesturi.client";
 
+    public const string PushedAuthorizationRequestUri = "urn:ietf:params:oauth:request_uri";
+
     /// <summary>
     /// Constants for local IdentityServer access token authentication.
     /// </summary>
@@ -227,6 +229,7 @@ public static class IdentityServerConstants
         public const string EndSession = "Endsession";
         public const string CheckSession = "Checksession";
         public const string UserInfo = "Userinfo";
+        public const string PushedAuthorization = "PushedAuthorization";
     }
 
     public static class ContentSecurityPolicyHashes
@@ -264,6 +267,8 @@ public static class IdentityServerConstants
         public const string EndSessionCallback          = EndSession + "/callback";
         public const string CheckSession                = ConnectPathPrefix + "/checksession";
         public const string DeviceAuthorization         = ConnectPathPrefix + "/deviceauthorization";
+        public const string PushedAuthorization         = ConnectPathPrefix + "/par";
+
 
         public const string MtlsPathPrefix              = ConnectPathPrefix + "/mtls";
         public const string MtlsToken                   = MtlsPathPrefix + "/token";

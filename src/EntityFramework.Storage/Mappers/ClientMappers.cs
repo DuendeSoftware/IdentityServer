@@ -90,6 +90,8 @@ public static class ClientMappers
             CibaLifetime = entity.CibaLifetime,
             PollingInterval = entity.PollingInterval,
             CoordinateLifetimeWithUserSession = entity.CoordinateLifetimeWithUserSession,
+            PushedAuthorizationLifetime = entity.PushedAuthorizationLifetime,
+            RequirePushedAuthorization = entity.RequirePushedAuthorization,
         };
     }
 
@@ -189,6 +191,8 @@ public static class ClientMappers
             CibaLifetime = model.CibaLifetime,
             PollingInterval = model.PollingInterval,
             CoordinateLifetimeWithUserSession = model.CoordinateLifetimeWithUserSession,
+            PushedAuthorizationLifetime = model.PushedAuthorizationLifetime,
+            RequirePushedAuthorization = model.RequirePushedAuthorization,
         };
     }
 }

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Encodings.Web;
 
@@ -52,7 +53,7 @@ internal static class StringExtensions
     }
 
     [DebuggerStepThrough]
-    public static bool IsMissing(this string value)
+    public static bool IsMissing([NotNullWhen(false)]this string value)
     {
         return string.IsNullOrWhiteSpace(value);
     }
@@ -73,7 +74,7 @@ internal static class StringExtensions
     }
 
     [DebuggerStepThrough]
-    public static bool IsPresent(this string value)
+    public static bool IsPresent([NotNullWhen(true)] this string value)
     {
         return !string.IsNullOrWhiteSpace(value);
     }
