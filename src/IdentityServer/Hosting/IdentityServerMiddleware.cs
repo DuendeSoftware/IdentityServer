@@ -93,30 +93,36 @@ public class IdentityServerMiddleware
                 var endpointType = endpoint.GetType().FullName;
                 var requestPath = context.Request.Path.ToString();
 
-                Telemetry.Metrics.RequestCounter.Add(1, new("endpoint", endpointType), new("path", requestPath));
-                using var activity = Tracing.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
-                activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
-
-                IdentityServerLicenseValidator.Instance.ValidateIssuer(await issuerNameService.GetCurrentAsync());
-
-                _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, requestPath);
-
-                var result = await endpoint.ProcessAsync(context);
-
-                if (result != null)
+                Telemetry.Metrics.ActiveRequestCounter.Add(1, new("endpoint", endpointType), new("path", requestPath));
+                try
                 {
-                    _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);
-                    await result.ExecuteAsync(context);
+                    using var activity = Tracing.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
+                    activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
+
+                    IdentityServerLicenseValidator.Instance.ValidateIssuer(await issuerNameService.GetCurrentAsync());
+
+                    _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, requestPath);
+
+                    var result = await endpoint.ProcessAsync(context);
+
+                    if (result != null)
+                    {
+                        _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);
+                        await result.ExecuteAsync(context);
+                    }
+
+                    return;
                 }
-
-                Telemetry.Metrics.RequestCounter.Add(-1, new("endpoint", endpointType), new("path", requestPath));
-
-                return;
+                finally
+                {
+                    Telemetry.Metrics.ActiveRequestCounter.Add(-1, new("endpoint", endpointType), new("path", requestPath));
+                }
             }
         }
         catch (Exception ex) when (options.Logging.UnhandledExceptionLoggingFilter?.Invoke(context, ex) is not false)
         {
             await events.RaiseAsync(new UnhandledExceptionEvent(ex));
+            Telemetry.Metrics.UnHandledException(ex);
             _logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
 
             throw;
