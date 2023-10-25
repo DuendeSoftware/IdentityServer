@@ -46,6 +46,7 @@ public class PushedAuthorizationService : IPushedAuthorizationService
         var deserialized = _serializer.Deserialize(par.Parameters);
         return new DeserializedPushedAuthorizationRequest
         {
+            ReferenceValue = referenceValue,
             PushedParameters = deserialized,
             ExpiresAtUtc = par.ExpiresAtUtc
         };

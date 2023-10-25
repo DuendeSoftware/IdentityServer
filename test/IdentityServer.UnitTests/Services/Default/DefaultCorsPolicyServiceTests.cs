@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Threading.Tasks;
 using Duende.IdentityServer.Services;
 using FluentAssertions;
 using UnitTests.Common;
@@ -23,54 +24,54 @@ public class DefaultCorsPolicyServiceTests
 
     [Fact]
     [Trait("Category", Category)]
-    public void IsOriginAllowed_null_param_ReturnsFalse()
+    public async Task IsOriginAllowed_null_param_ReturnsFalse()
     {
-        subject.IsOriginAllowedAsync(null).Result.Should().Be(false);
-        subject.IsOriginAllowedAsync(String.Empty).Result.Should().Be(false);
-        subject.IsOriginAllowedAsync("    ").Result.Should().Be(false);
+        (await subject.IsOriginAllowedAsync(null)).Should().Be(false);
+        (await subject.IsOriginAllowedAsync(String.Empty)).Should().Be(false);
+        (await subject.IsOriginAllowedAsync("    ")).Should().Be(false);
     }
 
     [Fact]
     [Trait("Category", Category)]
-    public void IsOriginAllowed_OriginIsAllowed_ReturnsTrue()
-    {
-        subject.AllowedOrigins.Add("http://foo");
-        subject.IsOriginAllowedAsync("http://foo").Result.Should().Be(true);
-    }
-
-    [Fact]
-    [Trait("Category", Category)]
-    public void IsOriginAllowed_OriginIsNotAllowed_ReturnsFalse()
+    public async Task IsOriginAllowed_OriginIsAllowed_ReturnsTrue()
     {
         subject.AllowedOrigins.Add("http://foo");
-        subject.IsOriginAllowedAsync("http://bar").Result.Should().Be(false);
+        (await subject.IsOriginAllowedAsync("http://foo")).Should().Be(true);
     }
 
     [Fact]
     [Trait("Category", Category)]
-    public void IsOriginAllowed_OriginIsInAllowedList_ReturnsTrue()
+    public async Task IsOriginAllowed_OriginIsNotAllowed_ReturnsFalse()
     {
         subject.AllowedOrigins.Add("http://foo");
-        subject.AllowedOrigins.Add("http://bar");
-        subject.AllowedOrigins.Add("http://baz");
-        subject.IsOriginAllowedAsync("http://bar").Result.Should().Be(true);
+        (await subject.IsOriginAllowedAsync("http://bar")).Should().Be(false);
     }
 
     [Fact]
     [Trait("Category", Category)]
-    public void IsOriginAllowed_OriginIsNotInAllowedList_ReturnsFalse()
+    public async Task IsOriginAllowed_OriginIsInAllowedList_ReturnsTrue()
     {
         subject.AllowedOrigins.Add("http://foo");
         subject.AllowedOrigins.Add("http://bar");
         subject.AllowedOrigins.Add("http://baz");
-        subject.IsOriginAllowedAsync("http://quux").Result.Should().Be(false);
+        (await subject.IsOriginAllowedAsync("http://bar")).Should().Be(true);
     }
 
     [Fact]
     [Trait("Category", Category)]
-    public void IsOriginAllowed_AllowAllTrue_ReturnsTrue()
+    public async Task IsOriginAllowed_OriginIsNotInAllowedList_ReturnsFalse()
+    {
+        subject.AllowedOrigins.Add("http://foo");
+        subject.AllowedOrigins.Add("http://bar");
+        subject.AllowedOrigins.Add("http://baz");
+        (await subject.IsOriginAllowedAsync("http://quux")).Should().Be(false);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task IsOriginAllowed_AllowAllTrue_ReturnsTrue()
     {
         subject.AllowAll = true;
-        subject.IsOriginAllowedAsync("http://foo").Result.Should().Be(true);
+        (await subject.IsOriginAllowedAsync("http://foo")).Should().Be(true);
     }
 }

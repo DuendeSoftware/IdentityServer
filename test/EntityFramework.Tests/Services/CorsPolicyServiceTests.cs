@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.Services;
@@ -28,7 +29,7 @@ public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, Co
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public void IsOriginAllowedAsync_WhenOriginIsAllowed_ExpectTrue(DbContextOptions<ConfigurationDbContext> options)
+    public async Task IsOriginAllowedAsync_WhenOriginIsAllowed_ExpectTrue(DbContextOptions<ConfigurationDbContext> options)
     {
         const string testCorsOrigin = "https://identityserver.io/";
 
@@ -53,14 +54,14 @@ public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, Co
         using (var context = new ConfigurationDbContext(options))
         {
             var service = new CorsPolicyService(context, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
-            result = service.IsOriginAllowedAsync(testCorsOrigin).Result;
+            result = await service.IsOriginAllowedAsync(testCorsOrigin);
         }
 
         Assert.True(result);
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public void IsOriginAllowedAsync_WhenOriginIsNotAllowed_ExpectFalse(DbContextOptions<ConfigurationDbContext> options)
+    public async Task IsOriginAllowedAsync_WhenOriginIsNotAllowed_ExpectFalse(DbContextOptions<ConfigurationDbContext> options)
     {
         using (var context = new ConfigurationDbContext(options))
         {
@@ -77,7 +78,7 @@ public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, Co
         using (var context = new ConfigurationDbContext(options))
         {
             var service = new CorsPolicyService(context, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
-            result = service.IsOriginAllowedAsync("InvalidOrigin").Result;
+            result = await service.IsOriginAllowedAsync("InvalidOrigin");
         }
 
         Assert.False(result);

@@ -5,7 +5,9 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
@@ -223,6 +225,11 @@ internal class RequestObjectValidator : IRequestObjectValidator
             {
                 LogError("request JWT validation failure", request);
                 return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestObject, description: "Invalid JWT request");
+            } 
+
+            if(jwtRequestValidationResult.Payload == null)
+            {
+                throw new Exception("JwtRequestValidation succeeded but did not return a payload");
             }
 
             // validate response_type match
@@ -230,7 +237,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
             if (responseType != null)
             {
                 var payloadResponseType =
-                    jwtRequestValidationResult.Payload?.SingleOrDefault(c =>
+                    jwtRequestValidationResult.Payload.SingleOrDefault(c =>
                         c.Type == OidcConstants.AuthorizeRequest.ResponseType)?.Value;
 
                 if (!string.IsNullOrEmpty(payloadResponseType))
@@ -245,7 +252,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
 
             // validate client_id mismatch
             var payloadClientId =
-                jwtRequestValidationResult.Payload?.SingleOrDefault(c =>
+                jwtRequestValidationResult.Payload.SingleOrDefault(c =>
                     c.Type == OidcConstants.AuthorizeRequest.ClientId)?.Value;
 
             if (!string.IsNullOrEmpty(payloadClientId))

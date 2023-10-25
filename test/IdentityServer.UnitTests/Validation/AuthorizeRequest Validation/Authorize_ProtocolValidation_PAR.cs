@@ -29,6 +29,8 @@ public class Authorize_ProtocolValidation_Valid_PAR
         var initiallyPushedClientId = "clientId1";
         var par = new DeserializedPushedAuthorizationRequest
         {
+            ReferenceValue = Guid.NewGuid().ToString(),
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(5),
             PushedParameters = new NameValueCollection
             {
                 { OidcConstants.AuthorizeRequest.ClientId, initiallyPushedClientId }
@@ -55,7 +57,9 @@ public class Authorize_ProtocolValidation_Valid_PAR
         var authorizeRequest = new ValidatedAuthorizeRequest();
         var par = new DeserializedPushedAuthorizationRequest
         {
-            ExpiresAtUtc = DateTime.UtcNow.AddSeconds(-1)
+            ReferenceValue = Guid.NewGuid().ToString(),
+            ExpiresAtUtc = DateTime.UtcNow.AddSeconds(-1),
+            PushedParameters = new NameValueCollection()
         };
 
         var validator = Factory.CreateRequestObjectValidator();

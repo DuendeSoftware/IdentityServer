@@ -9,9 +9,24 @@ using System.Collections.Specialized;
 
 namespace Duende.IdentityServer.Services;
 
+/// <summary>
+/// A pushed authorization request that is not serialized.
+/// </summary>
 public class DeserializedPushedAuthorizationRequest
 {
-    public string ReferenceValue { get; set; }
-    public NameValueCollection PushedParameters { get; set; }
-    public DateTime ExpiresAtUtc { get; set; }
+    /// <summary>
+    /// The reference value of the pushed authorization request. This is the
+    /// identifier within the request_uri.
+    /// </summary>
+    public required string ReferenceValue { get; set; }
+    
+    /// <summary>
+    /// The pushed parameters. 
+    /// </summary>
+    public required NameValueCollection PushedParameters { get; set; }
+    
+    /// <summary>
+    /// The expiration time.
+    /// </summary>
+    public required DateTime ExpiresAtUtc { get; set; }
 }
