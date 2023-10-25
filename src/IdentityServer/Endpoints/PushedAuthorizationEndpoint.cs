@@ -64,7 +64,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         var client = await _clientValidator.ValidateAsync(context);
         if(client.IsError)
         {
-            return await CreateErrorResultAsync(
+            return CreateErrorResult(
                 logMessage: "Client secret validation failed",
                 request: null,
                 client.Error,
@@ -75,7 +75,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         var parValidationResult = await _parValidator.ValidateAsync(new PushedAuthorizationRequestValidationContext(values, client.Client));
         if (parValidationResult.IsError)
         {
-            return await CreateErrorResultAsync(
+            return CreateErrorResult(
                 logMessage: "Pushed authorization validation failed",
                 request: parValidationResult.ValidatedRequest,
                 parValidationResult.Error,
@@ -92,7 +92,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
         };
     }
 
-    private async Task<PushedAuthorizationErrorResult> CreateErrorResultAsync(
+    private PushedAuthorizationErrorResult CreateErrorResult(
         string logMessage,
         ValidatedPushedAuthorizationRequest request = null,
         string error = OidcConstants.AuthorizeErrors.ServerError,
