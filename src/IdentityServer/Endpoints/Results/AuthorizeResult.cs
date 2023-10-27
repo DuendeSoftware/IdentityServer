@@ -38,9 +38,9 @@ public class AuthorizeResult : EndpointResult<AuthorizeResult>
     }
 }
 
-internal class AuthorizeResultGenerator : IEndpointResultGenerator<AuthorizeResult>
+internal class AuthorizeHttpWriter : IHttpResponseWriter<AuthorizeResult>
 {
-    public AuthorizeResultGenerator(
+    public AuthorizeHttpWriter(
         IdentityServerOptions options,
         IUserSession userSession,
         IPushedAuthorizationService pushedAuthorizationService,
@@ -63,7 +63,7 @@ internal class AuthorizeResultGenerator : IEndpointResultGenerator<AuthorizeResu
     private readonly IServerUrls _urls;
     private readonly IClock _clock;
 
-    public async Task ExecuteAsync(AuthorizeResult result, HttpContext context)
+    public async Task WriteHttpResponse(AuthorizeResult result, HttpContext context)
     {
         await ConsumePushedAuthorizationRequest(result);
 

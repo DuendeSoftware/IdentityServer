@@ -32,9 +32,9 @@ public class DeviceAuthorizationResult : EndpointResult<DeviceAuthorizationResul
     }
 }
 
-internal class DeviceAuthorizationResultGenerator : IEndpointResultGenerator<DeviceAuthorizationResult>
+internal class DeviceAuthorizationHttpWriter : IHttpResponseWriter<DeviceAuthorizationResult>
 {
-    public async Task ExecuteAsync(DeviceAuthorizationResult result, HttpContext context)
+    public async Task WriteHttpResponse(DeviceAuthorizationResult result, HttpContext context)
     {
         context.Response.SetNoCache();
 

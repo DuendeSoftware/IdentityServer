@@ -35,9 +35,9 @@ public class TokenResult : EndpointResult<TokenResult>
     }
 }
 
-internal class TokenResultGenerator : IEndpointResultGenerator<TokenResult>
+internal class TokenHttpWriter : IHttpResponseWriter<TokenResult>
 {
-    public async Task ExecuteAsync(TokenResult result, HttpContext context)
+    public async Task WriteHttpResponse(TokenResult result, HttpContext context)
     {
         context.Response.SetNoCache();
 

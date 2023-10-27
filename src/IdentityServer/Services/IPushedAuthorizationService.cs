@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer.Services;
 
 /// <summary>
-/// Contract for a service that performs logical operations on pushed authorization requests.
+/// Contract for a service that performs high-level operations on pushed
+/// authorization requests. 
 /// </summary>
 public interface IPushedAuthorizationService
 {

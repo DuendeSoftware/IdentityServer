@@ -31,9 +31,9 @@ public class UserInfoResult : EndpointResult<UserInfoResult>
     }
 }
 
-internal class UserInfoResultGenerator : IEndpointResultGenerator<UserInfoResult>
+internal class UserInfoHttpWriter : IHttpResponseWriter<UserInfoResult>
 {
-    public async Task ExecuteAsync(UserInfoResult result, HttpContext context)
+    public async Task WriteHttpResponse(UserInfoResult result, HttpContext context)
     {
         context.Response.SetNoCache();
         await context.Response.WriteJsonAsync(result.Claims);

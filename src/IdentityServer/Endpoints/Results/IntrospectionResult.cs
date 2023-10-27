@@ -37,9 +37,9 @@ public class IntrospectionResult : EndpointResult<IntrospectionResult>
 }
 
 
-class IntrospectionResultGenerator : IEndpointResultGenerator<IntrospectionResult>
+class IntrospectionHttpWriter : IHttpResponseWriter<IntrospectionResult>
 {
-    public Task ExecuteAsync(IntrospectionResult result, HttpContext context)
+    public Task WriteHttpResponse(IntrospectionResult result, HttpContext context)
     {
         context.Response.SetNoCache();
 

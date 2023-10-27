@@ -7,7 +7,8 @@ using System.Collections.Specialized;
 namespace Duende.IdentityServer.Services;
 
 /// <summary>
-/// A service that can serialize and deserialize pushed authorization requests.
+/// Contract for a service that can serialize and deserialize pushed
+/// authorization requests.
 /// </summary>
 public interface IPushedAuthorizationSerializer
 {

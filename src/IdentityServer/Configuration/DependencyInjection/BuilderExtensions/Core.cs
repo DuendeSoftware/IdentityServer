@@ -125,37 +125,36 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpoint<TokenEndpoint>(EndpointNames.Token, ProtocolRoutePaths.Token.EnsureLeadingSlash());
         builder.AddEndpoint<UserInfoEndpoint>(EndpointNames.UserInfo, ProtocolRoutePaths.UserInfo.EnsureLeadingSlash());
 
-        builder.AddEndpointResultGenerator<AuthorizeInteractionPageResult, AuthorizeInteractionPageResultGenerator>();
-        builder.AddEndpointResultGenerator<AuthorizeResult, AuthorizeResultGenerator>();
-        builder.AddEndpointResultGenerator<BackchannelAuthenticationResult, BackchannelAuthenticationResultGenerator>();
-        builder.AddEndpointResultGenerator<BadRequestResult, BadRequestResultGenerator>();
-        builder.AddEndpointResultGenerator<CheckSessionResult, CheckSessionResultGenerator>();
-        builder.AddEndpointResultGenerator<DeviceAuthorizationResult, DeviceAuthorizationResultGenerator>();
-        builder.AddEndpointResultGenerator<DiscoveryDocumentResult, DiscoveryDocumentResultGenerator>();
-        builder.AddEndpointResultGenerator<EndSessionCallbackResult, EndSessionCallbackResultGenerator>();
-        builder.AddEndpointResultGenerator<EndSessionResult, EndSessionResultGenerator>();
-        builder.AddEndpointResultGenerator<IntrospectionResult, IntrospectionResultGenerator>();
-        builder.AddEndpointResultGenerator<JsonWebKeysResult, JsonWebKeysResultGenerator>();
-        builder.AddEndpointResultGenerator<ProtectedResourceErrorResult, ProtectedResourceErrorResultGenerator>();
-        builder.AddEndpointResultGenerator<PushedAuthorizationResult, PushedAuthorizationResultGenerator>();
-        builder.AddEndpointResultGenerator<PushedAuthorizationErrorResult, PushedAuthorizationErrorResultGenerator>();
-        builder.AddEndpointResultGenerator<StatusCodeResult, StatusCodeResultGenerator>();
-        builder.AddEndpointResultGenerator<TokenErrorResult, TokenErrorResultGenerator>();
-        builder.AddEndpointResultGenerator<TokenResult, TokenResultGenerator>();
-        builder.AddEndpointResultGenerator<TokenRevocationErrorResult, TokenRevocationErrorResultGenerator>();
-        builder.AddEndpointResultGenerator<UserInfoResult, UserInfoResultGenerator>();
+        builder.AddHttpWriter<AuthorizeInteractionPageResult, AuthorizeInteractionPageHttpWriter>();
+        builder.AddHttpWriter<AuthorizeResult, AuthorizeHttpWriter>();
+        builder.AddHttpWriter<BackchannelAuthenticationResult, BackchannelAuthenticationHttpWriter>();
+        builder.AddHttpWriter<BadRequestResult, BadRequestHttpWriter>();
+        builder.AddHttpWriter<CheckSessionResult, CheckSessionHttpWriter>();
+        builder.AddHttpWriter<DeviceAuthorizationResult, DeviceAuthorizationHttpWriter>();
+        builder.AddHttpWriter<DiscoveryDocumentResult, DiscoveryDocumentHttpWriter>();
+        builder.AddHttpWriter<EndSessionCallbackResult, EndSessionCallbackHttpWriter>();
+        builder.AddHttpWriter<EndSessionResult, EndSessionHttpWriter>();
+        builder.AddHttpWriter<IntrospectionResult, IntrospectionHttpWriter>();
+        builder.AddHttpWriter<JsonWebKeysResult, JsonWebKeysHttpWriter>();
+        builder.AddHttpWriter<ProtectedResourceErrorResult, ProtectedResourceErrorHttpWriter>();
+        builder.AddHttpWriter<PushedAuthorizationResult, PushedAuthorizationHttpWriter>();
+        builder.AddHttpWriter<PushedAuthorizationErrorResult, PushedAuthorizationErrorHttpWriter>();
+        builder.AddHttpWriter<StatusCodeResult, StatusCodeHttpWriter>();
+        builder.AddHttpWriter<TokenErrorResult, TokenErrorHttpWriter>();
+        builder.AddHttpWriter<TokenResult, TokenHttpWriter>();
+        builder.AddHttpWriter<TokenRevocationErrorResult, TokenRevocationErrorHttpWriter>();
+        builder.AddHttpWriter<UserInfoResult, UserInfoHttpWriter>();
 
         return builder;
     }
 
     /// <summary>
-    /// Adds the endpoint.
+    /// Adds an endpoint.
     /// </summary>
     /// <typeparam name="TEndpoint"></typeparam>
     /// <param name="builder">The builder.</param>
     /// <param name="name">The name.</param>
     /// <param name="path">The path.</param>
-    /// <returns></returns>
     public static IIdentityServerBuilder AddEndpoint<TEndpoint>(this IIdentityServerBuilder builder, string name, PathString path)
         where TEndpoint : class, IEndpointHandler
     {
@@ -166,13 +165,13 @@ public static class IdentityServerBuilderExtensionsCore
     }
 
     /// <summary>
-    /// Adds the endpoint.
+    /// Adds an <see cref="IHttpResponseWriter{T}"/> for an <see cref="IEndpointResult"/>.
     /// </summary>
-    public static IIdentityServerBuilder AddEndpointResultGenerator<TResult, TResultGenerator>(this IIdentityServerBuilder builder)
+    public static IIdentityServerBuilder AddHttpWriter<TResult, TWriter>(this IIdentityServerBuilder builder)
         where TResult : class, IEndpointResult
-        where TResultGenerator : class, Duende.IdentityServer.Hosting.IEndpointResultGenerator<TResult>
+        where TWriter : class, IHttpResponseWriter<TResult>
     {
-        builder.Services.AddTransient<Duende.IdentityServer.Hosting.IEndpointResultGenerator<TResult>, TResultGenerator>();
+        builder.Services.AddTransient<IHttpResponseWriter<TResult>, TWriter>();
         return builder;
     }
 
@@ -180,7 +179,6 @@ public static class IdentityServerBuilderExtensionsCore
     /// Adds the core services.
     /// </summary>
     /// <param name="builder">The builder.</param>
-    /// <returns></returns>
     public static IIdentityServerBuilder AddCoreServices(this IIdentityServerBuilder builder)
     {
         builder.Services.AddTransient<IServerUrls, DefaultServerUrls>();

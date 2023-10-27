@@ -33,9 +33,9 @@ public class BackchannelAuthenticationResult : EndpointResult<BackchannelAuthent
     }
 }
 
-internal class BackchannelAuthenticationResultGenerator : IEndpointResultGenerator<BackchannelAuthenticationResult>
+internal class BackchannelAuthenticationHttpWriter : IHttpResponseWriter<BackchannelAuthenticationResult>
 {
-    public async Task ExecuteAsync(BackchannelAuthenticationResult result, HttpContext context)
+    public async Task WriteHttpResponse(BackchannelAuthenticationResult result, HttpContext context)
     {
         context.Response.SetNoCache();
 
