@@ -38,8 +38,14 @@ public class AuthorizeResult : EndpointResult<AuthorizeResult>
     }
 }
 
-internal class AuthorizeHttpWriter : IHttpResponseWriter<AuthorizeResult>
+/// <summary>
+/// Writes http responses for <see cref="AuthorizeResult"/>s.
+/// </summary>
+public class AuthorizeHttpWriter : IHttpResponseWriter<AuthorizeResult>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthorizeHttpWriter"/> class.
+    /// </summary>
     public AuthorizeHttpWriter(
         IdentityServerOptions options,
         IUserSession userSession,
@@ -63,6 +69,7 @@ internal class AuthorizeHttpWriter : IHttpResponseWriter<AuthorizeResult>
     private readonly IServerUrls _urls;
     private readonly IClock _clock;
 
+    /// <inheritdoc />
     public async Task WriteHttpResponse(AuthorizeResult result, HttpContext context)
     {
         await ConsumePushedAuthorizationRequest(result);
@@ -85,7 +92,6 @@ internal class AuthorizeHttpWriter : IHttpResponseWriter<AuthorizeResult>
             await _pushedAuthorizationService.ConsumeAsync(referenceValue);
         }
     }
-
 
     private async Task ProcessErrorAsync(AuthorizeResponse response, HttpContext context)
     {
@@ -111,7 +117,7 @@ internal class AuthorizeHttpWriter : IHttpResponseWriter<AuthorizeResult>
         }
     }
 
-    protected async Task ProcessResponseAsync(AuthorizeResponse response, HttpContext context)
+    private async Task ProcessResponseAsync(AuthorizeResponse response, HttpContext context)
     {
         if (!response.IsError)
         {
@@ -178,11 +184,31 @@ internal class AuthorizeHttpWriter : IHttpResponseWriter<AuthorizeResult>
         return uri;
     }
 
-    private const string FormPostHtml = "<html><head><meta http-equiv='X-UA-Compatible' content='IE=edge' /><base target='_self'/></head><body><form method='post' action='{uri}'>{body}<noscript><button>Click to continue</button></noscript></form><script>window.addEventListener('load', function(){document.forms[0].submit();});</script></body></html>";
+    private const string DefaultFormPostHeadTags = "<head><meta http-equiv='X-UA-Compatible' content='IE=edge' /><base target='_self'/></head>";
+    private const string DefaultFormPostBodyTags = "<body><form method='post' action='{uri}'>{body}<noscript><button>Click to continue</button></noscript></form><script>window.addEventListener('load', function(){document.forms[0].submit();});</script></body>";
 
-    private string GetFormPostHtml(AuthorizeResponse response)
+    /// <summary>
+    /// Gets the header tags that will be included in the response when
+    /// response_mode is form_post.
+    /// </summary>
+    protected virtual string FormPostHeader => DefaultFormPostHeadTags;
+    
+    /// <summary>
+    /// Gets the body tags that will be included in the response when
+    /// response_mode is form_post. The string "{body}" (including the curly
+    /// braces) within this string will be replaced with the response
+    /// parameters, serialized as form data.
+    /// </summary>
+    protected virtual string FormPostBody => DefaultFormPostBodyTags;
+
+    /// <summary>
+    /// Gets the html that will set as the response when response_mode is
+    /// form_post. 
+    /// </summary>
+    /// <param name="response"></param>
+    protected virtual string GetFormPostHtml(AuthorizeResponse response)
     {
-        var html = FormPostHtml;
+        var html = $"<html>{FormPostHeader}{FormPostBody}</html>";
 
         var url = response.Request.RedirectUri;
         url = HtmlEncoder.Default.Encode(url);
