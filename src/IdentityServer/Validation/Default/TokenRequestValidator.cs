@@ -1048,7 +1048,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
             if (isActiveCtx.IsActive == false)
             {
-                // todo: raise event?
+                // todo: raise event (or an OTEL metric event)?
 
                 LogError("User has been disabled", new { subjectId = result.Subject.GetSubjectId() });
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
