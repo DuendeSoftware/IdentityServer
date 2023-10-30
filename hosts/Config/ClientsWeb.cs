@@ -16,7 +16,8 @@ public static class ClientsWeb
         IdentityServerConstants.StandardScopes.Email,
         "resource1.scope1", 
         "resource2.scope1",
-        "transaction"
+        "transaction",
+        "custom.profile"
     };
         
     public static IEnumerable<Client> Get()
