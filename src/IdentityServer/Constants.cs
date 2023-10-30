@@ -115,7 +115,7 @@ internal static class Constants
         //OidcConstants.PromptModes.Create, 
     };
 
-    public const string SuppressedPrompt = "suppressed_" + OidcConstants.AuthorizeRequest.Prompt;
+    public const string ProcessedPrompt = "processed_" + OidcConstants.AuthorizeRequest.Prompt;
 
     public static class KnownAcrValues
     {
