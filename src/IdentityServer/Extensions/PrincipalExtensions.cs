@@ -87,18 +87,6 @@ public static class PrincipalExtensions
     /// <param name="principal">The principal.</param>
     /// <returns></returns>
     [DebuggerStepThrough]
-    [Obsolete("This method will be removed in a future version. Use GetDisplayName instead.")]
-    public static string GetName(this IPrincipal principal)
-    {
-        return principal.Identity.GetName();
-    }
-
-    /// <summary>
-    /// Gets the name.
-    /// </summary>
-    /// <param name="principal">The principal.</param>
-    /// <returns></returns>
-    [DebuggerStepThrough]
     public static string GetDisplayName(this ClaimsPrincipal principal)
     {
         var name = principal.Identity.Name;
@@ -108,23 +96,6 @@ public static class PrincipalExtensions
         if (sub != null) return sub.Value;
 
         return string.Empty;
-    }
-
-    /// <summary>
-    /// Gets the name.
-    /// </summary>
-    /// <param name="identity">The identity.</param>
-    /// <returns></returns>
-    /// <exception cref="System.InvalidOperationException">name claim is missing</exception>
-    [DebuggerStepThrough]
-    [Obsolete("This method will be removed in a future version. Use GetDisplayName instead.")]
-    public static string GetName(this IIdentity identity)
-    {
-        var id = identity as ClaimsIdentity;
-        var claim = id.FindFirst(JwtClaimTypes.Name);
-
-        if (claim == null) throw new InvalidOperationException("name claim is missing");
-        return claim.Value;
     }
 
     /// <summary>

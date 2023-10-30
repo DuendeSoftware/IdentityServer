@@ -82,13 +82,6 @@ public static class HttpResponseExtensions
         await response.Body.FlushAsync();
     }
 
-    [Obsolete("Use IServerUrls.GetAbsoluteUrl instead.")]
-    public static void RedirectToAbsoluteUrl(this HttpResponse response, string url)
-    {
-        url = response.HttpContext.RequestServices.GetRequiredService<IServerUrls>().GetAbsoluteUrl(url);
-        response.Redirect(url);
-    }
-
     public static void AddScriptCspHeaders(this HttpResponse response, CspOptions options, string hash)
     {
         var csp1part = options.Level == CspLevel.One ? "'unsafe-inline' " : string.Empty;
