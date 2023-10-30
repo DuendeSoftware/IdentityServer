@@ -38,9 +38,9 @@ public class EndSessionResult : EndpointResult<EndSessionResult>
 }
 
 
-class EndSessionResultGenerator : IEndpointResultGenerator<EndSessionResult>
+class EndSessionHttpWriter : IHttpResponseWriter<EndSessionResult>
 {
-    public EndSessionResultGenerator(
+    public EndSessionHttpWriter(
         IdentityServerOptions options,
         IClock clock,
         IServerUrls urls,
@@ -57,7 +57,7 @@ class EndSessionResultGenerator : IEndpointResultGenerator<EndSessionResult>
     private IServerUrls _urls;
     private IMessageStore<LogoutMessage> _logoutMessageStore;
 
-    public async Task ExecuteAsync(EndSessionResult result, HttpContext context)
+    public async Task WriteHttpResponse(EndSessionResult result, HttpContext context)
     {
         var validatedRequest = result.Result.IsError ? null : result.Result.ValidatedRequest;
 

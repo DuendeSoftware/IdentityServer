@@ -38,9 +38,9 @@ public class ProtectedResourceErrorResult : EndpointResult<ProtectedResourceErro
     }
 }
 
-internal class ProtectedResourceErrorResultGenerator : IEndpointResultGenerator<ProtectedResourceErrorResult>
+internal class ProtectedResourceErrorHttpWriter : IHttpResponseWriter<ProtectedResourceErrorResult>
 {
-    public Task ExecuteAsync(ProtectedResourceErrorResult result, HttpContext context)
+    public Task WriteHttpResponse(ProtectedResourceErrorResult result, HttpContext context)
     {
         context.Response.StatusCode = 401;
         context.Response.SetNoCache();

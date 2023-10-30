@@ -37,16 +37,16 @@ public class EndSessionCallbackResult : EndpointResult<EndSessionCallbackResult>
     }
 }
 
-class EndSessionCallbackResultGenerator : IEndpointResultGenerator<EndSessionCallbackResult>
+class EndSessionCallbackHttpWriter : IHttpResponseWriter<EndSessionCallbackResult>
 {
-    public EndSessionCallbackResultGenerator(IdentityServerOptions options)
+    public EndSessionCallbackHttpWriter(IdentityServerOptions options)
     {
         _options = options;
     }
 
     private IdentityServerOptions _options;
 
-    public async Task ExecuteAsync(EndSessionCallbackResult result, HttpContext context)
+    public async Task WriteHttpResponse(EndSessionCallbackResult result, HttpContext context)
     {
         if (result.Result.IsError)
         {

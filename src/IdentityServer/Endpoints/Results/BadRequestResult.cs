@@ -35,9 +35,9 @@ public class BadRequestResult : EndpointResult<BadRequestResult>
     }
 }
 
-internal class BadRequestResultGenerator : IEndpointResultGenerator<BadRequestResult>
+internal class BadRequestHttpWriter : IHttpResponseWriter<BadRequestResult>
 {
-    public async Task ExecuteAsync(BadRequestResult result, HttpContext context)
+    public async Task WriteHttpResponse(BadRequestResult result, HttpContext context)
     {
         context.Response.StatusCode = 400;
         context.Response.SetNoCache();

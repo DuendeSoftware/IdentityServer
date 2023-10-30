@@ -42,9 +42,9 @@ public class StatusCodeResult : EndpointResult<StatusCodeResult>
     }
 }
 
-class StatusCodeResultGenerator : IEndpointResultGenerator<StatusCodeResult>
+class StatusCodeHttpWriter : IHttpResponseWriter<StatusCodeResult>
 {
-    public Task ExecuteAsync(StatusCodeResult result, HttpContext context)
+    public Task WriteHttpResponse(StatusCodeResult result, HttpContext context)
     {
         context.Response.StatusCode = result.StatusCode;
 

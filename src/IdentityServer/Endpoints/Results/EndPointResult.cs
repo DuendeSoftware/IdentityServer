@@ -11,7 +11,9 @@ using Duende.IdentityServer.Hosting;
 namespace Duende.IdentityServer.Endpoints.Results;
 
 /// <summary>
-/// Provides the base implementation of IEndpointResult that invokes the corresponding IEndpointResultGenerator<typeparamref name="T"/>.
+/// Provides the base implementation of <see cref="IEndpointResult"/> that
+/// invokes the corresponding <see cref="IHttpResponseWriter{T}"/> to write the
+/// result as an http response.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public abstract class EndpointResult<T> : IEndpointResult
@@ -20,16 +22,16 @@ public abstract class EndpointResult<T> : IEndpointResult
     /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext context)
     {
-        var generator = context.RequestServices.GetService<IEndpointResultGenerator<T>>();
-        if (generator != null)
+        var writer = context.RequestServices.GetService<IHttpResponseWriter<T>>();
+        if (writer != null)
         {
             T target = this as T;
             if (target == null)
             {
-                throw new Exception($"Type paramter {typeof(T)} must be the class derived from 'EndPointResult<T>'.");
+                throw new Exception($"Type parameter {typeof(T)} must be the class derived from 'EndpointResult<T>'.");
             }
 
-            await generator.ExecuteAsync(target, context);
+            await writer.WriteHttpResponse(target, context);
         }
         else
         {

@@ -35,9 +35,9 @@ public class TokenRevocationErrorResult : EndpointResult<TokenRevocationErrorRes
     }
 }
 
-class TokenRevocationErrorResultGenerator : IEndpointResultGenerator<TokenRevocationErrorResult>
+class TokenRevocationErrorHttpWriter : IHttpResponseWriter<TokenRevocationErrorResult>
 {
-    public Task ExecuteAsync(TokenRevocationErrorResult result, HttpContext context)
+    public Task WriteHttpResponse(TokenRevocationErrorResult result, HttpContext context)
     {
         context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
         return context.Response.WriteJsonAsync(new { error = result.Error });

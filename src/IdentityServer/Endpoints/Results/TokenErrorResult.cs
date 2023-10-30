@@ -37,9 +37,9 @@ public class TokenErrorResult : EndpointResult<TokenErrorResult>
     }
 }
 
-internal class TokenErrorResultGenerator : IEndpointResultGenerator<TokenErrorResult>
+internal class TokenErrorHttpWriter : IHttpResponseWriter<TokenErrorResult>
 {
-    public async Task ExecuteAsync(TokenErrorResult result, HttpContext context)
+    public async Task WriteHttpResponse(TokenErrorResult result, HttpContext context)
     {
         context.Response.StatusCode = 400;
         context.Response.SetNoCache();
