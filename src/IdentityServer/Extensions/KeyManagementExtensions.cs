@@ -3,7 +3,6 @@
 
 
 using Duende.IdentityServer.Configuration;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 using System;
 
@@ -34,7 +33,7 @@ public static class KeyManagementExtensions
         return (age <= options.InitializationDuration);
     }
 
-    internal static TimeSpan GetAge(this ISystemClock clock, DateTime date)
+    internal static TimeSpan GetAge(this IClock clock, DateTime date)
     {
         var now = clock.UtcNow.UtcDateTime;
         if (date > now) now = date;

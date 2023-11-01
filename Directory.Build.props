@@ -30,6 +30,5 @@
     <PropertyGroup>
         <MinVerAutoIncrement>minor</MinVerAutoIncrement>
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-        <!--<WarningsNotAsErrors>9057</WarningsNotAsErrors>-->
     </PropertyGroup>
 </Project>

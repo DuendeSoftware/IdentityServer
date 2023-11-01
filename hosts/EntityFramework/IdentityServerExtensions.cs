@@ -4,6 +4,7 @@
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.EntityFramework;
 using IdentityModel;
+using IdentityServerHost.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace IdentityServerHost;
@@ -21,6 +22,7 @@ internal static class IdentityServerExtensions
             options.ServerSideSessions.RemoveExpiredSessions = true;
             options.ServerSideSessions.RemoveExpiredSessionsFrequency = TimeSpan.FromSeconds(10);
             options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout = true;
+            options.Endpoints.EnablePushedAuthorizationEndpoint = true;
         })
             .AddTestUsers(TestUsers.Users)
             // this adds the config data from DB (clients, resources, CORS)
@@ -34,11 +36,13 @@ internal static class IdentityServerExtensions
                 options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString);
 
                 // this enables automatic token cleanup. this is optional.
-                options.EnableTokenCleanup = false;
+                options.EnableTokenCleanup = true;
                 options.RemoveConsumedTokens = true;
                 options.TokenCleanupInterval = 10; // interval in seconds
             })
+            .AddAppAuthRedirectUriValidator()
             .AddServerSideSessions()
+            .AddScopeParser<ParameterizedScopeParser>()
             // this is something you will want in production to reduce load on and requests to the DB
             //.AddConfigurationStoreCache()
             ;

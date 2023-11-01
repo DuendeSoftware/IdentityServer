@@ -19,12 +19,14 @@ using Microsoft.AspNetCore.WebUtilities;
 using Xunit;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer;
+using Duende.IdentityServer.Stores;
+using UnitTests.Validation.Setup;
 
 namespace UnitTests.Endpoints.Results;
 
 public class AuthorizeResultTests
 {
-    private AuthorizeResult _subject;
+    private AuthorizeHttpWriter _subject;
 
     private AuthorizeResponse _response = new AuthorizeResponse();
     private IdentityServerOptions _options = new IdentityServerOptions();
@@ -45,7 +47,7 @@ public class AuthorizeResultTests
         _options.UserInteraction.ErrorUrl = "~/error";
         _options.UserInteraction.ErrorIdParameter = "errorId";
 
-        _subject = new AuthorizeResult(_response, _options, _mockUserSession, _mockErrorMessageStore, _urls, new StubClock());
+        _subject = new AuthorizeHttpWriter(_options, _mockUserSession, new TestPushedAuthorizationService(), _mockErrorMessageStore, _urls, new StubClock());
     }
 
     [Fact]
@@ -53,7 +55,7 @@ public class AuthorizeResultTests
     {
         _response.Error = "some_error";
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _mockErrorMessageStore.Messages.Count.Should().Be(1);
         _context.Response.StatusCode.Should().Be(302);
@@ -78,7 +80,7 @@ public class AuthorizeResultTests
             PromptModes = new[] { "none" }
         };
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _mockUserSession.Clients.Count.Should().Be(0);
         _context.Response.StatusCode.Should().Be(302);
@@ -102,7 +104,7 @@ public class AuthorizeResultTests
         };
         _response.SessionState = "some_session_state";
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _mockUserSession.Clients.Count.Should().Be(0);
         _context.Response.StatusCode.Should().Be(302);
@@ -123,7 +125,7 @@ public class AuthorizeResultTests
             RedirectUri = "http://client/callback"
         };
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _mockUserSession.Clients.Count.Should().Be(0);
         _context.Response.StatusCode.Should().Be(302);
@@ -147,7 +149,7 @@ public class AuthorizeResultTests
             RedirectUri = "http://client/callback"
         };
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _mockUserSession.Clients.Should().Contain("client");
     }
@@ -163,7 +165,7 @@ public class AuthorizeResultTests
             State = "state"
         };
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _context.Response.StatusCode.Should().Be(302);
         _context.Response.Headers["Cache-Control"].First().Should().Contain("no-store");
@@ -185,7 +187,7 @@ public class AuthorizeResultTests
             State = "state"
         };
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _context.Response.StatusCode.Should().Be(302);
         _context.Response.Headers["Cache-Control"].First().Should().Contain("no-store");
@@ -207,7 +209,7 @@ public class AuthorizeResultTests
             State = "state"
         };
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _context.Response.StatusCode.Should().Be(200);
         _context.Response.ContentType.Should().StartWith("text/html");
@@ -241,7 +243,7 @@ public class AuthorizeResultTests
 
         _options.Csp.Level = CspLevel.One;
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src 'unsafe-inline' '{IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript}'");
         _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain($"script-src 'unsafe-inline' '{IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript}'");
@@ -260,7 +262,7 @@ public class AuthorizeResultTests
 
         _options.Csp.AddDeprecatedHeader = false;
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new AuthorizeResult(_response), _context);
 
         _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src '{IdentityServerConstants.ContentSecurityPolicyHashes.AuthorizeScript}'");
         _context.Response.Headers["X-Content-Security-Policy"].Should().BeEmpty();

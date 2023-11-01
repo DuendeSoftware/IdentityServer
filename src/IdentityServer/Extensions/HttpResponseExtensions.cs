@@ -43,7 +43,7 @@ public static class HttpResponseExtensions
         {
             if (!response.Headers.ContainsKey("Cache-Control"))
             {
-                response.Headers.Add("Cache-Control", $"max-age={maxAge}");
+                response.Headers.Append("Cache-Control", $"max-age={maxAge}");
             }
 
             if (varyBy?.Any() == true)
@@ -62,7 +62,7 @@ public static class HttpResponseExtensions
     {
         if (!response.Headers.ContainsKey("Cache-Control"))
         {
-            response.Headers.Add("Cache-Control", "no-store, no-cache, max-age=0");
+            response.Headers.Append("Cache-Control", "no-store, no-cache, max-age=0");
         }
         else
         {
@@ -71,7 +71,7 @@ public static class HttpResponseExtensions
 
         if (!response.Headers.ContainsKey("Pragma"))
         {
-            response.Headers.Add("Pragma", "no-cache");
+            response.Headers.Append("Pragma", "no-cache");
         }
     }
 
@@ -114,11 +114,11 @@ public static class HttpResponseExtensions
     {
         if (!headers.ContainsKey("Content-Security-Policy"))
         {
-            headers.Add("Content-Security-Policy", cspHeader);
+            headers.Append("Content-Security-Policy", cspHeader);
         }
         if (options.AddDeprecatedHeader && !headers.ContainsKey("X-Content-Security-Policy"))
         {
-            headers.Add("X-Content-Security-Policy", cspHeader);
+            headers.Append("X-Content-Security-Policy", cspHeader);
         }
     }
 }

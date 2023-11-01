@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 namespace Duende.IdentityServer.Configuration;
@@ -94,4 +95,12 @@ public class EndpointsOptions
     /// <c>true</c> if the backchannel authentication endpoint is enabled; otherwise, <c>false</c>.
     /// </value>
     public bool EnableBackchannelAuthenticationEndpoint { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the pushed authorization endpoint is enabled.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if the pushed authorization endpoint is enabled; otherwise, <c>false</c>.
+    /// </value>
+    public bool EnablePushedAuthorizationEndpoint { get; set; } = true;
 }

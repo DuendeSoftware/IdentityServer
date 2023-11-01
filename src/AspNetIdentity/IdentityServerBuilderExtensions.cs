@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using System;
@@ -10,6 +11,8 @@ using IdentityModel;
 using Duende.IdentityServer.AspNetIdentity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Duende.IdentityServer.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -80,6 +83,8 @@ public static class IdentityServerBuilderExtensions
 
         builder.AddResourceOwnerValidator<ResourceOwnerPasswordValidator<TUser>>();
         builder.AddProfileService<ProfileService<TUser>>();
+
+        builder.Services.AddSingleton<IPostConfigureOptions<IdentityServerOptions>, UseAspNetIdentityCookieScheme>();
 
         return builder;
     }

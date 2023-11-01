@@ -141,7 +141,7 @@ public class DefaultBackchannelAuthenticationInteractionServiceTests
         var requestId = await _mockStore.CreateRequestAsync(req);
 
         Func<Task> f = async () => await _subject.CompleteLoginRequestAsync(null);
-        f.Should().Throw<ArgumentNullException>();
+        await f.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public class DefaultBackchannelAuthenticationInteractionServiceTests
                 AuthenticationMethods = { "phone", "pin" }
             }.CreatePrincipal()
         });
-        f.Should().Throw<InvalidOperationException>().WithMessage("More scopes consented than originally requested.");
+        await f.Should().ThrowAsync<InvalidOperationException>().WithMessage("More scopes consented than originally requested.");
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class DefaultBackchannelAuthenticationInteractionServiceTests
                 AuthenticationMethods = { "phone", "pin" }
             }.CreatePrincipal()
         });
-        f.Should().Throw<InvalidOperationException>().WithMessage("User's subject id: 'invalid' does not match subject id for backchannel authentication request: '123'.");
+        await f.Should().ThrowAsync<InvalidOperationException>().WithMessage("User's subject id: 'invalid' does not match subject id for backchannel authentication request: '123'.");
     }
 
     [Fact]
@@ -227,7 +227,7 @@ public class DefaultBackchannelAuthenticationInteractionServiceTests
             //    AuthenticationMethods = { "phone", "pin" }
             //}.CreatePrincipal()
         });
-        f.Should().Throw<InvalidOperationException>().WithMessage("Invalid subject.");
+        await f.Should().ThrowAsync<InvalidOperationException>().WithMessage("Invalid subject.");
     }
 
     [Fact]
@@ -255,7 +255,7 @@ public class DefaultBackchannelAuthenticationInteractionServiceTests
                 AuthenticationMethods = { "phone", "pin" }
             }.CreatePrincipal()
         });
-        f.Should().Throw<InvalidOperationException>().WithMessage("Invalid backchannel authentication request id.");
+        await f.Should().ThrowAsync<InvalidOperationException>().WithMessage("Invalid backchannel authentication request id.");
     }
 
     [Fact]

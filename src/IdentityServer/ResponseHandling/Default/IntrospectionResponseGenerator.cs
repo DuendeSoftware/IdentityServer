@@ -70,24 +70,31 @@ public class IntrospectionResponseGenerator : IIntrospectionResponseGenerator
             return response;
         }
 
-        // expected scope not present
-        if (await AreExpectedScopesPresentAsync(validationResult) == false)
+        // client can see all their own scopes
+        var scopes = validationResult.Claims.Where(c => c.Type == JwtClaimTypes.Scope).Select(x => x.Value);
+
+        if (validationResult.Api != null)
         {
-            return response;
+            // expected scope not present
+            if (await AreExpectedScopesPresentAsync(validationResult) == false)
+            {
+                return response;
+            }
+
+            // calculate scopes the API is allowed to see
+            var allowedScopes = validationResult.Api.Scopes;
+            scopes = scopes.Where(x => allowedScopes.Contains(x));
         }
 
         Logger.LogDebug("Creating introspection response for active token.");
 
         // get all claims (without scopes)
         response = validationResult.Claims.Where(c => c.Type != JwtClaimTypes.Scope).ToClaimsDictionary();
-
+        
         // add active flag
         response.Add("active", true);
 
-        // calculate scopes the caller is allowed to see
-        var allowedScopes = validationResult.Api.Scopes;
-        var scopes = validationResult.Claims.Where(c => c.Type == JwtClaimTypes.Scope).Select(x => x.Value);
-        scopes = scopes.Where(x => allowedScopes.Contains(x));
+        // add scopes
         response.Add("scope", scopes.ToSpaceSeparatedString());
 
         await Events.RaiseAsync(new TokenIntrospectionSuccessEvent(validationResult));

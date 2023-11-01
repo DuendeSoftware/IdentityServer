@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Microsoft.AspNetCore.Authentication;
@@ -13,6 +14,11 @@ namespace Duende.IdentityServer.Hosting.LocalApiAuthentication;
 /// <seealso cref="Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions" />
 public class LocalApiAuthenticationOptions : AuthenticationSchemeOptions
 {
+    /// <summary>
+    /// Indicates if bearer and/or DPoP tokens are accepted.
+    /// </summary>
+    public LocalApiTokenMode TokenMode { get; set; } = LocalApiTokenMode.BearerOnly;
+
     /// <summary>
     /// Allows setting a specific required scope (optional)
     /// </summary>

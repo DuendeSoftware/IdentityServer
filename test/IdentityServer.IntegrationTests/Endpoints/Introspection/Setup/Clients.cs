@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -59,8 +59,22 @@ internal class Clients
 
                 AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                 AllowedScopes = { "api1", "api2", "api3-a", "api3-b" },
+                AllowOfflineAccess = true,
                 AccessTokenType = AccessTokenType.Reference
-            }
+            },
+            new Client
+            {
+                ClientId = "ro.client2",
+                ClientSecrets = new List<Secret>
+                {
+                    new Secret("secret".Sha256())
+                },
+
+                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                AllowedScopes = { "api1", "api2", "api3-a", "api3-b" },
+                AllowOfflineAccess = true,
+                AccessTokenType = AccessTokenType.Reference
+            },
         };
     }
 }

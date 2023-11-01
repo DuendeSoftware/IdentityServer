@@ -303,6 +303,32 @@ public class RevocationTests
 
     [Fact]
     [Trait("Category", Category)]
+    public async Task Revoke_valid_refresh_token_belonging_to_another_session_should_not_revoke_other_session_token()
+    {
+        var tokens1 = await GetTokensAsync();
+        await _mockPipeline.LogoutAsync();
+        var tokens2 = await GetTokensAsync();
+
+        (await IsAccessTokenValidAsync(tokens1)).Should().BeTrue();
+        (await IsAccessTokenValidAsync(tokens2)).Should().BeTrue();
+
+        var result = await _mockPipeline.BackChannelClient.RevokeTokenAsync(new TokenRevocationRequest
+        {
+            Address = IdentityServerPipeline.RevocationEndpoint,
+            ClientId = client_id,
+            ClientSecret = client_secret,
+
+            Token = tokens1.RefreshToken
+        });
+
+        result.IsError.Should().BeFalse();
+
+        (await IsAccessTokenValidAsync(tokens1)).Should().BeFalse();
+        (await IsAccessTokenValidAsync(tokens2)).Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task Revoke_invalid_access_token_should_return_success()
     {
         var tokens = await GetTokensAsync();

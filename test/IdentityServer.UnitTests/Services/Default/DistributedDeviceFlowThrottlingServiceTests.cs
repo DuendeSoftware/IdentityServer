@@ -109,7 +109,7 @@ public class DistributedDeviceFlowThrottlingServiceTests
         var dateTime = DateTime.Parse(dateTimeAsString).ToUniversalTime();
         dateTime.Should().Be(testDate);
 
-        values?.Item2.AbsoluteExpiration.Should().BeCloseTo(testDate.AddSeconds(deviceCode.Lifetime));
+        values?.Item2.AbsoluteExpiration.Should().BeCloseTo(testDate.AddSeconds(deviceCode.Lifetime), TimeSpan.FromMicroseconds(1));
     }
 }
 

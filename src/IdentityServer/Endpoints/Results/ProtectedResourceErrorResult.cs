@@ -12,42 +12,62 @@ using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class ProtectedResourceErrorResult : IEndpointResult
+/// <summary>
+/// Models result of a protected resource
+/// </summary>
+public class ProtectedResourceErrorResult : EndpointResult<ProtectedResourceErrorResult>
 {
-    public string Error;
-    public string ErrorDescription;
+    /// <summary>
+    /// The error
+    /// </summary>
+    public string Error { get; }
+    /// <summary>
+    /// The error description
+    /// </summary>
+    public string ErrorDescription { get; }
 
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="error"></param>
+    /// <param name="errorDescription"></param>
     public ProtectedResourceErrorResult(string error, string errorDescription = null)
     {
         Error = error;
         ErrorDescription = errorDescription;
     }
+}
 
-    public Task ExecuteAsync(HttpContext context)
+internal class ProtectedResourceErrorHttpWriter : IHttpResponseWriter<ProtectedResourceErrorResult>
+{
+    public Task WriteHttpResponse(ProtectedResourceErrorResult result, HttpContext context)
     {
         context.Response.StatusCode = 401;
         context.Response.SetNoCache();
 
-        if (Constants.ProtectedResourceErrorStatusCodes.ContainsKey(Error))
+        var error = result.Error;
+        var errorDescription = result.ErrorDescription;
+
+        if (Constants.ProtectedResourceErrorStatusCodes.ContainsKey(error))
         {
-            context.Response.StatusCode = Constants.ProtectedResourceErrorStatusCodes[Error];
+            context.Response.StatusCode = Constants.ProtectedResourceErrorStatusCodes[error];
         }
 
-        if (Error == OidcConstants.ProtectedResourceErrors.ExpiredToken)
+        if (error == OidcConstants.ProtectedResourceErrors.ExpiredToken)
         {
-            Error = OidcConstants.ProtectedResourceErrors.InvalidToken;
-            ErrorDescription = "The access token expired";
+            error = OidcConstants.ProtectedResourceErrors.InvalidToken;
+            errorDescription = "The access token expired";
         }
 
-        var errorString = string.Format($"error=\"{Error}\"");
-        if (ErrorDescription.IsMissing())
+        var errorString = string.Format($"error=\"{error}\"");
+        if (errorDescription.IsMissing())
         {
-            context.Response.Headers.Add(HeaderNames.WWWAuthenticate, new StringValues(new[] { "Bearer realm=\"IdentityServer\"", errorString }).ToString());
+            context.Response.Headers.Append(HeaderNames.WWWAuthenticate, new StringValues(new[] { "Bearer realm=\"IdentityServer\"", errorString }).ToString());
         }
         else
         {
-            var errorDescriptionString = string.Format($"error_description=\"{ErrorDescription}\"");
-            context.Response.Headers.Add(HeaderNames.WWWAuthenticate, new StringValues(new[] { "Bearer realm=\"IdentityServer\"", errorString, errorDescriptionString }).ToString());
+            var errorDescriptionString = string.Format($"error_description=\"{errorDescription}\"");
+            context.Response.Headers.Append(HeaderNames.WWWAuthenticate, new StringValues(new[] { "Bearer realm=\"IdentityServer\"", errorString, errorDescriptionString }).ToString());
         }
 
         return Task.CompletedTask;

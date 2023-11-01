@@ -15,7 +15,7 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// Result for a discovery document
 /// </summary>
 /// <seealso cref="IEndpointResult" />
-public class DiscoveryDocumentResult : IEndpointResult
+public class DiscoveryDocumentResult : EndpointResult<DiscoveryDocumentResult>
 {
     /// <summary>
     /// Gets the entries.
@@ -39,24 +39,23 @@ public class DiscoveryDocumentResult : IEndpointResult
     /// <param name="entries">The entries.</param>
     /// <param name="maxAge">The maximum age.</param>
     /// <exception cref="System.ArgumentNullException">entries</exception>
-    public DiscoveryDocumentResult(Dictionary<string, object> entries, int? maxAge)
+    public DiscoveryDocumentResult(Dictionary<string, object> entries, int? maxAge = null)
     {
         Entries = entries ?? throw new ArgumentNullException(nameof(entries));
         MaxAge = maxAge;
     }
+}
 
-    /// <summary>
-    /// Executes the result.
-    /// </summary>
-    /// <param name="context">The HTTP context.</param>
-    /// <returns></returns>
-    public Task ExecuteAsync(HttpContext context)
+class DiscoveryDocumentHttpWriter : IHttpResponseWriter<DiscoveryDocumentResult>
+{
+    /// <inheritdoc/>
+    public Task WriteHttpResponse(DiscoveryDocumentResult result, HttpContext context)
     {
-        if (MaxAge.HasValue && MaxAge.Value >= 0)
+        if (result.MaxAge.HasValue && result.MaxAge.Value >= 0)
         {
-            context.Response.SetCache(MaxAge.Value, "Origin");
+            context.Response.SetCache(result.MaxAge.Value, "Origin");
         }
 
-        return context.Response.WriteJsonAsync(Entries);
+        return context.Response.WriteJsonAsync(result.Entries);
     }
 }

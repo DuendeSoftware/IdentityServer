@@ -1159,7 +1159,7 @@ public class AuthorizeTests
             nonce: "123_nonce");
 
         Func<Task> a = () => _mockPipeline.BrowserClient.GetAsync(url);
-        a.Should().Throw<Exception>();
+        await a.Should().ThrowAsync<Exception>();
     }
 
     [Fact]
@@ -1288,7 +1288,25 @@ public class AuthorizeTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task without_config_prompt_create_should_not_show_create_account_page()
+    public async Task unknown_prompt_should_error()
+    {
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client3",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client3/callback",
+            state: "123_state",
+            nonce: "123_nonce",
+            extra: new { prompt = "unknown" }
+        );
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        _mockPipeline.ErrorWasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task without_config_prompt_create_should_be_treated_as_unknown()
     {
         var url = _mockPipeline.CreateAuthorizeUrl(
             clientId: "client3",
@@ -1301,8 +1319,7 @@ public class AuthorizeTests
         );
         var response = await _mockPipeline.BrowserClient.GetAsync(url);
 
-        _mockPipeline.CreateAccountWasCalled.Should().BeFalse();
-        _mockPipeline.LoginWasCalled.Should().BeTrue();
+        _mockPipeline.ErrorWasCalled.Should().BeTrue();
     }
 
     [Fact]

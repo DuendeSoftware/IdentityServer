@@ -1,10 +1,12 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using static Duende.IdentityServer.IdentityServerConstants;
@@ -31,7 +33,7 @@ public class KeyManagementOptions
     /// If none are specified, then "RS256" will be used as the default.
     /// The first in the collection will be used as the default. 
     /// </summary>
-    public IEnumerable<SigningAlgorithmOptions> SigningAlgorithms { get; set; } = Enumerable.Empty<SigningAlgorithmOptions>();
+    public ICollection<SigningAlgorithmOptions> SigningAlgorithms { get; set; } = new List<SigningAlgorithmOptions>();
 
     internal string DefaultSigningAlgorithm => SigningAlgorithms.First().Name;
     internal IEnumerable<string> AllowedSigningAlgorithmNames => SigningAlgorithms.Select(x => x.Name);
@@ -161,8 +163,17 @@ public class KeyManagementOptions
 public class SigningAlgorithmOptions
 {
     /// <summary>
+    /// Parameterless constructor, required for binding
+    /// </summary>
+    public SigningAlgorithmOptions()
+    {
+        
+    }
+
+    /// <summary>
     /// Constructor.
     /// </summary>
+    [SetsRequiredMembers]
     public SigningAlgorithmOptions(string name)
     {
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -171,10 +182,10 @@ public class SigningAlgorithmOptions
     /// <summary>
     /// The algorithm name.
     /// </summary>
-    public string Name { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
-    /// Indicates if a X509 certificate is to be used to contain the key. Defaults to false.
+    /// Indicates if an X.509 certificate is to be used to contain the key. Defaults to false.
     /// </summary>
     public bool UseX509Certificate { get; set; }
 

@@ -17,7 +17,6 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.IdentityModel.Tokens;
 using Duende.IdentityServer.Stores;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Duende.IdentityServer.Validation;
@@ -33,7 +32,7 @@ internal class TokenValidator : ITokenValidator
     private readonly IProfileService _profile;
     private readonly IKeyMaterialService _keys;
     private readonly ISessionCoordinationService _sessionCoordinationService;
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
     private readonly TokenValidationLog _log;
 
     public TokenValidator(
@@ -45,7 +44,7 @@ internal class TokenValidator : ITokenValidator
         ICustomTokenValidator customValidator,
         IKeyMaterialService keys,
         ISessionCoordinationService sessionCoordinationService,
-        ISystemClock clock,
+        IClock clock,
         ILogger<TokenValidator> logger)
     {
         _options = options;
@@ -301,7 +300,7 @@ internal class TokenValidator : ITokenValidator
             }
         }
             
-        var result = handler.ValidateToken(jwtString, parameters);
+        var result = await handler.ValidateTokenAsync(jwtString, parameters);
         if (!result.IsValid)
         {
             if (result.Exception is SecurityTokenExpiredException expiredException)

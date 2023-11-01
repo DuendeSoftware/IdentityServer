@@ -149,7 +149,9 @@ public class ClientStoreTests : IntegrationTest<ClientStoreTests, ConfigurationD
 
             if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
             {
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method, suppressed because the task must have completed to enter this block
                 var client = task.Result;
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
                 client.Should().BeEquivalentTo(testClient);
             }
             else

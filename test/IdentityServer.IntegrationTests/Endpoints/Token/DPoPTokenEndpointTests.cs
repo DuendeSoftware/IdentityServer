@@ -27,7 +27,7 @@ using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
-using IdentityModel.Jwk;
+using Duende.IdentityServer;
 
 namespace IntegrationTests.Endpoints.Token;
 
@@ -237,6 +237,31 @@ public class DPoPTokenEndpointTests
     [Trait("Category", Category)]
     public async Task valid_dpop_request_should_return_bound_access_token()
     {
+        var dpopToken = CreateDPoPProofToken();
+        var request = new ClientCredentialsTokenRequest
+        {
+            Address = IdentityServerPipeline.TokenEndpoint,
+            ClientId = "client1",
+            ClientSecret = "secret",
+            Scope = "scope1",
+        };
+        request.Headers.Add("DPoP", dpopToken);
+
+        var response = await _mockPipeline.BackChannelClient.RequestClientCredentialsTokenAsync(request);
+        response.IsError.Should().BeFalse();
+        response.TokenType.Should().Be("DPoP");
+        var jkt = GetJKTFromAccessToken(response);
+        jkt.Should().Be(_JKT);
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task valid_dpop_request_with_unusual_but_valid_proof_token_should_return_bound_access_token()
+    {
+        // The point here is to have an array in the payload, to exercise 
+        // the json serialization
+        _payload.Add("key_ops", new string[] { "sign", "verify" });
+        
         var dpopToken = CreateDPoPProofToken();
         var request = new ClientCredentialsTokenRequest
         {
@@ -1074,7 +1099,7 @@ public class DPoPTokenEndpointTests
 
     public class MockDPoPProofValidator : DefaultDPoPProofValidator
     {
-        public MockDPoPProofValidator(IdentityServerOptions options, IServerUrls server, IReplayCache replayCache, ISystemClock clock, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, ILogger<DefaultDPoPProofValidator> logger) : base(options, server, replayCache, clock, dataProtectionProvider, logger)
+        public MockDPoPProofValidator(IdentityServerOptions options, IReplayCache replayCache, IClock clock, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, ILogger<DefaultDPoPProofValidator> logger) : base(options, replayCache, clock, dataProtectionProvider, logger)
         {
         }
 

@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using CsQuery;
 using FluentAssertions;
 using System;
@@ -91,7 +92,7 @@ public class TestBrowserClient : HttpClient
 
     public async Task FollowRedirectAsync()
     {
-        LastResponse.StatusCode.Should().Be(302);
+        LastResponse.StatusCode.Should().Be(HttpStatusCode.Found);
         var location = LastResponse.Headers.Location.ToString();
         await GetAsync(location);
     }

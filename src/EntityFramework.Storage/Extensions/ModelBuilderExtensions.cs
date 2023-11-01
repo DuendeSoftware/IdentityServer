@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -202,7 +203,6 @@ public static class ModelBuilderExtensions
             entity.Property(x => x.Data).IsRequired();
         });
 
-
         modelBuilder.Entity<ServerSideSession>(entity =>
         {
             entity.ToTable(storeOptions.ServerSideSessions);
@@ -368,6 +368,27 @@ public static class ModelBuilderExtensions
             entity.Property(x => x.DisplayName).HasMaxLength(200);
 
             entity.HasIndex(x => x.Scheme).IsUnique();
+        });
+    }
+
+    /// <summary>
+    /// Configures the pushed authorization requests.
+    /// </summary>
+    /// <param name="modelBuilder">The model builder.</param>
+    /// <param name="storeOptions">The store options.</param>
+    public static void ConfigurePushedAuthorizationRequestContext(this ModelBuilder modelBuilder, OperationalStoreOptions storeOptions)
+    {
+        if (!string.IsNullOrWhiteSpace(storeOptions.DefaultSchema)) modelBuilder.HasDefaultSchema(storeOptions.DefaultSchema);
+
+        modelBuilder.Entity<PushedAuthorizationRequest>(entity =>
+        {
+            entity.ToTable(storeOptions.PushedAuthorizationRequests).HasKey(x => x.Id);
+
+            entity.Property(x => x.ReferenceValueHash).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ExpiresAtUtc).IsRequired();
+            entity.Property(x => x.Parameters).IsRequired();
+
+            entity.HasIndex(x => x.ReferenceValueHash).IsUnique();
         });
     }
 }

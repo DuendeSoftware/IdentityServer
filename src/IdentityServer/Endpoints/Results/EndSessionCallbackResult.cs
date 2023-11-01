@@ -5,66 +5,69 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System;
 using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 using System.Text.Encodings.Web;
 using System.Text;
+using Duende.IdentityServer.Hosting;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class EndSessionCallbackResult : IEndpointResult
+/// <summary>
+/// Models the result of end session callback
+/// </summary>
+public class EndSessionCallbackResult : EndpointResult<EndSessionCallbackResult>
 {
-    private readonly EndSessionCallbackValidationResult _result;
+    /// <summary>
+    /// The result
+    /// </summary>
+    public EndSessionCallbackValidationResult Result { get; }
 
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="result"></param>
+    /// <exception cref="ArgumentNullException"></exception>
     public EndSessionCallbackResult(EndSessionCallbackValidationResult result)
     {
-        _result = result ?? throw new ArgumentNullException(nameof(result));
+        Result = result ?? throw new ArgumentNullException(nameof(result));
     }
+}
 
-    internal EndSessionCallbackResult(
-        EndSessionCallbackValidationResult result,
-        IdentityServerOptions options)
-        : this(result)
+class EndSessionCallbackHttpWriter : IHttpResponseWriter<EndSessionCallbackResult>
+{
+    public EndSessionCallbackHttpWriter(IdentityServerOptions options)
     {
         _options = options;
     }
 
     private IdentityServerOptions _options;
 
-    private void Init(HttpContext context)
+    public async Task WriteHttpResponse(EndSessionCallbackResult result, HttpContext context)
     {
-        _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-    }
-
-    public async Task ExecuteAsync(HttpContext context)
-    {
-        Init(context);
-
-        if (_result.IsError)
+        if (result.Result.IsError)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
         }
         else
         {
             context.Response.SetNoCache();
-            AddCspHeaders(context);
+            AddCspHeaders(result, context);
 
-            var html = GetHtml();
+            var html = GetHtml(result);
             await context.Response.WriteHtmlAsync(html);
         }
     }
 
-    private void AddCspHeaders(HttpContext context)
+    private void AddCspHeaders(EndSessionCallbackResult result, HttpContext context)
     {
         if (_options.Authentication.RequireCspFrameSrcForSignout)
         {
             var sb = new StringBuilder();
-            var origins = _result.FrontChannelLogoutUrls?.Select(x => x.GetOrigin());
+            var origins = result.Result.FrontChannelLogoutUrls?.Select(x => x.GetOrigin());
             if (origins != null)
             {
                 foreach (var origin in origins.Distinct())
@@ -79,14 +82,14 @@ internal class EndSessionCallbackResult : IEndpointResult
         }
     }
 
-    private string GetHtml()
+    private string GetHtml(EndSessionCallbackResult result)
     {
         var sb = new StringBuilder();
         sb.Append("<!DOCTYPE html><html><style>iframe{{display:none;width:0;height:0;}}</style><body>");
 
-        if (_result.FrontChannelLogoutUrls != null)
+        if (result.Result.FrontChannelLogoutUrls != null)
         {
-            foreach (var url in _result.FrontChannelLogoutUrls)
+            foreach (var url in result.Result.FrontChannelLogoutUrls)
             {
                 sb.AppendFormat("<iframe loading='eager' allow='' src='{0}'></iframe>", HtmlEncoder.Default.Encode(url));
                 sb.AppendLine();

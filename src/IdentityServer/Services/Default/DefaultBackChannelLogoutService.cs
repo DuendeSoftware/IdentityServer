@@ -9,7 +9,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using IdentityModel;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.Services;
@@ -27,7 +26,7 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
     /// <summary>
     /// The system clock;
     /// </summary>
-    protected ISystemClock Clock { get; }
+    protected IClock Clock { get; }
         
     /// <summary>
     /// The IdentityServerTools used to create and the JWT.
@@ -58,7 +57,7 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
     /// <param name="backChannelLogoutHttpClient"></param>
     /// <param name="logger"></param>
     public DefaultBackChannelLogoutService(
-        ISystemClock clock,
+        IClock clock,
         IdentityServerTools tools,
         ILogoutNotificationService logoutNotificationService,
         IBackChannelLogoutHttpClient backChannelLogoutHttpClient,

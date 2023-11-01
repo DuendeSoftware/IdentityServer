@@ -5,7 +5,6 @@
 using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Stores;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
@@ -52,7 +51,7 @@ public class DefaultTokenService : ITokenService
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The key material service
@@ -80,7 +79,7 @@ public class DefaultTokenService : ITokenService
         IReferenceTokenStore referenceTokenStore,
         ITokenCreationService creationService,
         IHttpContextAccessor contextAccessor,
-        ISystemClock clock,
+        IClock clock,
         IKeyMaterialService keyMaterialService,
         IdentityServerOptions options,
         ILogger<DefaultTokenService> logger)

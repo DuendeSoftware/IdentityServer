@@ -1,4 +1,4 @@
-﻿using Clients;
+using Clients;
 using IdentityModel.Client;
 using System;
 using System.Net.Http;
@@ -30,8 +30,8 @@ namespace ConsoleMTLSClient
             var response = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
                 Address = disco.MtlsEndpointAliases.TokenEndpoint,
-
                 ClientId = "mtls",
+                ClientCredentialStyle = ClientCredentialStyle.PostBody,
                 Scope = "resource1.scope1"
             });
 

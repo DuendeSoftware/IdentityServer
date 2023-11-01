@@ -2,10 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
-using Microsoft.AspNetCore.Http;
-using System;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Duende.IdentityServer.Validation;
@@ -21,7 +18,7 @@ public class TokenRequestValidationContext
     public NameValueCollection RequestParameters { get; set; }
 
     /// <summary>
-    /// The validaiton result of client authentication
+    /// The validation result of client authentication
     /// </summary>
     public ClientSecretValidationResult ClientValidationResult { get; set; }
 

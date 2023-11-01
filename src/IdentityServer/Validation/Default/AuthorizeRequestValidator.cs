@@ -28,8 +28,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
     private readonly IRedirectUriValidator _uriValidator;
     private readonly IResourceValidator _resourceValidator;
     private readonly IUserSession _userSession;
-    private readonly IJwtRequestValidator _jwtRequestValidator;
-    private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
+    private readonly IRequestObjectValidator _requestObjectValidator;
     private readonly ILogger _logger;
 
     private readonly ResponseTypeEqualityComparer
@@ -43,8 +42,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         IRedirectUriValidator uriValidator,
         IResourceValidator resourceValidator,
         IUserSession userSession,
-        IJwtRequestValidator jwtRequestValidator,
-        IJwtRequestUriHttpClient jwtRequestUriHttpClient,
+        IRequestObjectValidator requestObjectValidator,
         ILogger<AuthorizeRequestValidator> logger)
     {
         _options = options;
@@ -53,9 +51,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         _customValidator = customValidator;
         _uriValidator = uriValidator;
         _resourceValidator = resourceValidator;
-        _jwtRequestValidator = jwtRequestValidator;
+        _requestObjectValidator = requestObjectValidator;
         _userSession = userSession;
-        _jwtRequestUriHttpClient = jwtRequestUriHttpClient;
         _logger = logger;
     }
 
@@ -82,14 +79,14 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         }
 
         // load request object
-        var roLoadResult = await LoadRequestObjectAsync(request);
+        var roLoadResult = await _requestObjectValidator.LoadRequestObjectAsync(request);
         if (roLoadResult.IsError)
         {
             return roLoadResult;
         }
 
         // validate request object
-        var roValidationResult = await ValidateRequestObjectAsync(request);
+        var roValidationResult = await _requestObjectValidator.ValidateRequestObjectAsync(request);
         if (roValidationResult.IsError)
         {
             return roValidationResult;
@@ -109,7 +106,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             return mandatoryResult;
         }
 
-        // scope, scope restrictions and plausability, and resource indicators
+        // scope, scope restrictions and plausibility, and resource indicators
         var scopeResult = await ValidateScopeAndResourceAsync(request);
         if (scopeResult.IsError)
         {
@@ -140,62 +137,12 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
         _logger.LogTrace("Authorize request protocol validation successful");
 
-        LicenseValidator.ValidateClient(request.ClientId);
+        IdentityServerLicenseValidator.Instance.ValidateClient(request.ClientId);
 
         return Valid(request);
     }
 
-    private async Task<AuthorizeRequestValidationResult> LoadRequestObjectAsync(ValidatedAuthorizeRequest request)
-    {
-        var jwtRequest = request.Raw.Get(OidcConstants.AuthorizeRequest.Request);
-        var jwtRequestUri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
-
-        if (jwtRequest.IsPresent() && jwtRequestUri.IsPresent())
-        {
-            LogError("Both request and request_uri are present", request);
-            return Invalid(request, description: "Only one request parameter is allowed");
-        }
-
-        if (_options.Endpoints.EnableJwtRequestUri)
-        {
-            if (jwtRequestUri.IsPresent())
-            {
-                // 512 is from the spec
-                if (jwtRequestUri.Length > 512)
-                {
-                    LogError("request_uri is too long", request);
-                    return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestUri, description: "request_uri is too long");
-                }
-
-                var jwt = await _jwtRequestUriHttpClient.GetJwtAsync(jwtRequestUri, request.Client);
-                if (jwt.IsMissing())
-                {
-                    LogError("no value returned from request_uri", request);
-                    return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestUri, description: "no value returned from request_uri");
-                }
-
-                jwtRequest = jwt;
-            }
-        }
-        else if (jwtRequestUri.IsPresent())
-        {
-            LogError("request_uri present but config prohibits", request);
-            return Invalid(request, error: OidcConstants.AuthorizeErrors.RequestUriNotSupported);
-        }
-
-        // check length restrictions
-        if (jwtRequest.IsPresent())
-        {
-            if (jwtRequest.Length >= _options.InputLengthRestrictions.Jwt)
-            {
-                LogError("request value is too long", request);
-                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestObject, description: "Invalid request value");
-            }
-        }
-
-        request.RequestObject = jwtRequest;
-        return Valid(request);
-    }
+    // Support JAR + PAR together - if there is a request object within the PAR, extract it
 
     private async Task<AuthorizeRequestValidationResult> LoadClientAsync(ValidatedAuthorizeRequest request)
     {
@@ -223,99 +170,6 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         }
 
         request.SetClient(client);
-
-        return Valid(request);
-    }
-
-    private async Task<AuthorizeRequestValidationResult> ValidateRequestObjectAsync(ValidatedAuthorizeRequest request)
-    {
-        //////////////////////////////////////////////////////////
-        // validate request object
-        /////////////////////////////////////////////////////////
-        if (request.RequestObject.IsPresent())
-        {
-            // validate the request JWT for this client
-            var jwtRequestValidationResult = await _jwtRequestValidator.ValidateAsync(new JwtRequestValidationContext {
-                Client = request.Client, 
-                JwtTokenString = request.RequestObject
-            });
-            if (jwtRequestValidationResult.IsError)
-            {
-                LogError("request JWT validation failure", request);
-                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestObject, description: "Invalid JWT request");
-            }
-
-            // validate response_type match
-            var responseType = request.Raw.Get(OidcConstants.AuthorizeRequest.ResponseType);
-            if (responseType != null)
-            {
-                var payloadResponseType =
-                    jwtRequestValidationResult.Payload.SingleOrDefault(c =>
-                        c.Type == OidcConstants.AuthorizeRequest.ResponseType)?.Value;
-
-                if (!string.IsNullOrEmpty(payloadResponseType))
-                {
-                    if (payloadResponseType != responseType)
-                    {
-                        LogError("response_type in JWT payload does not match response_type in request", request);
-                        return Invalid(request, description: "Invalid JWT request");
-                    }
-                }
-            }
-
-            // validate client_id mismatch
-            var payloadClientId =
-                jwtRequestValidationResult.Payload.SingleOrDefault(c =>
-                    c.Type == OidcConstants.AuthorizeRequest.ClientId)?.Value;
-
-            if (!string.IsNullOrEmpty(payloadClientId))
-            {
-                if (!string.Equals(request.Client.ClientId, payloadClientId, StringComparison.Ordinal))
-                {
-                    LogError("client_id in JWT payload does not match client_id in request", request);
-                    return Invalid(request, description: "Invalid JWT request");
-                }
-            }
-            else
-            {
-                LogError("client_id is missing in JWT payload", request);
-                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequestObject, description: "Invalid JWT request");
-                    
-            }
-                
-            var ignoreKeys = new[]
-            {
-                JwtClaimTypes.Issuer,
-                JwtClaimTypes.Audience
-            };
-                
-            // merge jwt payload values into original request parameters
-            // 1. clear the keys in the raw collection for every key found in the request object
-            foreach (var claimType in jwtRequestValidationResult.Payload.Select(c => c.Type).Distinct())
-            {
-                var qsValue = request.Raw.Get(claimType);
-                if (qsValue != null)
-                {
-                    request.Raw.Remove(claimType);
-                }
-            }
-                
-            // 2. copy over the value
-            foreach (var claim in jwtRequestValidationResult.Payload)
-            {
-                request.Raw.Add(claim.Type, claim.Value);
-            }
-                
-            var ruri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
-            if (ruri != null)
-            {
-                request.Raw.Remove(OidcConstants.AuthorizeRequest.RequestUri);
-                request.Raw.Add(OidcConstants.AuthorizeRequest.Request, request.RequestObject);
-            }
-                
-                
-            request.RequestObjectValues = jwtRequestValidationResult.Payload;
-        }
 
         return Valid(request);
     }
@@ -648,8 +502,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope");
             }
         }
-            
-        LicenseValidator.ValidateResourceIndicators(resourceIndicators);
+
+        IdentityServerLicenseValidator.Instance.ValidateResourceIndicators(resourceIndicators);
 
         if (validatedResources.Resources.IdentityResources.Any() && !request.IsOpenIdRequest)
         {
@@ -751,10 +605,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
             else
             {
-                // TODO: change to error in a major release?
-                // https://github.com/DuendeSoftware/IdentityServer/issues/845#issuecomment-1405377531
-                // https://openid.net/specs/openid-connect-prompt-create-1_0.html#name-authorization-request
-                _logger.LogDebug("Unsupported prompt mode - ignored: " + prompt);
+                LogError("Unsupported prompt mode", request);
+                return Invalid(request, description: "Unsupported prompt mode");
             }
         }
 

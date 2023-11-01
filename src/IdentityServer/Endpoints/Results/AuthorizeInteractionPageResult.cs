@@ -11,9 +11,9 @@ using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using Duende.IdentityServer.Services;
 using static Duende.IdentityServer.IdentityServerConstants;
+using IdentityModel;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
@@ -21,12 +21,8 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// Result for an interactive page
 /// </summary>
 /// <seealso cref="IEndpointResult" />
-public abstract class AuthorizeInteractionPageResult : IEndpointResult
+public abstract class AuthorizeInteractionPageResult : EndpointResult<AuthorizeInteractionPageResult>
 {
-    private readonly ValidatedAuthorizeRequest _request;
-    private string _redirectUrl;
-    private string _returnUrlParameterName;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthorizeInteractionPageResult"/> class.
     /// </summary>
@@ -36,43 +32,70 @@ public abstract class AuthorizeInteractionPageResult : IEndpointResult
     /// <exception cref="System.ArgumentNullException">request</exception>
     public AuthorizeInteractionPageResult(ValidatedAuthorizeRequest request, string redirectUrl, string returnUrlParameterName)
     {
-        _request = request ?? throw new ArgumentNullException(nameof(request));
-        _redirectUrl = redirectUrl ?? throw new ArgumentNullException(nameof(redirectUrl));
-        _returnUrlParameterName = returnUrlParameterName ?? throw new ArgumentNullException(nameof(returnUrlParameterName));
-    }
-
-    private IServerUrls _urls;
-    private IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
-
-    private void Init(HttpContext context)
-    {
-        _urls = context.RequestServices.GetRequiredService<IServerUrls>();
-        _authorizationParametersMessageStore = context.RequestServices.GetService<IAuthorizationParametersMessageStore>();
+        Request = request ?? throw new ArgumentNullException(nameof(request));
+        RedirectUrl = redirectUrl ?? throw new ArgumentNullException(nameof(redirectUrl));
+        ReturnUrlParameterName = returnUrlParameterName ?? throw new ArgumentNullException(nameof(returnUrlParameterName));
     }
 
     /// <summary>
-    /// Executes the result.
+    /// The validated authorize request
     /// </summary>
-    /// <param name="context">The HTTP context.</param>
-    /// <returns></returns>
-    public async Task ExecuteAsync(HttpContext context)
-    {
-        Init(context);
+    public ValidatedAuthorizeRequest Request { get; }
 
+    /// <summary>
+    /// The redirect URI
+    /// </summary>
+    public string RedirectUrl { get; }
+
+    /// <summary>
+    /// The return URL param name
+    /// </summary>
+    public string ReturnUrlParameterName { get; }
+}
+
+class AuthorizeInteractionPageHttpWriter : IHttpResponseWriter<AuthorizeInteractionPageResult>
+{
+    private readonly IServerUrls _urls;
+    private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthorizeInteractionPageResult"/> class.
+    /// </summary>
+    public AuthorizeInteractionPageHttpWriter(
+        IServerUrls urls,
+        IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
+    {
+        _urls = urls;
+        _authorizationParametersMessageStore = authorizationParametersMessageStore;
+    }
+
+    /// <inheritdoc/>
+    public async Task WriteHttpResponse(AuthorizeInteractionPageResult result, HttpContext context)
+    {
         var returnUrl = _urls.BasePath.EnsureTrailingSlash() + ProtocolRoutePaths.AuthorizeCallback;
 
         if (_authorizationParametersMessageStore != null)
         {
-            var msg = new Message<IDictionary<string, string[]>>(_request.ToOptimizedFullDictionary());
+            var msg = new Message<IDictionary<string, string[]>>(result.Request.ToOptimizedFullDictionary());
             var id = await _authorizationParametersMessageStore.WriteAsync(msg);
             returnUrl = returnUrl.AddQueryString(Constants.AuthorizationParamsStore.MessageStoreIdParameterName, id);
         }
         else
         {
-            returnUrl = returnUrl.AddQueryString(_request.ToOptimizedQueryString());
+            if (result.Request.PushedAuthorizationReferenceValue != null)
+            {
+                var requestUri = $"{PushedAuthorizationRequestUri}:{result.Request.PushedAuthorizationReferenceValue}";
+                returnUrl = returnUrl
+                    .AddQueryString(OidcConstants.AuthorizeRequest.RequestUri, requestUri)
+                    .AddQueryString(OidcConstants.AuthorizeRequest.ClientId, result.Request.ClientId);
+            } 
+            else
+            {
+                returnUrl = returnUrl.AddQueryString(result.Request.ToOptimizedQueryString());
+            }
         }
 
-        var url = _redirectUrl;
+        var url = result.RedirectUrl;
         if (!url.IsLocalUrl())
         {
             // this converts the relative redirect path to an absolute one if we're 
@@ -80,7 +103,7 @@ public abstract class AuthorizeInteractionPageResult : IEndpointResult
             returnUrl = _urls.Origin + returnUrl;
         }
 
-        url = url.AddQueryString(_returnUrlParameterName, returnUrl);
+        url = url.AddQueryString(result.ReturnUrlParameterName, returnUrl);
         context.Response.Redirect(_urls.GetAbsoluteUrl(url));
     }
 }

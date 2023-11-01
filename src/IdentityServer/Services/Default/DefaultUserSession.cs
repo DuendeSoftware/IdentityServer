@@ -1,3 +1,7 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +40,7 @@ public class DefaultUserSession : IUserSession
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The server URL service.
@@ -103,7 +107,7 @@ public class DefaultUserSession : IUserSession
         IHttpContextAccessor httpContextAccessor,
         IAuthenticationHandlerProvider handlers,
         IdentityServerOptions options,
-        ISystemClock clock,
+        IClock clock,
         IServerUrls urls,
         ILogger<IUserSession> logger)
     {
@@ -218,7 +222,9 @@ public class DefaultUserSession : IUserSession
     }
 
     /// <summary>
-    /// Ensures the session identifier cookie asynchronous.
+    /// Ensures the session identifier cookie is synchronized with the current
+    /// session identifier. If there is no sid, the cookie is removed. If there
+    /// is a sid, and the session identifier cookie is missing, it is issued. 
     /// </summary>
     /// <returns></returns>
     public virtual async Task EnsureSessionIdCookieAsync()

@@ -1,12 +1,12 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using IdentityModel;
-using Microsoft.AspNetCore.Authentication;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -22,7 +22,7 @@ public class IdentityServerTools
     internal readonly IServiceProvider ServiceProvider;
     internal readonly IIssuerNameService IssuerNameService;
     private readonly ITokenCreationService _tokenCreation;
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IdentityServerTools" /> class.
@@ -31,7 +31,7 @@ public class IdentityServerTools
     /// <param name="issuerNameService">The issuer name service</param>
     /// <param name="tokenCreation">The token creation service.</param>
     /// <param name="clock">The clock.</param>
-    public IdentityServerTools(IServiceProvider serviceProvider, IIssuerNameService issuerNameService, ITokenCreationService tokenCreation, ISystemClock clock)
+    public IdentityServerTools(IServiceProvider serviceProvider, IIssuerNameService issuerNameService, ITokenCreationService tokenCreation, IClock clock)
     {
         ServiceProvider = serviceProvider;
         IssuerNameService = issuerNameService;

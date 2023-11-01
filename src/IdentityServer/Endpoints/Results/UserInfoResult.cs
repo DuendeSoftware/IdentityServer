@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -7,21 +7,35 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
-internal class UserInfoResult : IEndpointResult
+/// <summary>
+/// The result of userinfo 
+/// </summary>
+public class UserInfoResult : EndpointResult<UserInfoResult>
 {
-    public Dictionary<string, object> Claims;
+    /// <summary>
+    /// The claims
+    /// </summary>
+    public Dictionary<string, object> Claims { get; }
 
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="claims"></param>
     public UserInfoResult(Dictionary<string, object> claims)
     {
-        Claims = claims;
+        Claims = claims ?? throw new ArgumentNullException(nameof(claims));
     }
+}
 
-    public async Task ExecuteAsync(HttpContext context)
+internal class UserInfoHttpWriter : IHttpResponseWriter<UserInfoResult>
+{
+    public async Task WriteHttpResponse(UserInfoResult result, HttpContext context)
     {
         context.Response.SetNoCache();
-        await context.Response.WriteJsonAsync(Claims);
+        await context.Response.WriteJsonAsync(result.Claims);
     }
 }

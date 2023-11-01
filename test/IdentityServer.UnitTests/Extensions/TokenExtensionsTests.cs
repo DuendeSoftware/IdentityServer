@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
@@ -38,7 +39,7 @@ public class TokenExtensionsTests
             Claims = new List<Claim> { new Claim(type, value, valueType) },
         };
 
-        var payloadDict = token.CreateJwtPayloadDictionary(new IdentityServerOptions(), new SystemClock(), 
+        var payloadDict = token.CreateJwtPayloadDictionary(new IdentityServerOptions(), new DefaultClock(), 
             TestLogger.Create<TokenExtensionsTests>());
 
         var payloadJson = JsonSerializer.Serialize(payloadDict);
