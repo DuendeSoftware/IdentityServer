@@ -1428,7 +1428,7 @@ public class CibaTests
     {
         _mockPipeline.Options.IssuerUri = IdentityServerPipeline.BaseUrl;
 
-        var tokenService = _mockPipeline.Resolve<IdentityServerTools>();
+        var tokenService = _mockPipeline.Resolve<IIdentityServerTools>();
         var id_token = await tokenService.IssueJwtAsync(600, new Claim[] {
             new Claim("sub", _user.SubjectId),
             new Claim("aud", _cibaClient.ClientId),
