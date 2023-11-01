@@ -93,7 +93,7 @@ public class IdentityServerMiddleware
                 var endpointType = endpoint.GetType().FullName;
                 var requestPath = context.Request.Path.ToString();
 
-                Telemetry.Metrics.ActiveRequestCounter.Add(1, new("endpoint", endpointType), new("path", requestPath));
+                Telemetry.Metrics.IncreaseActiveRequests(endpointType, requestPath);
                 try
                 {
                     using var activity = Tracing.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
@@ -115,7 +115,7 @@ public class IdentityServerMiddleware
                 }
                 finally
                 {
-                    Telemetry.Metrics.ActiveRequestCounter.Add(-1, new("endpoint", endpointType), new("path", requestPath));
+                    Telemetry.Metrics.DecreaseActiveRequests(endpointType, requestPath);
                 }
             }
         }

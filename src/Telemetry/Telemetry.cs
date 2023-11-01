@@ -2,13 +2,9 @@
 // See LICENSE in the project root for license information.
 
 
-using Duende.IdentityServer.Endpoints.Results;
-using Duende.IdentityServer.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Xml.Schema;
 
 namespace Duende.IdentityServer;
 
@@ -30,6 +26,198 @@ public static class Telemetry
     public static class Metrics
     {
         /// <summary>
+        /// Name of counters.
+        /// </summary>
+        public static class Counters
+        {
+            /// <summary>
+            /// failure
+            /// </summary>
+            public const string Failure = "failure";
+
+            /// <summary>
+            /// success
+            /// </summary>
+            public const string Success = "success";
+
+            /// <summary>
+            /// active_requests
+            /// </summary>
+            public const string ActiveRequests = "active_requests";
+
+            /// <summary>
+            /// apisecret_validation
+            /// </summary>
+            public const string ApiSecretValidation = "apisecret_validation";
+
+            /// <summary>
+            /// pisecret_validation_failure
+            /// </summary>
+            public const string ApiSecretValidationFailure = "apisecret_validation_failure";
+
+            /// <summary>
+            /// backchannel_authentication
+            /// </summary>
+            public const string BackchannelAuthentication = "backchannel_authentication";
+
+            /// <summary>
+            /// backchannel_authentication_failure
+            /// </summary>
+            public const string BackchannelAuthenticationFailure = "backchannel_authentication_failure";
+
+            /// <summary>
+            /// client_validation_failure
+            /// </summary>
+            public const string ClientValidationFailure = "client_validation_failure";
+
+            /// <summary>
+            /// client_validation
+            /// </summary>
+            public const string ClientValidation = "client_validation";
+
+            /// <summary>
+            /// clientsecret_validation
+            /// </summary>
+            public const string ClientSecretValidation = "clientsecret_validation";
+
+            /// <summary>
+            /// clientsecret_validation_failure
+            /// </summary>
+            public const string ClientSecretValidationFailure = "clientsecret_validation_failure";
+
+            /// <summary>
+            /// device_authentication_failure
+            /// </summary>
+            public const string DeviceAuthentication = "device_authentication";
+
+            /// <summary>
+            /// device_authentication_failure
+            /// </summary>
+            public const string DeviceAuthenticationFailure = "device_authentication_failure";
+
+            /// <summary>
+            /// dynamic_identityprovider_validation
+            /// </summary>
+            public const string DynamicIdentityProviderValidation = "dynamic_identityprovider_validation";
+
+            /// <summary>
+            /// dynamic_identityprovider_validation_failure
+            /// </summary>
+            public const string DynamicIdentityProviderValidationFailure = "dynamic_identityprovider_validation_failure";
+
+            /// <summary>
+            /// introspection
+            /// </summary>
+            public const string Introspection = "introspection";
+
+            /// <summary>
+            /// introspection_failure
+            /// </summary>
+            public const string IntrospectionFailure = "introspection_failure";
+
+            /// <summary>
+            /// resourceowner_authentication
+            /// </summary>
+            public const string ResourceOwnerAuthentication = "resourceowner_authentication";
+
+            /// <summary>
+            /// resourceowner_authentication_failure
+            /// </summary>
+            public const string ResourceOwnerAuthenticationFailure = "resourceowner_authentication_failure";
+
+            /// <summary>
+            /// revocation
+            /// </summary>
+            public const string Revocation = "revocation";
+
+            /// <summary>
+            /// revocation_failure
+            /// </summary>
+            public const string RevocationFailure = "revocation_failure";
+
+            /// <summary>
+            /// token_issued
+            /// </summary>
+            public const string TokenIssued = "token_issued";
+
+            /// <summary>
+            /// token_issued_failure
+            /// </summary>
+            public const string TokenIssuedFailure = "token_issued_failure";
+
+            /// <summary>
+            /// unhandled_exception
+            /// </summary>
+            public const string UnHandledException = "unhandled_exception";
+        }
+
+        /// <summary>
+        /// Name of tags
+        /// </summary>
+        public static class Tags
+        {
+            /// <summary>
+            /// api
+            /// </summary>
+            public const string Api = "api";
+
+            /// <summary>
+            /// active
+            /// </summary>
+            public const string Active = "active";
+
+            /// <summary>
+            /// auth_method
+            /// </summary>
+            public const string AuthMethod = "auth_method";
+
+            /// <summary>
+            /// caller
+            /// </summary>
+            public const string Caller = "caller";
+
+            /// <summary>
+            /// client
+            /// </summary>
+            public const string Client = "client";
+
+            /// <summary>
+            /// endpoint
+            /// </summary>
+            public const string Endpoint = "endpoint";
+
+            /// <summary>
+            /// error
+            /// </summary>
+            public const string Error = "error";
+
+            /// <summary>
+            /// grant_type
+            /// </summary>
+            public const string GrantType = "grant_type";
+
+            /// <summary>
+            /// method
+            /// </summary>
+            public const string Method = "method";
+
+            /// <summary>
+            /// path
+            /// </summary>
+            public const string Path = "path";
+
+            /// <summary>
+            /// scheme
+            /// </summary>
+            public const string Scheme = "scheme";
+
+            /// <summary>
+            /// type
+            /// </summary>
+            public const string Type = "type";
+        }
+
+        /// <summary>
         /// Meter for IdentityServer
         /// </summary>
         public static readonly Meter Meter = new Meter(ServiceName, ServiceVersion);
@@ -37,12 +225,28 @@ public static class Telemetry
         /// <summary>
         /// Counter for active requests.
         /// </summary>
-        public static readonly UpDownCounter<long> ActiveRequestCounter = Meter.CreateUpDownCounter<long>("active_requests");
+        public static readonly UpDownCounter<long> ActiveRequestCounter = Meter.CreateUpDownCounter<long>(Counters.ActiveRequests);
 
         /// <summary>
-        /// Number of successful operations. Probably most useful together with <see cref="FailureCounter"/>.
+        /// Increase <see cref="ActiveRequestCounter"/>
         /// </summary>
-        public static readonly Counter<long> SuccessCounter = Meter.CreateCounter<long>("success");
+        /// <param name="endpointType">Type name for endpoint</param>
+        /// <param name="path">Path</param>
+        public static void IncreaseActiveRequests(string endpointType, string path) =>
+            ActiveRequestCounter.Add(1, new(Tags.Endpoint, endpointType), new(Tags.Path, path));
+
+        /// <summary>
+        /// Decrease <see cref="ActiveRequestCounter"/>
+        /// </summary>
+        /// <param name="endpointType">Type name for endpoint</param>
+        /// <param name="path">Path</param>
+        public static void DecreaseActiveRequests(string endpointType, string path) =>
+            ActiveRequestCounter.Add(-1, new(Tags.Endpoint, endpointType), new(Tags.Path, path));
+
+        /// <summary>
+        /// High level number of successful operations. Probably most useful together with <see cref="FailureCounter"/>.
+        /// </summary>
+        public static readonly Counter<long> SuccessCounter = Meter.CreateCounter<long>(Counters.Success);
 
         /// <summary>
         /// Helper method to increase the <see cref="SuccessCounter"/>
@@ -61,9 +265,9 @@ public static class Telemetry
         }
         
         /// <summary>
-        /// Number of failed operations. Probably most useful together with <see cref="SuccessCounter"/>.
+        /// High level number of failed operations. Probably most useful together with <see cref="SuccessCounter"/>.
         /// </summary>
-        public static readonly Counter<long> FailureCounter = Meter.CreateCounter<long>("failure");
+        public static readonly Counter<long> FailureCounter = Meter.CreateCounter<long>(Counters.Failure);
 
         /// <summary>
         /// Helper method to increase the <see cref="FailureCounter"/>
@@ -81,45 +285,62 @@ public static class Telemetry
                 FailureCounter.Add(1, tag: new("error", error));
             }
         }
-        
-        /// <summary>
-        /// Token issuance failed counter.
-        /// </summary>
-        public static readonly Counter<long> TokenIssuedFailureCounter = Meter.CreateCounter<long>("token_issued_failure");
 
         /// <summary>
-        /// Helper method to increase <see cref="TokenIssuedFailureCounter"/> with labels
+        /// Successful Api Secret validations
         /// </summary>
-        /// <param name="clientId">Client Id</param>
-        /// <param name="grantType">Grant Type</param>
-        /// <param name="error">Error</param>
-        public static void TokenIssuedFailure(string clientId, string grantType, string error)
+        public static Counter<long> ApiSecretValidationCounter
+            = Meter.CreateCounter<long>(Counters.ApiSecretValidation);
+
+        /// <summary>
+        /// Helper method to increase <see cref="ApiSecretValidationCounter"/>
+        /// </summary>
+        /// <param name="apiId">Api Id</param>
+        /// <param name="authMethod">Authentication Method</param>
+        public static void ApiSecretValidation(string apiId, string authMethod)
         {
-            Failure(error, clientId);
-            TokenIssuedFailureCounter.Add(1, new("client", clientId), new ("grant_type", grantType), new("error", error));
+            Success(apiId);
+            ApiSecretValidationCounter.Add(1, new(Tags.Api, apiId), new(Tags.AuthMethod, authMethod));
         }
 
         /// <summary>
-        /// Successful token issuance counter.
+        /// Failed Api Secret validations
         /// </summary>
-        public static readonly Counter<long> TokenIssuedCounter = Meter.CreateCounter<long>("token_issued");
+        public static Counter<long> ApiSecretValidationFailureCounter
+            = Meter.CreateCounter<long>(Counters.ApiSecretValidationFailure);
 
         /// <summary>
-        /// Helper method to increase <see cref="TokenIssuedCounter"/>
+        /// Helper method to increase <see cref="ApiSecretValidationFailureCounter"/>
         /// </summary>
         /// <param name="clientId">Client Id</param>
-        /// <param name="grantType">Grant Type</param>
-        public static void TokenIssued(string clientId, string grantType)
+        /// <param name="message">Error message</param>
+        public static void ApiSecretValidationFailure(string clientId, string message)
+        {
+            Failure(message, clientId);
+            ApiSecretValidationFailureCounter.Add(1, new(Tags.Client, clientId), new(Tags.Error, message));
+        }
+
+        /// <summary>
+        /// Successful back channel (CIBA) authentications counter
+        /// </summary>
+        public static readonly Counter<long> BackChannelAuthenticationCounter =
+            Meter.CreateCounter<long>(Counters.BackchannelAuthentication);
+
+        /// <summary>
+        /// Helper method to increase <see cref="BackChannelAuthenticationCounter"/>
+        /// </summary>
+        /// <param name="clientId">Client Id</param>
+        public static void BackChannelAuthentication(string clientId)
         {
             Success(clientId);
-            TokenIssuedCounter.Add(1, new("client", clientId), new("grant_type", grantType));
+            BackChannelAuthenticationCounter.Add(1, tag: new(Tags.Client, clientId));
         }
 
         /// <summary>
         /// Failed back channel (CIBA) authentications counter
         /// </summary>
         public static readonly Counter<long> BackChannelAuthenticationFailureCounter =
-            Meter.CreateCounter<long>("backchannel_authentication_failure");
+            Meter.CreateCounter<long>(Counters.BackchannelAuthenticationFailure);
 
         /// <summary>
         /// Helper method to increase <see cref="BackChannelAuthenticationCounter"/>
@@ -130,30 +351,97 @@ public static class Telemetry
         {
             Failure(error, clientId);
             BackChannelAuthenticationFailureCounter
-                .Add(1, new("client", clientId), new("error", error));
+                .Add(1, new(Tags.Client, clientId), new(Tags.Error, error));
         }
 
         /// <summary>
-        /// Successful back channel (CIBA) authentications counter
+        /// Client configuration validation success
         /// </summary>
-        public static readonly Counter<long> BackChannelAuthenticationCounter =
-            Meter.CreateCounter<long>("backchannel_authentication");
+        public static Counter<long> ClientValidationCounter
+            = Meter.CreateCounter<long>(Counters.ClientValidation);
 
         /// <summary>
-        /// Helper method to increase <see cref="BackChannelAuthenticationCounter"/>
+        /// Helper method to increase <see cref="ClientValidationCounter"/>
         /// </summary>
-        /// <param name="clientId">Client Id</param>
-        public static void BackChannelAuthentication(string clientId)
+        /// <param name="clientId"></param>
+        public static void ClientValidation(string clientId)
         {
             Success(clientId);
-            BackChannelAuthenticationCounter.Add(1, tag: new("client", clientId));
+            ClientValidationCounter.Add(1, tag: new(Tags.Client, clientId));
+        }
+
+        /// <summary>
+        /// Client configuration validation failure.
+        /// </summary>
+        public static Counter<long> ClientValidationFailureCounter
+            = Meter.CreateCounter<long>(Counters.ClientValidationFailure);
+
+        /// <summary>
+        /// Helper method to increase <see cref="ClientValidationFailureCounter"/>
+        /// </summary>
+        /// <param name="clientId">Client id</param>
+        /// <param name="error">Error</param>
+        public static void ClientValidationFailure(string clientId, string error)
+        {
+            Failure(error, clientId);
+            ClientValidationFailureCounter.Add(1, new(Tags.Client, clientId), new(Tags.Error, error));
+        }
+
+        /// <summary>
+        /// Successful Client Secret validations
+        /// </summary>
+        public static Counter<long> ClientSecretValidationCounter
+            = Meter.CreateCounter<long>(Counters.ClientSecretValidation);
+
+        /// <summary>
+        /// Helper method to increase <see cref="ClientSecretValidationCounter"/>
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="authMethod"></param>
+        public static void ClientSecretValidation(string clientId, string authMethod)
+        {
+            Success(clientId);
+            ClientSecretValidationCounter.Add(1, new(Tags.Client, clientId), new(Tags.AuthMethod, authMethod));
+        }
+
+        /// <summary>
+        /// Failed Client Secret validations
+        /// </summary>
+        public static Counter<long> ClientSecretValidationFailureCounter
+            = Meter.CreateCounter<long>(Counters.ClientSecretValidationFailure);
+
+        /// <summary>
+        /// Helper method to increase <see cref="ClientSecretValidationFailureCounter"/>
+        /// </summary>
+        /// <param name="clientId">Client Id</param>
+        /// <param name="message">Error message</param>
+        public static void ClientSecretValidationFailure(string clientId, string message)
+        {
+            Failure(message, clientId);
+            ClientSecretValidationFailureCounter.Add(1, new(Tags.Client, clientId), new(Tags.Error, message));
+        }
+
+        /// <summary>
+        /// Successful device code authentication counter
+        /// </summary>
+        public static readonly Counter<long> DeviceAuthenticationCounter =
+            Meter.CreateCounter<long>(Counters.DeviceAuthentication);
+
+        /// <summary>
+        /// Helper method to increase <see cref="DeviceAuthenticationCounter"/>
+        /// </summary>
+        /// <param name="clientId">Client ID</param>
+        public static void DeviceAuthentication(string clientId)
+        {
+            Success(clientId);
+            DeviceAuthenticationCounter.Add(1, tag: new(Tags.Client, clientId));
         }
 
         /// <summary>
         /// Failed device code authentication counter
         /// </summary>
         public static readonly Counter<long> DeviceAuthenticationFailureCounter =
-            Meter.CreateCounter<long>("device_authentication_failure");
+            Meter.CreateCounter<long>(Counters.DeviceAuthenticationFailure);
 
         /// <summary>
         /// Helper method to increase <see cref="DeviceAuthenticationFailureCounter"/>
@@ -163,97 +451,30 @@ public static class Telemetry
         public static void DeviceAuthenticationFailure(string clientId, string error)
         {
             Failure(error, clientId);
-            DeviceAuthenticationFailureCounter.Add(1, new("client", clientId), new("error", error));
+            DeviceAuthenticationFailureCounter.Add(1, new(Tags.Client, clientId), new(Tags.Error, error));
         }
 
         /// <summary>
-        /// Successful device code authentication counter
+        /// Dynamic identityprovider validations
         /// </summary>
-        public static readonly Counter<long> DeviceAuthenticationCounter =
-            Meter.CreateCounter<long>("device_authentication");
+        public static Counter<long> DynamicIdentityProviderValidationCounter
+            = Meter.CreateCounter<long>(Counters.DynamicIdentityProviderValidation);
 
         /// <summary>
-        /// Helper method to increase <see cref="DeviceAuthenticationCounter"/>
+        /// Helper method to increase <see cref="DynamicIdentityProviderValidationCounter"/>
         /// </summary>
-        /// <param name="clientId">Client ID</param>
-        public static void DeviceAuthentication(string clientId)
+        /// <param name="scheme"></param>
+        public static void DynamicIdentityProviderValidation(string scheme)
         {
-            Success(clientId);
-            DeviceAuthenticationCounter.Add(1, tag: new("client", clientId));
-        }
-
-        /// <summary>
-        /// Introspection failure counter
-        /// </summary>
-        public static readonly Counter<long> IntrospectionFailureCounter =
-            Meter.CreateCounter<long>("introspection_failure");
-
-        /// <summary>
-        /// Helper method to increase <see cref="IntrospectionFailureCounter"/>
-        /// </summary>
-        /// <param name="callerId">Api resource or client Id</param>
-        /// <param name="error">Error message</param>
-        public static void IntrospectionFailure(string callerId, string error)
-        {
-            Failure(error, callerId);
-            IntrospectionFailureCounter.Add(1, new("caller", callerId), new("error", error));
-        }
-
-        /// <summary>
-        /// Introspection success counter
-        /// </summary>
-        public static readonly Counter<long> IntrospectionCounter =
-            Meter.CreateCounter<long>("introspection");
-
-        /// <summary>
-        /// Helper method to increase <see cref="IntrospectionCounter"/>
-        /// </summary>
-        /// <param name="callerId"></param>
-        /// <param name="active">Is the token valid/active?</param>
-        public static void Introspection(string callerId, bool active)
-        {
-            Success(callerId);
-            IntrospectionCounter.Add(1, new("caller", callerId), new("active", active));
-        }
-
-        /// <summary>
-        /// Revocation failure counter
-        /// </summary>
-        public static readonly Counter<long> RevocationFailureCounter =
-            Meter.CreateCounter<long>("revocation_failure");
-
-        /// <summary>
-        /// Helper method to increase <see cref="RevocationFailureCounter"/>
-        /// </summary>
-        /// <param name="clientId">Client id</param>
-        /// <param name="error">Error</param>
-        public static void RevocationFailure(string clientId, string error)
-        {
-            Failure(error, clientId);
-            RevocationFailureCounter.Add(1, new("client", clientId), new("error", error));
-        }
-
-        /// <summary>
-        /// Revocation success counter.
-        /// </summary>
-        public static readonly Counter<long> RevocationCounter =
-            Meter.CreateCounter<long>("revocation");
-
-        /// <summary>
-        /// Helper method to increase <see cref="RevocationCounter"/>
-        /// </summary>
-        /// <param name="clientId">Client id</param>
-        public static void Revocation(string clientId)
-        {
-            Success(clientId);
-            RevocationCounter.Add(1, tag: new("client", clientId));
+            Success();
+            DynamicIdentityProviderValidationCounter.Add(1, tag: new(Tags.Scheme, scheme));
         }
 
         /// <summary>
         /// Dynamic identity provider validation failures.
         /// </summary>
         public static Counter<long> DynamicIdentityProviderValidationFailureCounter
-            = Meter.CreateCounter<long>("dynamic_identityprovider_validation_failure");
+            = Meter.CreateCounter<long>(Counters.DynamicIdentityProviderValidationFailure);
 
         /// <summary>
         /// Helper method to increase <see cref="DynamicIdentityProviderValidationFailureCounter"/>
@@ -264,144 +485,64 @@ public static class Telemetry
         {
             Failure(error);
             DynamicIdentityProviderValidationFailureCounter
-                .Add(1, new("scheme", scheme), new("error", error));
+                .Add(1, new(Tags.Scheme, scheme), new(Tags.Error, error));
         }
 
         /// <summary>
-        /// Dynamic identityprovider validations
+        /// Introspection success counter
         /// </summary>
-        public static Counter<long> DynamicIdentityProviderValidationCounter
-            = Meter.CreateCounter<long>("dynamic_identityprovider_validation");
+        public static readonly Counter<long> IntrospectionCounter =
+            Meter.CreateCounter<long>(Counters.Introspection);
 
         /// <summary>
-        /// Helper method to increase <see cref="DynamicIdentityProviderValidationCounter"/>
+        /// Helper method to increase <see cref="IntrospectionCounter"/>
         /// </summary>
-        /// <param name="scheme"></param>
-        public static void DynamicIdentityProviderValidation(string scheme)
+        /// <param name="callerId"></param>
+        /// <param name="active">Is the token valid/active?</param>
+        public static void Introspection(string callerId, bool active)
         {
-            Success();
-            DynamicIdentityProviderValidationCounter.Add(1, tag: new("scheme", scheme));
+            Success(callerId);
+            IntrospectionCounter.Add(1, new(Tags.Caller, callerId), new(Tags.Active, active));
         }
 
         /// <summary>
-        /// Unhandled exceptions bubbling up to the middleware.
+        /// Introspection failure counter
         /// </summary>
-        public static Counter<long> UnHandledExceptionCounter
-            = Meter.CreateCounter<long>("unhandled_exception");
+        public static readonly Counter<long> IntrospectionFailureCounter =
+            Meter.CreateCounter<long>(Counters.IntrospectionFailure);
 
         /// <summary>
-        /// Helper method to increase <see cref="UnHandledExceptionCounter"/>
+        /// Helper method to increase <see cref="IntrospectionFailureCounter"/>
         /// </summary>
-        /// <param name="ex">Exception</param>
-        public static void UnHandledException(Exception ex)
-            => UnHandledExceptionCounter.Add(1, new("type", ex.GetType().Name), new("method", ex.TargetSite.Name));
-
-        /// <summary>
-        /// Client configuration validation failure.
-        /// </summary>
-        public static Counter<long> ClientValidationFailureCounter
-            = Meter.CreateCounter<long>("client_validation_failure");
-
-        /// <summary>
-        /// Helper method to increase <see cref="ClientValidationFailureCounter"/>
-        /// </summary>
-        /// <param name="clientId">Client id</param>
-        /// <param name="error">Error</param>
-        public static void ClientValidationFailure(string clientId, string error)
+        /// <param name="callerId">Api resource or client Id</param>
+        /// <param name="error">Error message</param>
+        public static void IntrospectionFailure(string callerId, string error)
         {
-            Failure(error, clientId);
-            ClientValidationFailureCounter.Add(1, new("client", clientId), new("error", error));
+            Failure(error, callerId);
+            IntrospectionFailureCounter.Add(1, new(Tags.Caller, callerId), new(Tags.Caller, error));
         }
 
         /// <summary>
-        /// Client configuration validation success
+        /// Resource Owner Authentication Counter
         /// </summary>
-        public static Counter<long> ClientValidationCounter
-            = Meter.CreateCounter<long>("client_validation");
+        public static Counter<long> ResourceOwnerAuthenticationCounter
+            = Meter.CreateCounter<long>(Counters.ResourceOwnerAuthentication);
 
         /// <summary>
-        /// Helper method to increase <see cref="ClientValidationCounter"/>
+        /// Helper method to increase <see cref="ResourceOwnerAuthenticationCounter"/>
         /// </summary>
         /// <param name="clientId"></param>
-        public static void ClientValidation(string clientId)
+        public static void ResourceOwnerAuthentication(string clientId)
         {
             Success(clientId);
-            ClientValidationCounter.Add(1, tag: new("client", clientId));
+            ResourceOwnerAuthenticationCounter.Add(1, tag: new(Tags.Client, clientId));
         }
 
         /// <summary>
-        /// Failed Api Secret validations
-        /// </summary>
-        public static Counter<long> ApiSecretValidationFailureCounter
-            = Meter.CreateCounter<long>("apisecret_validation_failure");
-
-        /// <summary>
-        /// Helper method to increase <see cref="ApiSecretValidationFailureCounter"/>
-        /// </summary>
-        /// <param name="clientId">Client Id</param>
-        /// <param name="message">Error message</param>
-        public static void ApiSecretValidationFailure(string clientId, string message)
-        {
-            Failure(message, clientId);
-            ApiSecretValidationFailureCounter.Add(1, new("client", clientId), new("error", message));
-        }
-
-        /// <summary>
-        /// Successful Api Secret validations
-        /// </summary>
-        public static Counter<long> ApiSecretValidationCounter
-            = Meter.CreateCounter<long>("apisecret_validation");
-
-        /// <summary>
-        /// Helper method to increase <see cref="ApiSecretValidationCounter"/>
-        /// </summary>
-        /// <param name="apiId">Api Id</param>
-        /// <param name="authMethod">Authentication Method</param>
-        public static void ApiSecretValidation(string apiId, string authMethod)
-        {
-            Success(apiId);
-            ApiSecretValidationCounter.Add(1, new("api", apiId),new("auth_method", authMethod));
-        }
-
-        /// <summary>
-        /// Failed Client Secret validations
-        /// </summary>
-        public static Counter<long> ClientSecretValidationFailureCounter
-            = Meter.CreateCounter<long>("clientsecret_validation_failure");
-
-        /// <summary>
-        /// Helper method to increase <see cref="ClientSecretValidationFailureCounter"/>
-        /// </summary>
-        /// <param name="clientId">Client Id</param>
-        /// <param name="message">Error message</param>
-        public static void ClientSecretValidationFailure(string clientId, string message)
-        {
-            Failure(message, clientId);
-            ClientSecretValidationFailureCounter.Add(1, new("client", clientId), new("error", message));
-        }
-
-        /// <summary>
-        /// Successful Client Secret validations
-        /// </summary>
-        public static Counter<long> ClientSecretValidationCounter
-            = Meter.CreateCounter<long>("clientsecret_validation");
-
-        /// <summary>
-        /// Helper method to increase <see cref="ClientSecretValidationCounter"/>
-        /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="authMethod"></param>
-        public static void ClientSecretValidation(string clientId, string authMethod)
-        {
-            Success(clientId);
-            ClientSecretValidationCounter.Add(1, new("client", clientId), new("auth_method", authMethod));
-        }
-
-        /// <summary>
-        /// Failed Resource Owner Authentication
+        /// Failed Resource Owner Authentication Counter
         /// </summary>
         public static Counter<long> ResourceOwnerAuthenticationFailureCounter
-            = Meter.CreateCounter<long>("resourceowner_authentication_failure");
+            = Meter.CreateCounter<long>(Counters.ResourceOwnerAuthenticationFailure);
 
         /// <summary>
         /// Helper method to increase <see cref="ResourceOwnerAuthenticationFailureCounter"/>
@@ -411,25 +552,86 @@ public static class Telemetry
         public static void ResourceOwnerAuthenticationFailure(string clientId, string message)
         {
             Failure(message, clientId);
-            ResourceOwnerAuthenticationFailureCounter.Add(1, new("client", clientId), new("error", message));
+            ResourceOwnerAuthenticationFailureCounter.Add(1, new(Tags.Client, clientId), new(Tags.Error, message));
         }
 
         /// <summary>
-        /// Successful Api Secret validations
+        /// Revocation success counter.
         /// </summary>
-        public static Counter<long> ResourceOwnerAuthenticationCounter
-            = Meter.CreateCounter<long>("resourceowner_authentication");
+        public static readonly Counter<long> RevocationCounter =
+            Meter.CreateCounter<long>(Counters.Revocation);
 
         /// <summary>
-        /// Helper method to increase <see cref="ResourceOwnerAuthenticationCounter"/>
+        /// Helper method to increase <see cref="RevocationCounter"/>
         /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="authMethod"></param>
-        public static void ResourceOwnerAuthentication(string clientId)
+        /// <param name="clientId">Client id</param>
+        public static void Revocation(string clientId)
         {
             Success(clientId);
-            ResourceOwnerAuthenticationCounter.Add(1, tag: new("client", clientId));
+            RevocationCounter.Add(1, tag: new(Tags.Client, clientId));
         }
 
+        /// <summary>
+        /// Revocation failure counter
+        /// </summary>
+        public static readonly Counter<long> RevocationFailureCounter =
+            Meter.CreateCounter<long>(Counters.RevocationFailure);
+
+        /// <summary>
+        /// Helper method to increase <see cref="RevocationFailureCounter"/>
+        /// </summary>
+        /// <param name="clientId">Client id</param>
+        /// <param name="error">Error</param>
+        public static void RevocationFailure(string clientId, string error)
+        {
+            Failure(error, clientId);
+            RevocationFailureCounter.Add(1, new(Tags.Client, clientId), new(Tags.Error, error));
+        }
+
+        /// <summary>
+        /// Successful token issuance counter.
+        /// </summary>
+        public static readonly Counter<long> TokenIssuedCounter = Meter.CreateCounter<long>(Counters.TokenIssued);
+
+        /// <summary>
+        /// Helper method to increase <see cref="TokenIssuedCounter"/>
+        /// </summary>
+        /// <param name="clientId">Client Id</param>
+        /// <param name="grantType">Grant Type</param>
+        public static void TokenIssued(string clientId, string grantType)
+        {
+            Success(clientId);
+            TokenIssuedCounter.Add(1, new(Tags.Client, clientId), new(Tags.GrantType, grantType));
+        }
+
+        /// <summary>
+        /// Token issuance failed counter.
+        /// </summary>
+        public static readonly Counter<long> TokenIssuedFailureCounter = Meter.CreateCounter<long>(Counters.TokenIssuedFailure);
+
+        /// <summary>
+        /// Helper method to increase <see cref="TokenIssuedFailureCounter"/> with labels
+        /// </summary>
+        /// <param name="clientId">Client Id</param>
+        /// <param name="grantType">Grant Type</param>
+        /// <param name="error">Error</param>
+        public static void TokenIssuedFailure(string clientId, string grantType, string error)
+        {
+            Failure(error, clientId);
+            TokenIssuedFailureCounter.Add(1, new(Tags.Client, clientId), new (Tags.GrantType, grantType), new(Tags.Error, error));
+        }
+
+        /// <summary>
+        /// Unhandled exceptions bubbling up to the middleware.
+        /// </summary>
+        public static Counter<long> UnHandledExceptionCounter
+            = Meter.CreateCounter<long>(Counters.UnHandledException);
+
+        /// <summary>
+        /// Helper method to increase <see cref="UnHandledExceptionCounter"/>
+        /// </summary>
+        /// <param name="ex">Exception</param>
+        public static void UnHandledException(Exception ex)
+            => UnHandledExceptionCounter.Add(1, new(Tags.Type, ex.GetType().Name), new(Tags.Method, ex.TargetSite.Name));
     }
 }
