@@ -17,7 +17,44 @@ namespace Duende.IdentityServer;
 /// <summary>
 /// Class for useful helpers for interacting with IdentityServer
 /// </summary>
-public class IdentityServerTools
+public interface IIdentityServerTools
+{
+
+    /// <summary>
+    /// Issues a JWT.
+    /// </summary>
+    /// <param name="lifetime">The lifetime.</param>
+    /// <param name="claims">The claims.</param>
+    /// <returns></returns>
+    /// <exception cref="System.ArgumentNullException">claims</exception>
+    Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims);
+
+    /// <summary>
+    /// Issues a JWT.
+    /// </summary>
+    /// <param name="lifetime">The lifetime.</param>
+    /// <param name="issuer">The issuer.</param>
+    /// <param name="claims">The claims.</param>
+    /// <returns></returns>
+    /// <exception cref="System.ArgumentNullException">claims</exception>
+    Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims);
+
+    /// <summary>
+    /// Issues a JWT.
+    /// </summary>
+    /// <param name="lifetime">The lifetime.</param>
+    /// <param name="issuer">The issuer.</param>
+    /// <param name="tokenType"></param>
+    /// <param name="claims">The claims.</param>
+    /// <returns></returns>
+    /// <exception cref="System.ArgumentNullException">claims</exception>
+    Task<string> IssueJwtAsync(int lifetime, string issuer, string tokenType, IEnumerable<Claim> claims);
+}
+
+/// <summary>
+/// Class for useful helpers for interacting with IdentityServer
+/// </summary>
+public class IdentityServerTools : IIdentityServerTools
 {
     internal readonly IServiceProvider ServiceProvider;
     internal readonly IIssuerNameService IssuerNameService;

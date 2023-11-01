@@ -190,7 +190,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.AddTransient<IJwtRequestValidator, JwtRequestValidator>();
 
         builder.Services.AddTransient<ReturnUrlParser>();
-        builder.Services.AddTransient<IdentityServerTools>();
+        builder.Services.AddTransient<IIdentityServerTools, IdentityServerTools>();
 
         builder.Services.AddTransient<IReturnUrlParser, OidcReturnUrlParser>();
         builder.Services.AddScoped<IUserSession, DefaultUserSession>();
