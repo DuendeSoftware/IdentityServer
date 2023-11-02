@@ -23,7 +23,7 @@ public class ParRedirectUriValidator : StrictRedirectUriValidator
     public override Task<bool> IsRedirectUriValidAsync(RedirectUriValidationContext context)
     {
         // Any pushed redirect uri is allowed on the PAR endpoint
-        if(context.AuthorizeRequestType == AuthorizeRequestType.PushedAuthorizationRequest)
+        if(context.AuthorizeRequestType == AuthorizeRequestType.PushedAuthorization)
         {
             if (context.RequestParameters.Get(IdentityModel.OidcConstants.AuthorizeRequest.RedirectUri).IsPresent())
             {
@@ -31,7 +31,7 @@ public class ParRedirectUriValidator : StrictRedirectUriValidator
             }
         }
         // On the authorize endpoint, if a redirect uri was pushed, that is also valid
-        if(context.AuthorizeRequestType == AuthorizeRequestType.AuthorizeRequestWithPushedParameters)
+        if(context.AuthorizeRequestType == AuthorizeRequestType.AuthorizeWithPushedParameters)
         {
             if(context.RequestedUri == context.RequestParameters.Get(IdentityModel.OidcConstants.AuthorizeRequest.RedirectUri))
             {

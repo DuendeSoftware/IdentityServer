@@ -24,7 +24,7 @@ public class ParRedirectUriValidatorTests
 
         var result = await subject.IsRedirectUriValidAsync(new RedirectUriValidationContext
         {
-            AuthorizeRequestType = AuthorizeRequestType.AuthorizeRequestWithPushedParameters,
+            AuthorizeRequestType = AuthorizeRequestType.AuthorizeWithPushedParameters,
             RequestParameters = pushedParameters,
             RequestedUri = redirectUri
         });
@@ -44,7 +44,7 @@ public class ParRedirectUriValidatorTests
 
         var result = await subject.IsRedirectUriValidAsync(new RedirectUriValidationContext
         {
-            AuthorizeRequestType = AuthorizeRequestType.PushedAuthorizationRequest,
+            AuthorizeRequestType = AuthorizeRequestType.PushedAuthorization,
             RequestParameters = pushedParameters,
             RequestedUri = redirectUri
         });
@@ -67,7 +67,7 @@ public class ParRedirectUriValidatorTests
 
         var result = await subject.IsRedirectUriValidAsync(new RedirectUriValidationContext
         {
-            AuthorizeRequestType = AuthorizeRequestType.AuthorizeRequestWithPushedParameters,
+            AuthorizeRequestType = AuthorizeRequestType.AuthorizeWithPushedParameters,
             RequestParameters = pushedParameters,
             RequestedUri = notThePushedRedirectUri,
             Client = new Client()
@@ -90,7 +90,7 @@ public class ParRedirectUriValidatorTests
 
         var result = await subject.IsRedirectUriValidAsync(new RedirectUriValidationContext
         {
-            AuthorizeRequestType = AuthorizeRequestType.AuthorizeRequestWithPushedParameters,
+            AuthorizeRequestType = AuthorizeRequestType.AuthorizeWithPushedParameters,
             RequestParameters = pushedParameters,
             RequestedUri = registeredRedirectUri,
             Client = new Client
@@ -117,7 +117,7 @@ public class ParRedirectUriValidatorTests
 
         var result = await subject.IsRedirectUriValidAsync(new RedirectUriValidationContext
         {
-            AuthorizeRequestType = AuthorizeRequestType.AuthorizeRequest,
+            AuthorizeRequestType = AuthorizeRequestType.Authorize,
             RequestParameters = authorizeParameters,
             RequestedUri = requestedRedirectUri,
             Client = new Client

@@ -59,7 +59,8 @@ internal static class IdentityServerExtensions
                     ResponseType = "id_token",
                     Scope = "openid profile"
                 }
-            });
+            })
+            .AddParRedirectUriValidator();
 
 
         builder.Services.AddDistributedMemoryCache();

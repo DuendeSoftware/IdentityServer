@@ -43,7 +43,7 @@ public class PushedAuthorizationRequestValidator : IPushedAuthorizationRequestVa
         }
 
         var authorizeRequestValidation = await _authorizeRequestValidator.ValidateAsync(context.RequestParameters, 
-            authorizeRequestType: AuthorizeRequestType.PushedAuthorizationRequest);
+            authorizeRequestType: AuthorizeRequestType.PushedAuthorization);
         if(authorizeRequestValidation.IsError)
         {
             return new PushedAuthorizationValidationResult(

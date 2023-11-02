@@ -59,7 +59,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
     public async Task<AuthorizeRequestValidationResult> ValidateAsync(
         NameValueCollection parameters, 
         ClaimsPrincipal subject = null, 
-        AuthorizeRequestType authorizeRequestType = AuthorizeRequestType.AuthorizeRequest)
+        AuthorizeRequestType authorizeRequestType = AuthorizeRequestType.Authorize)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeRequestValidator.Validate");
         

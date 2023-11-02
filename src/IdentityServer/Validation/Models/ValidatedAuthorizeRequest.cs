@@ -260,14 +260,13 @@ public enum AuthorizeRequestType
     /// <summary>
     /// A request to the authorize endpoint without PAR
     /// </summary>
-    // TODO - shorten names (request is repeated)
-    AuthorizeRequest,
+    Authorize,
     /// <summary>
     /// A request to the PAR endpoint
     /// </summary>
-    PushedAuthorizationRequest,
+    PushedAuthorization,
     /// <summary>
     /// A request to the authorize endpoint with pushed parameters
     /// </summary>
-    AuthorizeRequestWithPushedParameters
+    AuthorizeWithPushedParameters
 }

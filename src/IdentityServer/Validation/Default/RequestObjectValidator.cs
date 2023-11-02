@@ -54,10 +54,9 @@ internal class RequestObjectValidator : IRequestObjectValidator
 
         // If we're on the authorize endpoint, make sure that we use PAR when it
         // is required (either globally or by this client).
-        if (request.AuthorizeRequestType == AuthorizeRequestType.AuthorizeRequest)
+        if (request.AuthorizeRequestType != AuthorizeRequestType.PushedAuthorization)
         {
             var parRequired = _options.PushedAuthorization.Required || request.Client.RequirePushedAuthorization;
-            // TODO - is parMissing redundant now that we have the AuthorizeRequestType?
             var parMissing = requestUri.IsMissing() || !requestUri.StartsWith(IdentityServerConstants.PushedAuthorizationRequestUri);
             if (parRequired && parMissing)
             {
@@ -76,7 +75,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
                     return validationError;
                 }
 
-                request.AuthorizeRequestType = AuthorizeRequestType.AuthorizeRequestWithPushedParameters;
+                request.AuthorizeRequestType = AuthorizeRequestType.AuthorizeWithPushedParameters;
                 requestObject = LoadRequestObjectFromPushedAuthorizationRequest(request);
             }
             else if (_options.Endpoints.EnableJwtRequestUri)
@@ -299,7 +298,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
                 request.Raw.Add(claim.Type, claim.Value);
             }
 
-            if (request.AuthorizeRequestType == AuthorizeRequestType.AuthorizeRequest)
+            if (request.AuthorizeRequestType == AuthorizeRequestType.Authorize)
             {
                 var ruri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
                 if (ruri != null)
