@@ -18,6 +18,7 @@ public interface IAuthorizeRequestValidator
     /// </summary>
     /// <param name="parameters"></param>
     /// <param name="subject"></param>
+    /// <param name="authorizeRequestType"></param>
     /// <returns></returns>
-    Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null);
+    Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null, AuthorizeRequestType authorizeRequestType = AuthorizeRequestType.AuthorizeRequest);
 }

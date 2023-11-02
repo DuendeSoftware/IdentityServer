@@ -52,12 +52,18 @@ internal class RequestObjectValidator : IRequestObjectValidator
             return Invalid(request, description: "Only one request parameter is allowed");
         }
 
-        var parRequired = _options.PushedAuthorization.Required || request.Client.RequirePushedAuthorization;
-        var parMissing = requestUri.IsMissing() || !requestUri.StartsWith(IdentityServerConstants.PushedAuthorizationRequestUri);
-        if (parRequired && parMissing)
+        // If we're on the authorize endpoint, make sure that we use PAR when it
+        // is required (either globally or by this client).
+        if (request.AuthorizeRequestType == AuthorizeRequestType.AuthorizeRequest)
         {
-            LogError("Pushed authorization is required", request);
-            return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, "Pushed authorization is required.");
+            var parRequired = _options.PushedAuthorization.Required || request.Client.RequirePushedAuthorization;
+            // TODO - is parMissing redundant now that we have the AuthorizeRequestType?
+            var parMissing = requestUri.IsMissing() || !requestUri.StartsWith(IdentityServerConstants.PushedAuthorizationRequestUri);
+            if (parRequired && parMissing)
+            {
+                LogError("Pushed authorization is required", request);
+                return Invalid(request, error: OidcConstants.AuthorizeErrors.InvalidRequest, "Pushed authorization is required.");
+            }
         }
         
         if (requestUri.IsPresent())
@@ -69,7 +75,8 @@ internal class RequestObjectValidator : IRequestObjectValidator
                 {
                     return validationError;
                 }
-                
+
+                request.AuthorizeRequestType = AuthorizeRequestType.AuthorizeRequestWithPushedParameters;
                 requestObject = LoadRequestObjectFromPushedAuthorizationRequest(request);
             }
             else if (_options.Endpoints.EnableJwtRequestUri)
@@ -292,7 +299,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
                 request.Raw.Add(claim.Type, claim.Value);
             }
 
-            if (!request.IsPushedAuthorizationRequest)
+            if (request.AuthorizeRequestType == AuthorizeRequestType.AuthorizeRequest)
             {
                 var ruri = request.Raw.Get(OidcConstants.AuthorizeRequest.RequestUri);
                 if (ruri != null)

@@ -55,4 +55,19 @@ public class StrictRedirectUriValidator : IRedirectUriValidator
     {
         return Task.FromResult(StringCollectionContainsString(client.PostLogoutRedirectUris, requestedUri));
     }
+
+    /// <summary>
+    /// Determines whether a redirect uri is valid for a context.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <returns>
+    ///   <c>true</c> is the URI is valid; <c>false</c> otherwise.
+    /// </returns>
+    public virtual Task<bool> IsRedirectUriValidAsync(RedirectUriValidationContext context)
+        // This method is identical to the default implementation on
+        // IRedirectUriValidator, but is virtual so that derived classes can
+        // override it. Leaving the default implementation in the interface
+        // avoids a breaking change for customizations, even though our default
+        // implementations no longer need it.
+        => IsRedirectUriValidAsync(context.RequestedUri, context.Client);
 }

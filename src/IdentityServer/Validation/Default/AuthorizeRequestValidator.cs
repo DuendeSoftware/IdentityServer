@@ -56,7 +56,10 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         _logger = logger;
     }
 
-    public async Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null)
+    public async Task<AuthorizeRequestValidationResult> ValidateAsync(
+        NameValueCollection parameters, 
+        ClaimsPrincipal subject = null, 
+        AuthorizeRequestType authorizeRequestType = AuthorizeRequestType.AuthorizeRequest)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeRequestValidator.Validate");
         
@@ -67,7 +70,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             Options = _options,
             IssuerName = await _issuerNameService.GetCurrentAsync(),
             Subject = subject ?? Principal.Anonymous,
-            Raw = parameters ?? throw new ArgumentNullException(nameof(parameters))
+            Raw = parameters ?? throw new ArgumentNullException(nameof(parameters)),
+            AuthorizeRequestType = authorizeRequestType
         };
 
         // load client_id

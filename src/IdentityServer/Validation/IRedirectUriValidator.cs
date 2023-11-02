@@ -60,6 +60,7 @@ public class RedirectUriValidationContext
         Client = request.Client;
         RequestParameters = request.Raw;
         RequestObjectValues = request.RequestObjectValues;
+        AuthorizeRequestType = request.AuthorizeRequestType;
     }
 
     /// <summary>
@@ -73,7 +74,7 @@ public class RedirectUriValidationContext
     public Client Client { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the request parameters
+    /// The request parameters
     /// </summary>
     public NameValueCollection RequestParameters { get; set; } = default!;
 
@@ -81,4 +82,9 @@ public class RedirectUriValidationContext
     /// Validated request object values
     /// </summary>
     public IEnumerable<Claim>? RequestObjectValues { get; set; }
+
+    /// <summary>
+    /// Indicates the context (PAR vs Authorize with or without pushed parameters)
+    /// </summary>
+    public AuthorizeRequestType AuthorizeRequestType { get; set; }
 }
