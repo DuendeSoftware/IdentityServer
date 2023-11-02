@@ -121,7 +121,7 @@ internal static class Constants
     /// favor of <see cref="ProcessedPrompt"/>.
     /// </summary>
     [Obsolete("Use the ProcessedPrompt constant instead.")]
-    public const string SuppressedPrompt = "suppressed" + OidcConstants.AuthorizeRequest.Prompt;
+    public const string SuppressedPrompt = ProcessedPrompt;
     
     /// <summary>
     /// The name of the parameter passed to the authorize callback to indicate
@@ -129,7 +129,7 @@ internal static class Constants
     /// deprecated <see cref="SuppressedPrompt"/>, while keeping the underlying
     /// value unchanged.
     /// </summary>
-    public const string ProcessedPrompt = "suppressed" + OidcConstants.AuthorizeRequest.Prompt;
+    public const string ProcessedPrompt = "suppressed_" + OidcConstants.AuthorizeRequest.Prompt;
 
     public static class KnownAcrValues
     {
