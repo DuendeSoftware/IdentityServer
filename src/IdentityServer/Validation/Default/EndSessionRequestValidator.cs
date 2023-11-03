@@ -9,7 +9,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using System;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Logging.Models;
@@ -60,15 +59,8 @@ public class EndSessionRequestValidator : IEndSessionRequestValidator
     protected readonly IMessageStore<LogoutNotificationContext> EndSessionMessageStore;
 
     /// <summary>
-    /// The HTTP context accessor.
-    /// </summary>
-    [Obsolete("Unused. Will remove in a future release.")]
-    protected readonly IHttpContextAccessor Context;
-
-    /// <summary>
     /// Creates a new instance of the EndSessionRequestValidator.
     /// </summary>
-    /// <param name="context"></param>
     /// <param name="options"></param>
     /// <param name="tokenValidator"></param>
     /// <param name="uriValidator"></param>
@@ -77,7 +69,6 @@ public class EndSessionRequestValidator : IEndSessionRequestValidator
     /// <param name="endSessionMessageStore"></param>
     /// <param name="logger"></param>
     public EndSessionRequestValidator(
-        IHttpContextAccessor context,
         IdentityServerOptions options,
         ITokenValidator tokenValidator,
         IRedirectUriValidator uriValidator,
@@ -86,9 +77,6 @@ public class EndSessionRequestValidator : IEndSessionRequestValidator
         IMessageStore<LogoutNotificationContext> endSessionMessageStore,
         ILogger<EndSessionRequestValidator> logger)
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        Context = context;
-#pragma warning restore CS0618 // Type or member is obsolete
         Options = options;
         TokenValidator = tokenValidator;
         UriValidator = uriValidator;

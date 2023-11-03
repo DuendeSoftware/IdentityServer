@@ -57,11 +57,10 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     // todo: consider replacing with extension method to access Raw collection; would need to be done wholesale for all props.
     public List<string> RequestedScopes { get; set; } = default!;
 
-    // TODO: typo
     /// <summary>
     /// Gets or sets the requested resource indicators.
     /// </summary>
-    public IEnumerable<string>? RequestedResourceIndiators { get; set; }
+    public IEnumerable<string>? RequestedResourceIndicators { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether consent was shown.

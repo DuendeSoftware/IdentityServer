@@ -1048,7 +1048,7 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
             if (isActiveCtx.IsActive == false)
             {
-                // todo: raise event?
+                // todo: raise event (or an OTEL metric event)?
 
                 LogError("User has been disabled", new { subjectId = result.Subject.GetSubjectId() });
                 return Invalid(OidcConstants.TokenErrors.InvalidGrant);
@@ -1268,11 +1268,13 @@ internal class TokenRequestValidator : ITokenRequestValidator
 
     private Task RaiseSuccessfulResourceOwnerAuthenticationEventAsync(string userName, string subjectId, string clientId)
     {
+        Telemetry.Metrics.ResourceOwnerAuthentication(clientId);
         return _events.RaiseAsync(new UserLoginSuccessEvent(userName, subjectId, null, interactive: false, clientId));
     }
 
     private Task RaiseFailedResourceOwnerAuthenticationEventAsync(string userName, string error, string clientId)
     {
+        Telemetry.Metrics.ResourceOwnerAuthenticationFailure(clientId, error);
         return _events.RaiseAsync(new UserLoginFailureEvent(userName, error, interactive: false, clientId: clientId));
     }
 }

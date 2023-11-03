@@ -33,9 +33,9 @@ public class PushedAuthorizationResult : EndpointResult<PushedAuthorizationResul
     }
 }
 
-internal class PushedAuthorizationResultGenerator : IEndpointResultGenerator<PushedAuthorizationResult>
+internal class PushedAuthorizationHttpWriter : IHttpResponseWriter<PushedAuthorizationResult>
 {
-    public async Task ExecuteAsync(PushedAuthorizationResult result, HttpContext context)
+    public async Task WriteHttpResponse(PushedAuthorizationResult result, HttpContext context)
     {
         context.Response.SetNoCache();
         context.Response.StatusCode = (int) HttpStatusCode.Created;

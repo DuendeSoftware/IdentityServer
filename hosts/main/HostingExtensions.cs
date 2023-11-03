@@ -7,6 +7,8 @@ using Duende.IdentityServer.Configuration;
 using IdentityServerHost.Extensions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Serilog;
 using Serilog.Events;
 
@@ -39,34 +41,14 @@ internal static class HostingExtensions
             return Task.FromResult(principal);
         });
 
+        var openTelemetry = builder.Services.AddOpenTelemetry();
 
-        // var apiKey = builder.Configuration["HoneyCombApiKey"];
-        // var dataset = "IdentityServerDev";
-        //
-        // builder.Services.AddOpenTelemetryTracing(builder =>
-        // {
-        //     builder
-        //         .AddSource(IdentityServerConstants.Tracing.Basic)
-        //         .AddSource(IdentityServerConstants.Tracing.Cache)
-        //         .AddSource(IdentityServerConstants.Tracing.Services)
-        //         .AddSource(IdentityServerConstants.Tracing.Stores)
-        //         .AddSource(IdentityServerConstants.Tracing.Validation)
-        //         
-        //         .SetResourceBuilder(
-        //             ResourceBuilder.CreateDefault()
-        //                 .AddService("IdentityServerHost.Main"))
-        //         
-        //         //.SetSampler(new AlwaysOnSampler())
-        //         .AddHttpClientInstrumentation()
-        //         .AddAspNetCoreInstrumentation()
-        //         .AddSqlClientInstrumentation()
-        //         //.AddConsoleExporter()
-        //         .AddOtlpExporter(option =>
-        //         {
-        //             option.Endpoint = new Uri("https://api.honeycomb.io");
-        //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
-        //         });
-        // });
+        openTelemetry.ConfigureResource(r => r
+            .AddService(builder.Environment.ApplicationName));
+
+        openTelemetry.WithMetrics(m => m
+            .AddMeter(Telemetry.ServiceName)
+            .AddPrometheusExporter());
 
         return builder.Build();
     }
@@ -168,6 +150,9 @@ internal static class HostingExtensions
 
         app.MapDynamicClientRegistration()
             .AllowAnonymous();
+
+        // Map /metrics that displays Otel data in human readable form.
+        app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
         return app;
     }

@@ -18,9 +18,9 @@ public class CheckSessionResult : EndpointResult<CheckSessionResult>
 }
 
 
-internal class CheckSessionResultGenerator : IEndpointResultGenerator<CheckSessionResult>
+internal class CheckSessionHttpWriter : IHttpResponseWriter<CheckSessionResult>
 {
-    public CheckSessionResultGenerator(IdentityServerOptions options)
+    public CheckSessionHttpWriter(IdentityServerOptions options)
     {
         _options = options;
     }
@@ -30,7 +30,7 @@ internal class CheckSessionResultGenerator : IEndpointResultGenerator<CheckSessi
     private static readonly object Lock = new object();
     private static volatile string LastCheckSessionCookieName;
 
-    public async Task ExecuteAsync(CheckSessionResult result, HttpContext context)
+    public async Task WriteHttpResponse(CheckSessionResult result, HttpContext context)
     {
         AddCspHeaders(context);
 

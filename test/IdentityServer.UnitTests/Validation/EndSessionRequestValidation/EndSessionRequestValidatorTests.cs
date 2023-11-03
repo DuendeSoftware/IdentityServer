@@ -23,7 +23,6 @@ public class EndSessionRequestValidatorTests
     private IdentityServerOptions _options;
     private StubTokenValidator _stubTokenValidator = new StubTokenValidator();
     private StubRedirectUriValidator _stubRedirectUriValidator = new StubRedirectUriValidator();
-    private MockHttpContextAccessor _context = new MockHttpContextAccessor();
     private MockUserSession _userSession = new MockUserSession();
     private MockLogoutNotificationService _mockLogoutNotificationService = new MockLogoutNotificationService();
     private MockMessageStore<LogoutNotificationContext> _mockEndSessionMessageStore = new MockMessageStore<LogoutNotificationContext>();
@@ -36,7 +35,6 @@ public class EndSessionRequestValidatorTests
 
         _options = TestIdentityServerOptions.Create();
         _subject = new EndSessionRequestValidator(
-            _context,
             _options,
             _stubTokenValidator,
             _stubRedirectUriValidator,

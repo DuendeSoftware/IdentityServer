@@ -33,9 +33,9 @@ public class PushedAuthorizationErrorResult : EndpointResult<PushedAuthorization
     }
 }
 
-internal class PushedAuthorizationErrorResultGenerator : IEndpointResultGenerator<PushedAuthorizationErrorResult>
+internal class PushedAuthorizationErrorHttpWriter : IHttpResponseWriter<PushedAuthorizationErrorResult>
 {
-    public async Task ExecuteAsync(PushedAuthorizationErrorResult result, HttpContext context)
+    public async Task WriteHttpResponse(PushedAuthorizationErrorResult result, HttpContext context)
     {
         context.Response.SetNoCache();
         context.Response.StatusCode = (int) HttpStatusCode.BadRequest;

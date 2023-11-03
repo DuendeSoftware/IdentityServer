@@ -46,10 +46,10 @@ public class DiscoveryDocumentResult : EndpointResult<DiscoveryDocumentResult>
     }
 }
 
-class DiscoveryDocumentResultGenerator : IEndpointResultGenerator<DiscoveryDocumentResult>
+class DiscoveryDocumentHttpWriter : IHttpResponseWriter<DiscoveryDocumentResult>
 {
     /// <inheritdoc/>
-    public Task ExecuteAsync(DiscoveryDocumentResult result, HttpContext context)
+    public Task WriteHttpResponse(DiscoveryDocumentResult result, HttpContext context)
     {
         if (result.MaxAge.HasValue && result.MaxAge.Value >= 0)
         {

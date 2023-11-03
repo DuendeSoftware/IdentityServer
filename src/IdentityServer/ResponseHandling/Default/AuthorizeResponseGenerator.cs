@@ -264,7 +264,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
 
             IsOpenId = request.IsOpenIdRequest,
             RequestedScopes = request.ValidatedResources.RawScopeValues,
-            RequestedResourceIndicators = request.RequestedResourceIndiators,
+            RequestedResourceIndicators = request.RequestedResourceIndicators,
             RedirectUri = request.RedirectUri,
             Nonce = request.Nonce,
             StateHash = stateHash,

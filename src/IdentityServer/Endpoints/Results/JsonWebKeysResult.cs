@@ -46,9 +46,9 @@ public class JsonWebKeysResult : EndpointResult<JsonWebKeysResult>
     }
 }
 
-class JsonWebKeysResultGenerator : IEndpointResultGenerator<JsonWebKeysResult>
+class JsonWebKeysHttpWriter : IHttpResponseWriter<JsonWebKeysResult>
 {
-    public Task ExecuteAsync(JsonWebKeysResult result, HttpContext context)
+    public Task WriteHttpResponse(JsonWebKeysResult result, HttpContext context)
     {
         if (result.MaxAge.HasValue && result.MaxAge.Value >= 0)
         {

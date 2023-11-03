@@ -216,8 +216,6 @@ internal static class Constants
     public static class EnvironmentKeys
     {
         public const string IdentityServerBasePath = "idsvr:IdentityServerBasePath";
-        [Obsolete("The IdentityServerOrigin constant is obsolete.")]
-        public const string IdentityServerOrigin = "idsvr:IdentityServerOrigin"; // todo: deprecate
         public const string SignOutCalled = "idsvr:IdentityServerSignOutCalled";
     }
 

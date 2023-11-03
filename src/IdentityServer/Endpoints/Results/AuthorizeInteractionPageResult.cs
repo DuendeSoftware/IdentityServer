@@ -53,7 +53,7 @@ public abstract class AuthorizeInteractionPageResult : EndpointResult<AuthorizeI
     public string ReturnUrlParameterName { get; }
 }
 
-class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<AuthorizeInteractionPageResult>
+class AuthorizeInteractionPageHttpWriter : IHttpResponseWriter<AuthorizeInteractionPageResult>
 {
     private readonly IServerUrls _urls;
     private readonly IAuthorizationParametersMessageStore _authorizationParametersMessageStore;
@@ -61,7 +61,7 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthorizeInteractionPageResult"/> class.
     /// </summary>
-    public AuthorizeInteractionPageResultGenerator(
+    public AuthorizeInteractionPageHttpWriter(
         IServerUrls urls,
         IAuthorizationParametersMessageStore authorizationParametersMessageStore = null)
     {
@@ -70,7 +70,7 @@ class AuthorizeInteractionPageResultGenerator : IEndpointResultGenerator<Authori
     }
 
     /// <inheritdoc/>
-    public async Task ExecuteAsync(AuthorizeInteractionPageResult result, HttpContext context)
+    public async Task WriteHttpResponse(AuthorizeInteractionPageResult result, HttpContext context)
     {
         var returnUrl = _urls.BasePath.EnsureTrailingSlash() + ProtocolRoutePaths.AuthorizeCallback;
 
