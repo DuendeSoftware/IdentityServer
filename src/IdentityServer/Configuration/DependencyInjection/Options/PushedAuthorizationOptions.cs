@@ -11,6 +11,7 @@ public class PushedAuthorizationOptions
 {
     /// <summary>
     /// Specifies whether pushed authorization requests are globally required.
+    /// Defaults to false.
     /// </summary>
     /// <remarks>
     /// There is also a per-client configuration flag in the Client
@@ -42,7 +43,7 @@ public class PushedAuthorizationOptions
 
     /// <summary>
     /// Specifies whether clients may use redirect uris that were not previously
-    /// registered. 
+    /// registered. Defaults to false. 
     /// </summary>
     public bool AllowUnregisteredPushedRedirectUris { get; set; }
 }
