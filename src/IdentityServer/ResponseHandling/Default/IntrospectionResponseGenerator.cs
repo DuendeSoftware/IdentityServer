@@ -61,10 +61,13 @@ public class IntrospectionResponseGenerator : IIntrospectionResponseGenerator
             { "active", false }
         };
 
+        var callerName = validationResult.Api?.Name ?? validationResult.Client.ClientId;
+
         // token is invalid
         if (validationResult.IsActive == false)
         {
             Logger.LogDebug("Creating introspection response for inactive token.");
+            Telemetry.Metrics.Introspection(callerName, false);
             await Events.RaiseAsync(new TokenIntrospectionSuccessEvent(validationResult));
 
             return response;
@@ -124,7 +127,11 @@ public class IntrospectionResponseGenerator : IIntrospectionResponseGenerator
         {
             // no scopes for this API are found in the token
             Logger.LogError("Expected scope {scopes} is missing in token", apiScopes);
-            await Events.RaiseAsync(new TokenIntrospectionFailureEvent(validationResult.Api.Name, "Expected scopes are missing", validationResult.Token, apiScopes, tokenScopes.Select(s => s.Value)));
+
+            const string errorMessage = "Expected scopes are missing";
+            var callerName = validationResult.Api?.Name ?? validationResult.Client.ClientId;
+            Telemetry.Metrics.IntrospectionFailure(callerName, errorMessage);
+            await Events.RaiseAsync(new TokenIntrospectionFailureEvent(validationResult.Api.Name, errorMessage, validationResult.Token, apiScopes, tokenScopes.Select(s => s.Value)));
         }
 
         return result;

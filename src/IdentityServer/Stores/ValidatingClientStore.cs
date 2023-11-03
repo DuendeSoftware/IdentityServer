@@ -63,14 +63,18 @@ public class ValidatingClientStore<T> : IClientStore
             if (context.IsValid)
             {
                 _logger.LogDebug("client configuration validation for client {clientId} succeeded.", client.ClientId);
+                Telemetry.Metrics.ClientValidation(clientId);
                 return client;
             }
 
             _logger.LogError("Invalid client configuration for client {clientId}: {errorMessage}", client.ClientId, context.ErrorMessage);
+            Telemetry.Metrics.ClientValidationFailure(clientId, context.ErrorMessage);
             await _events.RaiseAsync(new InvalidClientConfigurationEvent(client, context.ErrorMessage));
                     
             return null;
         }
+
+        Telemetry.Metrics.ClientValidationFailure(clientId, "Client not found");
 
         return null;
     }

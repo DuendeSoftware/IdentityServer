@@ -94,7 +94,9 @@ internal class TokenRevocationEndpoint : IEndpointHandler
         var clientValidationResult = await _clientValidator.ValidateAsync(context);
         if (clientValidationResult.IsError)
         {
-            return new TokenRevocationErrorResult(clientValidationResult.Error ?? OidcConstants.TokenErrors.InvalidClient);
+            var error = clientValidationResult.Error ?? OidcConstants.TokenErrors.InvalidClient;
+            Telemetry.Metrics.RevocationFailure(clientValidationResult.Client?.ClientId, error);
+            return new TokenRevocationErrorResult(error);
         }
 
         _logger.LogTrace("Client validation successful");
@@ -107,6 +109,7 @@ internal class TokenRevocationEndpoint : IEndpointHandler
 
         if (requestValidationResult.IsError)
         {
+            Telemetry.Metrics.RevocationFailure(clientValidationResult.Client.ClientId, requestValidationResult.Error);
             return new TokenRevocationErrorResult(requestValidationResult.Error);
         }
 
@@ -116,6 +119,7 @@ internal class TokenRevocationEndpoint : IEndpointHandler
         if (response.Success)
         {
             _logger.LogInformation("Token revocation complete");
+            Telemetry.Metrics.Revocation(clientValidationResult.Client.ClientId);
             await _events.RaiseAsync(new TokenRevokedSuccessEvent(requestValidationResult, requestValidationResult.Client));
         }
         else
