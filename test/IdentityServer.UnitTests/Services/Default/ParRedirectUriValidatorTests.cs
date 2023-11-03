@@ -7,6 +7,8 @@ using System.Collections.Specialized;
 using FluentAssertions;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Configuration;
+using UnitTests.Common;
 
 namespace UnitTests.Services.Default;
 
@@ -15,7 +17,9 @@ public class ParRedirectUriValidatorTests
     [Fact]
     public async Task PushedRedirectUriCanBeUsedAsync()
     {
-        var subject = new ParRedirectUriValidator();
+        var options = TestIdentityServerOptions.Create();
+        options.PushedAuthorization.AllowUnregisteredPushedRedirectUris = true;
+        var subject = new StrictRedirectUriValidator(options);
         var redirectUri = "https://pushed.example.com";
         var pushedParameters = new NameValueCollection
         {
@@ -26,7 +30,11 @@ public class ParRedirectUriValidatorTests
         {
             AuthorizeRequestType = AuthorizeRequestType.AuthorizeWithPushedParameters,
             RequestParameters = pushedParameters,
-            RequestedUri = redirectUri
+            RequestedUri = redirectUri,
+            Client = new Client
+            {
+                RequireClientSecret = true,
+            }
         });
 
         result.Should().Be(true);
@@ -35,7 +43,9 @@ public class ParRedirectUriValidatorTests
     [Fact]
     public async Task AnythingIsPermittedAtParEndpoint()
     {
-        var subject = new ParRedirectUriValidator();
+        var options = TestIdentityServerOptions.Create();
+        options.PushedAuthorization.AllowUnregisteredPushedRedirectUris = true;
+        var subject = new StrictRedirectUriValidator(options);
         var redirectUri = "https://pushed.example.com";
         var pushedParameters = new NameValueCollection
         {
@@ -46,17 +56,22 @@ public class ParRedirectUriValidatorTests
         {
             AuthorizeRequestType = AuthorizeRequestType.PushedAuthorization,
             RequestParameters = pushedParameters,
-            RequestedUri = redirectUri
+            RequestedUri = redirectUri,
+            Client = new Client
+            {
+                RequireClientSecret = true,
+            }
         });
 
         result.Should().Be(true);
     }
 
-
     [Fact]
-    public async Task NotUsingThePushedRedirectUriShouldFailAsync()
+    public async Task ConfigurationControlsPermissiveness()
     {
-        var subject = new ParRedirectUriValidator();
+        var options = TestIdentityServerOptions.Create();
+        options.PushedAuthorization.AllowUnregisteredPushedRedirectUris = false;
+        var subject = new StrictRedirectUriValidator(options);
         var pushedRedirectUri = "https://pushed.example.com";
         var pushedParameters = new NameValueCollection
         {
@@ -79,7 +94,9 @@ public class ParRedirectUriValidatorTests
     [Fact]
     public async Task UsingARegisteredPushedUriInsteadOfThePushedRedirectUriShouldSucceed()
     {
-        var subject = new ParRedirectUriValidator();
+        var options = TestIdentityServerOptions.Create();
+        options.PushedAuthorization.AllowUnregisteredPushedRedirectUris = true;
+        var subject = new StrictRedirectUriValidator(options);
         var pushedRedirectUri = "https://pushed.example.com";
         var pushedParameters = new NameValueCollection
         {
@@ -106,7 +123,9 @@ public class ParRedirectUriValidatorTests
     [Fact]
     public async Task AuthorizeEndpointWithoutPushedParametersIsStillStrict()
     {
-        var subject = new ParRedirectUriValidator();
+        var options = TestIdentityServerOptions.Create();
+        options.PushedAuthorization.AllowUnregisteredPushedRedirectUris = true;
+        var subject = new StrictRedirectUriValidator(options);
         var requestedRedirectUri = "https://requested.example.com";
         var authorizeParameters = new NameValueCollection
         {

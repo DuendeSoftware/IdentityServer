@@ -62,17 +62,6 @@ public static class IdentityServerBuilderExtensionsAdditional
     }
 
     /// <summary>
-    /// Adds a PAR compliant redirect URI validator (does strict validation but
-    /// also allows arbitrary pushed redirect uris).
-    /// </summary>
-    /// <param name="builder">The builder.</param>
-    /// <returns></returns>
-    public static IIdentityServerBuilder AddParRedirectUriValidator(this IIdentityServerBuilder builder)
-    {
-        return builder.AddRedirectUriValidator<ParRedirectUriValidator>();
-    }
-
-    /// <summary>
     /// Adds the resource owner validator.
     /// </summary>
     /// <typeparam name="T"></typeparam>

@@ -32,6 +32,7 @@ internal static class IdentityServerExtensions
                 options.UserInteraction.CreateAccountUrl = "/Account/Create";
 
                 options.Endpoints.EnablePushedAuthorizationEndpoint = true;
+                options.PushedAuthorization.AllowUnregisteredPushedRedirectUris = true;
             })
             //.AddServerSideSessions()
             .AddInMemoryClients(Clients.Get().ToList())
@@ -59,8 +60,7 @@ internal static class IdentityServerExtensions
                     ResponseType = "id_token",
                     Scope = "openid profile"
                 }
-            })
-            .AddParRedirectUriValidator();
+            });
 
 
         builder.Services.AddDistributedMemoryCache();

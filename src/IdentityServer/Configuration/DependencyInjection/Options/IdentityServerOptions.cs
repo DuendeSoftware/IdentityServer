@@ -4,7 +4,6 @@
 
 #nullable enable
 
-using Duende.IdentityServer.Configuration.DependencyInjection.Options;
 using Duende.IdentityServer.Stores.Serialization;
 
 namespace Duende.IdentityServer.Configuration;
