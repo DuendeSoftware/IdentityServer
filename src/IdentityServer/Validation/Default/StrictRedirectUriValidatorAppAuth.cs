@@ -23,7 +23,7 @@ public class StrictRedirectUriValidatorAppAuth : StrictRedirectUriValidator
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="options">The options.</param>
-    public StrictRedirectUriValidatorAppAuth(ILogger<StrictRedirectUriValidatorAppAuth> logger, IdentityServerOptions options)
+    public StrictRedirectUriValidatorAppAuth(ILogger<StrictRedirectUriValidatorAppAuth> logger, IdentityServerOptions options = null)
         : base(options)
     {
         _logger = logger;

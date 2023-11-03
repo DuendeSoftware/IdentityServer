@@ -24,7 +24,7 @@ public class StrictRedirectUriValidator : IRedirectUriValidator
     /// Initializes a new instance of the <see cref="StrictRedirectUriValidator" />.
     /// </summary>
     /// <param name="options"></param>
-    public StrictRedirectUriValidator(IdentityServerOptions options)
+    public StrictRedirectUriValidator(IdentityServerOptions options = null)
     {
         _options = options;
     }
@@ -81,7 +81,7 @@ public class StrictRedirectUriValidator : IRedirectUriValidator
         // is a confidential client. If so, any pushed redirect uri is allowed
         // on the PAR endpoint and at the authorize endpoint (if a redirect uri
         // was pushed)
-        if (_options.PushedAuthorization.AllowUnregisteredPushedRedirectUris &&
+        if (_options?.PushedAuthorization?.AllowUnregisteredPushedRedirectUris == true &&
             context.Client.RequireClientSecret && 
             (context.AuthorizeRequestType == AuthorizeRequestType.PushedAuthorization ||
              context.AuthorizeRequestType == AuthorizeRequestType.AuthorizeWithPushedParameters))
