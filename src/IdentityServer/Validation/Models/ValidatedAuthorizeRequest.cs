@@ -137,26 +137,66 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <summary>
     /// Gets or sets the collection of prompt modes.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="PromptModes"/> change as they are used. For example, if
+    /// the prompt mode is login (to force the login UI to be displayed), the
+    /// collection will initially contain login, but when the login page is
+    /// displayed, the login prompt will be removed from the collection of
+    /// prompt modes so that the login page will only be displayed once.
+    /// <para>
+    /// See also: <see cref="ProcessedPromptModes"/> and <see
+    /// cref="OriginalPromptModes"/>.
+    /// </para>
+    /// </remarks>
     /// <value>
-    /// The collection of prompt modes.
+    /// The collection of prompt modes, which changes as the request is
+    /// processed and various prompts are displayed.
     /// </value>
     public IEnumerable<string> PromptModes { get; set; } = Enumerable.Empty<string>();
 
     /// <summary>
     /// Gets or sets the collection of original prompt modes.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="PromptModes"/> change as they are used. For example, if
+    /// the prompt mode is login (to force the login UI to be displayed), the
+    /// collection will initially contain login, but when the login page is
+    /// displayed, the login prompt will be removed from the collection of
+    /// prompt modes so that the login page will only be displayed once.
+    /// <para>
+    /// See also:
+    /// <list type="bullet">
+    /// <item><seealso cref="ProcessedPromptModes"/></item>
+    /// <item><seealso cref="PromptModes"/></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
     /// <value>
     /// The collection of original prompt modes.
     /// </value>
-    internal IEnumerable<string> OriginalPromptModes { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<string> OriginalPromptModes { get; set; } = Enumerable.Empty<string>();
 
     /// <summary>
-    /// Gets or sets the collection of suppressed prompt modes.
+    /// Gets or sets the collection of previously processed prompt modes.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="PromptModes"/> change as they are used. For example, if
+    /// the prompt mode is login (to force the login UI to be displayed), the
+    /// collection will initially contain login, but when the login page is
+    /// displayed, the login prompt will be removed from the collection of
+    /// prompt modes so that the login page will only be displayed once.
+    /// </remarks>
+    /// <para>
+    /// See also:
+    /// <list type="bullet">
+    /// <item><seealso cref="PromptModes"/></item>
+    /// <item><seealso cref="OriginalPromptModes"/></item>
+    /// </list>
+    /// </para>
     /// <value>
-    /// The collection of suppressed prompt modes.
+    /// The collection of processed prompt modes.
     /// </value>
-    internal IEnumerable<string> SuppressedPromptModes { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<string> ProcessedPromptModes { get; set; } = Enumerable.Empty<string>();
 
     /// <summary>
     /// Gets or sets the maximum age.

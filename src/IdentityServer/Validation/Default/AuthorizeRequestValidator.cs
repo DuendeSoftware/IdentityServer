@@ -610,15 +610,15 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
         }
 
-        var suppressed_prompt = request.Raw.Get(Constants.SuppressedPrompt);
-        if (suppressed_prompt.IsPresent())
+        var processed_prompt = request.Raw.Get(Constants.ProcessedPrompt);
+        if (processed_prompt.IsPresent())
         {
-            var prompts = suppressed_prompt.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var prompts = processed_prompt.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (prompts.All(p => _options.UserInteraction.PromptValuesSupported?.Contains(p) == true))
             {
                 if (prompts.Contains(OidcConstants.PromptModes.None) && prompts.Length > 1)
                 {
-                    LogError("suppressed_prompt contains 'none' and other values. 'none' should be used by itself.", request);
+                    LogError("processed_prompt contains 'none' and other values. 'none' should be used by itself.", request);
                     return Invalid(request, description: "Invalid prompt");
                 }
                 if (prompts.Contains(OidcConstants.PromptModes.Create) && prompts.Length > 1)
@@ -627,16 +627,16 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                     return Invalid(request, description: "Invalid prompt");
                 }
 
-                request.SuppressedPromptModes = prompts;
+                request.ProcessedPromptModes = prompts;
             }
             else
             {
-                LogError("Unsupported prompt mode.", request);
+                LogError("Unsupported processed_prompt mode.", request);
                 return Invalid(request, description: "Invalid prompt");
             }
         }
 
-        request.PromptModes = request.OriginalPromptModes.Except(request.SuppressedPromptModes).ToArray();
+        request.PromptModes = request.OriginalPromptModes.Except(request.ProcessedPromptModes).ToArray();
 
         //////////////////////////////////////////////////////////
         // check ui locales

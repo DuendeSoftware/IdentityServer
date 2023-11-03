@@ -224,7 +224,7 @@ public class Authorize_ProtocolValidation_Valid
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task suppressed_prompt_values_should_overwrite_original_values()
+    public async Task processed_prompt_values_should_overwrite_original_values()
     {
         var validator = Factory.CreateAuthorizeRequestValidator();
             
@@ -242,19 +242,19 @@ public class Authorize_ProtocolValidation_Valid
         }
         {
             parameters[OidcConstants.AuthorizeRequest.Prompt] = "consent login";
-            parameters[Constants.SuppressedPrompt] = "login";
+            parameters[Constants.ProcessedPrompt] = "login";
             var result = await validator.ValidateAsync(parameters);
             result.ValidatedRequest.PromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent });
             result.ValidatedRequest.OriginalPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
-            result.ValidatedRequest.SuppressedPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Login });
+            result.ValidatedRequest.ProcessedPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Login });
         }
         {
             parameters[OidcConstants.AuthorizeRequest.Prompt] = "consent login";
-            parameters[Constants.SuppressedPrompt] = "login consent";
+            parameters[Constants.ProcessedPrompt] = "login consent";
             var result = await validator.ValidateAsync(parameters);
             result.ValidatedRequest.PromptModes.Should().BeEmpty();
             result.ValidatedRequest.OriginalPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
-            result.ValidatedRequest.SuppressedPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
+            result.ValidatedRequest.ProcessedPromptModes.Should().BeEquivalentTo(new[] { OidcConstants.PromptModes.Consent, OidcConstants.PromptModes.Login });
         }
     }
 }
