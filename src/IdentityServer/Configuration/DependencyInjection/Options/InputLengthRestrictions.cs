@@ -167,10 +167,4 @@ public class InputLengthRestrictions
     /// Max length for DPoP proof token
     /// </summary>
     public int DPoPProofToken { get; set; } = 4000;
-
-    //// todo: review this default
-    ///// <summary>
-    ///// Max value allowed for requested_expiry
-    ///// </summary>
-    //public TimeSpan RequestedExpiry { get; set; } = TimeSpan.FromMinutes(15);
 }

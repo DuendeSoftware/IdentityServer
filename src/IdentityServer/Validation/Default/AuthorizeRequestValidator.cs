@@ -478,7 +478,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicators not allowed for response_type 'token'.");
         }
             
-        request.RequestedResourceIndiators = resourceIndicators;
+        request.RequestedResourceIndicators = resourceIndicators;
 
         //////////////////////////////////////////////////////////
         // check if scopes are valid/supported and check for resource scopes
@@ -631,10 +631,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
             else
             {
-                // TODO: change to error in a major release?
-                // https://github.com/DuendeSoftware/IdentityServer/issues/845#issuecomment-1405377531
-                // https://openid.net/specs/openid-connect-prompt-create-1_0.html#name-authorization-request
-                _logger.LogDebug("Unsupported suppressed_prompt mode - ignored: " + prompt);
+                LogError("Unsupported prompt mode.", request);
+                return Invalid(request, description: "Invalid prompt");
             }
         }
 
