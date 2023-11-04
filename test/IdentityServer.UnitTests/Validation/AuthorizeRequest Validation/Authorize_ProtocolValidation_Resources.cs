@@ -52,7 +52,7 @@ public class Authorize_ProtocolValidation_Resources
             new TestIssuerNameService("https://sts"),
             new InMemoryClientStore(_clients),
             new DefaultCustomAuthorizeRequestValidator(),
-            new StrictRedirectUriValidator(),
+            new StrictRedirectUriValidator(_options),
             _mockResourceValidator,
             _mockUserSession,
             Factory.CreateRequestObjectValidator(),

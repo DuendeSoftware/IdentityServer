@@ -2,13 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Duende.IdentityServer.Configuration.DependencyInjection.Options;
+namespace Duende.IdentityServer.Configuration;
 
 /// <summary>
 /// The Pushed Authorization Options.
@@ -17,6 +11,7 @@ public class PushedAuthorizationOptions
 {
     /// <summary>
     /// Specifies whether pushed authorization requests are globally required.
+    /// Defaults to false.
     /// </summary>
     /// <remarks>
     /// There is also a per-client configuration flag in the Client
@@ -45,5 +40,11 @@ public class PushedAuthorizationOptions
     /// precedence over this global configuration.
     /// </remarks>
     public int Lifetime { get; set; } = 60*10;
+
+    /// <summary>
+    /// Specifies whether clients may use redirect uris that were not previously
+    /// registered. Defaults to false. 
+    /// </summary>
+    public bool AllowUnregisteredPushedRedirectUris { get; set; }
 }
 

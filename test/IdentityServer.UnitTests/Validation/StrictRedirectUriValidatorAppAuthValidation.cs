@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -44,7 +44,8 @@ public class StrictRedirectUriValidatorAppAuthValidation
     [InlineData("http://127.0.0.1:443/a/b?q=123#abc")]
     public async Task Loopback_Redirect_URIs_Should_Be_AllowedAsync(string requestedUri)
     {
-        var strictRedirectUriValidatorAppAuthValidator = new StrictRedirectUriValidatorAppAuth(TestLogger.Create<StrictRedirectUriValidatorAppAuth>());
+        var options = TestIdentityServerOptions.Create();
+        var strictRedirectUriValidatorAppAuthValidator = new StrictRedirectUriValidatorAppAuth(TestLogger.Create<StrictRedirectUriValidatorAppAuth>(), options);
 
         var result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(requestedUri, clientWithValidLoopbackRedirectUri);
 
@@ -71,7 +72,8 @@ public class StrictRedirectUriValidatorAppAuthValidation
     [InlineData("http://127.0.0.1:#abc")]
     public async Task Loopback_Redirect_URIs_Should_Not_Be_AllowedAsync(string requestedUri)
     {
-        var strictRedirectUriValidatorAppAuthValidator = new StrictRedirectUriValidatorAppAuth(TestLogger.Create<StrictRedirectUriValidatorAppAuth>());
+        var options = TestIdentityServerOptions.Create();
+        var strictRedirectUriValidatorAppAuthValidator = new StrictRedirectUriValidatorAppAuth(TestLogger.Create<StrictRedirectUriValidatorAppAuth>(), options);
 
         var result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(requestedUri, clientWithValidLoopbackRedirectUri);
 

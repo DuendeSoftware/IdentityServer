@@ -148,8 +148,9 @@ public static class ClientsWeb
 
                 RequireConsent = true,
                 AllowedGrantTypes = GrantTypes.Code,
-
-                RedirectUris = { "https://localhost:44305/signin-oidc" },
+                
+                RequirePushedAuthorization = true,
+                // RedirectUris = { "https://localhost:44305/signin-oidc" },
                 FrontChannelLogoutUri = "https://localhost:44305/signout-oidc",
                 PostLogoutRedirectUris = { "https://localhost:44305/signout-callback-oidc" },
 

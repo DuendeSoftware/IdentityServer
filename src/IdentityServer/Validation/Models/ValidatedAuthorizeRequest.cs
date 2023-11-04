@@ -260,9 +260,11 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     public string? PushedAuthorizationReferenceValue { get; set; }
 
     /// <summary>
-    /// Gets a value indicator if the authorize request's parameters where pushed using PAR. 
+    /// Gets or sets a value indicating the context in which authorization
+    /// validation is occurring (the PAR endpoint or the authorize endpoint with
+    /// or without pushed parameters).
     /// </summary>
-    public bool IsPushedAuthorizationRequest => PushedAuthorizationReferenceValue is not null;
+    public AuthorizeRequestType AuthorizeRequestType { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether an access token was requested.
@@ -286,4 +288,24 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
         RequestedScopes = new List<string>();
         AuthenticationContextReferenceClasses = new List<string>();
     }
+}
+
+/// <summary>
+/// Indicates the context in which authorization validation is occurring (is
+/// this the authorize endpoint with or without PAR or the PAR endpoint itself?)
+/// </summary>
+public enum AuthorizeRequestType
+{
+    /// <summary>
+    /// A request to the authorize endpoint without PAR
+    /// </summary>
+    Authorize,
+    /// <summary>
+    /// A request to the PAR endpoint
+    /// </summary>
+    PushedAuthorization,
+    /// <summary>
+    /// A request to the authorize endpoint with pushed parameters
+    /// </summary>
+    AuthorizeWithPushedParameters
 }

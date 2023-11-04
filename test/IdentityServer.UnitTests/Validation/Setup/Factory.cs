@@ -249,7 +249,7 @@ internal static class Factory
 
         if (uriValidator == null)
         {
-            uriValidator = new StrictRedirectUriValidator();
+            uriValidator = new StrictRedirectUriValidator(options);
         }
 
         if (resourceValidator == null)

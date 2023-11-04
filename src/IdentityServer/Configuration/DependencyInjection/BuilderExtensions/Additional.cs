@@ -52,7 +52,7 @@ public static class IdentityServerBuilderExtensionsAdditional
     }
 
     /// <summary>
-    /// Adds a an "AppAuth" (OAuth 2.0 for Native Apps) compliant redirect URI validator (does strict validation but also allows http://127.0.0.1 with random port)
+    /// Adds an "AppAuth" (OAuth 2.0 for Native Apps) compliant redirect URI validator (does strict validation but also allows http://127.0.0.1 with random port)
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <returns></returns>

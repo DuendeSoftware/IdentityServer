@@ -71,7 +71,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
                 client.ErrorDescription);
         }
 
-        // Perform validations specific to PAR
+        // Perform validations specific to PAR, as well as validation of the pushed parameters
         var parValidationResult = await _parValidator.ValidateAsync(new PushedAuthorizationRequestValidationContext(values, client.Client));
         if (parValidationResult.IsError)
         {

@@ -13,7 +13,7 @@ public class StubAuthorizeRequestValidator : IAuthorizeRequestValidator
 {
     public AuthorizeRequestValidationResult Result { get; set; }
 
-    public Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null)
+    public Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null, AuthorizeRequestType authorizeRequestType = AuthorizeRequestType.Authorize)
     {
         Result.ValidatedRequest.Raw = parameters;
         return Task.FromResult(Result);
