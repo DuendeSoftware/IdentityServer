@@ -111,11 +111,13 @@ public class ClientSecretValidator : IClientSecretValidator
 
     private Task RaiseSuccessEventAsync(string clientId, string authMethod)
     {
+        Telemetry.Metrics.ClientSecretValidation(clientId, authMethod);
         return _events.RaiseAsync(new ClientAuthenticationSuccessEvent(clientId, authMethod));
     }
 
     private Task RaiseFailureEventAsync(string clientId, string message)
     {
+        Telemetry.Metrics.ClientSecretValidationFailure(clientId, message);
         return _events.RaiseAsync(new ClientAuthenticationFailureEvent(clientId, message));
     }
 }

@@ -269,6 +269,6 @@ public class AuthorizeInteractionResponseGeneratorTests_Login
 
         var result = await _subject.ProcessLoginAsync(request);
 
-        request.Raw.AllKeys.Should().Contain(Constants.SuppressedPrompt);
+        request.Raw.AllKeys.Should().Contain(Constants.ProcessedPrompt);
     }
 }

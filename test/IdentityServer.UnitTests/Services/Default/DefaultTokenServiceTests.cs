@@ -25,7 +25,6 @@ public class DefaultTokenServiceTests
     MockClaimsService _mockClaimsService = new MockClaimsService();
     MockReferenceTokenStore _mockReferenceTokenStore = new MockReferenceTokenStore();
     MockTokenCreationService _mockTokenCreationService = new MockTokenCreationService();
-    DefaultHttpContext _httpContext = new DefaultHttpContext();
     MockSystemClock _mockSystemClock = new MockSystemClock();
     MockKeyMaterialService _mockKeyMaterialService = new MockKeyMaterialService();
     IdentityServerOptions _options = new IdentityServerOptions();
@@ -36,13 +35,11 @@ public class DefaultTokenServiceTests
 
         var svcs = new ServiceCollection();
         svcs.AddSingleton(_options);
-        _httpContext.RequestServices = svcs.BuildServiceProvider();
 
         _subject = new DefaultTokenService(
             _mockClaimsService,
             _mockReferenceTokenStore,
             _mockTokenCreationService,
-            new HttpContextAccessor { HttpContext = _httpContext },
             _mockSystemClock,
             _mockKeyMaterialService,
             _options,

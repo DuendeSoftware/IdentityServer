@@ -52,7 +52,7 @@ public class Authorize_ProtocolValidation_Resources
             new TestIssuerNameService("https://sts"),
             new InMemoryClientStore(_clients),
             new DefaultCustomAuthorizeRequestValidator(),
-            new StrictRedirectUriValidator(),
+            new StrictRedirectUriValidator(_options),
             _mockResourceValidator,
             _mockUserSession,
             Factory.CreateRequestObjectValidator(),
@@ -72,7 +72,7 @@ public class Authorize_ProtocolValidation_Resources
         var result = await _subject.ValidateAsync(parameters);
 
         result.IsError.Should().Be(false);
-        result.ValidatedRequest.RequestedResourceIndiators.Should().BeEmpty();
+        result.ValidatedRequest.RequestedResourceIndicators.Should().BeEmpty();
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class Authorize_ProtocolValidation_Resources
         var result = await _subject.ValidateAsync(parameters);
 
         result.IsError.Should().BeFalse();
-        result.ValidatedRequest.RequestedResourceIndiators.Should()
+        result.ValidatedRequest.RequestedResourceIndicators.Should()
             .BeEquivalentTo(new[] { "urn:test1", "http://resource1", "http://resource2" });
     }
         

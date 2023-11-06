@@ -56,7 +56,10 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         _logger = logger;
     }
 
-    public async Task<AuthorizeRequestValidationResult> ValidateAsync(NameValueCollection parameters, ClaimsPrincipal subject = null)
+    public async Task<AuthorizeRequestValidationResult> ValidateAsync(
+        NameValueCollection parameters, 
+        ClaimsPrincipal subject = null, 
+        AuthorizeRequestType authorizeRequestType = AuthorizeRequestType.Authorize)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeRequestValidator.Validate");
         
@@ -67,7 +70,8 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             Options = _options,
             IssuerName = await _issuerNameService.GetCurrentAsync(),
             Subject = subject ?? Principal.Anonymous,
-            Raw = parameters ?? throw new ArgumentNullException(nameof(parameters))
+            Raw = parameters ?? throw new ArgumentNullException(nameof(parameters)),
+            AuthorizeRequestType = authorizeRequestType
         };
 
         // load client_id
@@ -478,7 +482,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             return Invalid(request, OidcConstants.AuthorizeErrors.InvalidTarget, "Resource indicators not allowed for response_type 'token'.");
         }
             
-        request.RequestedResourceIndiators = resourceIndicators;
+        request.RequestedResourceIndicators = resourceIndicators;
 
         //////////////////////////////////////////////////////////
         // check if scopes are valid/supported and check for resource scopes
@@ -610,15 +614,15 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
         }
 
-        var suppressed_prompt = request.Raw.Get(Constants.SuppressedPrompt);
-        if (suppressed_prompt.IsPresent())
+        var processed_prompt = request.Raw.Get(Constants.ProcessedPrompt);
+        if (processed_prompt.IsPresent())
         {
-            var prompts = suppressed_prompt.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var prompts = processed_prompt.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (prompts.All(p => _options.UserInteraction.PromptValuesSupported?.Contains(p) == true))
             {
                 if (prompts.Contains(OidcConstants.PromptModes.None) && prompts.Length > 1)
                 {
-                    LogError("suppressed_prompt contains 'none' and other values. 'none' should be used by itself.", request);
+                    LogError("processed_prompt contains 'none' and other values. 'none' should be used by itself.", request);
                     return Invalid(request, description: "Invalid prompt");
                 }
                 if (prompts.Contains(OidcConstants.PromptModes.Create) && prompts.Length > 1)
@@ -627,18 +631,16 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                     return Invalid(request, description: "Invalid prompt");
                 }
 
-                request.SuppressedPromptModes = prompts;
+                request.ProcessedPromptModes = prompts;
             }
             else
             {
-                // TODO: change to error in a major release?
-                // https://github.com/DuendeSoftware/IdentityServer/issues/845#issuecomment-1405377531
-                // https://openid.net/specs/openid-connect-prompt-create-1_0.html#name-authorization-request
-                _logger.LogDebug("Unsupported suppressed_prompt mode - ignored: " + prompt);
+                LogError("Unsupported processed_prompt mode.", request);
+                return Invalid(request, description: "Invalid prompt");
             }
         }
 
-        request.PromptModes = request.OriginalPromptModes.Except(request.SuppressedPromptModes).ToArray();
+        request.PromptModes = request.OriginalPromptModes.Except(request.ProcessedPromptModes).ToArray();
 
         //////////////////////////////////////////////////////////
         // check ui locales

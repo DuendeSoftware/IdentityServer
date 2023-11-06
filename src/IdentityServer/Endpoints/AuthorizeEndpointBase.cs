@@ -111,7 +111,7 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
 
                 if (consent != null && consent.Data == null)
                 {
-                    return await CreateErrorResultAsync("consent message is missing data");
+                    return await CreateErrorResultAsync("consent message is missing data", result.ValidatedRequest);
                 }
             }
 
@@ -225,6 +225,7 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
 
     private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription)
     {
+        Telemetry.Metrics.TokenIssuedFailure(request.ClientId, request.GrantType, error);
         return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
     }
 
@@ -233,6 +234,7 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
         if (!response.IsError)
         {
             LogTokens(response);
+            Telemetry.Metrics.TokenIssued(response.Request.ClientId, response.Request.GrantType);
             return _events.RaiseAsync(new TokenIssuedSuccessEvent(response));
         }
 
