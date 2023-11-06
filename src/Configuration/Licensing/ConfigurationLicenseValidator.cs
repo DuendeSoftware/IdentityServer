@@ -30,7 +30,7 @@ internal class ConfigurationLicenseValidator : LicenseValidator<ConfigurationLic
         
         if (!License.ConfigApiFeature)
         {
-            throw new Exception($"You are using the IdentityServer Configuration API feature. Your license for Duende IdentityServer does not include that feature. This feature requires the Business or Enterprise Edition tier of license.");
+            errors.Add($"You are using the IdentityServer Configuration API feature. Your license for Duende IdentityServer does not include that feature. This feature requires the Business or Enterprise Edition tier of license.");
         }
     }
 
