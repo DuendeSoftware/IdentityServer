@@ -36,6 +36,7 @@ public class PushedAuthorizationRequestValidator : IPushedAuthorizationRequestVa
     /// <inheritdoc />
     public async Task<PushedAuthorizationValidationResult> ValidateAsync(PushedAuthorizationRequestValidationContext context)
     {
+        IdentityServerLicenseValidator.Instance.ValidatePar();
         var validatedRequest = await ValidateRequestUriAsync(context);
         if(validatedRequest.IsError)
         {

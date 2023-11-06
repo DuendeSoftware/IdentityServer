@@ -175,6 +175,24 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
             }
         }
     }
+
+    bool ValidateParWarned = false;
+    public void ValidatePar()
+    {
+        if(License != null)
+        {
+            if(!License.ParFeature)
+            {
+                throw new Exception("A request was made to the pushed authorization endpoint. Your license of Duende IdentityServer does not permit pushed authorization. This features requires the Business Edition or higher tier of license.");
+            }
+        }
+        else if (!ValidateParWarned)
+        {
+            ValidateParWarned = true;
+            WarningLog?.Invoke("A request was made to the pushed authorization endpoint, but you do not have a license. This feature requires the Business Edition or higher tier of license.", Array.Empty<object>());
+        }
+    }
+
     public void ValidateResourceIndicators(IEnumerable<string> resourceIndicators)
     {
         if (resourceIndicators?.Any() == true)

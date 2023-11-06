@@ -42,6 +42,16 @@ public class IdentityServerLicense : License
                 KeyManagementFeature = true;
                 break;
         }
+        
+        ParFeature = claims.HasClaim("feature", "par");
+        switch (Edition)
+        {
+            case LicenseEdition.Enterprise:
+            case LicenseEdition.Business:
+            case LicenseEdition.Community:
+                ParFeature = true;
+                break;
+        }
 
         ResourceIsolationFeature = claims.HasClaim("feature", "resource_isolation");
         switch (Edition)
@@ -166,6 +176,10 @@ public class IdentityServerLicense : License
     /// Automatic key management
     /// </summary>
     public bool KeyManagementFeature { get; set; }
+    /// <summary>
+    /// PAR
+    /// </summary>
+    public bool ParFeature { get; set; }
     /// <summary>
     /// Resource isolation
     /// </summary>

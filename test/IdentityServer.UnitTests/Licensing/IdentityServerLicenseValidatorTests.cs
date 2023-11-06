@@ -65,6 +65,7 @@ public class IdentityServerLicenseValidatorTests
             //subject.BffFeature.Should().BeTrue();
             subject.RedistributionFeature.Should().BeFalse();
             subject.CibaFeature.Should().BeTrue();
+            subject.ParFeature.Should().BeTrue();
         }
         {
             var subject = new IdentityServerLicense(new Claim("edition", "business"));
@@ -81,6 +82,7 @@ public class IdentityServerLicenseValidatorTests
             //subject.BffFeature.Should().BeTrue();
             subject.RedistributionFeature.Should().BeFalse();
             subject.CibaFeature.Should().BeFalse();
+            subject.ParFeature.Should().BeTrue();
         }
         {
             var subject = new IdentityServerLicense(new Claim("edition", "starter"));
@@ -97,6 +99,7 @@ public class IdentityServerLicenseValidatorTests
             //subject.BffFeature.Should().BeFalse();
             subject.RedistributionFeature.Should().BeFalse();
             subject.CibaFeature.Should().BeFalse();
+            subject.ParFeature.Should().BeFalse();
         }
         {
             var subject = new IdentityServerLicense(new Claim("edition", "community"));
@@ -113,6 +116,7 @@ public class IdentityServerLicenseValidatorTests
             //subject.BffFeature.Should().BeTrue();
             subject.RedistributionFeature.Should().BeFalse();
             subject.CibaFeature.Should().BeTrue();
+            subject.ParFeature.Should().BeTrue();
         }
 
         // BFF
@@ -245,7 +249,8 @@ public class IdentityServerLicenseValidatorTests
                 new Claim("feature", "dpop"),
                 new Claim("feature", "bff"),
                 new Claim("feature", "ciba"),
-                new Claim("feature", "dynamic_providers"));
+                new Claim("feature", "dynamic_providers"),
+                new Claim("feature", "par"));
             subject.ClientLimit.Should().Be(20);
             subject.IssuerLimit.Should().Be(5);
             subject.KeyManagementFeature.Should().BeTrue();
@@ -257,6 +262,7 @@ public class IdentityServerLicenseValidatorTests
             subject.DynamicProvidersFeature.Should().BeTrue();
             subject.RedistributionFeature.Should().BeTrue();
             subject.CibaFeature.Should().BeTrue();
+            subject.ParFeature.Should().BeTrue();
         }
         {
             var subject = new IdentityServerLicense(
