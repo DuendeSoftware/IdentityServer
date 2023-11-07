@@ -492,6 +492,7 @@ public static class IdentityServerBuilderExtensionsAdditional
     /// <typeparam name="T"></typeparam>
     /// <param name="builder">The builder.</param>
     /// <returns></returns>
+    [Obsolete("This feature is deprecated. Consider using Pushed Authorization Requests instead.")]
     public static IIdentityServerBuilder AddAuthorizationParametersMessageStore<T>(this IIdentityServerBuilder builder)
         where T : class, IAuthorizationParametersMessageStore
     {

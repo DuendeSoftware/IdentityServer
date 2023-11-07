@@ -74,9 +74,12 @@ class AuthorizeInteractionPageHttpWriter : IHttpResponseWriter<AuthorizeInteract
     {
         var returnUrl = _urls.BasePath.EnsureTrailingSlash() + ProtocolRoutePaths.AuthorizeCallback;
 
+        // IAuthorizationParametersMessageStore is deprecated and will be removed someday
         if (_authorizationParametersMessageStore != null)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var msg = new Message<IDictionary<string, string[]>>(result.Request.ToOptimizedFullDictionary());
+#pragma warning restore CS0618 // Type or member is obsolete
             var id = await _authorizationParametersMessageStore.WriteAsync(msg);
             returnUrl = returnUrl.AddQueryString(Constants.AuthorizationParamsStore.MessageStoreIdParameterName, id);
         }

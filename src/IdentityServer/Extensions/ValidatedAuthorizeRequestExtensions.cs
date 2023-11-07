@@ -187,6 +187,7 @@ public static class ValidatedAuthorizeRequestExtensions
         return request.ToOptimizedRawValues().ToQueryString();
     }
 
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public static IDictionary<string, string[]> ToOptimizedFullDictionary(this ValidatedAuthorizeRequest request)
     {
         return request.ToOptimizedRawValues().ToFullDictionary();
