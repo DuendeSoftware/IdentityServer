@@ -16,7 +16,7 @@ namespace Duende.IdentityServer.Validation;
 /// cref="IAuthorizeRequestValidator"/> to validate the pushed parameters as if
 /// they had been sent to the authorize endpoint directly. 
 /// </summary>
-public class PushedAuthorizationRequestValidator : IPushedAuthorizationRequestValidator
+internal class PushedAuthorizationRequestValidator : IPushedAuthorizationRequestValidator
 {
 
     private readonly IAuthorizeRequestValidator _authorizeRequestValidator;
@@ -36,6 +36,7 @@ public class PushedAuthorizationRequestValidator : IPushedAuthorizationRequestVa
     /// <inheritdoc />
     public async Task<PushedAuthorizationValidationResult> ValidateAsync(PushedAuthorizationRequestValidationContext context)
     {
+        IdentityServerLicenseValidator.Instance.ValidatePar();
         var validatedRequest = await ValidateRequestUriAsync(context);
         if(validatedRequest.IsError)
         {
@@ -63,7 +64,7 @@ public class PushedAuthorizationRequestValidator : IPushedAuthorizationRequestVa
     /// context.</param>
     /// <returns>A task containing the <see
     /// cref="PushedAuthorizationValidationResult"/>.</returns>
-    protected virtual Task<PushedAuthorizationValidationResult> ValidateRequestUriAsync(PushedAuthorizationRequestValidationContext context)
+    private Task<PushedAuthorizationValidationResult> ValidateRequestUriAsync(PushedAuthorizationRequestValidationContext context)
     {
         // Reject request_uri parameter
         if (context.RequestParameters.Get(OidcConstants.AuthorizeRequest.RequestUri).IsPresent())
