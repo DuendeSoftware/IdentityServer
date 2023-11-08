@@ -22,12 +22,15 @@ public class DynamicClientRegistrationResponseGenerator : IDynamicClientRegistra
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    private readonly ILogger<DynamicClientRegistrationResponseGenerator> _logger;
+    /// <summary>
+    /// The logger.
+    /// </summary>
+    protected readonly ILogger<DynamicClientRegistrationResponseGenerator> Logger;
 
     /// <inheritdoc/>
     public DynamicClientRegistrationResponseGenerator(ILogger<DynamicClientRegistrationResponseGenerator> logger)
     {
-        _logger = logger;
+        Logger = logger;
     }
 
     /// <inheritdoc/>
@@ -41,7 +44,7 @@ public class DynamicClientRegistrationResponseGenerator : IDynamicClientRegistra
     /// <inheritdoc/>
     public virtual Task WriteContentTypeError(HttpContext context)
     {
-        _logger.LogDebug("Invalid content type in dynamic client registration request");
+        Logger.LogDebug("Invalid content type in dynamic client registration request");
         context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
         return Task.CompletedTask;
     }
