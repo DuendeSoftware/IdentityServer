@@ -10,7 +10,7 @@ namespace Duende.IdentityServer.EntityFramework.Entities;
 
 public class ServerSideSession
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
     public string Key { get; set; }
     public string Scheme { get; set; }
     public string SubjectId { get; set; }
