@@ -75,6 +75,7 @@ public class Index : PageModel
     {
         await _interaction.RevokeUserConsentAsync(ClientId);
         await _events.RaiseAsync(new GrantsRevokedEvent(User.GetSubjectId(), ClientId));
+        Telemetry.Metrics.GrantsRevoked(ClientId);
 
         return RedirectToPage("/Grants/Index");
     }

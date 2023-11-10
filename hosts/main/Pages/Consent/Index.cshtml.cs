@@ -66,7 +66,7 @@ public class Index : PageModel
 
             // emit event
             await _events.RaiseAsync(new ConsentDeniedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues));
-            Telemetry.Metrics.ConsentDeniedEvent(request.Client.ClientId, request.ValidatedResources.RawScopeValues);
+            Telemetry.Metrics.ConsentDeniedEvent(request.Client.ClientId, request.ValidatedResources.ParsedScopes.Select(s => s.ParsedName));
         }
         // user clicked 'yes' - validate the data
         else if (Input.Button == "yes")
@@ -90,7 +90,7 @@ public class Index : PageModel
                 // emit event
                 await _events.RaiseAsync(new ConsentGrantedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues, grantedConsent.ScopesValuesConsented, grantedConsent.RememberConsent));
                 Telemetry.Metrics.ConsentGrantedEvent(request.Client.ClientId, grantedConsent.ScopesValuesConsented, grantedConsent.RememberConsent);
-                var denied = request.ValidatedResources.RawScopeValues.Except(grantedConsent.ScopesValuesConsented);
+                var denied = request.ValidatedResources.ParsedScopes.Select(s => s.ParsedName).Except(grantedConsent.ScopesValuesConsented);
                 Telemetry.Metrics.ConsentDeniedEvent(request.Client.ClientId, denied);
             }
             else
