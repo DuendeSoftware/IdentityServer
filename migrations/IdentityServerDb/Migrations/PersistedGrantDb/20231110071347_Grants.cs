@@ -74,7 +74,7 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 name: "PushedAuthorizationRequests",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ReferenceValueHash = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     ExpiresAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -89,7 +89,7 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 name: "ServerSideSessions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Key = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Scheme = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),

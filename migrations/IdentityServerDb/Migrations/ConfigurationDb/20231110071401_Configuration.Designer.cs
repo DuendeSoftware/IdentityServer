@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServerDb.Migrations.ConfigurationDb
 {
     [DbContext(typeof(ConfigurationDbContext))]
-    [Migration("20231006192633_Configuration")]
+    [Migration("20231110071401_Configuration")]
     partial class Configuration
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace IdentityServerDb.Migrations.ConfigurationDb
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0-preview.7.23375.4")
+                .HasAnnotation("ProductVersion", "8.0.0-rc.2.23480.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);

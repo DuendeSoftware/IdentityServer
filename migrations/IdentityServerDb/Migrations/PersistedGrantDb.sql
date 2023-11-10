@@ -55,7 +55,7 @@ CREATE TABLE [PersistedGrants] (
 GO
 
 CREATE TABLE [PushedAuthorizationRequests] (
-    [Id] int NOT NULL IDENTITY,
+    [Id] bigint NOT NULL IDENTITY,
     [ReferenceValueHash] nvarchar(64) NOT NULL,
     [ExpiresAtUtc] datetime2 NOT NULL,
     [Parameters] nvarchar(max) NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE [PushedAuthorizationRequests] (
 GO
 
 CREATE TABLE [ServerSideSessions] (
-    [Id] int NOT NULL IDENTITY,
+    [Id] bigint NOT NULL IDENTITY,
     [Key] nvarchar(100) NOT NULL,
     [Scheme] nvarchar(100) NOT NULL,
     [SubjectId] nvarchar(100) NOT NULL,
@@ -121,7 +121,7 @@ CREATE INDEX [IX_ServerSideSessions_SubjectId] ON [ServerSideSessions] ([Subject
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20231006192628_Grants', N'8.0.0-preview.7.23375.4');
+VALUES (N'20231110071347_Grants', N'8.0.0-rc.2.23480.1');
 GO
 
 COMMIT;
