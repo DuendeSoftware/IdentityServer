@@ -9,7 +9,7 @@ using System.Diagnostics.Metrics;
 namespace Duende.IdentityServer;
 
 /// <summary>
-/// Constants for Telemetry
+/// Telemetry helpers
 /// </summary>
 public static class Telemetry
 {
