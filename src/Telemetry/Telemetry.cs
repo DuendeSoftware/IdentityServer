@@ -14,7 +14,7 @@ namespace Duende.IdentityServer;
 public static class Telemetry
 {
     private readonly static string ServiceVersion = typeof(Telemetry).Assembly.GetName().Version.ToString();
-    
+
     /// <summary>
     /// Service name used for Duende IdentityServer.
     /// </summary>
@@ -217,6 +217,11 @@ public static class Telemetry
             public const string Path = "path";
 
             /// <summary>
+            /// pushed_authorization_request
+            /// </summary>
+            public const string PushedAuthorizationRequest = "pushed_authorization_request";
+
+            /// <summary>
             /// scheme
             /// </summary>
             public const string Scheme = "scheme";
@@ -264,7 +269,7 @@ public static class Telemetry
         /// <param name="clientId">Client involved in event</param>
         public static void Success(string clientId = null)
         {
-            if(clientId != null)
+            if (clientId != null)
             {
                 SuccessCounter.Add(1, tag: new("client", clientId));
             }
@@ -273,7 +278,7 @@ public static class Telemetry
                 SuccessCounter.Add(1);
             }
         }
-        
+
         /// <summary>
         /// High level number of failed operations. Probably most useful together with <see cref="SuccessCounter"/>.
         /// </summary>
@@ -286,7 +291,7 @@ public static class Telemetry
         /// <param name="clientId">Client involved in event</param>
         public static void Failure(string error, string clientId = null)
         {
-            if(clientId != null)
+            if (clientId != null)
             {
                 FailureCounter.Add(1, new("client", clientId), new("error", error));
             }
@@ -558,6 +563,7 @@ public static class Telemetry
         /// Helper method to increase <see cref="PushedAuthorizationRequestFailureCounter"/>
         /// </summary>
         /// <param name="clientId"></param>
+        /// <param name="error">Error reason</param>
         public static void PushedAuthorizationRequestFailure(string clientId, string error)
         {
             Failure(clientId);
@@ -640,10 +646,14 @@ public static class Telemetry
         /// </summary>
         /// <param name="clientId">Client Id</param>
         /// <param name="grantType">Grant Type</param>
-        public static void TokenIssued(string clientId, string grantType)
+        /// <param name="isPushedAuthorizationRequest">Is this a result of a pushed authorization request?</param>
+        public static void TokenIssued(string clientId, string grantType, bool isPushedAuthorizationRequest)
         {
             Success(clientId);
-            TokenIssuedCounter.Add(1, new(Tags.Client, clientId), new(Tags.GrantType, grantType));
+            TokenIssuedCounter.Add(1,
+                new(Tags.Client, clientId),
+                new(Tags.GrantType, grantType),
+                new(Tags.PushedAuthorizationRequest, isPushedAuthorizationRequest));
         }
 
         /// <summary>
@@ -657,10 +667,15 @@ public static class Telemetry
         /// <param name="clientId">Client Id</param>
         /// <param name="grantType">Grant Type</param>
         /// <param name="error">Error</param>
-        public static void TokenIssuedFailure(string clientId, string grantType, string error)
+        /// <param name="isPushedAuthorizationRequest">Is this a result of a pushed authorization request?</param>
+        public static void TokenIssuedFailure(string clientId, string grantType, bool isPushedAuthorizationRequest, string error)
         {
             Failure(error, clientId);
-            TokenIssuedFailureCounter.Add(1, new(Tags.Client, clientId), new (Tags.GrantType, grantType), new(Tags.Error, error));
+            TokenIssuedFailureCounter.Add(1,
+                new(Tags.Client, clientId),
+                new(Tags.GrantType, grantType),
+                new(Tags.PushedAuthorizationRequest, isPushedAuthorizationRequest),
+                new(Tags.Error, error));
         }
 
         /// <summary>
