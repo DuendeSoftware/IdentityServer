@@ -116,6 +116,16 @@ public static class Telemetry
             public const string IntrospectionFailure = "introspection_failure";
 
             /// <summary>
+            /// pushed_authorization_request
+            /// </summary>
+            public const string PushedAuthorizationRequest = "pushed_authorization_request";
+
+            /// <summary>
+            /// pushed_authorization_request_failure
+            /// </summary>
+            public const string PushedAuthorizationRequestFailure = "pushed_authorization_request_failure";
+
+            /// <summary>
             /// resourceowner_authentication
             /// </summary>
             public const string ResourceOwnerAuthentication = "resourceowner_authentication";
@@ -520,6 +530,38 @@ public static class Telemetry
         {
             Failure(error, callerId);
             IntrospectionFailureCounter.Add(1, new(Tags.Caller, callerId), new(Tags.Caller, error));
+        }
+
+        /// <summary>
+        /// Pushed Authorization Request Counter
+        /// </summary>
+        public static Counter<long> PushedAuthorizationRequestCounter
+            = Meter.CreateCounter<long>(Counters.PushedAuthorizationRequest);
+
+        /// <summary>
+        /// Helper method to increase <see cref="PushedAuthorizationRequestCounter"/>
+        /// </summary>
+        /// <param name="clientId"></param>
+        public static void PushedAuthorizationRequest(string clientId)
+        {
+            Success(clientId);
+            PushedAuthorizationRequestCounter.Add(1, tag: new(Tags.Client, clientId));
+        }
+
+        /// <summary>
+        /// Pushed Authorization Failure Request Counter
+        /// </summary>
+        public static Counter<long> PushedAuthorizationRequestFailureCounter
+            = Meter.CreateCounter<long>(Counters.PushedAuthorizationRequestFailure);
+
+        /// <summary>
+        /// Helper method to increase <see cref="PushedAuthorizationRequestFailureCounter"/>
+        /// </summary>
+        /// <param name="clientId"></param>
+        public static void PushedAuthorizationRequestFailure(string clientId, string error)
+        {
+            Failure(clientId);
+            PushedAuthorizationRequestCounter.Add(1, new(Tags.Client, clientId), new(Tags.Error, error));
         }
 
         /// <summary>
