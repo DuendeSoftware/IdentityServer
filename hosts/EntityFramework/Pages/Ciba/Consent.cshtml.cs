@@ -69,7 +69,7 @@ public class Consent : PageModel
 
             // emit event
             await _events.RaiseAsync(new ConsentDeniedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues));
-            Telemetry.Metrics.ConsentDeniedEvent(request.Client.ClientId, request.ValidatedResources.ParsedScopes.Select(s => s.ParsedName);
+            Telemetry.Metrics.ConsentDeniedEvent(request.Client.ClientId, request.ValidatedResources.ParsedScopes.Select(s => s.ParsedName));
         }
         // user clicked 'yes' - validate the data
         else if (Input.Button == "yes")
