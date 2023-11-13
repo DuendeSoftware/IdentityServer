@@ -93,7 +93,7 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
                 Telemetry.Metrics.PushedAuthorizationRequestFailure(parValidationResult.ValidatedRequest.ClientId, fail.Error);
                 return new PushedAuthorizationErrorResult(fail);
             default:
-                throw new Exception("Can't happen");
+                throw new Exception("Unexpected pushed authorization response. The result of the pushed authorization response generator should be either a PushedAuthorizationSuccess or PushedAuthorizationFailure.");
         }
     }
 
