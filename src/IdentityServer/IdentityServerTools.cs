@@ -49,15 +49,30 @@ public interface IIdentityServerTools
     /// <returns></returns>
     /// <exception cref="System.ArgumentNullException">claims</exception>
     Task<string> IssueJwtAsync(int lifetime, string issuer, string tokenType, IEnumerable<Claim> claims);
+
+    /// <summary>
+    /// Service Provider to resolve services.
+    /// </summary>
+    public IServiceProvider ServiceProvider { get; }
+
+    /// <summary>
+    /// Issuer name service
+    /// </summary>
+    public IIssuerNameService IssuerNameService { get; }
 }
 
 /// <summary>
 /// Class for useful helpers for interacting with IdentityServer
 /// </summary>
+[Obsolete("Do not reference the IdentityServerTools implementation directly, use the IIdentityServerTools interface")]
 public class IdentityServerTools : IIdentityServerTools
 {
-    internal readonly IServiceProvider ServiceProvider;
-    internal readonly IIssuerNameService IssuerNameService;
+    /// <inheritdoc/>
+    public IServiceProvider ServiceProvider { get; }
+
+    /// <inheritdoc/>
+    public IIssuerNameService IssuerNameService { get; }
+
     private readonly ITokenCreationService _tokenCreation;
     private readonly IClock _clock;
 

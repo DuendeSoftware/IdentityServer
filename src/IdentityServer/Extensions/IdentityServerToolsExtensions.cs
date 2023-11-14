@@ -13,9 +13,9 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer;
 
 /// <summary>
-/// Extensions for IdentityServerTools
+/// Extensions for IIdentityServerTools
 /// </summary>
-public static class IdentityServerToolsExtensions
+public static class IIdentityServerToolsExtensions
 {
     /// <summary>
     /// Issues the client JWT.
@@ -27,7 +27,7 @@ public static class IdentityServerToolsExtensions
     /// <param name="audiences">The audiences.</param>
     /// <param name="additionalClaims">Additional claims</param>
     /// <returns></returns>
-    public static async Task<string> IssueClientJwtAsync(this IdentityServerTools tools,
+    public static async Task<string> IssueClientJwtAsync(this IIdentityServerTools tools,
         string clientId,
         int lifetime,
         IEnumerable<string> scopes = null,
