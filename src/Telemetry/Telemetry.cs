@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using Duende.IdentityServer.Validation;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -217,9 +218,9 @@ public static class Telemetry
             public const string Path = "path";
 
             /// <summary>
-            /// pushed_authorization_request
+            /// authorize_request_type
             /// </summary>
-            public const string PushedAuthorizationRequest = "pushed_authorization_request";
+            public const string AuthorizeRequestType = "authorize_request_type";
 
             /// <summary>
             /// scheme
@@ -646,14 +647,14 @@ public static class Telemetry
         /// </summary>
         /// <param name="clientId">Client Id</param>
         /// <param name="grantType">Grant Type</param>
-        /// <param name="isPushedAuthorizationRequest">Is this a result of a pushed authorization request?</param>
-        public static void TokenIssued(string clientId, string grantType, bool isPushedAuthorizationRequest)
+        /// <param name="requestType">Type of authorization request</param>
+        public static void TokenIssued(string clientId, string grantType, AuthorizeRequestType? requestType)
         {
             Success(clientId);
             TokenIssuedCounter.Add(1,
                 new(Tags.Client, clientId),
                 new(Tags.GrantType, grantType),
-                new(Tags.PushedAuthorizationRequest, isPushedAuthorizationRequest));
+                new(Tags.AuthorizeRequestType, requestType));
         }
 
         /// <summary>
@@ -667,14 +668,14 @@ public static class Telemetry
         /// <param name="clientId">Client Id</param>
         /// <param name="grantType">Grant Type</param>
         /// <param name="error">Error</param>
-        /// <param name="isPushedAuthorizationRequest">Is this a result of a pushed authorization request?</param>
-        public static void TokenIssuedFailure(string clientId, string grantType, bool isPushedAuthorizationRequest, string error)
+        /// <param name="requestType">Type of authorization request</param>
+        public static void TokenIssuedFailure(string clientId, string grantType, AuthorizeRequestType? requestType, string error)
         {
             Failure(error, clientId);
             TokenIssuedFailureCounter.Add(1,
                 new(Tags.Client, clientId),
                 new(Tags.GrantType, grantType),
-                new(Tags.PushedAuthorizationRequest, isPushedAuthorizationRequest),
+                new(Tags.AuthorizeRequestType, requestType),
                 new(Tags.Error, error));
         }
 

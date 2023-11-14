@@ -228,7 +228,7 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
         Telemetry.Metrics.TokenIssuedFailure(
             request.ClientId,
             request.GrantType,
-            request.IsPushedAuthorizationRequest,
+            request.AuthorizeRequestType,
             error);
         return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
     }
@@ -241,7 +241,7 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
             Telemetry.Metrics.TokenIssued(
                 response.Request.ClientId,
                 response.Request.GrantType,
-                response.Request.IsPushedAuthorizationRequest);
+                response.Request.AuthorizeRequestType);
             return _events.RaiseAsync(new TokenIssuedSuccessEvent(response));
         }
 
