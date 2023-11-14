@@ -32,7 +32,7 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: |
-            8.0.100-rc.2.23502.2
+            8.0.100
     
     - run: dotnet --info
     
