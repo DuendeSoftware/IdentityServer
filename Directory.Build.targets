@@ -56,7 +56,7 @@
         <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="$(WilsonVersion)"/>
         <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(WilsonVersion)"/>
         <PackageReference Update="System.IdentityModel.Tokens.Jwt" Version="$(WilsonVersion)"/>
-        <PackageReference Update="Serilog.AspNetCore" Version="6.0.0"/>
+        <PackageReference Update="Serilog.AspNetCore" Version="8.0.0"/>
 
         <!--microsoft asp.net core -->
         <PackageReference Update="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(FrameworkVersion)"/>
