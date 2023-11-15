@@ -225,7 +225,11 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
 
     private Task RaiseFailureEventAsync(ValidatedAuthorizeRequest request, string error, string errorDescription)
     {
-        Telemetry.Metrics.TokenIssuedFailure(request.ClientId, request.GrantType, error);
+        Telemetry.Metrics.TokenIssuedFailure(
+            request.ClientId,
+            request.GrantType,
+            request.AuthorizeRequestType,
+            error);
         return _events.RaiseAsync(new TokenIssuedFailureEvent(request, error, errorDescription));
     }
 
@@ -234,7 +238,10 @@ internal abstract class AuthorizeEndpointBase : IEndpointHandler
         if (!response.IsError)
         {
             LogTokens(response);
-            Telemetry.Metrics.TokenIssued(response.Request.ClientId, response.Request.GrantType);
+            Telemetry.Metrics.TokenIssued(
+                response.Request.ClientId,
+                response.Request.GrantType,
+                response.Request.AuthorizeRequestType);
             return _events.RaiseAsync(new TokenIssuedSuccessEvent(response));
         }
 

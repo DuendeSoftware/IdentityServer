@@ -84,12 +84,17 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
 
         var response = await _responseGenerator.CreateResponseAsync(parValidationResult.ValidatedRequest);
 
-        return response switch
+        switch(response)
         {
-            PushedAuthorizationSuccess success => new PushedAuthorizationResult(success),
-            PushedAuthorizationFailure fail => new PushedAuthorizationErrorResult(fail),
-            _ => throw new Exception("Can't happen")
-        };
+            case PushedAuthorizationSuccess success:
+                Telemetry.Metrics.PushedAuthorizationRequest(parValidationResult.ValidatedRequest.Client.ClientId);
+                return new PushedAuthorizationResult(success);
+            case PushedAuthorizationFailure fail:
+                Telemetry.Metrics.PushedAuthorizationRequestFailure(parValidationResult.ValidatedRequest.ClientId, fail.Error);
+                return new PushedAuthorizationErrorResult(fail);
+            default:
+                throw new Exception("Unexpected pushed authorization response. The result of the pushed authorization response generator should be either a PushedAuthorizationSuccess or PushedAuthorizationFailure.");
+        }
     }
 
     private PushedAuthorizationErrorResult CreateErrorResult(
@@ -109,6 +114,8 @@ internal class PushedAuthorizationEndpoint : IEndpointHandler
             var details = new AuthorizeRequestValidationLog(request, _options.Logging.PushedAuthorizationSensitiveValuesFilter);
             _logger.LogInformation("{@validationDetails}", details);
         }
+
+        Telemetry.Metrics.PushedAuthorizationRequestFailure(request?.Client.ClientId, logMessage);
 
         return new PushedAuthorizationErrorResult(new PushedAuthorizationFailure
         {
