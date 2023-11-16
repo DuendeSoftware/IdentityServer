@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using Microsoft.Extensions.Configuration;
-using Duende.AccessTokenManagement;
+using IdentityModel.Client;
 
 namespace MvcPar
 {
@@ -20,7 +20,8 @@ namespace MvcPar
         
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<OidcEvents>();
+            services.AddTransient<ParOidcEvents>();
+            services.AddSingleton<IDiscoveryCache>(_ => new DiscoveryCache(Constants.Authority));
 
             // add MVC
             services.AddControllersWithViews();
@@ -47,7 +48,6 @@ namespace MvcPar
                 .AddOpenIdConnect("oidc", options =>
                 {
                     options.Authority = Constants.Authority;
-                    options.RequireHttpsMetadata = false;
 
                     options.ClientId = "mvc.par";
                     options.ClientSecret = "secret";
@@ -62,13 +62,12 @@ namespace MvcPar
                     options.Scope.Add("resource1.scope1");
                     options.Scope.Add("offline_access");
 
-                    // keeps id_token smaller
                     options.GetClaimsFromUserInfoEndpoint = true;
                     options.SaveTokens = true;
                     options.MapInboundClaims = false;
                     
-                    // needed to add JWR / private_key_jwt support
-                    options.EventsType = typeof(OidcEvents);
+                    // needed to add PAR support
+                    options.EventsType = typeof(ParOidcEvents);
                     
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
@@ -87,27 +86,6 @@ namespace MvcPar
             {
                 client.BaseAddress = new Uri(Constants.SampleApi);
             });
-            
-            // var apiKey = _configuration["HoneyCombApiKey"];
-            // var dataset = "IdentityServerDev";
-            //
-            // services.AddOpenTelemetryTracing(builder =>
-            // {
-            //     builder
-            //         //.AddConsoleExporter()
-            //         .SetResourceBuilder(
-            //             ResourceBuilder.CreateDefault()
-            //                 .AddService("MVC JAR JWT"))
-            //         //.SetSampler(new AlwaysOnSampler())
-            //         .AddHttpClientInstrumentation()
-            //         .AddAspNetCoreInstrumentation()
-            //         .AddSqlClientInstrumentation()
-            //         .AddOtlpExporter(option =>
-            //         {
-            //             option.Endpoint = new Uri("https://api.honeycomb.io");
-            //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
-            //         });
-            // });
         }
 
         public void Configure(IApplicationBuilder app)
