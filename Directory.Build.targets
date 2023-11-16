@@ -26,7 +26,7 @@
         <PackageReference Update="IdentityModel" Version="6.2.0"/>
 
         <!--build related-->
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
         <PackageReference Include="MinVer" Version="4.3.0" PrivateAssets="All"/>
         <PackageReference Update="SimpleExec" Version="11.0.0"/>
         <PackageReference Update="Bullseye" Version="4.2.1"/>
