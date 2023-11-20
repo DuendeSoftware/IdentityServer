@@ -190,7 +190,13 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.AddTransient<IJwtRequestValidator, JwtRequestValidator>();
 
         builder.Services.AddTransient<ReturnUrlParser>();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        builder.Services.AddTransient<IIdentityServerTools, IdentityServerTools>();
+        // We've added the IIdentityServerTools interface to allow mocking, but keep the old
+        // direct class registration around if anyone has a dependency on it.
         builder.Services.AddTransient<IdentityServerTools>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
         builder.Services.AddTransient<IReturnUrlParser, OidcReturnUrlParser>();
         builder.Services.AddScoped<IUserSession, DefaultUserSession>();
