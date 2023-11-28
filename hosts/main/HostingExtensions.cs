@@ -48,7 +48,8 @@ internal static class HostingExtensions
 
         openTelemetry.WithMetrics(m => m
             .AddMeter(Telemetry.ServiceName)
-            .AddPrometheusExporter());
+            .AddMeter(Pages.Telemetry.ServiceName)
+            .AddPrometheusExporter()) ;
 
         return builder.Build();
     }
