@@ -1,5 +1,3 @@
-using Duende.IdentityServer.Events;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Diagnostics.Metrics;
 
 namespace IdentityServerHost.Pages;
