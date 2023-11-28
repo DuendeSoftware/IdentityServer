@@ -104,7 +104,7 @@ public static class Telemetry
         /// </summary>
         /// <param name="clientId">Client id</param>
         /// <param name="scopes">Scope names. Each element is added on it's own to the counter</param>
-        public static void ConsentGrantedEvent(string clientId, IEnumerable<string> scopes, bool remember)
+        public static void ConsentGranted(string clientId, IEnumerable<string> scopes, bool remember)
         {
             ArgumentNullException.ThrowIfNull(scopes);
             foreach(var scope in scopes)
@@ -121,7 +121,7 @@ public static class Telemetry
         /// </summary>
         /// <param name="clientId">Client id</param>
         /// <param name="scopes">Scope names. Each element is added on it's own to the counter</param>
-        public static void ConsentDeniedEvent(string clientId, IEnumerable<string> scopes)
+        public static void ConsentDenied(string clientId, IEnumerable<string> scopes)
         {
             ArgumentNullException.ThrowIfNull(scopes);
             foreach (var scope in scopes)
