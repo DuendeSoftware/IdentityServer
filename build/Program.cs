@@ -27,7 +27,6 @@ namespace build
             public const string CodeQL = "codeql";
             public const string Test = "test";
             public const string Pack = "pack";
-            public const string SignBinary = "sign-binary";
             public const string SignPackage = "sign-package";
         }
 
@@ -50,13 +49,7 @@ namespace build
             
             Target(Targets.CodeQL, () =>
             {
-                //Run("dotnet", $"clean {solutionCodeQL} -c Release -v m --nologo");
                 Run("dotnet", $"build {solutionCodeQL} -c Release --nologo");
-            });
-
-            Target(Targets.SignBinary, DependsOn(Targets.Build, Targets.RestoreTools), () =>
-            {
-                // sign all dlls
             });
 
             Target(Targets.Test, DependsOn(Targets.Build), () =>
@@ -94,8 +87,7 @@ namespace build
             });
 
             Target("default", DependsOn(Targets.Test, Targets.Pack));
-
-            Target("sign", DependsOn(Targets.SignBinary, Targets.Test, Targets.SignPackage));
+            Target("sign", DependsOn(Targets.Test, Targets.SignPackage));
 
             await RunTargetsAndExitAsync(args, ex => ex is SimpleExec.ExitCodeException || ex.Message.EndsWith(envVarMissing));
         }
@@ -128,4 +120,3 @@ namespace build
         }
     }
 }
-
