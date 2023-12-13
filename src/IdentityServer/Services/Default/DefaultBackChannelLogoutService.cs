@@ -30,7 +30,7 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
     protected ISystemClock Clock { get; }
         
     /// <summary>
-    /// The IdentityServerTools used to create and the JWT.
+    /// The IdentityServerTools used to create the JWT.
     /// </summary>
     protected IdentityServerTools Tools { get; }
 
