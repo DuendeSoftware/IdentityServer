@@ -6,16 +6,21 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Stores.Default;
+using Duende.IdentityServer.Stores.Serialization;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
 using IntegrationTests.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using static Duende.IdentityServer.Models.IdentityResources;
 
 namespace IntegrationTests.Endpoints.Authorize;
 
@@ -358,5 +363,81 @@ public class ConsentTests
         authorization.IsError.Should().BeTrue();
         authorization.Error.Should().Be("unmet_authentication_requirements");
         authorization.ErrorDescription.Should().Be("some description");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task legacy_consents_should_apply_and_be_migrated_to_hex_encoding()
+    {
+        var clientId = "client2";
+        var subjectId = "bob";
+
+        // Create and serialize a consent record
+        _mockPipeline.Options.PersistentGrants.DataProtectData = false;
+        var serializer = _mockPipeline.Resolve<IPersistentGrantSerializer>();
+        var serialized = serializer.Serialize(new Consent
+        {
+            ClientId = clientId,
+            SubjectId = subjectId,
+            CreationTime = DateTime.UtcNow,
+            Scopes = new List<string> { "openid" }
+        });
+        
+        // Store the consent using the legacy key format
+        var persistedGrantStore = _mockPipeline.Resolve<IPersistedGrantStore>();
+        var legacyKey = $"{clientId}|{subjectId}:{IdentityServerConstants.PersistedGrantTypes.UserConsent}".Sha256();
+        var legacyConsent = new PersistedGrant
+        {
+            Key = legacyKey,
+            Type = IdentityServerConstants.PersistedGrantTypes.UserConsent,
+            ClientId = clientId,
+            SubjectId = subjectId,
+            SessionId = Guid.NewGuid().ToString(),
+            Description = null,
+            CreationTime = DateTime.UtcNow,
+            Expiration = null,
+            ConsumedTime = null,
+            Data = serialized
+        };
+        await persistedGrantStore.StoreAsync(legacyConsent);
+
+        // Create a session cookie
+        await _mockPipeline.LoginAsync("bob");
+        
+        // Start a challenge
+        var url = _mockPipeline.CreateAuthorizeUrl(
+           clientId: "client2",
+           responseType: "id_token",
+           scope: "openid",
+           redirectUri: "https://client2/callback",
+           state: "123_state",
+           nonce: "123_nonce"
+        );
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+
+        // The existing legacy consent should apply - user isn't show consent screen
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location.ToString().Should().StartWith("https://client2/callback");
+        _mockPipeline.ConsentWasCalled.Should().BeFalse();
+
+        // The legacy consent should be migrated to use a new key...
+        
+        // Old key shouldn't find anything
+        var grant = await persistedGrantStore.GetAsync(legacyKey);
+        grant.Should().BeNull();
+        
+        // New key should
+        var hexEncodedKeyNoHash = $"{clientId}|{subjectId}-1:{IdentityServerConstants.PersistedGrantTypes.UserConsent}";
+        using (var sha = SHA256.Create())
+        {
+            var bytes = Encoding.UTF8.GetBytes(hexEncodedKeyNoHash);
+            var hash = sha.ComputeHash(bytes);
+            var hexEncodedKey = BitConverter.ToString(hash).Replace("-", "");
+            grant = await persistedGrantStore.GetAsync(hexEncodedKey);
+            grant.Should().NotBeNull();
+            grant.ClientId.Should().Be(clientId);
+            grant.SubjectId.Should().Be(subjectId);
+        }
     }
 }
