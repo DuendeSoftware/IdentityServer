@@ -48,23 +48,22 @@ public class IdentityServerTools
     /// <exception cref="System.ArgumentNullException">claims</exception>
     public virtual async Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims)
     {
-        var tokenType = OidcConstants.TokenTypes.AccessToken;
         var issuer = await IssuerNameService.GetCurrentAsync();
-        return await IssueJwtAsync(lifetime, issuer, tokenType, claims);
+        return await IssueJwtAsync(lifetime, issuer, claims);
     }
 
     /// <summary>
     /// Issues a JWT.
     /// </summary>
     /// <param name="lifetime">The lifetime.</param>
-    /// <param name="tokenType">The token type.</param>
+    /// <param name="issuer">The issuer.</param>
     /// <param name="claims">The claims.</param>
     /// <returns></returns>
     /// <exception cref="System.ArgumentNullException">claims</exception>
-    public virtual async Task<string> IssueJwtAsync(int lifetime, string tokenType, IEnumerable<Claim> claims)
+    public virtual Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims)
     {
-        var issuer = await IssuerNameService.GetCurrentAsync();
-        return await IssueJwtAsync(lifetime, issuer, tokenType, claims);
+        var tokenType = OidcConstants.TokenTypes.AccessToken;
+        return IssueJwtAsync(lifetime, issuer, tokenType, claims);
     }
 
     /// <summary>

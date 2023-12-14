@@ -24,14 +24,17 @@ public class DefaultBackChannelLogoutServiceTests
 {
     private class ServiceTestHarness : DefaultBackChannelLogoutService
     {
-        public ServiceTestHarness(ISystemClock clock,
-                                  IdentityServerTools tools,
-                                  ILogoutNotificationService logoutNotificationService,
-                                  IBackChannelLogoutHttpClient backChannelLogoutHttpClient,
-                                  ILogger<IBackChannelLogoutService> logger) 
-            : base(clock, tools, logoutNotificationService, backChannelLogoutHttpClient, logger)
+        public ServiceTestHarness(
+            ISystemClock clock,
+            IdentityServerTools tools,
+            ILogoutNotificationService logoutNotificationService,
+            IBackChannelLogoutHttpClient backChannelLogoutHttpClient,
+            IIssuerNameService issuerNameService,
+            ILogger<IBackChannelLogoutService> logger) 
+            : base(clock, tools, logoutNotificationService, backChannelLogoutHttpClient, issuerNameService, logger)
         {
         }
+
 
         // CreateTokenAsync is protected, so we use this wrapper to exercise it in our tests
         public async Task<string> ExerciseCreateTokenAsync(BackChannelLogoutRequest request)
@@ -51,14 +54,15 @@ public class DefaultBackChannelLogoutServiceTests
 
         var tokenCreation = new DefaultTokenCreationService(new MockClock(), mockKeyMaterialService, TestIdentityServerOptions.Create(), TestLogger.Create<DefaultTokenCreationService>());
 
+        var issuerNameService = new TestIssuerNameService(expected);
         var tools = new IdentityServerTools(
             null, // service provider is unused 
-            new TestIssuerNameService(expected),
+            issuerNameService,
             tokenCreation,
             new MockClock()
         );
 
-        var subject = new ServiceTestHarness(null, tools, null, null, null);
+        var subject = new ServiceTestHarness(null, tools, null, null, issuerNameService, null);
         var rawToken = await subject.ExerciseCreateTokenAsync(new BackChannelLogoutRequest
         {
             ClientId = "test_client",
