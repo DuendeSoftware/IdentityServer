@@ -19,7 +19,7 @@ namespace Duende.IdentityServer;
 /// </summary>
 public class IdentityServerTools
 {
-    internal readonly IServiceProvider ServiceProvider;
+    internal readonly IServiceProvider ServiceProvider; // TODO - consider removing this, as it is not used.
     internal readonly IIssuerNameService IssuerNameService;
     private readonly ITokenCreationService _tokenCreation;
     private readonly ISystemClock _clock;
