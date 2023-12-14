@@ -72,7 +72,11 @@ public class DefaultGrantStore<T>
     }
 
     private const string KeySeparator = ":";
-    const string HexEncodingFormatSuffix = "-1";
+    
+    /// <summary>
+    /// The suffix added to keys to indicate that hex encoding should be used.
+    /// </summary>
+    protected const string HexEncodingFormatSuffix = "-1";
 
     /// <summary>
     /// Creates a handle.
