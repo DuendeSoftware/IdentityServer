@@ -43,7 +43,7 @@ class ServerSideSessionRefreshTokenService : IRefreshTokenService
 
 
     /// <inheritdoc/>
-    public async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client client)
+    public virtual async Task<TokenValidationResult> ValidateRefreshTokenAsync(string tokenHandle, Client client)
     {
         var result = await Inner.ValidateRefreshTokenAsync(tokenHandle, client);
 
