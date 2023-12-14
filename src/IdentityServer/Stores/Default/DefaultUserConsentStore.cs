@@ -71,8 +71,11 @@ public class DefaultUserConsentStore : DefaultGrantStore<Consent>, IUserConsentS
         {
             var legacyKey = GetConsentKey(subjectId, clientId, useHexEncoding: false);
             consent = await GetItemAsync(legacyKey);
-            await StoreUserConsentAsync(consent); // Write back the consent record to update its key
-            await RemoveItemAsync(legacyKey); 
+            if(consent != null)
+            {
+                await StoreUserConsentAsync(consent); // Write back the consent record to update its key
+                await RemoveItemAsync(legacyKey); 
+            }
         }
 
         return consent;
