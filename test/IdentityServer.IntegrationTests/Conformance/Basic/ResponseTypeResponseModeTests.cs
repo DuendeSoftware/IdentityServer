@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
+using IdentityModel;
 using IntegrationTests.Common;
 using Xunit;
 
@@ -111,6 +112,6 @@ public class ResponseTypeResponseModeTests
         _mockPipeline.BrowserClient.AllowAutoRedirect = true;
         var response = await _mockPipeline.BrowserClient.GetAsync(url);
 
-        _mockPipeline.ErrorMessage.Error.Should().Be("unsupported_response_type");
+        _mockPipeline.ErrorMessage.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
     }
 }

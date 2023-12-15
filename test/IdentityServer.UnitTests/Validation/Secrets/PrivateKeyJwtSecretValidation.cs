@@ -125,6 +125,7 @@ public class PrivateKeyJwtSecretValidation
     [InlineData("https://idsrv3.com/")]
     [InlineData("https://idsrv3.com/connect/token")]
     [InlineData("https://idsrv3.com/connect/ciba")]
+    [InlineData("https://idsrv3.com/connect/par")]
     public async Task Valid_aud(string aud)
     {
         var clientId = "certificate_base64_valid";

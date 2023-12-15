@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Mappers;
@@ -9,13 +12,13 @@ namespace IdentityServerHost.Pages.Admin.ApiScopes;
 public class ApiScopeSummaryModel
 {
     [Required]
-    public string Name { get; set; }
-    public string DisplayName { get; set; }
+    public string Name { get; set; } = default!;
+    public string? DisplayName { get; set; }
 }
 
 public class ApiScopeModel : ApiScopeSummaryModel
 {
-    public string UserClaims { get; set; }
+    public string? UserClaims { get; set; } = default!;
 }
 
 
@@ -28,7 +31,7 @@ public class ApiScopeRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<ApiScopeSummaryModel>> GetAllAsync(string filter = null)
+    public async Task<IEnumerable<ApiScopeSummaryModel>> GetAllAsync(string? filter = null)
     {
         var query = _context.ApiScopes
             .Include(x => x.UserClaims)
@@ -48,7 +51,7 @@ public class ApiScopeRepository
         return await result.ToArrayAsync();
     }
 
-    public async Task<ApiScopeModel> GetByIdAsync(string id)
+    public async Task<ApiScopeModel?> GetByIdAsync(string id)
     {
         var scope = await _context.ApiScopes
             .Include(x => x.UserClaims)
@@ -60,12 +63,13 @@ public class ApiScopeRepository
         {
             Name = scope.Name,
             DisplayName = scope.DisplayName,
-            UserClaims = scope.UserClaims.Any() ? scope.UserClaims.Select(x => x.Type).Aggregate((a, b) => $"{a} {b}") : null,
+            UserClaims = scope.UserClaims.Count != 0 ? scope.UserClaims.Select(x => x.Type).Aggregate((a, b) => $"{a} {b}") : null,
         };
     }
 
     public async Task CreateAsync(ApiScopeModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
         var scope = new Duende.IdentityServer.Models.ApiScope()
         {
             Name = model.Name,
@@ -78,17 +82,23 @@ public class ApiScopeRepository
             scope.UserClaims = claims.ToList();
         }
 
+#pragma warning disable CA1849 // Call async methods when in an async method
+// CA1849 Suppressed because AddAsync is only needed for value generators that
+// need async database access (e.g., HiLoValueGenerator), and we don't use those
+// generators
         _context.ApiScopes.Add(scope.ToEntity());
+#pragma warning restore CA1849 // Call async methods when in an async method
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(ApiScopeModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
         var scope = await _context.ApiScopes
             .Include(x => x.UserClaims)
             .SingleOrDefaultAsync(x => x.Name == model.Name);
 
-        if (scope == null) throw new Exception("Invalid Api Scope");
+        if (scope == null) throw new ArgumentException("Invalid Api Scope");
 
         if (scope.DisplayName != model.DisplayName)
         {
@@ -101,11 +111,11 @@ public class ApiScopeRepository
         var claimsToAdd = claims.Except(currentClaims).ToArray();
         var claimsToRemove = currentClaims.Except(claims).ToArray();
 
-        if (claimsToRemove.Any())
+        if (claimsToRemove.Length != 0)
         {
             scope.UserClaims.RemoveAll(x => claimsToRemove.Contains(x.Type));
         }
-        if (claimsToAdd.Any())
+        if (claimsToAdd.Length != 0)
         {
             scope.UserClaims.AddRange(claimsToAdd.Select(x => new ApiScopeClaim
             {
@@ -120,7 +130,7 @@ public class ApiScopeRepository
     {
         var scope = await _context.ApiScopes.SingleOrDefaultAsync(x => x.Name == id);
 
-        if (scope == null) throw new Exception("Invalid Api Scope");
+        if (scope == null) throw new ArgumentException("Invalid Api Scope");
 
         _context.ApiScopes.Remove(scope);
         await _context.SaveChangesAsync();

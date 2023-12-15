@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
-using Microsoft.AspNetCore.Authentication;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -19,7 +18,7 @@ public class SecretValidator : ISecretsListValidator
 {
     private readonly ILogger _logger;
     private readonly IEnumerable<ISecretValidator> _validators;
-    private readonly ISystemClock _clock;
+    private readonly IClock _clock;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SecretValidator"/> class.
@@ -27,7 +26,7 @@ public class SecretValidator : ISecretsListValidator
     /// <param name="clock">The clock.</param>
     /// <param name="validators">The validators.</param>
     /// <param name="logger">The logger.</param>
-    public SecretValidator(ISystemClock clock, IEnumerable<ISecretValidator> validators, ILogger<ISecretsListValidator> logger)
+    public SecretValidator(IClock clock, IEnumerable<ISecretValidator> validators, ILogger<ISecretsListValidator> logger)
     {
         _clock = clock;
         _validators = validators;

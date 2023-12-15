@@ -66,6 +66,9 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
     public DbSet<ServerSideSession> ServerSideSessions { get; set; }
 
     /// <inheritdoc/>
+    public DbSet<PushedAuthorizationRequest> PushedAuthorizationRequests { get; set; } 
+
+    /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         if (StoreOptions is null)
@@ -79,6 +82,7 @@ public class PersistedGrantDbContext<TContext> : DbContext, IPersistedGrantDbCon
         }
         
         modelBuilder.ConfigurePersistedGrantContext(StoreOptions);
+        modelBuilder.ConfigurePushedAuthorizationRequestContext(StoreOptions);
 
         base.OnModelCreating(modelBuilder);
     }

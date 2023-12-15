@@ -1,3 +1,6 @@
+// Copyright (c) Duende Software. All rights reserved.
+// See LICENSE in the project root for license information.
+
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
@@ -8,29 +11,29 @@ namespace IdentityServerHost.Pages.ServerSideSessions
 {
     public class IndexModel : PageModel
     {
-        private readonly ISessionManagementService _sessionManagementService;
+        private readonly ISessionManagementService? _sessionManagementService;
 
-        public IndexModel(ISessionManagementService sessionManagementService = null)
+        public IndexModel(ISessionManagementService? sessionManagementService = null)
         {
             _sessionManagementService = sessionManagementService;
         }
 
-        public QueryResult<UserSession> UserSessions { get; set; }
+        public QueryResult<UserSession>? UserSessions { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string DisplayNameFilter { get; set; }
+        public string? DisplayNameFilter { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string SessionIdFilter { get; set; }
+        public string? SessionIdFilter { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string SubjectIdFilter { get; set; }
+        public string? SubjectIdFilter { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string Token { get; set; }
+        public string? Token { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string Prev { get; set; }
+        public string? Prev { get; set; }
 
         public async Task OnGet()
         {
@@ -48,10 +51,12 @@ namespace IdentityServerHost.Pages.ServerSideSessions
         }
 
         [BindProperty]
-        public string SessionId { get; set; }
+        public string? SessionId { get; set; }
 
         public async Task<IActionResult> OnPost()
         {
+            ArgumentNullException.ThrowIfNull(_sessionManagementService);
+
             await _sessionManagementService.RemoveSessionsAsync(new RemoveSessionsContext { 
                 SessionId = SessionId,
             });
@@ -59,3 +64,4 @@ namespace IdentityServerHost.Pages.ServerSideSessions
         }
     }
 }
+

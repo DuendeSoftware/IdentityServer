@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
@@ -59,14 +60,18 @@ public class ValidatingIdentityProviderStore<T> : IIdentityProviderStore
             if (context.IsValid)
             {
                 _logger.LogDebug("IdentityProvider validation for scheme {scheme} succeeded.", scheme);
+                Telemetry.Metrics.DynamicIdentityProviderValidation(scheme);
                 return idp;
             }
 
             _logger.LogError("Invalid IdentityProvider configuration for scheme {scheme}: {errorMessage}", scheme, context.ErrorMessage);
+            Telemetry.Metrics.DynamicIdentityProviderValidationFailure(scheme, context.ErrorMessage);
             await _events.RaiseAsync(new InvalidIdentityProviderConfiguration(idp, context.ErrorMessage));
 
             return null;
         }
+
+        Telemetry.Metrics.DynamicIdentityProviderValidationFailure(scheme, "Scheme not found");
 
         return null;
     }

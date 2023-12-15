@@ -7,13 +7,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Test;
 using FluentAssertions;
@@ -49,6 +52,7 @@ public class IdentityServerPipeline
     public const string EndSessionEndpoint = BaseUrl + "/connect/endsession";
     public const string EndSessionCallbackEndpoint = BaseUrl + "/connect/endsession/callback";
     public const string CheckSessionEndpoint = BaseUrl + "/connect/checksession";
+    public const string ParEndpoint = BaseUrl + "/connect/par";
 
     public const string FederatedSignOutPath = "/signout-oidc";
     public const string FederatedSignOutUrl = BaseUrl + FederatedSignOutPath;
@@ -80,7 +84,7 @@ public class IdentityServerPipeline
     {
         var builder = new WebHostBuilder();
         builder.ConfigureServices(ConfigureServices);
-        builder.Configure(app=>
+        builder.Configure(app =>
         {
             if (basePath != null)
             {
@@ -102,7 +106,7 @@ public class IdentityServerPipeline
 
         Server = new TestServer(builder);
         Handler = Server.CreateHandler();
-            
+
         BrowserClient = new BrowserClient(new BrowserHandler(Handler));
         BackChannelClient = new HttpClient(Handler);
     }
@@ -136,7 +140,7 @@ public class IdentityServerPipeline
                     RaiseSuccessEvents = true
                 };
                 options.KeyManagement.Enabled = false;
-                
+
                 Options = options;
             })
             .AddInMemoryClients(Clients)
@@ -379,13 +383,56 @@ public class IdentityServerPipeline
             extra: Parameters.FromObject(extra));
         return url;
     }
-
-    public AuthorizeResponse ParseAuthorizationResponseUrl(string url)
-    {
-        return new AuthorizeResponse(url);
+    public async Task<(JsonDocument, HttpStatusCode)> PushAuthorizationRequestAsync(
+        Dictionary<string, string> parameters)
+    { 
+        var httpResponse = await BackChannelClient.PostAsync(ParEndpoint,
+            new FormUrlEncodedContent(parameters));
+        var statusCode = httpResponse.StatusCode;
+        var rawContent = await httpResponse.Content.ReadAsStringAsync();
+        var parsed = rawContent.IsPresent() ? JsonDocument.Parse(rawContent) : null;
+        return (parsed, statusCode);
     }
 
-    public async Task<AuthorizeResponse> RequestAuthorizationEndpointAsync(
+    public async Task<(JsonDocument, HttpStatusCode)> PushAuthorizationRequestAsync(
+        string clientId = "client1",
+        string clientSecret = "secret",
+        string responseType = "id_token",
+        string scope = "openid profile",
+        string redirectUri = "https://client1/callback",
+        string nonce = "123_nonce",
+        string state = "123_state",
+        Dictionary<string, string> extra = null
+    )
+    {
+        var parameters = new Dictionary<string, string>
+            {
+                { "client_id", clientId },
+                { "client_secret", clientSecret },
+                { "response_type", responseType },
+                { "scope", scope },
+                { "redirect_uri", redirectUri },
+                { "nonce", nonce },
+                { "state", state }
+            };
+
+        if(extra != null)
+        {
+            foreach(var (key, value) in extra)
+            {
+                parameters[key] = value;
+            }
+        }
+
+        return await PushAuthorizationRequestAsync(parameters);
+    }
+
+    public IdentityModel.Client.AuthorizeResponse ParseAuthorizationResponseUrl(string url)
+    {
+        return new IdentityModel.Client.AuthorizeResponse(url);
+    }
+
+    public async Task<IdentityModel.Client.AuthorizeResponse> RequestAuthorizationEndpointAsync(
         string clientId,
         string responseType,
         string scope = null,
@@ -418,7 +465,7 @@ public class IdentityServerPipeline
             return null;
         }
 
-        return new AuthorizeResponse(redirect);
+        return new IdentityModel.Client.AuthorizeResponse(redirect);
     }
 
     public T Resolve<T>()

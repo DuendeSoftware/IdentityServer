@@ -179,7 +179,7 @@ public class JwtRequestValidator : IJwtRequestValidator
             tokenValidationParameters.ValidTypes = new[] { JwtClaimTypes.JwtTypes.AuthorizationRequest };
         }
 
-        var result = Handler.ValidateToken(context.JwtTokenString, tokenValidationParameters);
+        var result = await Handler.ValidateTokenAsync(context.JwtTokenString, tokenValidationParameters);
         if (!result.IsValid)
         {
             throw result.Exception;

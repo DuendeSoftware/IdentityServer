@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using System;
@@ -70,6 +71,11 @@ public class OperationalStoreOptions
     public TableConfiguration ServerSideSessions { get; set; } = new TableConfiguration("ServerSideSessions");
 
     /// <summary>
+    /// Gets or sets the pushed authorization requests configuration.
+    /// </summary>
+    public TableConfiguration PushedAuthorizationRequests { get; set; } = new TableConfiguration("PushedAuthorizationRequests");
+
+    /// <summary>
     /// Gets or sets a value indicating whether stale entries will be automatically cleaned up from the database.
     /// This is implemented by periodically connecting to the database (according to the TokenCleanupInterval) from the hosting application.
     /// Defaults to false.
@@ -80,7 +86,7 @@ public class OperationalStoreOptions
     public bool EnableTokenCleanup { get; set; } = false;
 
     /// <summary>
-    /// Gets or sets a value indicating whether consumed tokens will included in the automatic clean up.
+    /// Gets or sets a value indicating whether consumed tokens will be included in the automatic clean up.
     /// </summary>
     /// <value>
     ///   <c>true</c> if consumed tokens are to be included in cleanup; otherwise, <c>false</c>.

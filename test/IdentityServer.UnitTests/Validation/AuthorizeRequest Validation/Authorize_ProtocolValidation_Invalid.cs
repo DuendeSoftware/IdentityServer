@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -19,13 +19,13 @@ public class Authorize_ProtocolValidation_Invalid
 
     [Fact]
     [Trait("Category", Category)]
-    public void Null_Parameter()
+    public async Task Null_Parameter()
     {
         var validator = Factory.CreateAuthorizeRequestValidator();
 
         Func<Task> act = () => validator.ValidateAsync(null);
 
-        act.Should().Throw<ArgumentNullException>();
+        await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class Authorize_ProtocolValidation_Invalid
         var result = await validator.ValidateAsync(parameters);
 
         result.IsError.Should().BeTrue();
-        result.Error.Should().Be(OidcConstants.AuthorizeErrors.UnsupportedResponseType);
+        result.Error.Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
     }
 
     [Fact]

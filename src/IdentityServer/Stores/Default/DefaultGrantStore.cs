@@ -72,7 +72,11 @@ public class DefaultGrantStore<T>
     }
 
     private const string KeySeparator = ":";
-    const string HexEncodingFormatSuffix = "-1";
+    
+    /// <summary>
+    /// The suffix added to keys to indicate that hex encoding should be used.
+    /// </summary>
+    protected const string HexEncodingFormatSuffix = "-1";
 
     /// <summary>
     /// Creates a handle.
@@ -253,13 +257,15 @@ public class DefaultGrantStore<T>
     /// </summary>
     /// <param name="subjectId">The subject identifier.</param>
     /// <param name="clientId">The client identifier.</param>
+    /// <param name="sessionId">The optional session identifier.</param>
     /// <returns></returns>
-    protected virtual async Task RemoveAllAsync(string subjectId, string clientId)
+    protected virtual async Task RemoveAllAsync(string subjectId, string clientId, string sessionId = null)
     {
         await Store.RemoveAllAsync(new PersistedGrantFilter
         {
             SubjectId = subjectId,
             ClientId = clientId,
+            SessionId = sessionId,
             Type = GrantType
         });
     }

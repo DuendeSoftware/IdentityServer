@@ -1,12 +1,14 @@
-﻿using Clients;
+using Clients;
 using IdentityModel;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
@@ -27,8 +29,8 @@ namespace MvcHybrid.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(string logout_token)
         {
-            Response.Headers.Add("Cache-Control", "no-cache, no-store");
-            Response.Headers.Add("Pragma", "no-cache");
+            Response.Headers.Append("Cache-Control", "no-cache, no-store");
+            Response.Headers.Append("Pragma", "no-cache");
 
             try
             {

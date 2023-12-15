@@ -1,12 +1,12 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using IdentityModel;
-using Microsoft.AspNetCore.Authentication;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -15,9 +15,9 @@ using System.Threading.Tasks;
 namespace Duende.IdentityServer;
 
 /// <summary>
-/// Class for useful helpers for interacting with IdentityServer
+/// Useful helpers for interacting with IdentityServer.
 /// </summary>
-public class IdentityServerTools
+public interface IIdentityServerTools
 {
     internal readonly IServiceProvider ServiceProvider; // TODO - consider removing this, as it is not used.
     internal readonly IIssuerNameService IssuerNameService;
@@ -46,11 +46,7 @@ public class IdentityServerTools
     /// <param name="claims">The claims.</param>
     /// <returns></returns>
     /// <exception cref="System.ArgumentNullException">claims</exception>
-    public virtual async Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims)
-    {
-        var issuer = await IssuerNameService.GetCurrentAsync();
-        return await IssueJwtAsync(lifetime, issuer, claims);
-    }
+    Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims);
 
     /// <summary>
     /// Issues a JWT.
@@ -60,11 +56,7 @@ public class IdentityServerTools
     /// <param name="claims">The claims.</param>
     /// <returns></returns>
     /// <exception cref="System.ArgumentNullException">claims</exception>
-    public virtual Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims)
-    {
-        var tokenType = OidcConstants.TokenTypes.AccessToken;
-        return IssueJwtAsync(lifetime, issuer, tokenType, claims);
-    }
+    Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims);
 
     /// <summary>
     /// Issues a JWT.
@@ -75,6 +67,58 @@ public class IdentityServerTools
     /// <param name="claims">The claims.</param>
     /// <returns></returns>
     /// <exception cref="System.ArgumentNullException">claims</exception>
+    Task<string> IssueJwtAsync(int lifetime, string issuer, string tokenType, IEnumerable<Claim> claims);
+
+    /// <summary>
+    /// Service Provider to resolve services.
+    /// </summary>
+    public IServiceProvider ServiceProvider { get; }
+
+    /// <summary>
+    /// Issuer name service
+    /// </summary>
+    public IIssuerNameService IssuerNameService { get; }
+}
+
+/// <summary>
+/// Class for useful helpers for interacting with IdentityServer
+/// </summary>
+[Obsolete("Do not reference the IdentityServerTools implementation directly, use the IIdentityServerTools interface")]
+public class IdentityServerTools : IIdentityServerTools
+{
+    /// <inheritdoc/>
+    public IServiceProvider ServiceProvider { get; }
+
+    /// <inheritdoc/>
+    public IIssuerNameService IssuerNameService { get; }
+
+    private readonly ITokenCreationService _tokenCreation;
+    private readonly IClock _clock;
+
+    /// <inheritdoc/>
+    public IdentityServerTools(IServiceProvider serviceProvider, IIssuerNameService issuerNameService, ITokenCreationService tokenCreation, IClock clock)
+    {
+        ServiceProvider = serviceProvider;
+        IssuerNameService = issuerNameService;
+        _tokenCreation = tokenCreation;
+        _clock = clock;
+    }
+
+    /// <inheritdoc/>
+    public virtual async Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims)
+    {
+        var issuer = await IssuerNameService.GetCurrentAsync();
+        return await IssueJwtAsync(lifetime, issuer, claims);
+    }
+
+    /// <inheritdoc/>
+    public virtual Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims)
+    {
+        var tokenType = OidcConstants.TokenTypes.AccessToken;
+        return IssueJwtAsync(lifetime, issuer, tokenType, claims);
+    }
+
+    /// <inheritdoc/>
     public virtual async Task<string> IssueJwtAsync(int lifetime, string issuer, string tokenType, IEnumerable<Claim> claims)
     {
         if (String.IsNullOrWhiteSpace(issuer)) throw new ArgumentNullException(nameof(issuer));

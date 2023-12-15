@@ -29,11 +29,10 @@ jobs:
         fetch-depth: 0
     
     - name: Setup dotnet (main)
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          6.0.x
-          7.0.x
+            8.0.100
     
     - run: dotnet --info
     

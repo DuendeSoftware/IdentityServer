@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using System;
@@ -51,6 +52,17 @@ public class LoggingOptions
         new HashSet<string>
         {
             OidcConstants.AuthorizeRequest.IdTokenHint
+        };
+
+    /// <summary>
+    /// Gets or sets the collection of keys that will be used to redact sensitive values from a pushed authorization request log.
+    /// </summary>
+    /// <remarks>Please be aware that initializing this property could expose sensitive information in your logs.</remarks>
+    public ICollection<string> PushedAuthorizationSensitiveValuesFilter { get; set; } =
+        new HashSet<string>
+        {
+            OidcConstants.TokenRequest.ClientSecret,
+            OidcConstants.TokenRequest.ClientAssertion
         };
 
     /// <summary>

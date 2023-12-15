@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende.IdentityServer;
@@ -23,7 +24,6 @@ using System.Linq;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-using static Duende.IdentityServer.Constants;
 using static Duende.IdentityServer.IdentityServerConstants;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting.FederatedSignOut;
@@ -33,6 +33,7 @@ using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Hosting.DynamicProviders;
 using Duende.IdentityServer.Internal;
 using Duende.IdentityServer.Stores.Empty;
+using Duende.IdentityServer.Endpoints.Results;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -119,27 +120,58 @@ public static class IdentityServerBuilderExtensionsCore
         builder.AddEndpoint<EndSessionCallbackEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSessionCallback.EnsureLeadingSlash());
         builder.AddEndpoint<EndSessionEndpoint>(EndpointNames.EndSession, ProtocolRoutePaths.EndSession.EnsureLeadingSlash());
         builder.AddEndpoint<IntrospectionEndpoint>(EndpointNames.Introspection, ProtocolRoutePaths.Introspection.EnsureLeadingSlash());
+        builder.AddEndpoint<PushedAuthorizationEndpoint>(EndpointNames.PushedAuthorization, ProtocolRoutePaths.PushedAuthorization.EnsureLeadingSlash());
         builder.AddEndpoint<TokenRevocationEndpoint>(EndpointNames.Revocation, ProtocolRoutePaths.Revocation.EnsureLeadingSlash());
         builder.AddEndpoint<TokenEndpoint>(EndpointNames.Token, ProtocolRoutePaths.Token.EnsureLeadingSlash());
         builder.AddEndpoint<UserInfoEndpoint>(EndpointNames.UserInfo, ProtocolRoutePaths.UserInfo.EnsureLeadingSlash());
+
+        builder.AddHttpWriter<AuthorizeInteractionPageResult, AuthorizeInteractionPageHttpWriter>();
+        builder.AddHttpWriter<AuthorizeResult, AuthorizeHttpWriter>();
+        builder.AddHttpWriter<BackchannelAuthenticationResult, BackchannelAuthenticationHttpWriter>();
+        builder.AddHttpWriter<BadRequestResult, BadRequestHttpWriter>();
+        builder.AddHttpWriter<CheckSessionResult, CheckSessionHttpWriter>();
+        builder.AddHttpWriter<DeviceAuthorizationResult, DeviceAuthorizationHttpWriter>();
+        builder.AddHttpWriter<DiscoveryDocumentResult, DiscoveryDocumentHttpWriter>();
+        builder.AddHttpWriter<EndSessionCallbackResult, EndSessionCallbackHttpWriter>();
+        builder.AddHttpWriter<EndSessionResult, EndSessionHttpWriter>();
+        builder.AddHttpWriter<IntrospectionResult, IntrospectionHttpWriter>();
+        builder.AddHttpWriter<JsonWebKeysResult, JsonWebKeysHttpWriter>();
+        builder.AddHttpWriter<ProtectedResourceErrorResult, ProtectedResourceErrorHttpWriter>();
+        builder.AddHttpWriter<PushedAuthorizationResult, PushedAuthorizationHttpWriter>();
+        builder.AddHttpWriter<PushedAuthorizationErrorResult, PushedAuthorizationErrorHttpWriter>();
+        builder.AddHttpWriter<StatusCodeResult, StatusCodeHttpWriter>();
+        builder.AddHttpWriter<TokenErrorResult, TokenErrorHttpWriter>();
+        builder.AddHttpWriter<TokenResult, TokenHttpWriter>();
+        builder.AddHttpWriter<TokenRevocationErrorResult, TokenRevocationErrorHttpWriter>();
+        builder.AddHttpWriter<UserInfoResult, UserInfoHttpWriter>();
 
         return builder;
     }
 
     /// <summary>
-    /// Adds the endpoint.
+    /// Adds an endpoint.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TEndpoint"></typeparam>
     /// <param name="builder">The builder.</param>
     /// <param name="name">The name.</param>
     /// <param name="path">The path.</param>
-    /// <returns></returns>
-    public static IIdentityServerBuilder AddEndpoint<T>(this IIdentityServerBuilder builder, string name, PathString path)
-        where T : class, IEndpointHandler
+    public static IIdentityServerBuilder AddEndpoint<TEndpoint>(this IIdentityServerBuilder builder, string name, PathString path)
+        where TEndpoint : class, IEndpointHandler
     {
-        builder.Services.AddTransient<T>();
-        builder.Services.AddSingleton(new Duende.IdentityServer.Hosting.Endpoint(name, path, typeof(T)));
+        builder.Services.AddTransient<TEndpoint>();
+        builder.Services.AddSingleton(new Duende.IdentityServer.Hosting.Endpoint(name, path, typeof(TEndpoint)));
 
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an <see cref="IHttpResponseWriter{T}"/> for an <see cref="IEndpointResult"/>.
+    /// </summary>
+    public static IIdentityServerBuilder AddHttpWriter<TResult, TWriter>(this IIdentityServerBuilder builder)
+        where TResult : class, IEndpointResult
+        where TWriter : class, IHttpResponseWriter<TResult>
+    {
+        builder.Services.AddTransient<IHttpResponseWriter<TResult>, TWriter>();
         return builder;
     }
 
@@ -147,7 +179,6 @@ public static class IdentityServerBuilderExtensionsCore
     /// Adds the core services.
     /// </summary>
     /// <param name="builder">The builder.</param>
-    /// <returns></returns>
     public static IIdentityServerBuilder AddCoreServices(this IIdentityServerBuilder builder)
     {
         builder.Services.AddTransient<IServerUrls, DefaultServerUrls>();
@@ -159,7 +190,13 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.AddTransient<IJwtRequestValidator, JwtRequestValidator>();
 
         builder.Services.AddTransient<ReturnUrlParser>();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        builder.Services.AddTransient<IIdentityServerTools, IdentityServerTools>();
+        // We've added the IIdentityServerTools interface to allow mocking, but keep the old
+        // direct class registration around if anyone has a dependency on it.
         builder.Services.AddTransient<IdentityServerTools>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
         builder.Services.AddTransient<IReturnUrlParser, OidcReturnUrlParser>();
         builder.Services.AddScoped<IUserSession, DefaultUserSession>();
@@ -174,6 +211,8 @@ public static class IdentityServerBuilderExtensionsCore
 
         builder.Services.TryAddTransient<IClientStore, EmptyClientStore>();
         builder.Services.TryAddTransient<IResourceStore, EmptyResourceStore>();
+
+        builder.Services.AddTransient(services => IdentityServerLicenseValidator.Instance.GetLicense());
 
         return builder;
     }
@@ -210,6 +249,8 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IBackChannelAuthenticationRequestStore, DefaultBackChannelAuthenticationRequestStore>();
         builder.Services.TryAddTransient<IHandleGenerationService, DefaultHandleGenerationService>();
         builder.Services.TryAddTransient<IPersistentGrantSerializer, PersistentGrantSerializer>();
+        builder.Services.TryAddTransient<IPushedAuthorizationSerializer, PushedAuthorizationSerializer>();
+        builder.Services.TryAddTransient<IPushedAuthorizationService, PushedAuthorizationService>();
         builder.Services.TryAddTransient<IEventService, DefaultEventService>();
         builder.Services.TryAddTransient<IEventSink, DefaultEventSink>();
         builder.Services.TryAddTransient<IUserCodeService, DefaultUserCodeService>();
@@ -219,6 +260,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IScopeParser, DefaultScopeParser>();
         builder.Services.TryAddTransient<ISessionCoordinationService, DefaultSessionCoordinationService>();
         builder.Services.TryAddTransient<IReplayCache, DefaultReplayCache>();
+        builder.Services.TryAddTransient<IClock, DefaultClock>();
 
         builder.Services.TryAddTransient<IBackchannelAuthenticationThrottlingService, DistributedBackchannelAuthenticationThrottlingService>();
         builder.Services.TryAddTransient<IBackchannelAuthenticationUserNotificationService, NopBackchannelAuthenticationUserNotificationService>();
@@ -286,6 +328,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IEndSessionRequestValidator, EndSessionRequestValidator>();
         builder.Services.TryAddTransient<ITokenRevocationRequestValidator, TokenRevocationRequestValidator>();
         builder.Services.TryAddTransient<IAuthorizeRequestValidator, AuthorizeRequestValidator>();
+        builder.Services.TryAddTransient<IRequestObjectValidator, RequestObjectValidator>();
         builder.Services.TryAddTransient<ITokenRequestValidator, TokenRequestValidator>();
         builder.Services.TryAddTransient<IRedirectUriValidator, StrictRedirectUriValidator>();
         builder.Services.TryAddTransient<ITokenValidator, TokenValidator>();
@@ -300,8 +343,8 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<IBackchannelAuthenticationRequestIdValidator, BackchannelAuthenticationRequestIdValidator>();
         builder.Services.TryAddTransient<IResourceValidator, DefaultResourceValidator>();
         builder.Services.TryAddTransient<IDPoPProofValidator, DefaultDPoPProofValidator>();
-
         builder.Services.TryAddTransient<IBackchannelAuthenticationRequestValidator, BackchannelAuthenticationRequestValidator>();
+        builder.Services.TryAddTransient<IPushedAuthorizationRequestValidator, PushedAuthorizationRequestValidator>();
 
         // optional
         builder.Services.TryAddTransient<ICustomTokenValidator, DefaultCustomTokenValidator>();
@@ -326,6 +369,7 @@ public static class IdentityServerBuilderExtensionsCore
         builder.Services.TryAddTransient<ITokenRevocationResponseGenerator, TokenRevocationResponseGenerator>();
         builder.Services.TryAddTransient<IDeviceAuthorizationResponseGenerator, DeviceAuthorizationResponseGenerator>();
         builder.Services.TryAddTransient<IBackchannelAuthenticationResponseGenerator, BackchannelAuthenticationResponseGenerator>();
+        builder.Services.TryAddTransient<IPushedAuthorizationResponseGenerator, PushedAuthorizationResponseGenerator>();
 
         return builder;
     }

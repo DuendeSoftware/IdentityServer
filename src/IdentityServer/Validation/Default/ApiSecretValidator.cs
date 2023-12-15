@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -116,11 +116,13 @@ public class ApiSecretValidator : IApiSecretValidator
 
     private Task RaiseSuccessEventAsync(string clientId, string authMethod)
     {
+        Telemetry.Metrics.ApiSecretValidation(clientId, authMethod);
         return _events.RaiseAsync(new ApiAuthenticationSuccessEvent(clientId, authMethod));
     }
 
     private Task RaiseFailureEventAsync(string clientId, string message)
     {
+        Telemetry.Metrics.ApiSecretValidationFailure(clientId, message);
         return _events.RaiseAsync(new ApiAuthenticationFailureEvent(clientId, message));
     }
 }

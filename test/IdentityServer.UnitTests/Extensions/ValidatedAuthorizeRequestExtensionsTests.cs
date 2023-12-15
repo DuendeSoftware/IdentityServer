@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
 using Xunit;
@@ -29,6 +30,7 @@ public class ValidatedAuthorizeRequestExtensionsTests
     }
 
     [Fact]
+    [Obsolete]
     public void ToOptimizedFullDictionary_should_return_dictionary_with_array_for_repeated_keys_when_request_objects_are_used()
     {
         var request = new ValidatedAuthorizeRequest()

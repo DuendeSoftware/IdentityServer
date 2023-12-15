@@ -3,11 +3,12 @@
 
 using IdentityServerHost;
 using Serilog;
+using System.Globalization;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
+    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
     .CreateBootstrapLogger();
 
 Log.Information("Host.AspNetIdentity Starting up");
@@ -20,7 +21,8 @@ try
         .WriteTo.Console(
             outputTemplate:
             "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}",
-            theme: AnsiConsoleTheme.Code)
+            theme: AnsiConsoleTheme.Code,
+            formatProvider: CultureInfo.InvariantCulture)
         .MinimumLevel.Debug()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)

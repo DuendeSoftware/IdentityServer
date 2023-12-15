@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,7 +43,6 @@ public class GenericHost
 
     public string Url(string path = "")
     {
-        path = path ?? String.Empty;
         if (!path.StartsWith("/")) path = "/" + path;
         return _baseAddress + path;
     }
@@ -79,7 +79,7 @@ public class GenericHost
     {
         services.AddLogging(options =>
         {
-            options.SetMinimumLevel(LogLevel.Debug);
+            options.SetMinimumLevel(LogLevel.Critical);
             options.AddProvider(Logger);
         });
 

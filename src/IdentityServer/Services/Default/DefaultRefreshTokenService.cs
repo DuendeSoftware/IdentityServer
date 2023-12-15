@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
-using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Stores.Serialization;
 
 namespace Duende.IdentityServer.Services;
@@ -37,7 +36,7 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     /// <summary>
     /// The clock
     /// </summary>
-    protected ISystemClock Clock { get; }
+    protected IClock Clock { get; }
 
     /// <summary>
     /// The persistent grant options
@@ -55,7 +54,7 @@ public class DefaultRefreshTokenService : IRefreshTokenService
     public DefaultRefreshTokenService(
         IRefreshTokenStore refreshTokenStore, 
         IProfileService profile,
-        ISystemClock clock,
+        IClock clock,
         PersistentGrantOptions options,
         ILogger<DefaultRefreshTokenService> logger)
     {

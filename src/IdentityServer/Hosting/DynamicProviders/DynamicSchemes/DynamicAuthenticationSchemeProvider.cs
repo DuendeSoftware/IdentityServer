@@ -1,10 +1,10 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.DependencyInjection;
 using Duende.IdentityServer.Stores;
-using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -114,7 +114,7 @@ class DynamicAuthenticationSchemeProvider : IAuthenticationSchemeProvider
                 var providerType = _options.FindProviderType(idp.Type);
                 if (providerType != null)
                 {
-                    LicenseValidator.ValidateDynamicProviders();
+                    IdentityServerLicenseValidator.Instance.ValidateDynamicProviders();
                     dynamicScheme = new DynamicAuthenticationScheme(idp, providerType.HandlerType);
                     cache.Add(name, dynamicScheme);
                 }

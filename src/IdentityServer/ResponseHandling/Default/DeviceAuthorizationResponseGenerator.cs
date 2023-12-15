@@ -9,7 +9,6 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 
 namespace Duende.IdentityServer.ResponseHandling;
@@ -38,7 +37,7 @@ public class DeviceAuthorizationResponseGenerator : IDeviceAuthorizationResponse
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The logger
@@ -53,7 +52,7 @@ public class DeviceAuthorizationResponseGenerator : IDeviceAuthorizationResponse
     /// <param name="deviceFlowCodeService">The device flow code service.</param>
     /// <param name="clock">The clock.</param>
     /// <param name="logger">The logger.</param>
-    public DeviceAuthorizationResponseGenerator(IdentityServerOptions options, IUserCodeService userCodeService, IDeviceFlowCodeService deviceFlowCodeService, ISystemClock clock, ILogger<DeviceAuthorizationResponseGenerator> logger)
+    public DeviceAuthorizationResponseGenerator(IdentityServerOptions options, IUserCodeService userCodeService, IDeviceFlowCodeService deviceFlowCodeService, IClock clock, ILogger<DeviceAuthorizationResponseGenerator> logger)
     {
         Options = options;
         UserCodeService = userCodeService;

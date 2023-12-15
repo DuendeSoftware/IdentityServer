@@ -13,7 +13,6 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.Authentication;
 
 namespace Duende.IdentityServer.ResponseHandling;
 
@@ -51,7 +50,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The key material service
@@ -70,7 +69,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     /// <param name="events">The events.</param>
     public AuthorizeResponseGenerator(
         IdentityServerOptions options,
-        ISystemClock clock,
+        IClock clock,
         ITokenService tokenService,
         IKeyMaterialService keyMaterialService,
         IAuthorizationCodeStore authorizationCodeStore,
@@ -82,8 +81,8 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
         TokenService = tokenService;
         KeyMaterialService = keyMaterialService;
         AuthorizationCodeStore = authorizationCodeStore;
-        Events = events;
         Logger = logger;
+        Events = events;
     }
 
     /// <summary>
@@ -95,7 +94,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
     public virtual async Task<AuthorizeResponse> CreateResponseAsync(ValidatedAuthorizeRequest request)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeResponseGenerator.CreateResponse");
-        
+
         if (request.GrantType == GrantType.AuthorizationCode)
         {
             return await CreateCodeFlowResponseAsync(request);
@@ -265,7 +264,7 @@ public class AuthorizeResponseGenerator : IAuthorizeResponseGenerator
 
             IsOpenId = request.IsOpenIdRequest,
             RequestedScopes = request.ValidatedResources.RawScopeValues,
-            RequestedResourceIndicators = request.RequestedResourceIndiators,
+            RequestedResourceIndicators = request.RequestedResourceIndicators,
             RedirectUri = request.RedirectUri,
             Nonce = request.Nonce,
             StateHash = stateHash,

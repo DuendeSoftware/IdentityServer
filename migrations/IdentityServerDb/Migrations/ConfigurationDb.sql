@@ -97,6 +97,8 @@ CREATE TABLE [Clients] (
     [Updated] datetime2 NULL,
     [LastAccessed] datetime2 NULL,
     [NonEditable] bit NOT NULL,
+    [PushedAuthorizationLifetime] int NULL,
+    [RequirePushedAuthorization] bit NOT NULL,
     CONSTRAINT [PK_Clients] PRIMARY KEY ([Id])
 );
 GO
@@ -365,7 +367,7 @@ CREATE UNIQUE INDEX [IX_IdentityResources_Name] ON [IdentityResources] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20230410170353_Configuration', N'6.0.0');
+VALUES (N'20231110071401_Configuration', N'8.0.0-rc.2.23480.1');
 GO
 
 COMMIT;

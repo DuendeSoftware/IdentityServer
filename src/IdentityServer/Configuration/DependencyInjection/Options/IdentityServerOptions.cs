@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende.IdentityServer.Stores.Serialization;
@@ -196,4 +197,9 @@ public class IdentityServerOptions
     /// Options for server-side sessions.
     /// </summary>
     public ServerSideSessionOptions ServerSideSessions { get; set; } = new ServerSideSessionOptions();
+
+    /// <summary>
+    /// Options for Pushed Authorization Requests (PAR).
+    /// </summary>
+    public PushedAuthorizationOptions PushedAuthorization { get; set; } = new PushedAuthorizationOptions();
 }

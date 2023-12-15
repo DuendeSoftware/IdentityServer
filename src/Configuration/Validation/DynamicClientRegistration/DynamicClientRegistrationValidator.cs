@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Duende.IdentityServer.Configuration.Models;
@@ -14,7 +15,10 @@ namespace Duende.IdentityServer.Configuration.Validation.DynamicClientRegistrati
 /// <inheritdoc/>
 public class DynamicClientRegistrationValidator : IDynamicClientRegistrationValidator
 {
-    private readonly ILogger<DynamicClientRegistrationValidator> _logger;
+    /// <summary>
+    /// The logger.
+    /// </summary>
+    protected readonly ILogger<DynamicClientRegistrationValidator> Logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicClientRegistrationValidator"/> class.
@@ -22,7 +26,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     public DynamicClientRegistrationValidator(
         ILogger<DynamicClientRegistrationValidator> logger)
     {
-        _logger = logger;
+        Logger = logger;
     }
 
     /// <inheritdoc/>
@@ -273,7 +277,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
             if (scopes.Contains("offline_access"))
             {
                 scopes = scopes.Where(s => s != "offline_access").ToArray();
-                _logger.LogDebug("offline_access should not be passed as a scope to dynamic client registration. Use the refresh_token grant_type instead.");
+                Logger.LogDebug("offline_access should not be passed as a scope to dynamic client registration. Use the refresh_token grant_type instead.");
             }
 
             foreach (var scope in scopes)
@@ -285,7 +289,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <summary>
-    /// Sets scopes on the client when no scopes are requested. This default
+    /// Sets scopes on the client when no scopes are requested. The default
     /// implementation sets no scopes and is intended as an extension point.
     /// </summary>
     /// <param name="context">The dynamic client registration context, which
@@ -296,7 +300,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     /// represents that this step succeeded or failed.</returns>
     protected virtual Task<IStepResult> SetDefaultScopes(DynamicClientRegistrationContext context)
     {
-        _logger.LogDebug("No scopes requested for dynamic client registration, and no default scope behavior implemented. To set default scopes, extend the DynamicClientRegistrationValidator and override the SetDefaultScopes method.");
+        Logger.LogDebug("No scopes requested for dynamic client registration, and no default scope behavior implemented. To set default scopes, extend the DynamicClientRegistrationValidator and override the SetDefaultScopes method.");
         return StepResult.Success();
     }
 
@@ -364,12 +368,12 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
                 }
                 catch (InvalidOperationException ex)
                 {
-                    _logger.LogError(ex, "Failed to parse jwk");
+                    Logger.LogError(ex, "Failed to parse jwk");
                     return StepResult.Failure("malformed jwk");
                 }
                 catch (JsonException ex)
                 {
-                    _logger.LogError(ex, "Failed to parse jwk");
+                    Logger.LogError(ex, "Failed to parse jwk");
                     return StepResult.Failure("malformed jwk");
                 }
 
@@ -384,7 +388,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <summary>
-    /// Validates the requested client name uses it to set the name of the
+    /// Validates the requested client name and uses it to set the name of the
     /// client.
     /// </summary>
     /// <param name="context">The dynamic client registration context, which
@@ -452,7 +456,7 @@ public class DynamicClientRegistrationValidator : IDynamicClientRegistrationVali
     }
 
     /// <summary>
-    /// Validates the software statement of the request. This default
+    /// Validates the software statement of the request. The default
     /// implementation does nothing, and is included as an extension point.
     /// </summary>
     /// <param name="context">The dynamic client registration context, which

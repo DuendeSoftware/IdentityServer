@@ -95,7 +95,9 @@ internal class TokenEndpoint : IEndpointHandler
         var clientResult = await _clientValidator.ValidateAsync(context);
         if (clientResult.IsError)
         {
-            return Error(clientResult.Error ?? OidcConstants.TokenErrors.InvalidClient);
+            var errorMsg = clientResult.Error ?? OidcConstants.TokenErrors.InvalidClient;
+            Telemetry.Metrics.TokenIssuedFailure(clientResult.Client?.ClientId, null, null, errorMsg);
+            return Error(errorMsg);
         }
 
         // validate request
@@ -111,6 +113,7 @@ internal class TokenEndpoint : IEndpointHandler
         var error = await TryReadProofTokens(context, requestContext);
         if (error != null)
         {
+            Telemetry.Metrics.TokenIssuedFailure(clientResult.Client.ClientId, null, null, error.Response.Error);
             return error;
         }
 
@@ -118,6 +121,8 @@ internal class TokenEndpoint : IEndpointHandler
         if (requestResult.IsError)
         {
             await _events.RaiseAsync(new TokenIssuedFailureEvent(requestResult));
+            Telemetry.Metrics.TokenIssuedFailure(
+                clientResult.Client.ClientId, requestResult.ValidatedRequest?.GrantType, null, requestResult.Error);
             var err = Error(requestResult.Error, requestResult.ErrorDescription, requestResult.CustomResponse);
             err.Response.DPoPNonce = requestResult.DPoPNonce;
             return err;
@@ -128,6 +133,7 @@ internal class TokenEndpoint : IEndpointHandler
         var response = await _responseGenerator.ProcessAsync(requestResult);
 
         await _events.RaiseAsync(new TokenIssuedSuccessEvent(response, requestResult));
+        Telemetry.Metrics.TokenIssued(clientResult.Client.ClientId, requestResult.ValidatedRequest.GrantType, null);
         LogTokens(response, requestResult);
 
         // return result

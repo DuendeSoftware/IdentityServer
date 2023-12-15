@@ -14,7 +14,6 @@ using Duende.IdentityServer.Stores.Serialization;
 using FluentAssertions;
 using UnitTests.Validation.Setup;
 using Xunit;
-using Duende.IdentityServer.Configuration;
 
 namespace UnitTests.Services.Default;
 

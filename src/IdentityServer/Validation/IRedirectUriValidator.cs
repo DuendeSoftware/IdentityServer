@@ -1,9 +1,11 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende.IdentityServer.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Claims;
@@ -22,12 +24,16 @@ public interface IRedirectUriValidator
     /// <param name="requestedUri">The requested URI.</param>
     /// <param name="client">The client.</param>
     /// <returns><c>true</c> is the URI is valid; <c>false</c> otherwise.</returns>
+    [Obsolete("This overload is deprecated and will be removed in a future version. Use the overload that takes a RedirectUriValidationContext parameter instead.")]
     Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client);
 
     /// <summary>
     /// Determines whether a redirect URI is valid for a client.
     /// </summary>
-    Task<bool> IsRedirectUriValidAsync(RedirectUriValidationContext context) => IsRedirectUriValidAsync(context.RequestedUri, context.Client);
+    Task<bool> IsRedirectUriValidAsync(RedirectUriValidationContext context)
+#pragma warning disable CS0618 // Type or member is obsolete
+        => IsRedirectUriValidAsync(context.RequestedUri, context.Client);
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Determines whether a post logout URI is valid for a client.
@@ -59,6 +65,7 @@ public class RedirectUriValidationContext
         Client = request.Client;
         RequestParameters = request.Raw;
         RequestObjectValues = request.RequestObjectValues;
+        AuthorizeRequestType = request.AuthorizeRequestType;
     }
 
     /// <summary>
@@ -72,7 +79,7 @@ public class RedirectUriValidationContext
     public Client Client { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the request parameters
+    /// The request parameters
     /// </summary>
     public NameValueCollection RequestParameters { get; set; } = default!;
 
@@ -80,4 +87,9 @@ public class RedirectUriValidationContext
     /// Validated request object values
     /// </summary>
     public IEnumerable<Claim>? RequestObjectValues { get; set; }
+
+    /// <summary>
+    /// Indicates the context (PAR vs Authorize with or without pushed parameters)
+    /// </summary>
+    public AuthorizeRequestType AuthorizeRequestType { get; set; }
 }

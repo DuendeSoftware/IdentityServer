@@ -131,7 +131,14 @@ public class DefaultClientConfigurationValidator : IClientConfigurationValidator
                 context.Client.AllowedGrantTypes.Contains(GrantType.Hybrid) ||
                 context.Client.AllowedGrantTypes.Contains(GrantType.Implicit))
             {
-                if (context.Client.RedirectUris?.Any() == false)
+                // Clients must have redirect uris, unless the PAR option to use
+                // unregistered pushed uris is enabled and the client is a
+                // confidential client
+                var allowedByPar = _options.PushedAuthorization.AllowUnregisteredPushedRedirectUris &&
+                    context.Client.RequireClientSecret;
+
+                if (context.Client.RedirectUris?.Any() == false && 
+                    !allowedByPar)
                 {
                     context.SetError("No redirect URI configured.");
                 }

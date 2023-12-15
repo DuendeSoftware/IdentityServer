@@ -19,7 +19,7 @@ public class EndSessionCallbackResultTests
 
     private readonly EndSessionCallbackValidationResult _validationResult;
     private readonly IdentityServerOptions _options;
-    private readonly EndSessionCallbackResult _subject;
+    private readonly EndSessionCallbackHttpWriter _subject;
 
     public EndSessionCallbackResultTests()
     {
@@ -28,7 +28,7 @@ public class EndSessionCallbackResultTests
             IsError = false,
         };
         _options = new IdentityServerOptions();
-        _subject = new EndSessionCallbackResult(_validationResult, _options);
+        _subject = new EndSessionCallbackHttpWriter(_options);
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class EndSessionCallbackResultTests
         var ctx = new DefaultHttpContext();
         ctx.Request.Method = "GET";
 
-        await _subject.ExecuteAsync(ctx);
+        await _subject.WriteHttpResponse(new EndSessionCallbackResult(_validationResult), ctx);
 
         ctx.Response.Headers["Content-Security-Policy"].First().Should().Contain("frame-src http://foo");
     }
@@ -53,7 +53,7 @@ public class EndSessionCallbackResultTests
         var ctx = new DefaultHttpContext();
         ctx.Request.Method = "GET";
 
-        await _subject.ExecuteAsync(ctx);
+        await _subject.WriteHttpResponse(new EndSessionCallbackResult(_validationResult), ctx);
 
         ctx.Response.Headers["Content-Security-Policy"].FirstOrDefault().Should().BeNull();
     }

@@ -10,8 +10,6 @@ namespace Duende.IdentityServer.Events;
 /// <seealso cref="Event" />
 public class UserLoginSuccessEvent : Event
 {
-    // todo: consolidate ctors in 3.0
-
     /// <summary>
     /// Initializes a new instance of the <see cref="UserLoginSuccessEvent"/> class.
     /// </summary>

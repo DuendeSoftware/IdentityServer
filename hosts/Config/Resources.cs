@@ -1,7 +1,6 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
 using System.Collections.Generic;
 using IdentityModel;
 using Duende.IdentityServer;
@@ -9,7 +8,7 @@ using Duende.IdentityServer.Models;
 
 namespace IdentityServerHost.Configuration;
 
-public class Resources
+public static class Resources
 {
     // identity resources represent identity data about a user that can be requested via the scope parameter (OpenID Connect)
     public static readonly IEnumerable<IdentityResource> IdentityResources =

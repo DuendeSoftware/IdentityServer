@@ -53,25 +53,25 @@ public class DeviceAuthorizationResponseGeneratorTests
     }
 
     [Fact]
-    public void ProcessAsync_when_valiationresult_null_exect_exception()
+    public async Task ProcessAsync_when_validationresult_null_expect_exception()
     {
         Func<Task> act = () => generator.ProcessAsync(null, TestBaseUrl);
-        act.Should().Throw<ArgumentNullException>();
+        await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
-    public void ProcessAsync_when_valiationresult_client_null_exect_exception()
+    public async Task ProcessAsync_when_validationresult_client_null_expect_exception()
     {
         var validationResult = new DeviceAuthorizationRequestValidationResult(new ValidatedDeviceAuthorizationRequest());
         Func <Task> act = () => generator.ProcessAsync(validationResult, TestBaseUrl);
-        act.Should().Throw<ArgumentNullException>();
+        await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
-    public void ProcessAsync_when_baseurl_null_exect_exception()
+    public async Task ProcessAsync_when_baseurl_null_expect_exception()
     {
         Func<Task> act = () => generator.ProcessAsync(testResult, null);
-        act.Should().Throw<ArgumentException>();
+        await act.Should().ThrowAsync<ArgumentException>();
     }
 
     [Fact]

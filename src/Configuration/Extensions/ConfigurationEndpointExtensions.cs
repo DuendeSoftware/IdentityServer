@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
@@ -8,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Duende.IdentityServer.Configuration.Configuration;
-using  Duende.IdentityServer.Configuration.Licensing;
 
 namespace Duende.IdentityServer.Configuration;
 
@@ -35,9 +35,8 @@ public static class ConfigurationEndpointExtensions
         {
             var loggerFactory = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>();
             var options = endpoints.ServiceProvider.GetRequiredService<IOptions<IdentityServerConfigurationOptions>>().Value;
-                
-            LicenseValidator.Initalize(loggerFactory, options);
-            LicenseValidator.ValidateLicense();
+
+            ConfigurationLicenseValidator.Instance.Initialize(loggerFactory, options);
         }
 
         _licenseChecked = true;

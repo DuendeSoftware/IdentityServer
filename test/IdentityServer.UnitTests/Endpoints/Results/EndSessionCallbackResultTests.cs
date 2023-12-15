@@ -18,7 +18,7 @@ namespace UnitTests.Endpoints.Results;
 
 public class EndSessionCallbackResultTests
 {
-    private EndSessionCallbackResult _subject;
+    private EndSessionCallbackHttpWriter _subject;
 
     private EndSessionCallbackValidationResult _result = new EndSessionCallbackValidationResult();
     private IdentityServerOptions _options = TestIdentityServerOptions.Create();
@@ -31,7 +31,7 @@ public class EndSessionCallbackResultTests
         _context.Request.Host = new HostString("server");
         _context.Response.Body = new MemoryStream();
 
-        _subject = new EndSessionCallbackResult(_result, _options);
+        _subject = new EndSessionCallbackHttpWriter(_options);
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class EndSessionCallbackResultTests
     {
         _result.IsError = true;
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new EndSessionCallbackResult(_result), _context);
 
         _context.Response.StatusCode.Should().Be(400);
     }
@@ -50,7 +50,7 @@ public class EndSessionCallbackResultTests
         _result.IsError = false;
         _result.FrontChannelLogoutUrls = new string[] { "http://foo.com", "http://bar.com" };
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new EndSessionCallbackResult(_result), _context);
 
         _context.Response.ContentType.Should().StartWith("text/html");
         _context.Response.Headers["Cache-Control"].First().Should().Contain("no-store");
@@ -78,7 +78,7 @@ public class EndSessionCallbackResultTests
 
         _options.Csp.Level = CspLevel.One;
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new EndSessionCallbackResult(_result), _context);
 
         _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("style-src 'unsafe-inline' 'sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4='");
         _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain("style-src 'unsafe-inline' 'sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4='");
@@ -91,7 +91,7 @@ public class EndSessionCallbackResultTests
 
         _options.Csp.AddDeprecatedHeader = false;
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new EndSessionCallbackResult(_result), _context);
 
         _context.Response.Headers["Content-Security-Policy"].First().Should().Contain("style-src 'sha256-e6FQZewefmod2S/5T11pTXjzE2vn3/8GRwWOs917YE4='");
         _context.Response.Headers["X-Content-Security-Policy"].Should().BeEmpty();

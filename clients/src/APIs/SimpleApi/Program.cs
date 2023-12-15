@@ -12,7 +12,7 @@ namespace SampleApi
     {
         public static void Main(string[] args)
         {
-            Console.Title = "Sample API";
+            Console.Title = "Simple API";
 
             BuildWebHost(args).Run();
         }

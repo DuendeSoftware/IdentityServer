@@ -1,5 +1,6 @@
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using System.Text;
@@ -41,14 +42,14 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
     {
         var dpopOptions = _optionsMonitor.Get(context.Scheme.Name);
 
-        if (context.HttpContext.Request.IsDPoPAuthorizationScheme())
+        if (context.HttpContext.Request.TryGetDPoPAccessToken(out var at))
         {
             var proofToken = context.HttpContext.Request.GetDPoPProofToken();
             var result = await _validator.ValidateAsync(new DPoPProofValidatonContext
             {
                 Scheme = context.Scheme.Name,
                 ProofToken = proofToken,
-                AccessTokenClaims = context.Principal.Claims,
+                AccessToken = at,
                 Method = context.HttpContext.Request.Method,
                 Url = context.HttpContext.Request.Scheme + "://" + context.HttpContext.Request.Host + context.HttpContext.Request.PathBase + context.HttpContext.Request.Path
             });
@@ -130,7 +131,7 @@ public class DPoPJwtBearerEvents : JwtBearerEvents
             }
         }
 
-        context.Response.Headers.Add(HeaderNames.WWWAuthenticate, sb.ToString());
+        context.Response.Headers.Append(HeaderNames.WWWAuthenticate, sb.ToString());
 
         
         if (context.HttpContext.Items.ContainsKey("DPoP-Nonce"))

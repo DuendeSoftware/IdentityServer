@@ -4,7 +4,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Duende.IdentityServer.Extensions;
 using System;
 using Duende.IdentityServer.Configuration;
@@ -12,7 +11,6 @@ using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Services;
 
 namespace Duende.IdentityServer.Endpoints.Results;
@@ -21,9 +19,12 @@ namespace Duende.IdentityServer.Endpoints.Results;
 /// Result for endsession
 /// </summary>
 /// <seealso cref="IEndpointResult" />
-public class EndSessionResult : IEndpointResult
+public class EndSessionResult : EndpointResult<EndSessionResult>
 {
-    private readonly EndSessionValidationResult _result;
+    /// <summary>
+    /// The result
+    /// </summary>
+    public EndSessionValidationResult Result { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EndSessionResult"/> class.
@@ -32,16 +33,18 @@ public class EndSessionResult : IEndpointResult
     /// <exception cref="System.ArgumentNullException">result</exception>
     public EndSessionResult(EndSessionValidationResult result)
     {
-        _result = result ?? throw new ArgumentNullException(nameof(result));
+        Result = result ?? throw new ArgumentNullException(nameof(result));
     }
+}
 
-    internal EndSessionResult(
-        EndSessionValidationResult result,
+
+class EndSessionHttpWriter : IHttpResponseWriter<EndSessionResult>
+{
+    public EndSessionHttpWriter(
         IdentityServerOptions options,
-        ISystemClock clock,
+        IClock clock,
         IServerUrls urls,
         IMessageStore<LogoutMessage> logoutMessageStore)
-        : this(result)
     {
         _options = options;
         _clock = clock;
@@ -50,28 +53,13 @@ public class EndSessionResult : IEndpointResult
     }
 
     private IdentityServerOptions _options;
-    private ISystemClock _clock;
+    private IClock _clock;
     private IServerUrls _urls;
     private IMessageStore<LogoutMessage> _logoutMessageStore;
 
-    private void Init(HttpContext context)
+    public async Task WriteHttpResponse(EndSessionResult result, HttpContext context)
     {
-        _options = _options ?? context.RequestServices.GetRequiredService<IdentityServerOptions>();
-        _clock = _clock ?? context.RequestServices.GetRequiredService<ISystemClock>();
-        _urls = _urls ?? context.RequestServices.GetRequiredService<IServerUrls>();
-        _logoutMessageStore = _logoutMessageStore ?? context.RequestServices.GetRequiredService<IMessageStore<LogoutMessage>>();
-    }
-
-    /// <summary>
-    /// Executes the result.
-    /// </summary>
-    /// <param name="context">The HTTP context.</param>
-    /// <returns></returns>
-    public async Task ExecuteAsync(HttpContext context)
-    {
-        Init(context);
-
-        var validatedRequest = _result.IsError ? null : _result.ValidatedRequest;
+        var validatedRequest = result.Result.IsError ? null : result.Result.ValidatedRequest;
 
         string id = null;
 

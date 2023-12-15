@@ -17,7 +17,7 @@ namespace UnitTests.Endpoints.Results;
 
 public class CheckSessionResultTests
 {
-    private CheckSessionResult _subject;
+    private CheckSessionHttpWriter _subject;
 
     private IdentityServerOptions _options = new IdentityServerOptions();
 
@@ -31,13 +31,13 @@ public class CheckSessionResultTests
 
         _options.Authentication.CheckSessionCookieName = "foobar";
 
-        _subject = new CheckSessionResult(_options);
+        _subject = new CheckSessionHttpWriter(_options);
     }
 
     [Fact]
     public async Task should_pass_results_in_body()
     {
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new CheckSessionResult(), _context);
 
         _context.Response.StatusCode.Should().Be(200);
         _context.Response.ContentType.Should().StartWith("text/html");
@@ -58,7 +58,7 @@ public class CheckSessionResultTests
     {
         _options.Csp.Level = CspLevel.One;
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new CheckSessionResult(), _context);
 
         _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src 'unsafe-inline' '{IdentityServerConstants.ContentSecurityPolicyHashes.CheckSessionScript}'");
         _context.Response.Headers["X-Content-Security-Policy"].First().Should().Contain($"script-src 'unsafe-inline' '{IdentityServerConstants.ContentSecurityPolicyHashes.CheckSessionScript}'");
@@ -69,7 +69,7 @@ public class CheckSessionResultTests
     {
         _options.Csp.AddDeprecatedHeader = false;
 
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new CheckSessionResult(), _context);
 
         _context.Response.Headers["Content-Security-Policy"].First().Should().Contain($"script-src '{IdentityServerConstants.ContentSecurityPolicyHashes.CheckSessionScript}'");
         _context.Response.Headers["X-Content-Security-Policy"].Should().BeEmpty();
@@ -82,7 +82,7 @@ public class CheckSessionResultTests
     public async Task can_change_cached_cookiename(string cookieName)
     {
         _options.Authentication.CheckSessionCookieName = cookieName;
-        await _subject.ExecuteAsync(_context);
+        await _subject.WriteHttpResponse(new CheckSessionResult(), _context);
         _context.Response.Body.Seek(0, SeekOrigin.Begin);
         using (var rdr = new StreamReader(_context.Response.Body))
         {

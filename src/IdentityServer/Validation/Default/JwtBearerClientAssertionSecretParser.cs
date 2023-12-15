@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.IdentityModel.Tokens.Jwt;
@@ -110,7 +109,7 @@ public class JwtBearerClientAssertionSecretParser : ISecretParser
             var jwt = new JwtSecurityToken(token);
             return jwt.Subject;
         }
-        catch (Exception e)
+        catch
         {
             _logger.LogWarning(e, "Could not parse client assertion");
             return null;

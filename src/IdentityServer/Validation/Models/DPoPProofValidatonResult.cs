@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using System.Collections.Generic;
@@ -31,6 +32,11 @@ public class DPoPProofValidatonResult : ValidationResult
     /// The payload values of the DPoP proof token.
     /// </summary>
     public IDictionary<string, object>? Payload { get; internal set; }
+
+    /// <summary>
+    /// The ath value read from the payload.
+    /// </summary>
+    public string? AccessTokenHash { get; set; }
 
     /// <summary>
     /// The 'jti' value read from the payload.

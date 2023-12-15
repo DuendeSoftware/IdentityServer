@@ -51,7 +51,6 @@ namespace MvcCode
                 .AddOpenIdConnect("oidc", options =>
                 {
                     options.Authority = Constants.Authority;
-                    options.RequireHttpsMetadata = false;
 
                     options.ClientId = "mvc.code";
                     options.ClientSecret = "secret";
@@ -64,16 +63,16 @@ namespace MvcCode
                     options.Scope.Add("openid");
                     options.Scope.Add("profile");
                     options.Scope.Add("email");
+                    options.Scope.Add("custom.profile");
                     options.Scope.Add("resource1.scope1");
                     options.Scope.Add("resource2.scope1");
-                    //options.Scope.Add("transaction:123");
-                    //options.Scope.Add("transaction");
                     options.Scope.Add("offline_access");
 
                     // not mapped by default
+                    options.ClaimActions.MapAll();
                     options.ClaimActions.MapJsonKey("website", "website");
+                    options.ClaimActions.MapCustomJson("address", (json) => json.GetRawText());
 
-                    // keeps id_token smaller
                     options.GetClaimsFromUserInfoEndpoint = true;
                     options.SaveTokens = true;
 

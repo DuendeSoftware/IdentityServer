@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -80,12 +82,12 @@ public class DPoPProofValidator
                 return result;
             }
 
-            Logger.LogDebug("Successfully validated DPoP proof token");
+            Logger.LogDebug("Successfully validated DPoP proof token with thumbprint: {jkt}", result.JsonWebKeyThumbprint);
             result.IsError = false;
         }
         finally
         {
-            if (result.IsError)
+            if (result.IsError && String.IsNullOrWhiteSpace(result.Error))
             {
                 result.Error = OidcConstants.TokenErrors.InvalidDPoPProof;
             }
@@ -114,14 +116,14 @@ public class DPoPProofValidator
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<string>("typ", out var typ) || typ != JwtClaimTypes.JwtTypes.DPoPProofToken)
+        if (!token.TryGetHeaderValue<string>(JwtClaimTypes.TokenType, out var typ) || typ != JwtClaimTypes.JwtTypes.DPoPProofToken)
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'typ' value.";
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<string>("alg", out var alg) || !SupportedDPoPSigningAlgorithms.Contains(alg))
+        if (!token.TryGetHeaderValue<string>(JwtClaimTypes.Algorithm, out var alg) || !SupportedDPoPSigningAlgorithms.Contains(alg))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'alg' value.";
@@ -211,6 +213,32 @@ public class DPoPProofValidator
     /// </summary>
     protected virtual async Task ValidatePayloadAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
+        if (result.Payload.TryGetValue(JwtClaimTypes.DPoPAccessTokenHash, out var ath))
+        {
+            result.AccessTokenHash = ath as string;
+        }
+
+        if (String.IsNullOrEmpty(result.AccessTokenHash))
+        {
+            result.IsError = true;
+            result.ErrorDescription = "Invalid 'ath' value.";
+            return;
+        }
+
+        using (var sha = SHA256.Create())
+        {
+            var bytes = Encoding.UTF8.GetBytes(context.AccessToken);
+            var hash = sha.ComputeHash(bytes);
+
+            var accessTokenHash = Base64Url.Encode(hash);
+            if (accessTokenHash != result.AccessTokenHash)
+            {
+                result.IsError = true;
+                result.ErrorDescription = "Invalid 'ath' value.";
+                return;
+            }
+        }
+
         if (result.Payload.TryGetValue(JwtClaimTypes.JwtId, out var jti))
         {
             result.TokenId = jti as string;
@@ -241,11 +269,11 @@ public class DPoPProofValidator
         {
             if (iat is int)
             {
-                result.IssuedAt = (int) iat;
+                result.IssuedAt = (int)iat;
             }
             if (iat is long)
             {
-                result.IssuedAt = (long) iat;
+                result.IssuedAt = (long)iat;
             }
         }
 
@@ -308,6 +336,9 @@ public class DPoPProofValidator
         // longer than the likelyhood of proof token expiration, which is done before replay
         skew *= 2;
         var cacheDuration = dpopOptions.ProofTokenValidityDuration + skew;
+        
+        Logger.LogDebug("Adding proof token with jti {jti} to replay cache for duration {cacheDuration}", result.TokenId, cacheDuration);
+
         await ReplayCache.AddAsync(ReplayCachePurpose, result.TokenId, DateTimeOffset.UtcNow.Add(cacheDuration));
     }
 
@@ -418,11 +449,11 @@ public class DPoPProofValidator
                 return ValueTask.FromResult(iat);
             }
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             Logger.LogDebug("Error parsing DPoP 'nonce' value: {error}", ex.ToString());
         }
-
+        
         return ValueTask.FromResult<long>(0);
     }
 

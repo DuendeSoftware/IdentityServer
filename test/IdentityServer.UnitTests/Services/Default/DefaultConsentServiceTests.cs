@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -88,7 +88,7 @@ public class DefaultConsentServiceTests
     }
 
     [Fact]
-    public async Task UpdateConsentAsync_empty_scopes_should_should_remove_consent()
+    public async Task UpdateConsentAsync_empty_scopes_should_remove_consent()
     {
         await _subject.UpdateConsentAsync(_user, _client, new[] { new ParsedScopeValue("scope1"), new ParsedScopeValue("scope2") });
 

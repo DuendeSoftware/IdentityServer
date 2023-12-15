@@ -83,7 +83,12 @@ internal class DeviceAuthorizationEndpoint : IEndpointHandler
 
         // validate client
         var clientResult = await _clientValidator.ValidateAsync(context);
-        if (clientResult.IsError) return Error(clientResult.Error ?? OidcConstants.TokenErrors.InvalidClient);
+        if (clientResult.IsError)
+        {
+            var error = clientResult.Error ?? OidcConstants.TokenErrors.InvalidClient;
+            Telemetry.Metrics.DeviceAuthenticationFailure(clientResult.Client?.ClientId, error);
+            return Error(error);
+        }
 
         // validate request
         var form = (await context.Request.ReadFormAsync()).AsNameValueCollection();
@@ -92,6 +97,7 @@ internal class DeviceAuthorizationEndpoint : IEndpointHandler
         if (requestResult.IsError)
         {
             await _events.RaiseAsync(new DeviceAuthorizationFailureEvent(requestResult));
+            Telemetry.Metrics.DeviceAuthenticationFailure(clientResult.Client.ClientId, requestResult.Error);
             return Error(requestResult.Error, requestResult.ErrorDescription);
         }
 
@@ -100,6 +106,7 @@ internal class DeviceAuthorizationEndpoint : IEndpointHandler
         var response = await _responseGenerator.ProcessAsync(requestResult, _urls.BaseUrl);
 
         await _events.RaiseAsync(new DeviceAuthorizationSuccessEvent(response, requestResult));
+        Telemetry.Metrics.DeviceAuthentication(clientResult.Client.ClientId);
 
         // return result
         _logger.LogDebug("Device authorize request success.");

@@ -1,8 +1,10 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
+using Duende.IdentityServer.Extensions;
 using IdentityModel;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,11 +58,10 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     // todo: consider replacing with extension method to access Raw collection; would need to be done wholesale for all props.
     public List<string> RequestedScopes { get; set; } = default!;
 
-    // TODO: typo
     /// <summary>
     /// Gets or sets the requested resource indicators.
     /// </summary>
-    public IEnumerable<string>? RequestedResourceIndiators { get; set; }
+    public IEnumerable<string>? RequestedResourceIndicators { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether consent was shown.
@@ -137,26 +138,66 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// <summary>
     /// Gets or sets the collection of prompt modes.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="PromptModes"/> change as they are used. For example, if
+    /// the prompt mode is login (to force the login UI to be displayed), the
+    /// collection will initially contain login, but when the login page is
+    /// displayed, the login prompt will be removed from the collection of
+    /// prompt modes so that the login page will only be displayed once.
+    /// <para>
+    /// See also: <see cref="ProcessedPromptModes"/> and <see
+    /// cref="OriginalPromptModes"/>.
+    /// </para>
+    /// </remarks>
     /// <value>
-    /// The collection of prompt modes.
+    /// The collection of prompt modes, which changes as the request is
+    /// processed and various prompts are displayed.
     /// </value>
     public IEnumerable<string> PromptModes { get; set; } = Enumerable.Empty<string>();
 
     /// <summary>
     /// Gets or sets the collection of original prompt modes.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="PromptModes"/> change as they are used. For example, if
+    /// the prompt mode is login (to force the login UI to be displayed), the
+    /// collection will initially contain login, but when the login page is
+    /// displayed, the login prompt will be removed from the collection of
+    /// prompt modes so that the login page will only be displayed once.
+    /// <para>
+    /// See also:
+    /// <list type="bullet">
+    /// <item><seealso cref="ProcessedPromptModes"/></item>
+    /// <item><seealso cref="PromptModes"/></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
     /// <value>
     /// The collection of original prompt modes.
     /// </value>
-    internal IEnumerable<string> OriginalPromptModes { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<string> OriginalPromptModes { get; set; } = Enumerable.Empty<string>();
 
     /// <summary>
-    /// Gets or sets the collection of suppressed prompt modes.
+    /// Gets or sets the collection of previously processed prompt modes.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="PromptModes"/> change as they are used. For example, if
+    /// the prompt mode is login (to force the login UI to be displayed), the
+    /// collection will initially contain login, but when the login page is
+    /// displayed, the login prompt will be removed from the collection of
+    /// prompt modes so that the login page will only be displayed once.
+    /// </remarks>
+    /// <para>
+    /// See also:
+    /// <list type="bullet">
+    /// <item><seealso cref="PromptModes"/></item>
+    /// <item><seealso cref="OriginalPromptModes"/></item>
+    /// </list>
+    /// </para>
     /// <value>
-    /// The collection of suppressed prompt modes.
+    /// The collection of processed prompt modes.
     /// </value>
-    internal IEnumerable<string> SuppressedPromptModes { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<string> ProcessedPromptModes { get; set; } = Enumerable.Empty<string>();
 
     /// <summary>
     /// Gets or sets the maximum age.
@@ -210,7 +251,22 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// The thumbprint of the associated DPoP proof key, if one was used.
     /// </summary>
     public string? DPoPKeyThumbprint { get; set; }
-    
+
+    /// <summary>
+    /// The reference value of the pushed authorization request, if one was used. Pushed authorization requests are
+    /// passed by reference using the request_uri parameter, which is in the form
+    /// urn:ietf:params:oauth:request_uri:{ReferenceValue}, where ReferenceValue is a random identifier. If a
+    /// request_uri in that format is passed, the reference value portion will be extracted and saved here.
+    /// </summary>
+    public string? PushedAuthorizationReferenceValue { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating the context in which authorization
+    /// validation is occurring (the PAR endpoint or the authorize endpoint with
+    /// or without pushed parameters).
+    /// </summary>
+    public AuthorizeRequestType AuthorizeRequestType { get; set; }
+
     /// <summary>
     /// Gets a value indicating whether an access token was requested.
     /// </summary>
@@ -233,4 +289,24 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
         RequestedScopes = new List<string>();
         AuthenticationContextReferenceClasses = new List<string>();
     }
+}
+
+/// <summary>
+/// Indicates the context in which authorization validation is occurring (is
+/// this the authorize endpoint with or without PAR or the PAR endpoint itself?)
+/// </summary>
+public enum AuthorizeRequestType
+{
+    /// <summary>
+    /// A request to the authorize endpoint without PAR
+    /// </summary>
+    Authorize,
+    /// <summary>
+    /// A request to the PAR endpoint
+    /// </summary>
+    PushedAuthorization,
+    /// <summary>
+    /// A request to the authorize endpoint with pushed parameters
+    /// </summary>
+    AuthorizeWithPushedParameters
 }

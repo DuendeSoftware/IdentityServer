@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Endpoints.Results;
@@ -74,7 +75,10 @@ internal class BackchannelAuthenticationEndpoint : IEndpointHandler
         var clientResult = await _clientValidator.ValidateAsync(context);
         if (clientResult.IsError)
         {
-            return Error(clientResult.Error ?? OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient);
+            var error = clientResult.Error ?? OidcConstants.BackchannelAuthenticationRequestErrors.InvalidClient;
+            Telemetry.Metrics.BackChannelAuthenticationFailureCounter
+                .Add(1, new("client", clientResult.Client?.ClientId), new("error", error));
+            return Error(error);
         }
 
         // validate request
@@ -85,6 +89,7 @@ internal class BackchannelAuthenticationEndpoint : IEndpointHandler
         if (requestResult.IsError)
         {
             await _events.RaiseAsync(new BackchannelAuthenticationFailureEvent(requestResult));
+            Telemetry.Metrics.BackChannelAuthenticationFailure(clientResult.Client?.ClientId, requestResult.Error);
             return Error(requestResult.Error, requestResult.ErrorDescription);
         }
 
@@ -93,6 +98,7 @@ internal class BackchannelAuthenticationEndpoint : IEndpointHandler
         var response = await _responseGenerator.ProcessAsync(requestResult);
 
         await _events.RaiseAsync(new BackchannelAuthenticationSuccessEvent(requestResult));
+        Telemetry.Metrics.BackChannelAuthentication(clientResult.Client.ClientId);
         LogResponse(response, requestResult);
 
         // return result

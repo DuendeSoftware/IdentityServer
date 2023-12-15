@@ -16,6 +16,7 @@ using UnitTests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Duende.IdentityServer.Stores;
 
 namespace UnitTests.Endpoints.Authorize;
 

@@ -99,7 +99,9 @@ public class PrivateKeyJwtSecretValidator : ISecretValidator
             await _issuerNameService.GetCurrentAsync(),
             // CIBA endpoint: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#auth_request
             string.Concat(_urls.BaseUrl.EnsureTrailingSlash(), ProtocolRoutePaths.BackchannelAuthentication),
-            // TODO: PAR once added
+            // PAR endpoint: https://datatracker.ietf.org/doc/html/rfc9126#name-request
+            string.Concat(_urls.BaseUrl.EnsureTrailingSlash(), ProtocolRoutePaths.PushedAuthorization),
+            
         }.Distinct();
 
         var tokenValidationParameters = new TokenValidationParameters
@@ -120,7 +122,7 @@ public class PrivateKeyJwtSecretValidator : ISecretValidator
         };
 
         var handler = new JsonWebTokenHandler() { MaximumTokenSizeInBytes = _options.InputLengthRestrictions.Jwt };
-        var result = handler.ValidateToken(jwtTokenString, tokenValidationParameters);
+        var result = await handler.ValidateTokenAsync(jwtTokenString, tokenValidationParameters);
         if (!result.IsValid)
         {
             _logger.LogError(result.Exception, "JWT token validation error");

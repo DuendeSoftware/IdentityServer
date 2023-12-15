@@ -9,10 +9,11 @@ using System;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Validation;
 using Duende.IdentityServer.Models;
 using System.Linq;
 using Duende.IdentityServer.Configuration;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Hosting;
 
@@ -90,28 +91,38 @@ public class IdentityServerMiddleware
             if (endpoint != null)
             {
                 var endpointType = endpoint.GetType().FullName;
-                
-                using var activity = Tracing.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
-                activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
-                
-                LicenseValidator.ValidateIssuer(await issuerNameService.GetCurrentAsync());
+                var requestPath = context.Request.Path.ToString();
 
-                _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, context.Request.Path.ToString());
-
-                var result = await endpoint.ProcessAsync(context);
-
-                if (result != null)
+                Telemetry.Metrics.IncreaseActiveRequests(endpointType, requestPath);
+                try
                 {
-                    _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);
-                    await result.ExecuteAsync(context);
-                }
+                    using var activity = Tracing.BasicActivitySource.StartActivity("IdentityServerProtocolRequest");
+                    activity?.SetTag(Tracing.Properties.EndpointType, endpointType);
 
-                return;
+                    IdentityServerLicenseValidator.Instance.ValidateIssuer(await issuerNameService.GetCurrentAsync());
+
+                    _logger.LogInformation("Invoking IdentityServer endpoint: {endpointType} for {url}", endpointType, requestPath);
+
+                    var result = await endpoint.ProcessAsync(context);
+
+                    if (result != null)
+                    {
+                        _logger.LogTrace("Invoking result: {type}", result.GetType().FullName);
+                        await result.ExecuteAsync(context);
+                    }
+
+                    return;
+                }
+                finally
+                {
+                    Telemetry.Metrics.DecreaseActiveRequests(endpointType, requestPath);
+                }
             }
         }
         catch (Exception ex) when (options.Logging.UnhandledExceptionLoggingFilter?.Invoke(context, ex) is not false)
         {
             await events.RaiseAsync(new UnhandledExceptionEvent(ex));
+            Telemetry.Metrics.UnHandledException(ex);
             _logger.LogCritical(ex, "Unhandled exception: {exception}", ex.Message);
 
             throw;

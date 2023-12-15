@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using System;
@@ -45,9 +46,17 @@ public interface IPersistedGrantDbContext : IDisposable
     /// Gets or sets the user sessions.
     /// </summary>
     /// <value>
-    /// The keys.
+    /// The server side sessions.
     /// </value>
     DbSet<ServerSideSession> ServerSideSessions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the pushed authorization requests.
+    /// </summary>
+    /// <value>
+    /// The pushed authorization requests.
+    /// </value>
+    DbSet<PushedAuthorizationRequest> PushedAuthorizationRequests { get; set; }
 
     /// <summary>
     /// Saves the changes.

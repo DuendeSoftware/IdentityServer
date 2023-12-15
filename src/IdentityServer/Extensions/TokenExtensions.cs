@@ -4,7 +4,6 @@
 
 using IdentityModel;
 using Duende.IdentityServer.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -30,7 +29,7 @@ public static class TokenExtensions
     /// <param name="logger"></param>
     /// <returns></returns>
     public static Dictionary<string, object> CreateJwtPayloadDictionary(this Token token,
-        IdentityServerOptions options, ISystemClock clock, ILogger logger)
+        IdentityServerOptions options, IClock clock, ILogger logger)
     {
         try
         {

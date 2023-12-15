@@ -53,6 +53,7 @@ public class TokenCleanupService : ITokenCleanupService
 
             await RemoveGrantsAsync(cancellationToken);
             await RemoveDeviceCodesAsync(cancellationToken);
+            await RemovePushedAuthorizationRequestsAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -180,5 +181,16 @@ public class TokenCleanupService : ITokenCleanupService
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Removes stale pushed authorization requests.
+    /// </summary>
+    protected virtual async Task RemovePushedAuthorizationRequestsAsync(CancellationToken cancellationToken = default)
+    {
+        var x = await _persistedGrantDbContext.PushedAuthorizationRequests
+            .Where(p => p.ExpiresAtUtc < DateTime.UtcNow)
+            .ExecuteDeleteAsync(cancellationToken);
+        _logger.LogInformation("Removed {parCount} stale pushed authorization requests", x);
     }
 }

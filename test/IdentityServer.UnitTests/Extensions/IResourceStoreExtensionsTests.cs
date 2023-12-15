@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace UnitTests.Extensions;
 public class IResourceStoreExtensionsTests
 {
     [Fact]
-    public void GetAllEnabledResourcesAsync_on_duplicate_identity_scopes_should_fail()
+    public async Task GetAllEnabledResourcesAsync_on_duplicate_identity_scopes_should_fail()
     {
         var store = new MockResourceStore()
         {
@@ -25,7 +26,7 @@ public class IResourceStoreExtensionsTests
         };
 
         Func<Task> a = () => store.GetAllEnabledResourcesAsync();
-        a.Should().Throw<Exception>().And.Message.ToLowerInvariant().Should().Contain("duplicate").And.Contain("identity scopes");
+        await a.Should().ThrowAsync<Exception>().WithMessage("duplicate identity scopes*");
     }
 
     [Fact]
@@ -42,7 +43,7 @@ public class IResourceStoreExtensionsTests
     }
 
     [Fact]
-    public void GetAllEnabledResourcesAsync_on_duplicate_api_resources_should_fail()
+    public async Task GetAllEnabledResourcesAsync_on_duplicate_api_resources_should_fail()
     {
         var store = new MockResourceStore()
         {
@@ -50,7 +51,7 @@ public class IResourceStoreExtensionsTests
         };
 
         Func<Task> a = () => store.GetAllEnabledResourcesAsync();
-        a.Should().Throw<Exception>().And.Message.ToLowerInvariant().Should().Contain("duplicate").And.Contain("api resources");
+        await a.Should().ThrowAsync<Exception>().WithMessage("duplicate api resources*");
     }
 
     [Fact]
@@ -65,7 +66,7 @@ public class IResourceStoreExtensionsTests
     }
 
     [Fact]
-    public void FindResourcesByScopeAsync_on_duplicate_identity_scopes_should_fail()
+    public async Task FindResourcesByScopeAsync_on_duplicate_identity_scopes_should_fail()
     {
         var store = new MockResourceStore()
         {
@@ -75,7 +76,7 @@ public class IResourceStoreExtensionsTests
         };
 
         Func<Task> a = () => store.FindResourcesByScopeAsync(new string[] { "A" });
-        a.Should().Throw<Exception>().And.Message.ToLowerInvariant().Should().Contain("duplicate").And.Contain("identity scopes");
+        await a.Should().ThrowAsync<Exception>().WithMessage("duplicate identity scopes*");
     }
 
     [Fact]

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 
@@ -11,6 +10,7 @@ public class NoSubjectExtensionGrantValidator : IExtensionGrantValidator
 {
     public Task ValidateAsync(ExtensionGrantValidationContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
         var credential = context.Request.Raw.Get("custom_credential");
 
         if (credential != null)

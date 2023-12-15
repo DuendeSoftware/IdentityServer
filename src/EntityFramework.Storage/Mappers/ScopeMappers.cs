@@ -1,8 +1,9 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
-using AutoMapper;
+using System.Collections.Generic;
+using System.Linq;
 using Duende.IdentityServer.EntityFramework.Entities;
 
 namespace Duende.IdentityServer.EntityFramework.Mappers;
@@ -12,14 +13,6 @@ namespace Duende.IdentityServer.EntityFramework.Mappers;
 /// </summary>
 public static class ScopeMappers
 {
-    static ScopeMappers()
-    {
-        Mapper = new MapperConfiguration(cfg => cfg.AddProfile<ScopeMapperProfile>())
-            .CreateMapper();
-    }
-
-    internal static IMapper Mapper { get; }
-
     /// <summary>
     /// Maps an entity to a model.
     /// </summary>
@@ -27,7 +20,20 @@ public static class ScopeMappers
     /// <returns></returns>
     public static Models.ApiScope ToModel(this ApiScope entity)
     {
-        return entity == null ? null : Mapper.Map<Models.ApiScope>(entity);
+        return entity == null ? null : 
+            new Models.ApiScope
+            {
+                Enabled = entity.Enabled,
+                Name = entity.Name,
+                DisplayName = entity.DisplayName,
+                Description = entity.Description,
+                ShowInDiscoveryDocument = entity.ShowInDiscoveryDocument,
+                UserClaims = entity.UserClaims?.Select(c => c.Type).ToList() ?? new List<string>(),
+                Properties = entity.Properties?.ToDictionary(p => p.Key, p => p.Value) ?? new Dictionary<string, string>(),
+
+                Required = entity.Required,
+                Emphasize = entity.Emphasize
+            };
     }
 
     /// <summary>
@@ -35,8 +41,27 @@ public static class ScopeMappers
     /// </summary>
     /// <param name="model">The model.</param>
     /// <returns></returns>
-    public static ApiScope ToEntity(this Models.ApiScope model)
+    public static Entities.ApiScope ToEntity(this Models.ApiScope model)
     {
-        return model == null ? null : Mapper.Map<ApiScope>(model);
+        return model == null ? null : 
+            new Entities.ApiScope
+            {
+                Enabled = model.Enabled,
+                Name = model.Name,
+                DisplayName = model.DisplayName,
+                Description = model.Description,
+                ShowInDiscoveryDocument = model.ShowInDiscoveryDocument,
+                UserClaims = model.UserClaims?.Select(c => new Entities.ApiScopeClaim
+                {
+                    Type = c,
+                }).ToList() ?? new List<ApiScopeClaim>(),
+                Properties = model.Properties?.Select(p => new Entities.ApiScopeProperty
+                {
+                    Key = p.Key, Value = p.Value
+                }).ToList() ?? new List<ApiScopeProperty>(),
+                
+                Required = model.Required,
+                Emphasize = model.Emphasize
+            };
     }
 }

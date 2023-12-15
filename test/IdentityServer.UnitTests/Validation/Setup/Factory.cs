@@ -14,9 +14,10 @@ using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Stores.Serialization;
 using Duende.IdentityServer.Validation;
 using UnitTests.Common;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Services.KeyManagement;
+using Duende.IdentityServer;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace UnitTests.Validation.Setup;
 
@@ -30,6 +31,7 @@ internal static class Factory
     public static TokenRequestValidator CreateTokenRequestValidator(
         IdentityServerOptions options = null,
         IIssuerNameService issuerNameService = null,
+        IServerUrls serverUrls = null,
         IResourceStore resourceStore = null,
         IAuthorizationCodeStore authorizationCodeStore = null,
         IRefreshTokenStore refreshTokenStore = null,
@@ -50,6 +52,14 @@ internal static class Factory
         if (issuerNameService == null)
         {
             issuerNameService = new TestIssuerNameService(options.IssuerUri);
+        }
+
+        if (serverUrls == null)
+        {
+            serverUrls = new MockServerUrls()
+            {
+                Origin = options.IssuerUri ?? "https://identityserver",
+            };
         }
 
         if (resourceStore == null)
@@ -117,6 +127,7 @@ internal static class Factory
         return new TokenRequestValidator(
             options,
             issuerNameService,
+            serverUrls,
             authorizationCodeStore,
             resourceOwnerValidator,
             profile,
@@ -127,15 +138,17 @@ internal static class Factory
             resourceValidator,
             resourceStore,
             refreshTokenService,
-            new DefaultDPoPProofValidator(options, new MockServerUrls(), new MockReplayCache(), new StubClock(), new StubDataProtectionProvider(), new LoggerFactory().CreateLogger< DefaultDPoPProofValidator >()),
+            new DefaultDPoPProofValidator(options, new MockReplayCache(), new StubClock(), new StubDataProtectionProvider(), new LoggerFactory().CreateLogger< DefaultDPoPProofValidator >()),
             new TestEventService(),
             new StubClock(),
             TestLogger.Create<TokenRequestValidator>());
     }
 
-    private static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store, IProfileService profile)
+    public static IRefreshTokenService CreateRefreshTokenService(IRefreshTokenStore store = null, IProfileService profile = null)
     {
-        return CreateRefreshTokenService(store, profile, new PersistentGrantOptions());
+        return CreateRefreshTokenService(store ?? CreateRefreshTokenStore(), 
+            profile ?? new TestProfileService(), 
+            new PersistentGrantOptions());
     }
 
     private static IRefreshTokenService CreateRefreshTokenService(
@@ -204,12 +217,10 @@ internal static class Factory
         IIssuerNameService issuerNameService = null,
         IResourceStore resourceStore = null,
         IClientStore clients = null,
-        IProfileService profile = null,
         ICustomAuthorizeRequestValidator customValidator = null,
         IRedirectUriValidator uriValidator = null,
         IResourceValidator resourceValidator = null,
-        JwtRequestValidator jwtRequestValidator = null,
-        IJwtRequestUriHttpClient jwtRequestUriHttpClient = null)
+        IRequestObjectValidator requestObjectValidator = null)
     {
         if (options == null)
         {
@@ -238,27 +249,21 @@ internal static class Factory
 
         if (uriValidator == null)
         {
-            uriValidator = new StrictRedirectUriValidator();
+            uriValidator = new StrictRedirectUriValidator(options);
         }
 
         if (resourceValidator == null)
         {
             resourceValidator = CreateResourceValidator(resourceStore);
         }
-
-        if (jwtRequestValidator == null)
-        {
-            jwtRequestValidator = new JwtRequestValidator("https://identityserver", new LoggerFactory().CreateLogger<JwtRequestValidator>());
-        }
-
-        if (jwtRequestUriHttpClient == null)
-        {
-            jwtRequestUriHttpClient = new DefaultJwtRequestUriHttpClient(new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options, new LoggerFactory(), new NoneCancellationTokenProvider());
-        }
-
-
+    
         var userSession = new MockUserSession();
 
+        if (requestObjectValidator == null)
+        {
+            requestObjectValidator = CreateRequestObjectValidator();
+        }
+        
         return new AuthorizeRequestValidator(
             options,
             issuerNameService,
@@ -267,9 +272,30 @@ internal static class Factory
             uriValidator,
             resourceValidator,
             userSession,
+            requestObjectValidator,
+            TestLogger.Create<AuthorizeRequestValidator>());
+    }
+
+    public static RequestObjectValidator CreateRequestObjectValidator(        
+        JwtRequestValidator jwtRequestValidator = null,
+        IJwtRequestUriHttpClient jwtRequestUriHttpClient = null,
+        IPushedAuthorizationService pushedAuthorizationService = null,
+        IdentityServerOptions options = null)
+    {
+        jwtRequestValidator ??= new JwtRequestValidator("https://identityserver",
+            new LoggerFactory().CreateLogger<JwtRequestValidator>());
+        jwtRequestUriHttpClient ??= new DefaultJwtRequestUriHttpClient(
+            new HttpClient(new NetworkHandler(new Exception("no jwt request uri response configured"))), options,
+            new LoggerFactory(), new NoneCancellationTokenProvider());
+        pushedAuthorizationService ??= new TestPushedAuthorizationService();
+        options ??= TestIdentityServerOptions.Create();
+
+        return new RequestObjectValidator(
             jwtRequestValidator,
             jwtRequestUriHttpClient,
-            TestLogger.Create<AuthorizeRequestValidator>());
+            pushedAuthorizationService,
+            options,
+            TestLogger.Create<RequestObjectValidator>());
     }
 
     public static TokenValidator CreateTokenValidator(
@@ -278,7 +304,7 @@ internal static class Factory
         IProfileService profile = null,
         IIssuerNameService issuerNameService = null,
         IdentityServerOptions options = null, 
-        ISystemClock clock = null)
+        IClock clock = null)
     {
         options ??= TestIdentityServerOptions.Create();
         profile ??= new TestProfileService();
@@ -320,7 +346,7 @@ internal static class Factory
         IDeviceFlowCodeService service,
         IProfileService profile = null,
         IDeviceFlowThrottlingService throttlingService = null,
-        ISystemClock clock = null)
+        IClock clock = null)
     {
         profile = profile ?? new TestProfileService();
         throttlingService = throttlingService ?? new TestDeviceFlowThrottlingService();
@@ -390,7 +416,7 @@ internal static class Factory
     {
         return new DefaultDeviceFlowCodeService(new InMemoryDeviceFlowStore(), new DefaultHandleGenerationService());
     }
-        
+
     public static IUserConsentStore CreateUserConsentStore()
     {
         return new DefaultUserConsentStore(new InMemoryPersistedGrantStore(),

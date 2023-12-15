@@ -18,7 +18,6 @@ using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
 using System;
 using Duende.IdentityServer;
-using Microsoft.AspNetCore.Authentication;
 
 namespace IntegrationTests.Endpoints.Token;
 
@@ -493,7 +492,7 @@ public class CibaTokenEndpointTests
     public async Task expired_request_should_return_error()
     {
         var clock = new MockClock();
-        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<ISystemClock>(clock);
+        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<IClock>(clock);
         _mockPipeline.Initialize();
 
         // ciba request
@@ -562,7 +561,7 @@ public class CibaTokenEndpointTests
     public async Task too_frequent_request_should_return_error()
     {
         var clock = new MockClock();
-        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<ISystemClock>(clock);
+        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<IClock>(clock);
         _mockPipeline.Initialize();
 
         // ciba request
@@ -637,7 +636,7 @@ public class CibaTokenEndpointTests
     public async Task calls_past_interval_should_reset_throttling()
     {
         var clock = new MockClock();
-        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<ISystemClock>(clock);
+        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<IClock>(clock);
         _mockPipeline.Initialize();
 
         // ciba request
@@ -759,7 +758,7 @@ public class CibaTokenEndpointTests
         _cibaClient.PollingInterval = 10;
 
         var clock = new MockClock();
-        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<ISystemClock>(clock);
+        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<IClock>(clock);
         _mockPipeline.Initialize();
 
         // ciba request
@@ -905,7 +904,7 @@ public class CibaTokenEndpointTests
         _cibaClient.CibaLifetime = 100;
 
         var clock = new MockClock();
-        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<ISystemClock>(clock);
+        _mockPipeline.OnPostConfigureServices += s => s.AddSingleton<IClock>(clock);
         _mockPipeline.Initialize();
 
         // ciba request

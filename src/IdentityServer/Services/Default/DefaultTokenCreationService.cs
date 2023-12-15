@@ -4,7 +4,6 @@
 
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -34,7 +33,7 @@ public class DefaultTokenCreationService : ITokenCreationService
     /// <summary>
     ///  The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The options
@@ -49,7 +48,7 @@ public class DefaultTokenCreationService : ITokenCreationService
     /// <param name="options">The options.</param>
     /// <param name="logger">The logger.</param>
     public DefaultTokenCreationService(
-        ISystemClock clock,
+        IClock clock,
         IKeyMaterialService keys,
         IdentityServerOptions options,
         ILogger<DefaultTokenCreationService> logger)

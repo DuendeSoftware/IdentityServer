@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using System.Collections.Generic;
@@ -34,10 +35,10 @@ public class TokenResponse
     public string AccessToken { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the access token lifetime.
+    /// Gets or sets the access token lifetime in seconds.
     /// </summary>
     /// <value>
-    /// The access token lifetime.
+    /// The access token lifetime in seconds.
     /// </value>
     public int AccessTokenLifetime { get; set; }
 

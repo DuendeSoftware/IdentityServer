@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
         <RootNamespace>IdentityServerHost</RootNamespace>
         <UserSecretsId>e60c119c-8b86-4016-9d44-80e25948dbba</UserSecretsId>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AnalysisMode>all</AnalysisMode>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,13 +27,17 @@
         <PackageReference Include="OpenTelemetry" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+        <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
         <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" />
 
         <PackageReference Include="Serilog.AspNetCore" />
-        
+
+        <!-- This may not be necessary long term, once asp.net core updates its wilson dependencies  -->
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+
     </ItemGroup>
 
     <ItemGroup>

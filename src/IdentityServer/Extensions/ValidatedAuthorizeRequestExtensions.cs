@@ -41,7 +41,7 @@ public static class ValidatedAuthorizeRequestExtensions
             suppress.Append(OidcConstants.PromptModes.Create);
         }
 
-        request.Raw.Add(Constants.SuppressedPrompt, suppress.ToString());
+        request.Raw.Add(Constants.ProcessedPrompt, suppress.ToString());
         request.PromptModes = request.PromptModes.Except(new[] { 
             OidcConstants.PromptModes.Login, 
             OidcConstants.PromptModes.SelectAccount,
@@ -166,7 +166,7 @@ public static class ValidatedAuthorizeRequestExtensions
                 // https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests 
                 // requires client id and response type to always be in URL
                 if (key == OidcConstants.AuthorizeRequest.ClientId ||
-                    key == OidcConstants.AuthorizeRequest.ResponseType || 
+                    key == OidcConstants.AuthorizeRequest.ResponseType ||  
                     request.RequestObjectValues.All(x => x.Type != key))
                 {
                     foreach(var value in request.Raw.GetValues(key))
@@ -187,6 +187,7 @@ public static class ValidatedAuthorizeRequestExtensions
         return request.ToOptimizedRawValues().ToQueryString();
     }
 
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public static IDictionary<string, string[]> ToOptimizedFullDictionary(this ValidatedAuthorizeRequest request)
     {
         return request.ToOptimizedRawValues().ToFullDictionary();

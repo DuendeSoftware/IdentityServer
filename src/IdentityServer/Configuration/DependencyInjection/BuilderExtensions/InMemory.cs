@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using Duende.IdentityServer.Models;
@@ -178,6 +179,17 @@ public static class IdentityServerBuilderExtensionsInMemory
         builder.Services.TryAddSingleton<IPersistedGrantStore, InMemoryPersistedGrantStore>();
         builder.Services.TryAddSingleton<IDeviceFlowStore, InMemoryDeviceFlowStore>();
 
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the in memory pushed authorization request store.
+    /// </summary>
+    /// <param name="builder">The builder.</param>
+    /// <returns></returns>
+    public static IIdentityServerBuilder AddInMemoryPushedAuthorizationRequests(this IIdentityServerBuilder builder) 
+    {
+        builder.Services.TryAddSingleton<IPushedAuthorizationRequestStore, InMemoryPushedAuthorizationRequestStore>();
         return builder;
     }
 }

@@ -31,9 +31,15 @@ public class DefaultUserConsentStore : DefaultGrantStore<Consent>, IUserConsentS
     {
     }
 
-    private string GetConsentKey(string subjectId, string clientId)
+    private string GetConsentKey(string subjectId, string clientId, bool useHexEncoding = true)
     {
-        return clientId + "|" + subjectId;
+        if(useHexEncoding)
+        {
+            return $"{clientId}|{subjectId}{HexEncodingFormatSuffix}";
+        } else 
+        {
+            return $"{clientId}|{subjectId}";
+        }
     }
 
     /// <summary>
@@ -55,12 +61,24 @@ public class DefaultUserConsentStore : DefaultGrantStore<Consent>, IUserConsentS
     /// <param name="subjectId">The subject identifier.</param>
     /// <param name="clientId">The client identifier.</param>
     /// <returns></returns>
-    public Task<Consent> GetUserConsentAsync(string subjectId, string clientId)
+    public async Task<Consent> GetUserConsentAsync(string subjectId, string clientId)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("DefaultUserConsentStore.GetUserConsent");
         
         var key = GetConsentKey(subjectId, clientId);
-        return GetItemAsync(key);
+        var consent = await GetItemAsync(key);
+        if(consent == null)
+        {
+            var legacyKey = GetConsentKey(subjectId, clientId, useHexEncoding: false);
+            consent = await GetItemAsync(legacyKey);
+            if(consent != null)
+            {
+                await StoreUserConsentAsync(consent); // Write back the consent record to update its key
+                await RemoveItemAsync(legacyKey); 
+            }
+        }
+
+        return consent;
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
 using System;
@@ -60,7 +61,6 @@ public class AuthorizationCode
     /// <value>
     /// The requested scopes.
     /// </value>
-    // todo: brock, change to parsed scopes
     public IEnumerable<string> RequestedScopes { get; set; } = default!;
 
     /// <summary>

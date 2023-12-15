@@ -1,10 +1,10 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using IntegrationTests.TestFramework;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Configuration.EntityFramework;
 using Duende.IdentityServer.EntityFramework.DbContexts;
@@ -30,11 +30,6 @@ public class ConfigurationHost : GenericHost
     {
         services.AddRouting();
         services.AddAuthorization();
-
-        services.AddLogging(logging =>
-        {
-            logging.AddFilter("Duende", LogLevel.Debug);
-        });
 
         services.AddSingleton<ICancellationTokenProvider, MockCancellationTokenProvider>();
 

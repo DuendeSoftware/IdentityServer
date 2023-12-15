@@ -1,14 +1,16 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 #nullable enable
 
+using Duende;
+using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.Hosting.DynamicProviders;
 using Duende.IdentityServer.Stores;
-using Duende.IdentityServer.Validation;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,8 +76,7 @@ public static class IdentityServerApplicationBuilderExtensions
 
             var options = serviceProvider.GetRequiredService<IdentityServerOptions>();
             var env = serviceProvider.GetRequiredService<IHostEnvironment>();
-            LicenseValidator.Initalize(loggerFactory, options, env.IsDevelopment());
-            LicenseValidator.ValidateLicense();
+            IdentityServerLicenseValidator.Instance.Initialize(loggerFactory, options, env.IsDevelopment());
 
             TestService(serviceProvider, typeof(IPersistedGrantStore), logger, "No storage mechanism for grants specified. Use the 'AddInMemoryPersistedGrants' extension method to register a development version.");
             TestService(serviceProvider, typeof(IClientStore), logger, "No storage mechanism for clients specified. Use the 'AddInMemoryClients' extension method to register a development version.");

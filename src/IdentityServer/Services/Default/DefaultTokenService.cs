@@ -5,8 +5,6 @@
 using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Stores;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -28,12 +26,6 @@ public class DefaultTokenService : ITokenService
     /// </summary>
     protected readonly ILogger Logger;
 
-    // TODO: unused, so remove in 7.0?
-    /// <summary>
-    /// The HTTP context accessor
-    /// </summary>
-    protected readonly IHttpContextAccessor ContextAccessor;
-
     /// <summary>
     /// The claims provider
     /// </summary>
@@ -52,7 +44,7 @@ public class DefaultTokenService : ITokenService
     /// <summary>
     /// The clock
     /// </summary>
-    protected readonly ISystemClock Clock;
+    protected readonly IClock Clock;
 
     /// <summary>
     /// The key material service
@@ -70,7 +62,6 @@ public class DefaultTokenService : ITokenService
     /// <param name="claimsProvider">The claims provider.</param>
     /// <param name="referenceTokenStore">The reference token store.</param>
     /// <param name="creationService">The signing service.</param>
-    /// <param name="contextAccessor">The HTTP context accessor.</param>
     /// <param name="clock">The clock.</param>
     /// <param name="keyMaterialService"></param>
     /// <param name="options">The IdentityServer options</param>
@@ -79,13 +70,11 @@ public class DefaultTokenService : ITokenService
         IClaimsService claimsProvider,
         IReferenceTokenStore referenceTokenStore,
         ITokenCreationService creationService,
-        IHttpContextAccessor contextAccessor,
-        ISystemClock clock,
+        IClock clock,
         IKeyMaterialService keyMaterialService,
         IdentityServerOptions options,
         ILogger<DefaultTokenService> logger)
     {
-        ContextAccessor = contextAccessor;
         ClaimsProvider = claimsProvider;
         ReferenceTokenStore = referenceTokenStore;
         CreationService = creationService;

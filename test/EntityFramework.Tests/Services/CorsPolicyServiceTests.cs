@@ -3,17 +3,16 @@
 
 
 using Duende.IdentityServer.EntityFramework.DbContexts;
-using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.EntityFramework.Services;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.Services;
@@ -30,7 +29,7 @@ public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, Co
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public void IsOriginAllowedAsync_WhenOriginIsAllowed_ExpectTrue(DbContextOptions<ConfigurationDbContext> options)
+    public async Task IsOriginAllowedAsync_WhenOriginIsAllowed_ExpectTrue(DbContextOptions<ConfigurationDbContext> options)
     {
         const string testCorsOrigin = "https://identityserver.io/";
 
@@ -54,19 +53,15 @@ public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, Co
         bool result;
         using (var context = new ConfigurationDbContext(options))
         {
-            var svcs = new ServiceCollection();
-            svcs.AddSingleton<IConfigurationDbContext>(context);
-            var provider = svcs.BuildServiceProvider();
-
-            var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
-            result = service.IsOriginAllowedAsync(testCorsOrigin).Result;
+            var service = new CorsPolicyService(context, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
+            result = await service.IsOriginAllowedAsync(testCorsOrigin);
         }
 
         Assert.True(result);
     }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
-    public void IsOriginAllowedAsync_WhenOriginIsNotAllowed_ExpectFalse(DbContextOptions<ConfigurationDbContext> options)
+    public async Task IsOriginAllowedAsync_WhenOriginIsNotAllowed_ExpectFalse(DbContextOptions<ConfigurationDbContext> options)
     {
         using (var context = new ConfigurationDbContext(options))
         {
@@ -82,12 +77,8 @@ public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, Co
         bool result;
         using (var context = new ConfigurationDbContext(options))
         {
-            var svcs = new ServiceCollection();
-            svcs.AddSingleton<IConfigurationDbContext>(context);
-            var provider = svcs.BuildServiceProvider();
-
-            var service = new CorsPolicyService(provider, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
-            result = service.IsOriginAllowedAsync("InvalidOrigin").Result;
+            var service = new CorsPolicyService(context, FakeLogger<CorsPolicyService>.Create(), new NoneCancellationTokenProvider());
+            result = await service.IsOriginAllowedAsync("InvalidOrigin");
         }
 
         Assert.False(result);

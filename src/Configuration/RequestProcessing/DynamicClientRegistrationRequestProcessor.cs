@@ -1,6 +1,7 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+
 using Duende.IdentityServer.Configuration.Configuration;
 using Duende.IdentityServer.Configuration.Models;
 using Duende.IdentityServer.Configuration.Models.DynamicClientRegistration;
@@ -12,8 +13,15 @@ namespace Duende.IdentityServer.Configuration.RequestProcessing;
 /// <inheritdoc />
 public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrationRequestProcessor
 {
-    private readonly IdentityServerConfigurationOptions _options;
-    private readonly IClientConfigurationStore _store;
+    /// <summary>
+    /// The options.
+    /// </summary>
+    protected readonly IdentityServerConfigurationOptions Options;
+    
+    /// <summary>
+    /// The client configuration store.
+    /// </summary>
+    protected readonly IClientConfigurationStore Store;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicClientRegistrationRequestProcessor"/> class.
@@ -24,8 +32,8 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         IdentityServerConfigurationOptions options, 
         IClientConfigurationStore store)
     {
-        _options = options;
-        _store = store;
+        Options = options;
+        Store = store;
     }
 
 
@@ -56,7 +64,7 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
             }
         }
 
-        await _store.AddAsync(context.Client);
+        await Store.AddAsync(context.Client);
 
         return new DynamicClientRegistrationResponse(context.Request, context.Client)
         {
@@ -109,7 +117,7 @@ public class DynamicClientRegistrationRequestProcessor : IDynamicClientRegistrat
         DynamicClientRegistrationContext context)
     {
         var plainText = CryptoRandom.CreateUniqueId();
-        DateTime? lifetime = _options.DynamicClientRegistration.SecretLifetime switch
+        DateTime? lifetime = Options.DynamicClientRegistration.SecretLifetime switch
         {
             null => null,
             TimeSpan t => DateTime.UtcNow.Add(t)
