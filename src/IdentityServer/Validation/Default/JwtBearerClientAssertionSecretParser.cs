@@ -111,7 +111,7 @@ public class JwtBearerClientAssertionSecretParser : ISecretParser
         }
         catch
         {
-            _logger.LogWarning("Could not parse client assertion");
+            _logger.LogWarning(e, "Could not parse client assertion");
             return null;
         }
     }

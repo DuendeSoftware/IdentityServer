@@ -19,6 +19,25 @@ namespace Duende.IdentityServer;
 /// </summary>
 public interface IIdentityServerTools
 {
+    internal readonly IServiceProvider ServiceProvider; // TODO - consider removing this, as it is not used.
+    internal readonly IIssuerNameService IssuerNameService;
+    private readonly ITokenCreationService _tokenCreation;
+    private readonly ISystemClock _clock;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IdentityServerTools" /> class.
+    /// </summary>
+    /// <param name="serviceProvider">The provider.</param>
+    /// <param name="issuerNameService">The issuer name service</param>
+    /// <param name="tokenCreation">The token creation service.</param>
+    /// <param name="clock">The clock.</param>
+    public IdentityServerTools(IServiceProvider serviceProvider, IIssuerNameService issuerNameService, ITokenCreationService tokenCreation, ISystemClock clock)
+    {
+        ServiceProvider = serviceProvider;
+        IssuerNameService = issuerNameService;
+        _tokenCreation = tokenCreation;
+        _clock = clock;
+    }
 
     /// <summary>
     /// Issues a JWT.
