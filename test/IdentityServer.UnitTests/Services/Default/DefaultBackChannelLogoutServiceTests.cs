@@ -25,8 +25,8 @@ public class DefaultBackChannelLogoutServiceTests
     private class ServiceTestHarness : DefaultBackChannelLogoutService
     {
         public ServiceTestHarness(
-            ISystemClock clock,
-            IdentityServerTools tools,
+            IClock clock,
+            IIdentityServerTools tools,
             ILogoutNotificationService logoutNotificationService,
             IBackChannelLogoutHttpClient backChannelLogoutHttpClient,
             IIssuerNameService issuerNameService,
@@ -55,12 +55,14 @@ public class DefaultBackChannelLogoutServiceTests
         var tokenCreation = new DefaultTokenCreationService(new MockClock(), mockKeyMaterialService, TestIdentityServerOptions.Create(), TestLogger.Create<DefaultTokenCreationService>());
 
         var issuerNameService = new TestIssuerNameService(expected);
+#pragma warning disable CS0618 // Type or member is obsolete
         var tools = new IdentityServerTools(
             null, // service provider is unused 
             issuerNameService,
             tokenCreation,
             new MockClock()
         );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         var subject = new ServiceTestHarness(null, tools, null, null, issuerNameService, null);
         var rawToken = await subject.ExerciseCreateTokenAsync(new BackChannelLogoutRequest
