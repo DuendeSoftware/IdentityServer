@@ -11,6 +11,7 @@ using IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -109,7 +110,7 @@ public class JwtBearerClientAssertionSecretParser : ISecretParser
             var jwt = new JwtSecurityToken(token);
             return jwt.Subject;
         }
-        catch
+        catch(Exception e)
         {
             _logger.LogWarning(e, "Could not parse client assertion");
             return null;
