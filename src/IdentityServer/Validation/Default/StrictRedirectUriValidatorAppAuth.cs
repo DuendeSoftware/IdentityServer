@@ -29,21 +29,16 @@ public class StrictRedirectUriValidatorAppAuth : StrictRedirectUriValidator
         _logger = logger;
     }
 
-    /// <summary>
-    /// Determines whether a redirect URI is valid for a client.
-    /// </summary>
-    /// <param name="requestedUri">The requested URI.</param>
-    /// <param name="client">The client.</param>
-    /// <returns>
-    /// <c>true</c> is the URI is valid; <c>false</c> otherwise.
-    /// </returns>
-    public override async Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client)
+    /// <inheritdoc/>
+    public override async Task<bool> IsRedirectUriValidAsync(RedirectUriValidationContext context)
     {
-        var isAllowed = await base.IsRedirectUriValidAsync(requestedUri, client);
+        ArgumentNullException.ThrowIfNull(nameof(context));
+
+        var isAllowed = await base.IsRedirectUriValidAsync(context);
         if (isAllowed) return isAllowed;
 
         // since this is appauth specific, we can require pkce
-        if (client.RequirePkce && client.RedirectUris.Contains("http://127.0.0.1")) return IsLoopback(requestedUri);
+        if (context.Client.RequirePkce && context.Client.RedirectUris.Contains("http://127.0.0.1")) return IsLoopback(context.RequestedUri);
 
         return false;
     }
