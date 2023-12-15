@@ -30,16 +30,6 @@ public class StrictRedirectUriValidatorAppAuth : StrictRedirectUriValidator
     }
 
     /// <inheritdoc/>
-    public override Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client)
-    {
-        return IsRedirectUriValidAsync(new RedirectUriValidationContext
-        {
-            RequestedUri = requestedUri,
-            Client = client
-        });
-    }
-
-    /// <inheritdoc/>
     public override async Task<bool> IsRedirectUriValidAsync(RedirectUriValidationContext context)
     {
         ArgumentNullException.ThrowIfNull(nameof(context));

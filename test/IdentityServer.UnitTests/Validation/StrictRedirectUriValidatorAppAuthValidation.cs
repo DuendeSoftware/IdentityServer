@@ -47,14 +47,12 @@ public class StrictRedirectUriValidatorAppAuthValidation
         var options = TestIdentityServerOptions.Create();
         var strictRedirectUriValidatorAppAuthValidator = new StrictRedirectUriValidatorAppAuth(TestLogger.Create<StrictRedirectUriValidatorAppAuth>(), options);
 
-        var result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(requestedUri, clientWithValidLoopbackRedirectUri);
-        result.Should().BeTrue();
-
-        result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(new RedirectUriValidationContext
-        {
-            RequestedUri = requestedUri,
-            Client = clientWithValidLoopbackRedirectUri
-        });
+        var result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(
+            new RedirectUriValidationContext
+            {
+                RequestedUri = requestedUri,
+                Client = clientWithValidLoopbackRedirectUri
+            });
         result.Should().BeTrue();
     }
 
@@ -81,13 +79,24 @@ public class StrictRedirectUriValidatorAppAuthValidation
         var options = TestIdentityServerOptions.Create();
         var strictRedirectUriValidatorAppAuthValidator = new StrictRedirectUriValidatorAppAuth(TestLogger.Create<StrictRedirectUriValidatorAppAuth>(), options);
 
-        var result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(requestedUri, clientWithValidLoopbackRedirectUri);
-        result.Should().BeFalse();
-
-        result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(new RedirectUriValidationContext
+        var result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(new RedirectUriValidationContext
         {
             RequestedUri = requestedUri,
             Client = clientWithValidLoopbackRedirectUri
+        });
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task failed_match_should_not_be_allowed()
+    {
+        var options = TestIdentityServerOptions.Create();
+        var strictRedirectUriValidatorAppAuthValidator = new StrictRedirectUriValidatorAppAuth(TestLogger.Create<StrictRedirectUriValidatorAppAuth>(), options);
+
+        var result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(new RedirectUriValidationContext
+        {
+            RequestedUri = "http://127.0.0.1",
+            Client = clientWithNoRedirectUris,
         });
         result.Should().BeFalse();
     }
