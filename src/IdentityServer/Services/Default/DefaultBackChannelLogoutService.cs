@@ -29,7 +29,7 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
     protected IClock Clock { get; }
         
     /// <summary>
-    /// The IdentityServerTools used to create and the JWT.
+    /// The IdentityServerTools used to create the JWT.
     /// </summary>
     protected IIdentityServerTools Tools { get; }
 
@@ -49,18 +49,25 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
     protected ILogger<IBackChannelLogoutService> Logger { get; }
 
     /// <summary>
+    /// Ths issuer name service.
+    /// </summary>
+    protected IIssuerNameService IssuerNameService { get; }
+
+    /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="clock"></param>
     /// <param name="tools"></param>
     /// <param name="logoutNotificationService"></param>
     /// <param name="backChannelLogoutHttpClient"></param>
+    /// <param name="issuerNameService"></param>
     /// <param name="logger"></param>
     public DefaultBackChannelLogoutService(
         IClock clock,
         IIdentityServerTools tools,
         ILogoutNotificationService logoutNotificationService,
         IBackChannelLogoutHttpClient backChannelLogoutHttpClient,
+        IIssuerNameService issuerNameService,
         ILogger<IBackChannelLogoutService> logger)
     {
         Clock = clock;
@@ -68,6 +75,7 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
         LogoutNotificationService = logoutNotificationService;
         HttpClient = backChannelLogoutHttpClient;
         Logger = logger;
+        IssuerNameService = issuerNameService;
     }
 
     /// <inheritdoc/>
@@ -149,7 +157,8 @@ public class DefaultBackChannelLogoutService : IBackChannelLogoutService
             return await Tools.IssueJwtAsync(DefaultLogoutTokenLifetime, request.Issuer, IdentityServerConstants.TokenTypes.LogoutToken, claims);
         }
 
-        return await Tools.IssueJwtAsync(DefaultLogoutTokenLifetime, IdentityServerConstants.TokenTypes.LogoutToken, claims);
+        var issuer = await IssuerNameService.GetCurrentAsync();
+        return await Tools.IssueJwtAsync(DefaultLogoutTokenLifetime, issuer, IdentityServerConstants.TokenTypes.LogoutToken, claims);
     }
 
     /// <summary>

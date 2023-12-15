@@ -19,7 +19,6 @@ namespace Duende.IdentityServer;
 /// </summary>
 public interface IIdentityServerTools
 {
-
     /// <summary>
     /// Issues a JWT.
     /// </summary>
