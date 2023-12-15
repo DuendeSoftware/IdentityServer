@@ -48,7 +48,13 @@ public class StrictRedirectUriValidatorAppAuthValidation
         var strictRedirectUriValidatorAppAuthValidator = new StrictRedirectUriValidatorAppAuth(TestLogger.Create<StrictRedirectUriValidatorAppAuth>(), options);
 
         var result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(requestedUri, clientWithValidLoopbackRedirectUri);
+        result.Should().BeTrue();
 
+        result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(new RedirectUriValidationContext
+        {
+            RequestedUri = requestedUri,
+            Client = clientWithValidLoopbackRedirectUri
+        });
         result.Should().BeTrue();
     }
 
@@ -76,7 +82,13 @@ public class StrictRedirectUriValidatorAppAuthValidation
         var strictRedirectUriValidatorAppAuthValidator = new StrictRedirectUriValidatorAppAuth(TestLogger.Create<StrictRedirectUriValidatorAppAuth>(), options);
 
         var result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(requestedUri, clientWithValidLoopbackRedirectUri);
+        result.Should().BeFalse();
 
+        result = await strictRedirectUriValidatorAppAuthValidator.IsRedirectUriValidAsync(new RedirectUriValidationContext
+        {
+            RequestedUri = requestedUri,
+            Client = clientWithValidLoopbackRedirectUri
+        });
         result.Should().BeFalse();
     }
 }
