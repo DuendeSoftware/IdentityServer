@@ -89,6 +89,6 @@ public class StrictRedirectUriValidator : IRedirectUriValidator
             return Task.FromResult(true);
         }
         // Otherwise, just use the default strict validation
-        return Task.FromResult(StringCollectionContainsString(context.Client.RedirectUris, context.RequestedUri));
+        return IsRedirectUriValidAsync(context.RequestedUri, context.Client);
     }
 }
