@@ -57,10 +57,10 @@ public class DefaultBackChannelLogoutServiceTests
         var issuerNameService = new TestIssuerNameService(expected);
 #pragma warning disable CS0618 // Type or member is obsolete
         var tools = new IdentityServerTools(
-            null, // service provider is unused 
             issuerNameService,
             tokenCreation,
-            new MockClock()
+            new MockClock(),
+            TestIdentityServerOptions.Create()
         );
 #pragma warning restore CS0618 // Type or member is obsolete
 
