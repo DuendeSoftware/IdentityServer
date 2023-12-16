@@ -52,6 +52,14 @@ public class ErrorMessage
     public string? RequestId { get; set; }
 
     /// <summary>
+    /// The current Activity Id when the error message was captured.
+    /// </summary>
+    /// <value>
+    /// The Activity Identifier
+    /// </value>
+    public string? ActivityId { get; set; }
+
+    /// <summary>
     /// The redirect URI.
     /// </summary>
     public string? RedirectUri { get; set; }

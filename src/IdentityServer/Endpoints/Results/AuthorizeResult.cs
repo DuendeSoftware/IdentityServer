@@ -222,6 +222,7 @@ public class AuthorizeHttpWriter : IHttpResponseWriter<AuthorizeResult>
     {
         var errorModel = new ErrorMessage
         {
+            ActivityId = System.Diagnostics.Activity.Current?.Id,
             RequestId = context.TraceIdentifier,
             Error = response.Error,
             ErrorDescription = response.ErrorDescription,
