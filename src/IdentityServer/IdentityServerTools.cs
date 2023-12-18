@@ -63,7 +63,6 @@ public interface IIdentityServerTools
 /// <summary>
 /// Class for useful helpers for interacting with IdentityServer
 /// </summary>
-[Obsolete("Do not reference the IdentityServerTools implementation directly, use the IIdentityServerTools interface")]
 public class IdentityServerTools : IIdentityServerTools
 {
     /// <inheritdoc/>
