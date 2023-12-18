@@ -9,6 +9,7 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using IdentityModel;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -22,34 +23,76 @@ namespace Duende.IdentityServer;
 public interface IIdentityServerTools
 {
     /// <summary>
-    /// Issues a JWT.
+    /// Issues a JWT with a specific lifetime and set of claims.
     /// </summary>
-    /// <param name="lifetime">The lifetime.</param>
-    /// <param name="claims">The claims.</param>
-    /// <returns></returns>
-    /// <exception cref="System.ArgumentNullException">claims</exception>
+    /// <param name="lifetime">The lifetime, in seconds, which will determine
+    /// the exp claim of the token.</param>
+    /// <param name="claims">A collection of additional claims to include in the
+    /// token.</param>
+    /// <returns>A JWT that expires after the specified lifetime and contains
+    /// the given claims.</returns>
+    /// <remarks>Typical implementations depend on the <see cref="HttpContext"/>
+    /// or <see cref="IdentityServerOptions.IssuerUri"/> to determine the issuer
+    /// of the token. Ensure that calls to this method will only occur if there
+    /// is an incoming HTTP request or with the option set.
+    /// </remarks>
     Task<string> IssueJwtAsync(int lifetime, IEnumerable<Claim> claims);
 
     /// <summary>
-    /// Issues a JWT.
+    /// Issues a JWT with a specific lifetime, issuer, and set of claims. 
     /// </summary>
-    /// <param name="lifetime">The lifetime.</param>
-    /// <param name="issuer">The issuer.</param>
-    /// <param name="claims">The claims.</param>
-    /// <returns></returns>
-    /// <exception cref="System.ArgumentNullException">claims</exception>
+    /// <param name="lifetime">The lifetime, in seconds, which will determine
+    /// the exp claim of the token.</param>
+    /// <param name="issuer">The issuer of the token, set in the iss
+    /// claim.</param>
+    /// <param name="claims">A collection of additional claims to include in the
+    /// token.</param>
+    /// <returns>A JWT with the specified lifetime, issuer and additional
+    /// claims.</returns>
     Task<string> IssueJwtAsync(int lifetime, string issuer, IEnumerable<Claim> claims);
 
     /// <summary>
-    /// Issues a JWT.
+    /// Issues a JWT with a specific lifetime, issuer, token type, and set of
+    /// claims. 
     /// </summary>
-    /// <param name="lifetime">The lifetime.</param>
-    /// <param name="issuer">The issuer.</param>
-    /// <param name="tokenType"></param>
-    /// <param name="claims">The claims.</param>
-    /// <returns></returns>
-    /// <exception cref="System.ArgumentNullException">claims</exception>
+    /// <param name="lifetime">The lifetime, in seconds, which will determine
+    /// the exp claim of the token.</param>
+    /// <param name="issuer">The issuer of the token, set in the iss
+    /// claim.</param>
+    /// <param name="tokenType">The token's type, such as "access_token" or
+    /// "id_token", set in the typ claim.</param>
+    /// <param name="claims">A collection of additional claims to include in the
+    /// token.</param>
+    /// <returns>A JWT with the specified lifetime, issuer, token type, and
+    /// additional claims.</returns>
     Task<string> IssueJwtAsync(int lifetime, string issuer, string tokenType, IEnumerable<Claim> claims);
+
+    /// <summary>
+    /// Issues a JWT access token for a particular client.
+    /// </summary>
+    /// <param name="clientId">The client identifier, set in the client_id
+    /// claim.</param>
+    /// <param name="lifetime">The lifetime, in seconds, which will determine
+    /// the exp claim of the token.</param>
+    /// <param name="scopes">A collection of scopes, which will be added to the
+    /// token as claims with the "scope" type.</param>
+    /// <param name="audiences">A collection of audiences, which will be added
+    /// to the token as claims with the "aud" type.</param>
+    /// <param name="additionalClaims">A collection of additional claims to
+    /// include in the token.</param>
+    /// <returns>A JWT with the specified client, lifetime, scopes, audiences,
+    /// and additional claims.</returns>
+    /// <remarks>Typical implementations depend on the <see cref="HttpContext"/>
+    /// or <see cref="IdentityServerOptions.IssuerUri"/> to determine the issuer
+    /// of the token. Ensure that calls to this method will only occur if there
+    /// is an incoming HTTP request or with the option set.
+    /// </remarks>
+    Task<string> IssueClientJwtAsync(
+        string clientId,
+        int lifetime,
+        IEnumerable<string>? scopes = null,
+        IEnumerable<string>? audiences = null,
+        IEnumerable<Claim>? additionalClaims = null);
 }
 
 /// <summary>
@@ -105,15 +148,7 @@ public class IdentityServerTools : IIdentityServerTools
         return await _tokenCreation.CreateTokenAsync(token);
     }
 
-     /// <summary>
-    /// Issues the client JWT.
-    /// </summary>
-    /// <param name="clientId">The client identifier.</param>
-    /// <param name="lifetime">The lifetime.</param>
-    /// <param name="scopes">The scopes.</param>
-    /// <param name="audiences">The audiences.</param>
-    /// <param name="additionalClaims">Additional claims</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public virtual async Task<string> IssueClientJwtAsync(
         string clientId,
         int lifetime,
