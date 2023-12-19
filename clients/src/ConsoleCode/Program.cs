@@ -39,7 +39,7 @@ namespace ConsoleResourceIndicators
                 ClientId = "console.pkce",
 
                 RedirectUri = redirectUri,
-                Scope = "openid profile resource1.scope1",
+                Scope = "openid profile resource1.scope1 transaction:foo transaction:bar",
                 FilterClaims = false,
                 Browser = browser
             };

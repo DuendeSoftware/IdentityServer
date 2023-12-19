@@ -187,6 +187,7 @@ public static class ClientsConsole
                 ClientId = "console.pkce",
                 ClientName = "Console with PKCE Sample",
                 RequireClientSecret = false,
+                RequireConsent = true,
                 AllowedGrantTypes = GrantTypes.Code,
                 RequirePkce = true,
                 RedirectUris = { "http://127.0.0.1" },
@@ -197,7 +198,8 @@ public static class ClientsConsole
                     IdentityServerConstants.StandardScopes.Profile,
                     IdentityServerConstants.StandardScopes.Email,
                     "resource1.scope1",
-                    "resource2.scope1"
+                    "resource2.scope1",
+                    "transaction"
                 }
             },
                 

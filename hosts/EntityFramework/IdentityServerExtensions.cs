@@ -23,6 +23,8 @@ internal static class IdentityServerExtensions
             options.ServerSideSessions.RemoveExpiredSessionsFrequency = TimeSpan.FromSeconds(10);
             options.ServerSideSessions.ExpiredSessionsTriggerBackchannelLogout = true;
             options.Endpoints.EnablePushedAuthorizationEndpoint = true;
+
+            options.PersistentGrants.DataProtectData = false;
         })
             .AddTestUsers(TestUsers.Users)
             // this adds the config data from DB (clients, resources, CORS)
