@@ -61,8 +61,9 @@ public class BackchannelUserLoginRequest
     /// </summary>
     public ResourceValidationResult ValidatedResources { get; set; } = default!;
 
-    /// <summary>
-    /// The response that will be sent to the client
+    /// <summary> 
+    /// Gets or sets a dictionary of custom properties that can pass extra state
+    /// to the notification process.
     /// </summary>
-    public BackchannelAuthenticationResponse Response { get; set; } = default!;
+    public Dictionary<string, object> Context { get; set; } = new();
 }

@@ -77,6 +77,7 @@ public class DefaultBackchannelAuthenticationInteractionService : IBackchannelAu
             RequestedResourceIndicators = request.RequestedResourceIndicators,
             AuthenticationContextReferenceClasses = request.AuthenticationContextReferenceClasses,
             BindingMessage = request.BindingMessage,
+            Context = request.Context
         };
     }
 

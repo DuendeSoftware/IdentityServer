@@ -346,6 +346,20 @@ public static class IdentityServerBuilderExtensionsAdditional
     }
 
     /// <summary>
+    /// Adds the custom backchannel authentication request validator.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="builder">The builder.</param>
+    /// <returns></returns>
+    public static IIdentityServerBuilder AddCustomBackchannelAuthenticationRequestValidator<T>(this IIdentityServerBuilder builder)
+        where T : class, ICustomBackchannelAuthenticationValidator
+    {
+        builder.Services.AddTransient<ICustomBackchannelAuthenticationValidator, T>();
+
+        return builder;
+    }
+
+    /// <summary>
     /// Adds support for client authentication using JWT bearer assertions.
     /// </summary>
     /// <param name="builder">The builder.</param>
