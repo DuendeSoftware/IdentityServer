@@ -22,7 +22,7 @@ public class ValidatedBackchannelAuthenticationRequest : ValidatedRequest
     /// <summary>
     /// Gets or sets the resource indicator.
     /// </summary>
-    public ICollection<string>? RequestedResourceIndiators { get; set; }
+    public ICollection<string>? RequestedResourceIndicators { get; set; }
         
     /// <summary>
     /// Gets or sets the authentication context reference classes.
