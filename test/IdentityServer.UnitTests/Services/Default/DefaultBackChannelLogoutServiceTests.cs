@@ -56,10 +56,10 @@ public class DefaultBackChannelLogoutServiceTests
 
         var issuerNameService = new TestIssuerNameService(expected);
         var tools = new IdentityServerTools(
-            null, // service provider is unused 
             issuerNameService,
             tokenCreation,
-            new MockClock()
+            new MockClock(),
+            TestIdentityServerOptions.Create()
         );
 
         var subject = new ServiceTestHarness(null, tools, null, null, issuerNameService, null);
