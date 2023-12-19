@@ -85,11 +85,12 @@ public abstract class Event
     public string? Message { get; set; }
 
     /// <summary>
-    /// Gets or sets the per-request activity identifier.
+    /// Gets or sets the per-request trace identifier (not the Activity Id)
     /// </summary>
     /// <value>
-    /// The activity identifier.
+    /// The HttpContext.TraceIdentifier.
     /// </value>
+    /// <remarks>Note that this is not the Activity Id despite the name.</remarks>
     public string? ActivityId { get; set; }
 
     /// <summary>
