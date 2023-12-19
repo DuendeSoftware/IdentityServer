@@ -30,7 +30,7 @@ public interface IBackchannelAuthenticationInteractionService
     /// <summary>
     /// Completes the login request with the provided response for the current user or the subject passed.
     /// </summary>
-    Task CompleteLoginRequestAsync(CompleteBackchannelLoginRequest competionRequest);
+    Task CompleteLoginRequestAsync(CompleteBackchannelLoginRequest completionRequest);
 }
 
 /// <summary>

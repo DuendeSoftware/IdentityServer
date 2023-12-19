@@ -148,7 +148,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
             return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidTarget, "Invalid resource indicator format");
         }
 
-        _validatedRequest.RequestedResourceIndiators = resourceIndicators?.ToList();
+        _validatedRequest.RequestedResourceIndicators = resourceIndicators?.ToList();
 
         //////////////////////////////////////////////////////////
         // check if scopes are valid/supported and check for resource scopes
