@@ -52,7 +52,7 @@ public class Index : PageModel
                     ClientLogoUrl = client.LogoUri,
                     ClientUrl = client.ClientUri,
                     Description = grant.Description,
-                    Created = grant.CreationTime,
+                    Created = grant.CreationTime, 
                     Expires = grant.Expiration,
                     IdentityGrantNames = resources.IdentityResources.Select(x => x.DisplayName ?? x.Name).ToArray(),
                     ApiGrantNames = resources.ApiScopes.Select(x => x.DisplayName ?? x.Name).ToArray()
