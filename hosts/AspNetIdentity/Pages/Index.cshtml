@@ -21,9 +21,26 @@
             Click <a href="~/grants">here</a> to manage your stored grants.
         </li>
         <li>
+            Click <a href="~/serversidesessions">here</a> to view the server side sessions.
+        </li>
+        <li>
+            Click <a href="~/ciba/all">here</a> to view your pending CIBA login requests.
+        </li>
+        <li>
             Here are links to the
             <a href="https://github.com/duendesoftware/IdentityServer">source code repository</a>,
             and <a href="https://github.com/duendesoftware/samples">ready to use samples</a>.
         </li>
     </ul>
+
+    @if(Model.License != null)
+    {
+        <h2>License</h2>
+        <dl>
+            <dt>Serial Number</dt>
+            <dd>@Model.License.SerialNumber</dd>
+            <dt>Expiration</dt>
+            <dd>@Model.License.Expiration!.Value.ToLongDateString()</dd>
+        </dl>
+    }
 </div>

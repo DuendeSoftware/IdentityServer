@@ -46,7 +46,7 @@ public class Index : PageModel
         _identityProviderStore = identityProviderStore;
         _events = events;
     }
-        
+
     public async Task<IActionResult> OnGet(string? returnUrl)
     {
         await BuildModelAsync(returnUrl);
@@ -86,7 +86,7 @@ public class Index : PageModel
                     return this.LoadingPage(Input.ReturnUrl);
                 }
 
-                return Redirect(Input.ReturnUrl);
+                return Redirect(Input.ReturnUrl ?? "~/");
             }
             else
             {
@@ -117,7 +117,7 @@ public class Index : PageModel
                     }
 
                     // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                    return Redirect(Input.ReturnUrl);
+                    return Redirect(Input.ReturnUrl ?? "~/");
                 }
 
                 // request for a local page
@@ -146,7 +146,7 @@ public class Index : PageModel
         await BuildModelAsync(Input.ReturnUrl);
         return Page();
     }
-        
+
     private async Task BuildModelAsync(string? returnUrl)
     {
         Input = new InputModel
@@ -157,7 +157,7 @@ public class Index : PageModel
         var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
         if (context?.IdP != null && await _schemeProvider.GetSchemeAsync(context.IdP) != null)
         {
-            var local = context.IdP == IdentityServerConstants.LocalIdentityProvider;
+            var local = context.IdP == Duende.IdentityServer.IdentityServerConstants.LocalIdentityProvider;
 
             // this is meant to short circuit the UI and only trigger the one external IdP
             View = new ViewModel
@@ -169,7 +169,7 @@ public class Index : PageModel
 
             if (!local)
             {
-                View.ExternalProviders = new[] { new ViewModel.ExternalProvider { AuthenticationScheme = context.IdP } };
+                View.ExternalProviders = new[] { new ViewModel.ExternalProvider ( authenticationScheme: context.IdP ) };
             }
 
             return;
@@ -180,18 +180,18 @@ public class Index : PageModel
         var providers = schemes
             .Where(x => x.DisplayName != null)
             .Select(x => new ViewModel.ExternalProvider
-            {
-                DisplayName = x.DisplayName ?? x.Name,
-                AuthenticationScheme = x.Name
-            }).ToList();
+            (
+                authenticationScheme: x.Name,
+                displayName: x.DisplayName ?? x.Name
+            )).ToList();
 
         var dynamicSchemes = (await _identityProviderStore.GetAllSchemeNamesAsync())
             .Where(x => x.Enabled)
             .Select(x => new ViewModel.ExternalProvider
-            {
-                AuthenticationScheme = x.Scheme,
-                DisplayName = x.DisplayName
-            });
+            (
+                authenticationScheme: x.Scheme,
+                displayName: x.DisplayName ?? x.Scheme
+            ));
         providers.AddRange(dynamicSchemes);
 
 
@@ -202,9 +202,7 @@ public class Index : PageModel
             allowLocal = client.EnableLocalLogin;
             if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Count != 0)
             {
-                providers = providers.Where(provider =>
-                    provider.AuthenticationScheme != null &&
-                    client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
+                providers = providers.Where(provider => client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
             }
         }
 
