@@ -76,22 +76,25 @@ public class OperationalStoreOptions
     public TableConfiguration PushedAuthorizationRequests { get; set; } = new TableConfiguration("PushedAuthorizationRequests");
 
     /// <summary>
-    /// Gets or sets a value indicating whether stale entries will be automatically cleaned up from the database.
-    /// This is implemented by periodically connecting to the database (according to the TokenCleanupInterval) from the hosting application.
-    /// Defaults to false.
+    /// Gets or sets a value indicating whether stale entries will be
+    /// automatically cleaned up from the database. This is implemented by
+    /// periodically connecting to the database (according to the
+    /// TokenCleanupInterval) from the hosting application. Defaults to true.
     /// </summary>
     /// <value>
     ///   <c>true</c> if [enable token cleanup]; otherwise, <c>false</c>.
     /// </value>
-    public bool EnableTokenCleanup { get; set; } = false;
+    public bool EnableTokenCleanup { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether consumed tokens will be included in the automatic clean up.
+    /// Gets or sets a value indicating whether consumed tokens will be included
+    /// in the automatic clean up. Defaults to true.
     /// </summary>
     /// <value>
-    ///   <c>true</c> if consumed tokens are to be included in cleanup; otherwise, <c>false</c>.
+    ///   <c>true</c> if consumed tokens are to be included in cleanup;
+    ///   otherwise, <c>false</c>.
     /// </value>
-    public bool RemoveConsumedTokens { get; set; } = false;
+    public bool RemoveConsumedTokens { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the consumed token cleanup delay (in seconds). The default

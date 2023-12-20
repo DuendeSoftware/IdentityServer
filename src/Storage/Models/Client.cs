@@ -231,10 +231,17 @@ public class Client
     public bool RequirePushedAuthorization { get; set; } = false;
 
     /// <summary>
-    /// ReUse: the refresh token handle will stay the same when refreshing tokens
+    /// Specifies if tokens should be rotated when they are used. Defaults to
+    /// reusable tokens.
+    /// <para>
+    /// ReUse: the refresh token handle will stay the same when refreshing
+    /// tokens
+    /// </para>
+    /// <para>
     /// OneTime: the refresh token handle will be updated when refreshing tokens
+    /// </para>
     /// </summary>
-    public TokenUsage RefreshTokenUsage { get; set; } = TokenUsage.OneTimeOnly;
+    public TokenUsage RefreshTokenUsage { get; set; } = TokenUsage.ReUse;
 
     /// <summary>
     /// Specifies whether the access token (and its claims) should be updated on a refresh token request.
