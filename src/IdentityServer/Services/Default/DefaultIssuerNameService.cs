@@ -52,7 +52,7 @@ public class DefaultIssuerNameService : IIssuerNameService
                         // if MTLS is configured with domain like "foo", then the request will be for "foo.acme.com", 
                         // so the issuer we use is from the parent domain (e.g. "acme.com")
                         // 
-                        // Host.Value is used to get unicode hostname, instread of ToUriComponent (aka punycode)
+                        // Host.Value is used to get unicode hostname, instead of ToUriComponent (aka punycode)
                         origin = request.Scheme + "://" + request.Host.Value.Substring(_options.MutualTls.DomainName.Length + 1);
                     }
                 }
