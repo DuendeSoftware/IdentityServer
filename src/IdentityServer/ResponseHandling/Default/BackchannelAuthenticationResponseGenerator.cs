@@ -88,7 +88,7 @@ public class BackchannelAuthenticationResponseGenerator : IBackchannelAuthentica
             Tenant = validationResult.ValidatedRequest.Tenant,
             IdP = validationResult.ValidatedRequest.IdP,
             BindingMessage = validationResult.ValidatedRequest.BindingMessage,
-            Context = validationResult.ValidatedRequest.Context,
+            Properties = validationResult.ValidatedRequest.Properties,
         };
 
         var requestId = await BackChannelAuthenticationRequestStore.CreateRequestAsync(request);
@@ -99,7 +99,7 @@ public class BackchannelAuthenticationResponseGenerator : IBackchannelAuthentica
             AuthenticationRequestId = requestId,
             ExpiresIn = request.Lifetime,
             Interval = interval,
-            Context = validationResult.ValidatedRequest.Context
+            Properties = validationResult.ValidatedRequest.Properties
         };
 
         await UserLoginService.SendLoginRequestAsync(new BackchannelUserLoginRequest
@@ -113,7 +113,7 @@ public class BackchannelAuthenticationResponseGenerator : IBackchannelAuthentica
             AuthenticationContextReferenceClasses = validationResult.ValidatedRequest.AuthenticationContextReferenceClasses,
             Tenant = validationResult.ValidatedRequest.Tenant,
             IdP = validationResult.ValidatedRequest.IdP,
-            Context = validationResult.ValidatedRequest.Context,
+            Properties = validationResult.ValidatedRequest.Properties,
         });
 
         return response;

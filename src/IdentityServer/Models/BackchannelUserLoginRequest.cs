@@ -62,8 +62,8 @@ public class BackchannelUserLoginRequest
     public ResourceValidationResult ValidatedResources { get; set; } = default!;
 
     /// <summary> 
-    /// Gets or sets a dictionary of custom properties that can pass extra state
-    /// to the notification process.
+    /// Gets or sets a dictionary of custom properties that can pass additional
+    /// state to the notification process.
     /// </summary>
-    public Dictionary<string, object> Context { get; set; } = new();
+    public Dictionary<string, object> Properties { get; set; } = new();
 }

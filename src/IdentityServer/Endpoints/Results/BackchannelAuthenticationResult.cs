@@ -71,7 +71,7 @@ internal class BackchannelAuthenticationHttpWriter : IHttpResponseWriter<Backcha
                 expires_in = result.Response.ExpiresIn,
                 interval = result.Response.Interval,
                 
-                Custom = result.Response.Context
+                Properties = result.Response.Properties
             });
         }
     }
@@ -84,7 +84,7 @@ internal class BackchannelAuthenticationHttpWriter : IHttpResponseWriter<Backcha
         public int interval { get; set; }
 
         [JsonExtensionData]
-        public Dictionary<string, object> Custom { get; set; }
+        public Dictionary<string, object> Properties { get; set; }
 #pragma warning restore IDE1006 // Naming Styles
     }
 

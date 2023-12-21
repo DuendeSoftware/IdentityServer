@@ -94,5 +94,5 @@ public class BackChannelAuthenticationRequest
     /// <summary>
     /// Gets or sets a dictionary of custom properties associated with this instance.
     /// </summary>
-    public Dictionary<string, object> Context { get; set; } = new();
+    public Dictionary<string, object> Properties { get; set; } = new();
 }

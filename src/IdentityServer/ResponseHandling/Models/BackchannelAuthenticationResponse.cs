@@ -61,8 +61,8 @@ public class BackchannelAuthenticationResponse
     public int Interval { get; set; }
     
     /// <summary> 
-    /// Gets or sets a dictionary of custom properties that can pass extra state
-    /// in the response to the client application.
+    /// Gets or sets a dictionary of custom properties that can pass additional
+    /// state in the response to the client application.
     /// </summary>
-    public Dictionary<string, object> Context { get; set; } = new();
+    public Dictionary<string, object> Properties { get; set; } = new();
 }
