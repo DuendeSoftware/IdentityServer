@@ -11,12 +11,12 @@ public class CustomBackchannelAuthenticationRequestValidationContext
     /// <summary>
     /// Creates a new instance of the <see cref="CustomBackchannelAuthenticationRequestValidationContext"/> 
     /// </summary>
-    public CustomBackchannelAuthenticationRequestValidationContext(BackchannelAuthenticationRequestValidationResult result)
+    public CustomBackchannelAuthenticationRequestValidationContext(BackchannelAuthenticationRequestValidationResult validatedRequest)
     {
-        Result = result;
+        ValidationResult = validatedRequest;
     }
     /// <summary>
     /// Gets or sets the CIBA validation result.
     /// </summary>
-    public BackchannelAuthenticationRequestValidationResult Result { get; set; }
+    public BackchannelAuthenticationRequestValidationResult ValidationResult { get; set; }
 }
