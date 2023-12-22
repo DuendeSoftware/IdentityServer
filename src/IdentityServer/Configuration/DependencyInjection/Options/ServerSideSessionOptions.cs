@@ -35,6 +35,16 @@ public class ServerSideSessionOptions
     public TimeSpan RemoveExpiredSessionsFrequency { get; set; } = TimeSpan.FromMinutes(10);
 
     /// <summary>
+    /// If multiple nodes are running the server side session cleaup at the same time, there will be
+    /// concurrency issues in the database updates. To reduce the rsk, the startup time
+    /// of the first run can be fuzzed (randomized). The default is <c>true</c>.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if startup time should be fuzzed, otherwise false.
+    /// </value>
+    public bool FuzzExpiredSessionRemovalStart { get; set; } = true;
+
+    /// <summary>
     /// Number of expired sessions records to be removed at a time.
     /// </summary>
     public int RemoveExpiredSessionsBatchSize { get; set; } = 100;

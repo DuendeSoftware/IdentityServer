@@ -111,7 +111,7 @@ public class OperationalStoreOptions
 
     /// <summary>
     /// If multiple nodes are running the token cleanup at the same time, there will be
-    /// concurrency issues in the database update. To reduce that, the startup time
+    /// concurrency issues in the database updates. To reduce the risk, the startup time
     /// of the first run can be fuzzed (randomized). The default is <c>true</c>.
     /// </summary>
     /// <value>
