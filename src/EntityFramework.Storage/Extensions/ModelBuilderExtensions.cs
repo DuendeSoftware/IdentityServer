@@ -221,6 +221,19 @@ public static class ModelBuilderExtensions
             entity.HasIndex(x => x.SessionId);
             entity.HasIndex(x => x.DisplayName);
         });
+
+        modelBuilder.Entity<PushedAuthorizationRequest>(entity =>
+        {
+            entity.ToTable(storeOptions.PushedAuthorizationRequests);
+
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ReferenceValueHash).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ExpiresAtUtc).IsRequired();
+            entity.Property(x => x.Parameters).IsRequired();
+
+            entity.HasIndex(x => x.ReferenceValueHash).IsUnique();
+            entity.HasIndex(x => x.ExpiresAtUtc);
+        });
     }
 
     /// <summary>
@@ -368,27 +381,6 @@ public static class ModelBuilderExtensions
             entity.Property(x => x.DisplayName).HasMaxLength(200);
 
             entity.HasIndex(x => x.Scheme).IsUnique();
-        });
-    }
-
-    /// <summary>
-    /// Configures the pushed authorization requests.
-    /// </summary>
-    /// <param name="modelBuilder">The model builder.</param>
-    /// <param name="storeOptions">The store options.</param>
-    public static void ConfigurePushedAuthorizationRequestContext(this ModelBuilder modelBuilder, OperationalStoreOptions storeOptions)
-    {
-        if (!string.IsNullOrWhiteSpace(storeOptions.DefaultSchema)) modelBuilder.HasDefaultSchema(storeOptions.DefaultSchema);
-
-        modelBuilder.Entity<PushedAuthorizationRequest>(entity =>
-        {
-            entity.ToTable(storeOptions.PushedAuthorizationRequests).HasKey(x => x.Id);
-
-            entity.Property(x => x.ReferenceValueHash).HasMaxLength(64).IsRequired();
-            entity.Property(x => x.ExpiresAtUtc).IsRequired();
-            entity.Property(x => x.Parameters).IsRequired();
-
-            entity.HasIndex(x => x.ReferenceValueHash).IsUnique();
         });
     }
 }
