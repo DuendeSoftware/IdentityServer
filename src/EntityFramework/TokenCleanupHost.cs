@@ -77,6 +77,11 @@ public class TokenCleanupHost : IHostedService
 
     private async Task StartInternalAsync(CancellationToken cancellationToken)
     {
+        // Start the first run at a random interval.
+        var delay = _options.FuzzTokenCleanupStart
+            ? TimeSpan.FromSeconds(Random.Shared.Next(_options.TokenCleanupInterval))
+            : CleanupInterval;
+
         while (true)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -87,7 +92,7 @@ public class TokenCleanupHost : IHostedService
 
             try
             {
-                await Task.Delay(CleanupInterval, cancellationToken);
+                await Task.Delay(delay, cancellationToken);
             }
             catch (TaskCanceledException)
             {
@@ -107,6 +112,8 @@ public class TokenCleanupHost : IHostedService
             }
 
             await RemoveExpiredGrantsAsync(cancellationToken);
+
+            delay = CleanupInterval;
         }
     }
 
