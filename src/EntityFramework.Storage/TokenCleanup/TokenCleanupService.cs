@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
@@ -84,10 +85,13 @@ public class TokenCleanupService : ITokenCleanupService
 
         while (found >= _options.TokenCleanupBatchSize)
         {
-            var expiredGrants = await _persistedGrantDbContext.PersistedGrants
+            var query = _persistedGrantDbContext.PersistedGrants
                 .Where(x => x.Expiration < DateTime.UtcNow)
-                .OrderBy(x => x.Expiration)
+                .OrderBy(x => x.Id);
+
+            var expiredGrants = await query
                 .Take(_options.TokenCleanupBatchSize)
+                .AsNoTracking()
                 .ToArrayAsync(cancellationToken);
 
             found = expiredGrants.Length;
@@ -96,10 +100,33 @@ public class TokenCleanupService : ITokenCleanupService
             {
                 _logger.LogInformation("Removing {grantCount} expired grants", found);
 
-                _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
+                var foundIds = expiredGrants.Select(pg => pg.Id).ToArray();
 
-                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.PersistedGrant>(_logger, cancellationToken);
-                expiredGrants = expiredGrants.Except(list).ToArray();
+                var deleteCount = await query
+                    // Run the same query, but now use an interval instead of Take(). This is to
+                    // ensure we get all the elements, even if a new element was added in the middle
+                    // of the set.
+                    .Where(pg => pg.Id >= foundIds.First() && pg.Id <= foundIds.Last())
+                    // To be on the safe side, filter out any possibly newly added items
+                    // with an id within the interval
+                    .Where(pg => foundIds.Contains(pg.Id))
+                    // And delete them.
+                    .ExecuteDeleteAsync(cancellationToken);
+
+                if (deleteCount != found)
+                {
+                    if (_operationalStoreNotification != null)
+                    {
+                        _logger.LogWarning("Tried to remove {grantCount} expired grants, but only {deleteCount} " +
+                            "was deleted. This indicates a concurrency issue. Duplicate notifications may be " +
+                            "sent to the registered IOperationalStoreNotification", found, deleteCount);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Tried to remove {grantCount} expired grants, but only {deleteCount} " +
+                            "was deleted. This indicates a concurrency issue", found, deleteCount);
+                    }
+                }
 
                 if (_operationalStoreNotification != null)
                 {
