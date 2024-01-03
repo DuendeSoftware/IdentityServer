@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -34,8 +35,11 @@ public class DatabaseProviderBuilder
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(storeOptions);
 
+        var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+        
         var builder = new DbContextOptionsBuilder<TDbContext>();
-        builder.UseSqlite($"Filename=./Test.DuendeIdentityServer.EntityFramework.{name}.db");
+        builder.UseSqlite(connection);
         builder.UseApplicationServiceProvider(serviceCollection.BuildServiceProvider());
         return builder.Options;
     }

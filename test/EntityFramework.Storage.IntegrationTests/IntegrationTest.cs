@@ -37,8 +37,8 @@ public class IntegrationTest<TClass, TDbContext, TStoreOption> : IClassFixture<D
 
             TestDatabaseProviders = new TheoryData<DbContextOptions<TDbContext>>
             {
-                DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions),
-                //DatabaseProviderBuilder.BuildSqlite<TDbContext>(typeof(TClass).Name),
+                //DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions),
+                DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>()),
                 //DatabaseProviderBuilder.BuildLocalDb<TDbContext>(typeof(TClass).Name)
             };
         }
