@@ -176,7 +176,7 @@ public class TokenCleanupService : ITokenCleanupService
 
                 var deleteCount = await query
                     .Where(pg => 
-                        pg.ConsumedTime >= consumedGrants.First().Expiration 
+                        pg.ConsumedTime >= consumedGrants.First().ConsumedTime 
                         && pg.ConsumedTime <= consumedGrants.Last().ConsumedTime)
                     .Where(pg => foundIds.Contains(pg.Id))
                     .ExecuteDeleteAsync(cancellationToken);
