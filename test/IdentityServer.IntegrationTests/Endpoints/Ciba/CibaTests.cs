@@ -21,6 +21,7 @@ using System.Text.Json;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using static Duende.IdentityServer.IdentityServerConstants;
+using IdentityModel.Client;
 
 namespace IdentityServer.IntegrationTests.Endpoints.Ciba;
 
@@ -28,9 +29,10 @@ public class CibaTests
 {
     private const string Category = "Backchannel Authentication (CIBA) endpoint";
 
-    IdentityServerPipeline _mockPipeline = new IdentityServerPipeline();
-    MockCibaUserValidator _mockCibaUserValidator = new MockCibaUserValidator();
-    MockCibaUserNotificationService _mockCibaUserNotificationService = new MockCibaUserNotificationService();
+    IdentityServerPipeline _mockPipeline = new();
+    MockCibaUserValidator _mockCibaUserValidator = new();
+    MockCibaUserNotificationService _mockCibaUserNotificationService = new();
+    MockCustomBackchannelAuthenticationValidator _mockCustomBackchannelAuthenticationValidator = new();
 
     TestUser _user;
     Client _cibaClient;
@@ -41,6 +43,7 @@ public class CibaTests
         {
             services.AddSingleton<IBackchannelAuthenticationUserValidator>(_mockCibaUserValidator);
             services.AddSingleton<IBackchannelAuthenticationUserNotificationService>(_mockCibaUserNotificationService);
+            services.AddSingleton<ICustomBackchannelAuthenticationValidator>(_mockCustomBackchannelAuthenticationValidator);
         };
 
         _mockPipeline.Clients.AddRange(new Client[] {
@@ -205,6 +208,92 @@ public class CibaTests
         _mockCibaUserValidator.UserValidatorContext.UserCode.Should().Be("xoxo");
         _mockCibaUserValidator.UserValidatorContext.BindingMessage.Should().Be(bindingMessage);
         _mockCibaUserValidator.UserValidatorContext.Client.ClientId.Should().Be(_cibaClient.ClientId);
+    }
+
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task custom_validators_are_invoked_and_can_process_custom_input()
+    {
+        _mockCustomBackchannelAuthenticationValidator.Thunk = ctx =>
+        {
+            // Map the incoming custom input so that we use it throughout the pipeline
+            ctx.ValidationResult.ValidatedRequest.Properties.Add("custom",
+                ctx.ValidationResult.ValidatedRequest.Raw["custom"]);
+        };
+
+        var bindingMessage = Guid.NewGuid().ToString("n");
+        var body = new Dictionary<string, string>
+        {
+            { "client_id", "client1" },
+            { "client_secret", "secret" },
+            { "scope", "openid profile scope1 offline_access" },
+            { "login_hint", "this means bob" },
+            { "user_code", "xoxo" },
+            { "binding_message", bindingMessage },
+            
+            // This isn't part of any spec or our models, except as custom Properties
+            { "custom", "input" }
+        };
+
+        SetValidatedUser();
+
+        var response = await _mockPipeline.BackChannelClient.PostAsync(
+            IdentityServerPipeline.BackchannelAuthenticationEndpoint,
+            new FormUrlEncodedContent(body));
+
+        // The custom validator was invoked with the request parameters and mapped the custom input
+        var validatedRequest = _mockCustomBackchannelAuthenticationValidator.Context.ValidationResult.ValidatedRequest;
+        validatedRequest.Should().NotBeNull();
+        validatedRequest.ClientId.Should().Be("client1");
+        validatedRequest.BindingMessage.Should().Be(bindingMessage);
+        validatedRequest.Properties["custom"].Should().Be("input");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task custom_validator_can_add_complex_properties_that_are_passed_to_user_notification_and_client_response()
+    {
+        _mockCustomBackchannelAuthenticationValidator.Thunk = ctx =>
+            {
+                // Invent a nested value, as if there was custom logic doing something "interesting"
+                ctx.ValidationResult.ValidatedRequest.Properties.Add("complex", 
+                    new Dictionary<string, string>
+                    {
+                        { "nested", "value" },
+                    });
+            };
+
+        var bindingMessage = Guid.NewGuid().ToString("n");
+        var body = new Dictionary<string, string>
+        {
+            { "client_id", "client1" },
+            { "client_secret", "secret" },
+            { "scope", "openid profile scope1 offline_access" },
+            { "login_hint", "this means bob" },
+            { "user_code", "xoxo" },
+            { "binding_message", bindingMessage },
+        };
+
+        SetValidatedUser();
+
+        var response = await _mockPipeline.BackChannelClient.PostAsync(
+            IdentityServerPipeline.BackchannelAuthenticationEndpoint,
+            new FormUrlEncodedContent(body));
+
+        // Custom properties are flattened into the response to the client
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseContent);
+        json.Should().NotBeNull();
+        var complex = json["complex"];
+        complex.TryGetValue("nested").GetString().Should().Be("value");
+
+        // Custom properties are passed to the notification service
+        var notificationProperties = _mockCibaUserNotificationService.LoginRequest.Properties;
+        var complexObjectInNotification = notificationProperties["complex"] as Dictionary<string, string>;
+        complexObjectInNotification.Should().NotBeNull();
+        complexObjectInNotification["nested"].Should().Be("value");
     }
 
     [Fact]

@@ -5,6 +5,8 @@
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Hosting;
 using Duende.IdentityServer.ResponseHandling;
@@ -67,7 +69,9 @@ internal class BackchannelAuthenticationHttpWriter : IHttpResponseWriter<Backcha
             {
                 auth_req_id = result.Response.AuthenticationRequestId,
                 expires_in = result.Response.ExpiresIn,
-                interval = result.Response.Interval
+                interval = result.Response.Interval,
+                
+                Properties = result.Response.Properties
             });
         }
     }
@@ -78,6 +82,9 @@ internal class BackchannelAuthenticationHttpWriter : IHttpResponseWriter<Backcha
         public string auth_req_id { get; set; }
         public int expires_in { get; set; }
         public int interval { get; set; }
+
+        [JsonExtensionData]
+        public Dictionary<string, object> Properties { get; set; }
 #pragma warning restore IDE1006 // Naming Styles
     }
 

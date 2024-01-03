@@ -7,6 +7,7 @@
 using Duende.IdentityServer.Validation;
 using System.Collections.Generic;
 using System.Security.Claims;
+using Duende.IdentityServer.ResponseHandling;
 
 namespace Duende.IdentityServer.Models;
 
@@ -59,4 +60,10 @@ public class BackchannelUserLoginRequest
     /// Gets or sets the validated resources.
     /// </summary>
     public ResourceValidationResult ValidatedResources { get; set; } = default!;
+
+    /// <summary> 
+    /// Gets or sets a dictionary of custom properties that can pass additional
+    /// state to the notification process.
+    /// </summary>
+    public Dictionary<string, object> Properties { get; set; } = new();
 }

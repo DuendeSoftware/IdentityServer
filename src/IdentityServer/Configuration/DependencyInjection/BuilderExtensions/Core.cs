@@ -341,6 +341,7 @@ public static class IdentityServerBuilderExtensionsCore
         // optional
         builder.Services.TryAddTransient<ICustomTokenValidator, DefaultCustomTokenValidator>();
         builder.Services.TryAddTransient<ICustomAuthorizeRequestValidator, DefaultCustomAuthorizeRequestValidator>();
+        builder.Services.TryAddTransient<ICustomBackchannelAuthenticationValidator, DefaultCustomBackchannelAuthenticationValidator>();
             
         return builder;
     }

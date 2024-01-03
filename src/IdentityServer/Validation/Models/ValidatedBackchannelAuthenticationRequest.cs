@@ -83,4 +83,10 @@ public class ValidatedBackchannelAuthenticationRequest : ValidatedRequest
     /// Gets or sets the request object (either passed by value or retrieved by reference)
     /// </summary>
     public string? RequestObject { get; set; }
+
+    /// <summary>
+    /// Gets or sets a dictionary of custom properties that can pass
+    /// additional state to the back channel authentication process.
+    /// </summary>
+    public Dictionary<string, object> Properties { get; set; } = new();
 }

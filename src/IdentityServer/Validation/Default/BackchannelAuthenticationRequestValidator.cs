@@ -24,7 +24,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
     private readonly ITokenValidator _tokenValidator;
     private readonly IBackchannelAuthenticationUserValidator _backchannelAuthenticationUserValidator;
     private readonly IJwtRequestValidator _jwtRequestValidator;
-    private readonly IJwtRequestUriHttpClient _jwtRequestUriHttpClient;
+    private readonly ICustomBackchannelAuthenticationValidator _customValidator;
     private readonly ILogger<BackchannelAuthenticationRequestValidator> _logger;
 
     private ValidatedBackchannelAuthenticationRequest _validatedRequest;
@@ -35,7 +35,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
         ITokenValidator tokenValidator,
         IBackchannelAuthenticationUserValidator backchannelAuthenticationUserValidator,
         IJwtRequestValidator jwtRequestValidator,
-        IJwtRequestUriHttpClient jwtRequestUriHttpClient,
+        ICustomBackchannelAuthenticationValidator customValidator,
         ILogger<BackchannelAuthenticationRequestValidator> logger)
     {
         _options = options;
@@ -43,7 +43,7 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
         _tokenValidator = tokenValidator;
         _backchannelAuthenticationUserValidator = backchannelAuthenticationUserValidator;
         _jwtRequestValidator = jwtRequestValidator;
-        _jwtRequestUriHttpClient = jwtRequestUriHttpClient;
+        _customValidator = customValidator;
         _logger = logger;
     }
 
@@ -418,9 +418,18 @@ internal class BackchannelAuthenticationRequestValidator : IBackchannelAuthentic
         }
 
         _validatedRequest.Subject = userResult.Subject;
+        var result = new BackchannelAuthenticationRequestValidationResult(_validatedRequest);
+        
+        var customValidationContext = new CustomBackchannelAuthenticationRequestValidationContext(result);
+        await _customValidator.ValidateAsync(customValidationContext);
+        if(customValidationContext.ValidationResult.IsError)
+        {
+            LogError("Custom validation of backchannel authorize request failed");
+            return Invalid(OidcConstants.BackchannelAuthenticationRequestErrors.InvalidRequest);
+        }
 
         LogSuccess();
-        return new BackchannelAuthenticationRequestValidationResult(_validatedRequest);
+        return result;
     }
 
     private async Task<(bool Success, BackchannelAuthenticationRequestValidationResult ErrorResult)> TryValidateRequestObjectAsync()

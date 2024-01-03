@@ -87,7 +87,12 @@ public class BackChannelAuthenticationRequest
     public string? SessionId { get; set; }
 
     /// <summary>
-    /// Gets the description the user assigned to the client being authorized.
+    /// Gets or sets the description the user assigned to the client being authorized.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Gets or sets a dictionary of custom properties associated with this instance.
+    /// </summary>
+    public Dictionary<string, object> Properties { get; set; } = new();
 }
