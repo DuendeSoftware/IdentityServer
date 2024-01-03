@@ -23,7 +23,7 @@ public class IntegrationTest<TClass, TDbContext, TStoreOption> : IClassFixture<D
     where TStoreOption : class
 {
     public static readonly TheoryData<DbContextOptions<TDbContext>> TestDatabaseProviders;
-    protected readonly TStoreOption StoreOptions = Activator.CreateInstance<TStoreOption>();
+    protected static TStoreOption StoreOptions = Activator.CreateInstance<TStoreOption>();
 
     static IntegrationTest()
     {
@@ -37,17 +37,17 @@ public class IntegrationTest<TClass, TDbContext, TStoreOption> : IClassFixture<D
 
             TestDatabaseProviders = new TheoryData<DbContextOptions<TDbContext>>
             {
-                //DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>()),
-                DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>()),
-                //DatabaseProviderBuilder.BuildLocalDb<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>())
+                //DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions),
+                DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions),
+                //DatabaseProviderBuilder.BuildLocalDb<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions)
             };
         }
         else
         {
             TestDatabaseProviders = new TheoryData<DbContextOptions<TDbContext>>
             {
-                //DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>()),
-                DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, Activator.CreateInstance<TStoreOption>())
+                //DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions),
+                DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions)
             };
             Console.WriteLine("Skipping DB integration tests on non-Windows");
         }
