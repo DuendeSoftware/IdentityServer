@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.EntityFramework;
@@ -32,6 +34,15 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
             using (var context = new PersistedGrantDbContext(options))
             {
                 context.Database.EnsureCreated();
+            }
+
+            // The db context is only created once, so before each test
+            // we destroy any persisted grants that are left-over
+            using (var context = new PersistedGrantDbContext(options))
+            {
+                var existing = context.PersistedGrants.ToArray();
+                context.PersistedGrants.RemoveRange(existing);
+                context.SaveChanges();
             }
         }
     }
@@ -203,6 +214,132 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         }
     }
 
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task CleanupGrantsAsync_ExpectBatchSizeIsRespected(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        StoreOptions.TokenCleanupBatchSize = 20;
+
+        var expectedPageCount = 5;
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+
+            context.PersistedGrants.ToList().Should().BeEmpty();
+
+            for(int i = 0; i < StoreOptions.TokenCleanupBatchSize * expectedPageCount; i++)
+            {
+                var expiredGrant = new PersistedGrant
+                {
+                    Expiration = DateTime.UtcNow.AddMinutes(-1),
+
+                    Key = Guid.NewGuid().ToString(),
+                    Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+                    ClientId = "app1",
+                    Data = "{!}"  
+                };
+                context.PersistedGrants.Add(expiredGrant);
+            }           
+            context.SaveChanges();
+
+            context.PersistedGrants.Count().Should().Be(StoreOptions.TokenCleanupBatchSize * expectedPageCount);
+
+        }
+
+        var mockNotifications = new MockOperationalStoreNotification();
+
+        await CreateSut(options, svcs => {
+            svcs.AddSingleton<IOperationalStoreNotification>(mockNotifications);
+        }).CleanupGrantsAsync();
+
+        // The right number of batches executed
+        mockNotifications.PersistedGrantNotifications.Count.Should().Be(expectedPageCount);
+        
+        // Each batch contained the expected number of grants
+        foreach(var notification in mockNotifications.PersistedGrantNotifications)
+        {
+            notification.Count().Should().Be(StoreOptions.TokenCleanupBatchSize);
+        }
+
+        // All grants are removed because they were all expired
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.ToList().Should().BeEmpty();
+        }
+    }
+
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task CleanupGrantsAsync_InsertsBetweenBatches_ExpectAdditionalBatches(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        StoreOptions.TokenCleanupBatchSize = 20;
+
+        var expectedPageCount = 5;
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            for(int i = 0; i < StoreOptions.TokenCleanupBatchSize * expectedPageCount; i++)
+            {
+                var expiredGrant = new PersistedGrant
+                {
+                    Expiration = DateTime.UtcNow.AddMinutes(-1),
+
+                    Key = Guid.NewGuid().ToString(),
+                    Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+                    ClientId = "app1",
+                    Data = "{!}"  
+                };
+                context.PersistedGrants.Add(expiredGrant);
+            }           
+            context.SaveChanges();
+        }
+
+        // Whenever we cleanup a batch of grants, a new (expired) grant is inserted
+        var mockNotifications = new MockOperationalStoreNotification()
+        {
+            OnPersistedGrantsRemoved = grants => 
+            {
+                using (var context = new PersistedGrantDbContext(options))
+                {
+                    var expiredGrant = new PersistedGrant
+                    {
+                        Expiration = DateTime.UtcNow.AddMinutes(-1),
+
+                        Key = Guid.NewGuid().ToString(),
+                        Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+                        ClientId = "app1",
+                        Data = "{Extra grant created between pages}"  
+                    };
+                    context.PersistedGrants.Add(expiredGrant);
+                    context.SaveChanges();
+                }
+            }
+        };
+
+        await CreateSut(options, svcs => {
+            svcs.AddSingleton<IOperationalStoreNotification>(mockNotifications);
+        }).CleanupGrantsAsync();
+
+        // Each batch created an extra grant, so we do an extra batch to clean up
+        // the extras
+        mockNotifications.PersistedGrantNotifications.Count.Should().Be(expectedPageCount + 1);
+        
+        // Each batch had the expected number of grants. Most batches had the batch size grants
+        for(int i = 0; i < expectedPageCount; i++)
+        {
+            mockNotifications.PersistedGrantNotifications[i].Count().Should().Be(StoreOptions.TokenCleanupBatchSize);
+        }
+
+        // The last batch had the extras - there is one extra per page
+        mockNotifications.PersistedGrantNotifications.Last().Count().Should().Be(expectedPageCount);
+
+        // In the end, all but one get deleted
+        // One final grant will be left behind, created by the last notification to fire
+        // We can treat this as the first grant created after the job ran, 
+        // we just are able to observe it because it was created in the final batch's notification
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.Count().Should().Be(1);
+        }
+    }
 
     [Theory, MemberData(nameof(TestDatabaseProviders))]
     public async Task CleanupGrantsAsync_WhenFlagIsOnAndConsumedGrantsExistAndDelayIsSet_ExpectConsumedGrantsRemovedRespectsDelay(DbContextOptions<PersistedGrantDbContext> options)
@@ -261,9 +398,14 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         return CreateSut(dbContextOpts);
     }
 
-    private TokenCleanupService CreateSut(DbContextOptions<PersistedGrantDbContext> options)
-    {
+    private TokenCleanupService CreateSut(
+        DbContextOptions<PersistedGrantDbContext> options,
+        Action<IServiceCollection> configureServices
+    ) {
         IServiceCollection services = new ServiceCollection();
+
+        configureServices(services);
+
         services.AddIdentityServer()
             .AddTestUsers(new List<TestUser>())
             .AddInMemoryClients(new List<Duende.IdentityServer.Models.Client>())
@@ -280,4 +422,33 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
 
         return services.BuildServiceProvider().GetRequiredService<ITokenCleanupService>() as TokenCleanupService;
     }
+
+    private TokenCleanupService CreateSut(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        return CreateSut(options, _ => { });
+    }
+}
+
+internal class MockOperationalStoreNotification : IOperationalStoreNotification
+{
+    public readonly List<IEnumerable<PersistedGrant>> PersistedGrantNotifications = new();
+    public readonly List<IEnumerable<DeviceFlowCodes>> DeviceFlowCodeNotifications = new();
+
+    public Action<IEnumerable<PersistedGrant>> OnPersistedGrantsRemoved = _ => { };
+    public Action<IEnumerable<DeviceFlowCodes>> OnDeviceFlowCodesRemoved = _ => { };
+
+    public Task PersistedGrantsRemovedAsync(IEnumerable<PersistedGrant> persistedGrants, CancellationToken cancellationToken = default)
+    {
+        OnPersistedGrantsRemoved(persistedGrants);
+        PersistedGrantNotifications.Add(persistedGrants);
+        return Task.CompletedTask;
+    }
+
+    public Task DeviceCodesRemovedAsync(IEnumerable<DeviceFlowCodes> deviceCodes, CancellationToken cancellationToken = default)
+    {
+        OnDeviceFlowCodesRemoved(deviceCodes);
+        DeviceFlowCodeNotifications.Append(deviceCodes);
+        return Task.CompletedTask;
+    }
+
 }

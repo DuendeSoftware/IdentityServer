@@ -36,6 +36,7 @@ public class DatabaseProviderBuilder
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(storeOptions);
 
+        // Open a connection so that the in-memory database is kept alive
         var connection = new SqliteConnection("DataSource=:memory:");
         connection.Open();
 
