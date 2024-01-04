@@ -272,36 +272,19 @@ public class TokenCleanupService : ITokenCleanupService
     {
         var found = Int32.MaxValue;
 
+        var query = _persistedGrantDbContext.PushedAuthorizationRequests
+            .Where(par => par.ExpiresAtUtc < DateTime.UtcNow)
+            .OrderBy(par => par.ExpiresAtUtc);
+
         while (found >= _options.TokenCleanupBatchSize)
         {
-            var query = _persistedGrantDbContext.PushedAuthorizationRequests
-                .Where(par => par.ExpiresAtUtc < DateTime.UtcNow)
-                .OrderBy(par => par.ExpiresAtUtc);
-
-            var expiredPars = await query
+            found = await query
                 .Take(_options.TokenCleanupBatchSize)
-                .AsNoTracking()
-                .ToArrayAsync(cancellationToken);
-
-            found = expiredPars.Length;
+                .ExecuteDeleteAsync(cancellationToken);
 
             if (found > 0)
             {
-                _logger.LogInformation("Removing {parCount} stale pushed authorization requests", found);
-
-                var foundIds = expiredPars.Select(par => par.Id).ToArray();
-
-                var deleteCount = await query
-                    .Where(par => par.ExpiresAtUtc >= expiredPars.First().ExpiresAtUtc && par.ExpiresAtUtc <= expiredPars.Last().ExpiresAtUtc)
-                    .Where(par => foundIds.Contains(par.Id))
-                    .ExecuteDeleteAsync();
-
-                if (deleteCount != found)
-                {
-                    _logger.LogDebug("Tried to remove {grantCount} expired device codes, but only {deleteCount} " +
-                        "was deleted. This indicates that another process has already removed the items.",
-                        found, deleteCount);
-                }
+                _logger.LogInformation("Removed {parCount} stale pushed authorization requests", found);
             }
         }
     }
