@@ -21,8 +21,7 @@ namespace MvcPar
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<ParOidcEvents>();
-            services.AddSingleton<IDiscoveryCache>(_ => new DiscoveryCache(Constants.Authority));
-
+            
             // add MVC
             services.AddControllersWithViews();
 

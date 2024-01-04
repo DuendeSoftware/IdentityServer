@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -11,12 +12,8 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace MvcPar
 {
-    public class ParOidcEvents(HttpClient httpClient, IDiscoveryCache discoveryCache, ILogger<ParOidcEvents> logger) : OpenIdConnectEvents
+    public class ParOidcEvents(HttpClient httpClient, ILogger<ParOidcEvents> logger) : OpenIdConnectEvents
     {
-        private readonly HttpClient _httpClient = httpClient;
-        private readonly IDiscoveryCache _discoveryCache = discoveryCache;
-        private readonly ILogger<ParOidcEvents> _logger = logger;
-
         public override async Task RedirectToIdentityProvider(RedirectContext context)
         {
             var clientId = context.ProtocolMessage.ClientId;
@@ -59,7 +56,7 @@ namespace MvcPar
                 var redirectUri = message.CreateAuthenticationRequestUrl();
                 if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
                 {
-                    _logger.LogWarning("The redirect URI is not well-formed. The URI is: '{AuthenticationRequestUrl}'.", redirectUri);
+                    logger.LogWarning("The redirect URI is not well-formed. The URI is: '{AuthenticationRequestUrl}'.", redirectUri);
                 }
 
                 context.Response.Redirect(redirectUri);
@@ -89,15 +86,12 @@ namespace MvcPar
         {
             // Send our PAR request
             var requestBody = new FormUrlEncodedContent(context.ProtocolMessage.Parameters);
-            _httpClient.SetBasicAuthentication(clientId, "secret");
+            httpClient.SetBasicAuthentication(clientId, "secret");
 
-            var disco = await _discoveryCache.GetAsync();
-            if (disco.IsError)
-            {
-                throw new Exception(disco.Error);
-            }
-            var parEndpoint = disco.TryGetValue("pushed_authorization_request_endpoint").GetString();
-            var response = await _httpClient.PostAsync(parEndpoint, requestBody);
+            var config = await context.Options.ConfigurationManager!.GetConfigurationAsync(context.HttpContext.RequestAborted);
+            var parEndpoint = config.AdditionalData["pushed_authorization_request_endpoint"].ToString();
+            
+            var response = await httpClient.PostAsync(parEndpoint, requestBody);
             if (!response.IsSuccessStatusCode)
             {
                 throw new Exception("PAR failure");
