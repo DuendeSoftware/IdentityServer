@@ -76,6 +76,13 @@ public class ServerSideSessionCleanupHost : IHostedService
 
     private async Task StartInternalAsync(CancellationToken cancellationToken)
     {
+        var removalFrequencySeconds = (int) _options.ServerSideSessions.RemoveExpiredSessionsFrequency.TotalSeconds;
+
+        // Start the first run at a random interval.
+        var delay = _options.ServerSideSessions.FuzzExpiredSessionRemovalStart
+            ? TimeSpan.FromSeconds(Random.Shared.Next(removalFrequencySeconds))
+            : _options.ServerSideSessions.RemoveExpiredSessionsFrequency;
+
         while (true)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -86,7 +93,7 @@ public class ServerSideSessionCleanupHost : IHostedService
 
             try
             {
-                await Task.Delay(_options.ServerSideSessions.RemoveExpiredSessionsFrequency, cancellationToken);
+                await Task.Delay(delay, cancellationToken);
             }
             catch (TaskCanceledException)
             {
@@ -106,6 +113,8 @@ public class ServerSideSessionCleanupHost : IHostedService
             }
 
             await RunAsync(cancellationToken);
+
+            delay = _options.ServerSideSessions.RemoveExpiredSessionsFrequency;
         }
     }
 

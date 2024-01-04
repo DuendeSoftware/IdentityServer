@@ -13,7 +13,7 @@ using Duende.IdentityServer.Models;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace UnitTests.Mappers;
+namespace EntityFramework.Storage.UnitTests.Mappers;
 
 public class ClientMappersTests
 {

@@ -4,8 +4,10 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Extensions;
 using Duende.IdentityServer.EntityFramework.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
@@ -84,10 +86,16 @@ public class TokenCleanupService : ITokenCleanupService
 
         while (found >= _options.TokenCleanupBatchSize)
         {
-            var expiredGrants = await _persistedGrantDbContext.PersistedGrants
+            // Filter and order on expiration which is indexed, this allows the
+            // DB engine to just take the first N items from the index
+            var query = _persistedGrantDbContext.PersistedGrants
                 .Where(x => x.Expiration < DateTime.UtcNow)
-                .OrderBy(x => x.Expiration)
+                .OrderBy(x => x.Expiration);
+
+            // Get the batch to delete.
+            var expiredGrants = await query
                 .Take(_options.TokenCleanupBatchSize)
+                .AsNoTracking()
                 .ToArrayAsync(cancellationToken);
 
             found = expiredGrants.Length;
@@ -96,10 +104,38 @@ public class TokenCleanupService : ITokenCleanupService
             {
                 _logger.LogInformation("Removing {grantCount} expired grants", found);
 
-                _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
+                var foundIds = expiredGrants.Select(pg => pg.Id).ToArray();
 
-                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.PersistedGrant>(_logger, cancellationToken);
-                expiredGrants = expiredGrants.Except(list).ToArray();
+                // Using two where clauses should be more DB engine friendly as the
+                // first clause can be resolved using the expiration index.
+                var deleteCount = await query
+                    // Run the same query, but now use an interval instead of Take(). This is to
+                    // ensure we get all the elements, even if a new element was added in the middle
+                    // of the set.
+                    .Where(pg => 
+                        pg.Expiration >= expiredGrants.First().Expiration 
+                        && pg.Expiration <= expiredGrants.Last().Expiration)
+                    // To be on the safe side, filter out any possibly newly added item within the interval
+                    .Where(pg => foundIds.Contains(pg.Id))
+                    // And delete them.
+                    .ExecuteDeleteAsync(cancellationToken);
+
+                if (deleteCount != found)
+                {
+                    if (_operationalStoreNotification != null)
+                    {
+                        _logger.LogWarning("Tried to remove {grantCount} expired grants, but only {deleteCount} " +
+                            "was deleted. This indicates that another process has already removed the items. Duplicate " +
+                            "notifications may be sent to the registered IOperationalStoreNotification.", 
+                            found, deleteCount);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Tried to remove {grantCount} expired grants, but only {deleteCount} " +
+                            "was deleted. This indicates that another process has already removed the items.",
+                            found, deleteCount);
+                    }
+                }
 
                 if (_operationalStoreNotification != null)
                 {
@@ -122,26 +158,50 @@ public class TokenCleanupService : ITokenCleanupService
 
         while (found >= _options.TokenCleanupBatchSize)
         {
-            var expiredGrants = await _persistedGrantDbContext.PersistedGrants
+            var query = _persistedGrantDbContext.PersistedGrants
                 .Where(x => x.ConsumedTime < consumedTimeThreshold)
-                .OrderBy(x => x.ConsumedTime)
+                .OrderBy(pg => pg.ConsumedTime);
+
+            var consumedGrants = await query
                 .Take(_options.TokenCleanupBatchSize)
+                .AsNoTracking()
                 .ToArrayAsync(cancellationToken);
 
-            found = expiredGrants.Length;
+            found = consumedGrants.Length;
 
             if (found > 0)
             {
                 _logger.LogInformation("Removing {grantCount} consumed grants", found);
 
-                _persistedGrantDbContext.PersistedGrants.RemoveRange(expiredGrants);
+                var foundIds = consumedGrants.Select(pg => pg.Id).ToArray();
 
-                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.PersistedGrant>(_logger, cancellationToken);
-                expiredGrants = expiredGrants.Except(list).ToArray();
+                var deleteCount = await query
+                    .Where(pg => 
+                        pg.ConsumedTime >= consumedGrants.First().ConsumedTime 
+                        && pg.ConsumedTime <= consumedGrants.Last().ConsumedTime)
+                    .Where(pg => foundIds.Contains(pg.Id))
+                    .ExecuteDeleteAsync(cancellationToken);
+
+                if (deleteCount != found)
+                {
+                    if (_operationalStoreNotification != null)
+                    {
+                        _logger.LogWarning("Tried to remove {grantCount} consumed grants, but only {deleteCount} " +
+                            "was deleted. This indicates that another process has already removed the items. Duplicate " +
+                            "notifications may be sent to the registered IOperationalStoreNotification.",
+                            found, deleteCount);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Tried to remove {grantCount} consumed grants, but only {deleteCount} " +
+                            "was deleted. This indicates that another process has already removed the items.",
+                            found, deleteCount);
+                    }
+                }
 
                 if (_operationalStoreNotification != null)
                 {
-                    await _operationalStoreNotification.PersistedGrantsRemovedAsync(expiredGrants);
+                    await _operationalStoreNotification.PersistedGrantsRemovedAsync(consumedGrants);
                 }
             }
         }
@@ -158,10 +218,13 @@ public class TokenCleanupService : ITokenCleanupService
 
         while (found >= _options.TokenCleanupBatchSize)
         {
-            var expiredCodes = await _persistedGrantDbContext.DeviceFlowCodes
+            var query = _persistedGrantDbContext.DeviceFlowCodes
                 .Where(x => x.Expiration < DateTime.UtcNow)
-                .OrderBy(x => x.DeviceCode)
+                .OrderBy(x => x.Expiration);
+
+            var expiredCodes = await query
                 .Take(_options.TokenCleanupBatchSize)
+                .AsNoTracking()
                 .ToArrayAsync(cancellationToken);
 
             found = expiredCodes.Length;
@@ -170,10 +233,29 @@ public class TokenCleanupService : ITokenCleanupService
             {
                 _logger.LogInformation("Removing {deviceCodeCount} device flow codes", found);
 
-                _persistedGrantDbContext.DeviceFlowCodes.RemoveRange(expiredCodes);
+                var foundCodes = expiredCodes.Select(c => c.DeviceCode).ToArray();
 
-                var list = await _persistedGrantDbContext.SaveChangesWithConcurrencyCheckAsync<Entities.DeviceFlowCodes>(_logger, cancellationToken);
-                expiredCodes = expiredCodes.Except(list).ToArray();
+                var deleteCount = await query
+                    .Where(c => c.Expiration >= expiredCodes.First().Expiration && c.Expiration <= expiredCodes.Last().Expiration)
+                    .Where(c => foundCodes.Contains(c.DeviceCode))
+                    .ExecuteDeleteAsync();
+
+                if (deleteCount != found)
+                {
+                    if (_operationalStoreNotification != null)
+                    {
+                        _logger.LogWarning("Tried to remove {grantCount} expired device codes, but only {deleteCount} " +
+                            "was deleted. This indicates that another process has already removed the items. Duplicate " +
+                            "notifications may be sent to the registered IOperationalStoreNotification.",
+                            found, deleteCount);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Tried to remove {grantCount} expired device codes, but only {deleteCount} " +
+                            "was deleted. This indicates that another process has already removed the items.",
+                            found, deleteCount);
+                    }
+                }
 
                 if (_operationalStoreNotification != null)
                 {
@@ -188,9 +270,22 @@ public class TokenCleanupService : ITokenCleanupService
     /// </summary>
     protected virtual async Task RemovePushedAuthorizationRequestsAsync(CancellationToken cancellationToken = default)
     {
-        var x = await _persistedGrantDbContext.PushedAuthorizationRequests
-            .Where(p => p.ExpiresAtUtc < DateTime.UtcNow)
-            .ExecuteDeleteAsync(cancellationToken);
-        _logger.LogInformation("Removed {parCount} stale pushed authorization requests", x);
+        var found = Int32.MaxValue;
+
+        var query = _persistedGrantDbContext.PushedAuthorizationRequests
+            .Where(par => par.ExpiresAtUtc < DateTime.UtcNow)
+            .OrderBy(par => par.ExpiresAtUtc);
+
+        while (found >= _options.TokenCleanupBatchSize)
+        {
+            found = await query
+                .Take(_options.TokenCleanupBatchSize)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            if (found > 0)
+            {
+                _logger.LogInformation("Removed {parCount} stale pushed authorization requests", found);
+            }
+        }
     }
 }

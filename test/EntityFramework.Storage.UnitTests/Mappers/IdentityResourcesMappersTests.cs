@@ -8,7 +8,7 @@ using Models = Duende.IdentityServer.Models;
 using Entities = Duende.IdentityServer.EntityFramework.Entities;
 using FluentAssertions;
 
-namespace UnitTests.Mappers;
+namespace EntityFramework.Storage.UnitTests.Mappers;
 
 public class IdentityResourcesMappersTests
 {

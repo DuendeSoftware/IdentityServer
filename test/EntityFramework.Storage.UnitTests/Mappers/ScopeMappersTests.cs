@@ -10,7 +10,7 @@ using Entities = Duende.IdentityServer.EntityFramework.Entities;
 using FluentAssertions;
 using Xunit;
 
-namespace UnitTests.Mappers;
+namespace EntityFramework.Storage.UnitTests.Mappers;
 
 public class ScopesMappersTests
 {

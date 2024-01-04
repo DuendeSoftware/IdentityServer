@@ -9,7 +9,7 @@ using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.EntityFramework.Options;
 using Xunit;
 
-namespace IntegrationTests.DbContexts;
+namespace EntityFramework.Storage.IntegrationTests.DbContexts;
 
 public class ClientDbContextTests : IntegrationTest<ClientDbContextTests, ConfigurationDbContext, ConfigurationStoreOptions>
 {

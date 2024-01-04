@@ -2,10 +2,12 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace IntegrationTests;
+namespace EntityFramework.Storage.IntegrationTests;
 
 /// <summary>
 /// Helper methods to initialize DbContextOptions for the specified database provider and context.
@@ -35,10 +37,13 @@ public class DatabaseProviderBuilder
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(storeOptions);
 
+        // Open a connection so that the in-memory database is kept alive
+        var connection = new SqliteConnection($"DataSource={Guid.NewGuid()};Mode=Memory;");
+        connection.Open();
+
         var builder = new DbContextOptionsBuilder<TDbContext>();
-        builder.UseSqlite($"Filename=./Test.IdentityServer4.EntityFramework-3.1.0.{name}.db");
+        builder.UseSqlite(connection);
         builder.UseApplicationServiceProvider(serviceCollection.BuildServiceProvider());
-            
         return builder.Options;
     }
 
@@ -52,7 +57,8 @@ public class DatabaseProviderBuilder
 
         var builder = new DbContextOptionsBuilder<TDbContext>();
         builder.UseSqlServer(
-            $@"Data Source=(LocalDb)\MSSQLLocalDB;database=Test.IdentityServer4.EntityFramework-3.1.0.{name};trusted_connection=yes;");
+            $@"Data Source=(LocalDb)\MSSQLLocalDB;database=Test.IdentityServer4.EntityFramework-3.1.0.{name};trusted_connection=yes;",
+            opt => opt.EnableRetryOnFailure());
         builder.UseApplicationServiceProvider(serviceCollection.BuildServiceProvider());
         return builder.Options;
     }

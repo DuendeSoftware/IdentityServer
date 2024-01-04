@@ -7,7 +7,7 @@ using Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace EntityFramework.Tests.DI
+namespace EntityFramework.IntegrationTests.DI
 {
     public class DITests
     {

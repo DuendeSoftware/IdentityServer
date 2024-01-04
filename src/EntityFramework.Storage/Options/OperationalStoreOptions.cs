@@ -110,6 +110,16 @@ public class OperationalStoreOptions
     public int TokenCleanupInterval { get; set; } = 3600;
 
     /// <summary>
+    /// If multiple nodes are running the token cleanup at the same time, there will be
+    /// concurrency issues in the database updates. To reduce the risk, the startup time
+    /// of the first run can be fuzzed (randomized). The default is <c>true</c>.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if startup time should be fuzzed, otherwise false.
+    /// </value>
+    public bool FuzzTokenCleanupStart { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets the number of records to remove at a time. Defaults to 100.
     /// </summary>
     /// <value>

@@ -102,6 +102,9 @@ GO
 CREATE INDEX [IX_PersistedGrants_SubjectId_SessionId_Type] ON [PersistedGrants] ([SubjectId], [SessionId], [Type]);
 GO
 
+CREATE INDEX [IX_PushedAuthorizationRequests_ExpiresAtUtc] ON [PushedAuthorizationRequests] ([ExpiresAtUtc]);
+GO
+
 CREATE UNIQUE INDEX [IX_PushedAuthorizationRequests_ReferenceValueHash] ON [PushedAuthorizationRequests] ([ReferenceValueHash]);
 GO
 
@@ -121,7 +124,7 @@ CREATE INDEX [IX_ServerSideSessions_SubjectId] ON [ServerSideSessions] ([Subject
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20231110071347_Grants', N'8.0.0-rc.2.23480.1');
+VALUES (N'20240104192353_Grants', N'8.0.0');
 GO
 
 COMMIT;

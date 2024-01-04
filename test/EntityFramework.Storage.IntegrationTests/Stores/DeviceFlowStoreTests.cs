@@ -20,7 +20,7 @@ using Microsoft.EntityFrameworkCore.InMemory.Infrastructure.Internal;
 using Xunit;
 using Duende.IdentityServer.Services;
 
-namespace IntegrationTests.Stores;
+namespace EntityFramework.Storage.IntegrationTests.Stores;
 
 public class DeviceFlowStoreTests : IntegrationTest<DeviceFlowStoreTests, PersistedGrantDbContext, OperationalStoreOptions>
 {
