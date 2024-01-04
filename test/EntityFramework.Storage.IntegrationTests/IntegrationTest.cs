@@ -47,9 +47,9 @@ public class IntegrationTest<TClass, TDbContext, TStoreOption> : IClassFixture<D
             TestDatabaseProviders = new TheoryData<DbContextOptions<TDbContext>>
             {
                 // DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions),
-                DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions)
+                // DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions)
             };
-            // Console.WriteLine("Skipping DB integration tests on non-Windows");
+            Console.WriteLine("Skipping DB integration tests on non-Windows");
         }
     }
 

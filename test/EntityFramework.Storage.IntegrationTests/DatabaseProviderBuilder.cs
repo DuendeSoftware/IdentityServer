@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +38,7 @@ public class DatabaseProviderBuilder
         serviceCollection.AddSingleton(storeOptions);
 
         // Open a connection so that the in-memory database is kept alive
-        var connection = new SqliteConnection("DataSource=:memory:");
+        var connection = new SqliteConnection($"DataSource={Guid.NewGuid()};Mode=Memory;");
         connection.Open();
 
         var builder = new DbContextOptionsBuilder<TDbContext>();
