@@ -341,7 +341,10 @@ public class Client
     public int? CibaLifetime { get; set; }
 
     /// <summary>
-    /// Gets or sets the backchannel polling interval in seconds.
+    /// Gets or sets the maximum polling interval for this client in the CIBA
+    /// and Device Code flows. If this client polls more frequently than the
+    /// polling interval during those flows, it will receive a slow_down error
+    /// response. 
     /// </summary>
     public int? PollingInterval { get; set; }
 
