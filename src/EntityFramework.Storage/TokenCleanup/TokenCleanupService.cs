@@ -157,45 +157,16 @@ public class TokenCleanupService : ITokenCleanupService
 
         while (found >= _options.TokenCleanupBatchSize)
         {
-            var query = _persistedGrantDbContext.PersistedGrants
-                .Where(x => x.ConsumedTime < consumedTimeThreshold)
-                .OrderBy(pg => pg.ConsumedTime);
-
-            var consumedGrants = await query
-                .Take(_options.TokenCleanupBatchSize)
-                .AsNoTracking()
-                .ToArrayAsync(cancellationToken);
-
+            var consumedGrants = await RetrieveConsumedGrantsBatch(consumedTimeThreshold, cancellationToken);
             found = consumedGrants.Length;
-
             if (found > 0)
             {
-                _logger.LogInformation("Removing {grantCount} consumed grants", found);
-
-                var foundIds = consumedGrants.Select(pg => pg.Id).ToArray();
-
-                var deleteCount = await query
-                    .Where(pg => 
-                        pg.ConsumedTime >= consumedGrants.First().ConsumedTime 
-                        && pg.ConsumedTime <= consumedGrants.Last().ConsumedTime)
-                    .Where(pg => foundIds.Contains(pg.Id))
-                    .ExecuteDeleteAsync(cancellationToken);
-
+                 _logger.LogInformation("Removing {grantCount} consumed grants", found);
+                var deleteCount = await RemoveConsumedGrantsBatch(consumedGrants, consumedTimeThreshold, cancellationToken);
+                
                 if (deleteCount != found)
                 {
-                    if (_operationalStoreNotification != null)
-                    {
-                        _logger.LogWarning("Tried to remove {grantCount} consumed grants, but only {deleteCount} " +
-                            "was deleted. This indicates that another process has already removed the items. Duplicate " +
-                            "notifications may be sent to the registered IOperationalStoreNotification.",
-                            found, deleteCount);
-                    }
-                    else
-                    {
-                        _logger.LogDebug("Tried to remove {grantCount} consumed grants, but only {deleteCount} " +
-                            "was deleted. This indicates that another process has already removed the items.",
-                            found, deleteCount);
-                    }
+                    LogBatchSizeMismatch(found, deleteCount);
                 }
 
                 if (_operationalStoreNotification != null)
@@ -204,6 +175,47 @@ public class TokenCleanupService : ITokenCleanupService
                 }
             }
         }
+    }
+
+    internal virtual void LogBatchSizeMismatch(int found, int deleteCount)
+    {
+        if (_operationalStoreNotification != null)
+        {
+            _logger.LogWarning("Tried to remove {grantCount} consumed grants, but only {deleteCount} " +
+                "was deleted. This indicates that another process has already removed the items. Duplicate " +
+                "notifications may be sent to the registered IOperationalStoreNotification.",
+                found, deleteCount);
+        }
+        else
+        {
+            _logger.LogDebug("Tried to remove {grantCount} consumed grants, but only {deleteCount} " +
+                "was deleted. This indicates that another process has already removed the items.",
+                found, deleteCount);
+        }
+    }
+
+    internal virtual async Task<int> RemoveConsumedGrantsBatch(PersistedGrant[] consumedGrants, DateTime consumedTimeThreshold, CancellationToken cancellationToken)
+    {
+        var foundIds = consumedGrants.Select(pg => pg.Id).ToArray();
+
+        return await _persistedGrantDbContext.PersistedGrants
+            .Where(x => x.ConsumedTime < consumedTimeThreshold)
+            .OrderBy(pg => pg.ConsumedTime)
+            .Where(pg =>
+                pg.ConsumedTime >= consumedGrants.First().ConsumedTime
+                && pg.ConsumedTime <= consumedGrants.Last().ConsumedTime)
+            .Where(pg => foundIds.Contains(pg.Id))
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
+    internal virtual async Task<PersistedGrant[]> RetrieveConsumedGrantsBatch(DateTime consumedTimeThreshold, CancellationToken cancellationToken)
+    {
+        return await _persistedGrantDbContext.PersistedGrants
+                        .Where(x => x.ConsumedTime < consumedTimeThreshold)
+                        .OrderBy(pg => pg.ConsumedTime)
+                        .Take(_options.TokenCleanupBatchSize)
+                        .AsNoTracking()
+                        .ToArrayAsync(cancellationToken);
     }
 
 

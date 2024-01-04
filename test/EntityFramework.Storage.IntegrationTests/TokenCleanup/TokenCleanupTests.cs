@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.EntityFramework;
@@ -19,6 +20,7 @@ using Duende.IdentityServer.Test;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using IPersistedGrantStore = Duende.IdentityServer.Stores.IPersistedGrantStore;
 
@@ -340,6 +342,180 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         }
     }
 
+
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task CleanupGrantsAsync_InsertsBetweenBatches(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        StoreOptions.TokenCleanupBatchSize = 20;
+
+        var expectedPageCount = 5;
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            for(int i = 0; i < StoreOptions.TokenCleanupBatchSize * expectedPageCount; i++)
+            {
+                var expiredGrant = new PersistedGrant
+                {
+                    Expiration = DateTime.UtcNow.AddMinutes(-1),
+
+                    Key = Guid.NewGuid().ToString(),
+                    Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+                    ClientId = "app1",
+                    Data = "{!}"  
+                };
+                context.PersistedGrants.Add(expiredGrant);
+            }           
+            context.SaveChanges();
+        }
+
+
+        var sut = (TestTokenCleanupService)CreateSut(options, svcs => svcs.AddTransient<ITokenCleanupService, TestTokenCleanupService>(), registerSut: false);
+
+        int mostRecentBatchSize = 0;
+
+        sut.OnBatchRetrieved = (batch) =>
+        {
+            mostRecentBatchSize = batch.Length;
+
+            using (var context = new PersistedGrantDbContext(options))
+            {
+                var expiredGrant = new PersistedGrant
+                {
+                    Expiration = DateTime.UtcNow.AddMinutes(-1),
+
+                    Key = Guid.NewGuid().ToString(),
+                    Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+                    ClientId = "app1",
+                    Data = "{!}"  
+                };
+                context.PersistedGrants.Add(expiredGrant);
+                context.SaveChanges();
+            }
+        };
+
+        sut.OnBatchRemoved = (removedCount) =>
+        {
+            removedCount.Should().Be(mostRecentBatchSize);
+        };
+
+        await sut.CleanupGrantsAsync();
+       
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.Count().Should().Be(0);
+        }
+    }
+
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task CleanupGrantsAsync_DeletesBetweenBatches(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        StoreOptions.TokenCleanupBatchSize = 20;
+
+        var expectedPageCount = 5;
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            for (int i = 0; i < StoreOptions.TokenCleanupBatchSize * expectedPageCount; i++)
+            {
+                var expiredGrant = new PersistedGrant
+                {
+                    Expiration = DateTime.UtcNow.AddMinutes(-1),
+
+                    Key = Guid.NewGuid().ToString(),
+                    Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+                    ClientId = "app1",
+                    Data = "{!}"
+                };
+                context.PersistedGrants.Add(expiredGrant);
+            }
+            context.SaveChanges();
+        }
+
+
+        var sut = (TestTokenCleanupService) CreateSut(options, svcs => svcs.AddTransient<ITokenCleanupService, TestTokenCleanupService>(), registerSut: false);
+
+        int mostRecentBatchSize = 0;
+
+        sut.OnBatchRetrieved = (batch) =>
+        {
+            mostRecentBatchSize = batch.Length;
+
+            using (var context = new PersistedGrantDbContext(options))
+            {
+                var toDelete = context.PersistedGrants.Find(batch[0].Id);
+                context.PersistedGrants.Remove(toDelete);
+                context.SaveChanges();
+            }
+        };
+
+        sut.OnBatchRemoved = (removedCount) =>
+        {
+            removedCount.Should().Be(mostRecentBatchSize - 1);
+        };
+
+        await sut.CleanupGrantsAsync();
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.Count().Should().Be(0);
+        }
+    }
+
+
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task CleanupGrantsAsync_ExtremeDeletesBetweenBatches(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        StoreOptions.TokenCleanupBatchSize = 20;
+
+        var expectedPageCount = 5;
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            for (int i = 0; i < StoreOptions.TokenCleanupBatchSize * expectedPageCount; i++)
+            {
+                var expiredGrant = new PersistedGrant
+                {
+                    Expiration = DateTime.UtcNow.AddMinutes(-1),
+
+                    Key = Guid.NewGuid().ToString(),
+                    Type = IdentityServerConstants.PersistedGrantTypes.RefreshToken,
+                    ClientId = "app1",
+                    Data = "{!}"
+                };
+                context.PersistedGrants.Add(expiredGrant);
+            }
+            context.SaveChanges();
+        }
+
+
+        var sut = (TestTokenCleanupService) CreateSut(options, svcs => svcs.AddTransient<ITokenCleanupService, TestTokenCleanupService>(), registerSut: false);
+
+        int mostRecentBatchSize = 0;
+
+        sut.OnBatchRetrieved = (batch) =>
+        {
+            mostRecentBatchSize = batch.Length;
+
+            using (var context = new PersistedGrantDbContext(options))
+            {
+                context.PersistedGrants.RemoveRange(batch);
+                context.SaveChanges();
+            }
+        };
+
+        sut.OnBatchRemoved = (removedCount) =>
+        {
+            removedCount.Should().Be(0);
+        };
+
+        await sut.CleanupGrantsAsync();
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.Count().Should().Be(0);
+        }
+    }
+
     [Theory, MemberData(nameof(TestDatabaseProviders))]
     public async Task CleanupGrantsAsync_WhenFlagIsOnAndConsumedGrantsExistAndDelayIsSet_ExpectConsumedGrantsRemovedRespectsDelay(DbContextOptions<PersistedGrantDbContext> options)
     {
@@ -387,7 +563,7 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
     }
 
 
-    private TokenCleanupService CreateSut(
+    private ITokenCleanupService CreateSut(
         DbContextOptions<PersistedGrantDbContext> dbContextOpts,
         bool removeConsumedTokens,
         int consumedTokenCleanupDelay = 0
@@ -397,9 +573,10 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         return CreateSut(dbContextOpts);
     }
 
-    private TokenCleanupService CreateSut(
+    private ITokenCleanupService CreateSut(
         DbContextOptions<PersistedGrantDbContext> options,
-        Action<IServiceCollection> configureServices
+        Action<IServiceCollection> configureServices,
+        bool registerSut = true // Disable if you register a custom derived class in the configureServices parameter
     ) {
         IServiceCollection services = new ServiceCollection();
 
@@ -415,15 +592,45 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
             new PersistedGrantDbContext(options));
         services.AddTransient<IPersistedGrantStore, PersistedGrantStore>();
         services.AddTransient<IDeviceFlowStore, DeviceFlowStore>();
-            
-        services.AddTransient<ITokenCleanupService, TokenCleanupService>();
+
+        if(registerSut)
+        {
+            services.AddTransient<ITokenCleanupService, TokenCleanupService>();
+        }
+
         services.AddSingleton(StoreOptions);
 
-        return services.BuildServiceProvider().GetRequiredService<ITokenCleanupService>() as TokenCleanupService;
+        return services.BuildServiceProvider().GetRequiredService<ITokenCleanupService>();
     }
 
-    private TokenCleanupService CreateSut(DbContextOptions<PersistedGrantDbContext> options)
+    private ITokenCleanupService CreateSut(DbContextOptions<PersistedGrantDbContext> options)
     {
         return CreateSut(options, _ => { });
+    }
+}
+
+internal class TestTokenCleanupService(
+    OperationalStoreOptions options, 
+    IPersistedGrantDbContext persistedGrantDbContext, 
+    ILogger<TokenCleanupService> logger, 
+    IOperationalStoreNotification operationalStoreNotification = null) 
+    : TokenCleanupService(options, persistedGrantDbContext, logger, operationalStoreNotification)
+{
+
+    public Action<PersistedGrant[]> OnBatchRetrieved { get; set; }
+    public Action<int> OnBatchRemoved { get; set; }
+
+    internal override async Task<PersistedGrant[]> RetrieveConsumedGrantsBatch(DateTime consumedTimeThreshold, CancellationToken cancellationToken)
+    {
+        var batch = await base.RetrieveConsumedGrantsBatch(consumedTimeThreshold, cancellationToken);
+        OnBatchRetrieved(batch);
+        return batch;
+    }
+
+    internal override async Task<int> RemoveConsumedGrantsBatch(PersistedGrant[] consumedGrants, DateTime consumedTimeThreshold, CancellationToken cancellationToken)
+    {
+        var removedCount = await base.RemoveConsumedGrantsBatch(consumedGrants, consumedTimeThreshold, cancellationToken);
+        OnBatchRemoved(removedCount);
+        return removedCount;
     }
 }
