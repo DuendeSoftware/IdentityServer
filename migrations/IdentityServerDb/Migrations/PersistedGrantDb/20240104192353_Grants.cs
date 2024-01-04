@@ -150,6 +150,11 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                 columns: new[] { "SubjectId", "SessionId", "Type" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_PushedAuthorizationRequests_ExpiresAtUtc",
+                table: "PushedAuthorizationRequests",
+                column: "ExpiresAtUtc");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PushedAuthorizationRequests_ReferenceValueHash",
                 table: "PushedAuthorizationRequests",
                 column: "ReferenceValueHash",

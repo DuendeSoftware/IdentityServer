@@ -17,7 +17,7 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0-rc.2.23480.1")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -194,6 +194,8 @@ namespace IdentityServerDb.Migrations.PersistedGrantDb
                         .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAtUtc");
 
                     b.HasIndex("ReferenceValueHash")
                         .IsUnique();
