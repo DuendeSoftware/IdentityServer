@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.EntityFramework;
@@ -23,7 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using IPersistedGrantStore = Duende.IdentityServer.Stores.IPersistedGrantStore;
 
-namespace IntegrationTests.TokenCleanup;
+namespace EntityFramework.Storage.IntegrationTests.TokenCleanup;
 
 public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGrantDbContext, OperationalStoreOptions>
 {
@@ -427,28 +426,4 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
     {
         return CreateSut(options, _ => { });
     }
-}
-
-internal class MockOperationalStoreNotification : IOperationalStoreNotification
-{
-    public readonly List<IEnumerable<PersistedGrant>> PersistedGrantNotifications = new();
-    public readonly List<IEnumerable<DeviceFlowCodes>> DeviceFlowCodeNotifications = new();
-
-    public Action<IEnumerable<PersistedGrant>> OnPersistedGrantsRemoved = _ => { };
-    public Action<IEnumerable<DeviceFlowCodes>> OnDeviceFlowCodesRemoved = _ => { };
-
-    public Task PersistedGrantsRemovedAsync(IEnumerable<PersistedGrant> persistedGrants, CancellationToken cancellationToken = default)
-    {
-        OnPersistedGrantsRemoved(persistedGrants);
-        PersistedGrantNotifications.Add(persistedGrants);
-        return Task.CompletedTask;
-    }
-
-    public Task DeviceCodesRemovedAsync(IEnumerable<DeviceFlowCodes> deviceCodes, CancellationToken cancellationToken = default)
-    {
-        OnDeviceFlowCodesRemoved(deviceCodes);
-        DeviceFlowCodeNotifications.Append(deviceCodes);
-        return Task.CompletedTask;
-    }
-
 }

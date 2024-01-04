@@ -5,7 +5,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace Tests;
+namespace EntityFramework.IntegrationTests;
 
 public class FakeLogger<T> : FakeLogger, ILogger<T>
 {

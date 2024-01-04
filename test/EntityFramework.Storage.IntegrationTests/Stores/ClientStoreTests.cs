@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Sdk;
 
-namespace IntegrationTests.Stores;
+namespace EntityFramework.Storage.IntegrationTests.Stores;
 
 public class ClientStoreTests : IntegrationTest<ClientStoreTests, ConfigurationDbContext, ConfigurationStoreOptions>
 {

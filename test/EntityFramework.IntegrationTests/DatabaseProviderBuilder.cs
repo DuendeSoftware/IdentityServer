@@ -6,7 +6,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Tests;
+namespace EntityFramework.IntegrationTests;
 
 /// <summary>
 /// Helper methods to initialize DbContextOptions for the specified database provider and context.
@@ -35,9 +35,10 @@ public class DatabaseProviderBuilder
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(storeOptions);
 
+        // Open a connection so that the in-memory database is kept alive
         var connection = new SqliteConnection("DataSource=:memory:");
         connection.Open();
-        
+
         var builder = new DbContextOptionsBuilder<TDbContext>();
         builder.UseSqlite(connection);
         builder.UseApplicationServiceProvider(serviceCollection.BuildServiceProvider());

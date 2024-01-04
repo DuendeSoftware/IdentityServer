@@ -6,7 +6,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace IntegrationTests;
+namespace EntityFramework.Storage.IntegrationTests;
 
 /// <summary>
 /// Helper methods to initialize DbContextOptions for the specified database provider and context.
@@ -43,7 +43,6 @@ public class DatabaseProviderBuilder
         var builder = new DbContextOptionsBuilder<TDbContext>();
         builder.UseSqlite(connection);
         builder.UseApplicationServiceProvider(serviceCollection.BuildServiceProvider());
-            
         return builder.Options;
     }
 
@@ -57,7 +56,8 @@ public class DatabaseProviderBuilder
 
         var builder = new DbContextOptionsBuilder<TDbContext>();
         builder.UseSqlServer(
-            $@"Data Source=(LocalDb)\MSSQLLocalDB;database=Test.IdentityServer4.EntityFramework-3.1.0.{name};trusted_connection=yes;");
+            $@"Data Source=(LocalDb)\MSSQLLocalDB;database=Test.IdentityServer4.EntityFramework-3.1.0.{name};trusted_connection=yes;",
+            opt => opt.EnableRetryOnFailure());
         builder.UseApplicationServiceProvider(serviceCollection.BuildServiceProvider());
         return builder.Options;
     }

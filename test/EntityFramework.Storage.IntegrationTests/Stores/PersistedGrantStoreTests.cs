@@ -17,7 +17,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace IntegrationTests.Stores;
+namespace EntityFramework.Storage.IntegrationTests.Stores;
 
 public class PersistedGrantStoreTests : IntegrationTest<PersistedGrantStoreTests, PersistedGrantDbContext, OperationalStoreOptions>
 {

@@ -14,7 +14,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace IntegrationTests.Stores;
+namespace EntityFramework.Storage.IntegrationTests.Stores;
 
 public class IdentityProviderStoreTests : IntegrationTest<IdentityProviderStoreTests, ConfigurationDbContext, ConfigurationStoreOptions>
 {

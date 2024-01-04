@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Duende.IdentityServer.Entit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Duende.IdentityServer.EntityFramework", "src\EntityFramework\Duende.IdentityServer.EntityFramework.csproj", "{376FD801-0E35-4145-9322-28FFB219E668}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.Tests", "test\EntityFramework.Tests\EntityFramework.Tests.csproj", "{0772AE76-46E3-42A2-AA2F-B8EB56B4EB0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.IntegrationTests", "test\EntityFramework.IntegrationTests\EntityFramework.IntegrationTests.csproj", "{0772AE76-46E3-42A2-AA2F-B8EB56B4EB0D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.Storage.UnitTests", "test\EntityFramework.Storage.UnitTests\EntityFramework.Storage.UnitTests.csproj", "{3A72EDFA-1E19-46E6-B983-ECF3EFBF192E}"
 EndProject

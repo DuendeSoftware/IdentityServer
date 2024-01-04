@@ -15,7 +15,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Tests.Services;
+namespace EntityFramework.IntegrationTests.Services;
 
 public class CorsPolicyServiceTests : IntegrationTest<CorsPolicyServiceTests, ConfigurationDbContext, ConfigurationStoreOptions>
 {
