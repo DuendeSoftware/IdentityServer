@@ -92,6 +92,7 @@ public class TokenCleanupService : ITokenCleanupService
                 .Where(x => x.Expiration < DateTime.UtcNow)
                 .OrderBy(x => x.Expiration);
 
+            // Get the batch to delete.
             var expiredGrants = await query
                 .Take(_options.TokenCleanupBatchSize)
                 .AsNoTracking()

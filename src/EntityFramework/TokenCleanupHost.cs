@@ -113,6 +113,7 @@ public class TokenCleanupHost : IHostedService
 
             await RemoveExpiredGrantsAsync(cancellationToken);
 
+            // For all subsequent runs use the configured interval.
             delay = CleanupInterval;
         }
     }
