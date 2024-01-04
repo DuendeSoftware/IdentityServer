@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -97,6 +97,53 @@ public class TokenCleanupTests : IntegrationTest<TokenCleanupTests, PersistedGra
         using (var context = new PersistedGrantDbContext(options))
         {
             context.PersistedGrants.FirstOrDefault(x => x.Key == validGrant.Key).Should().NotBeNull();
+        }
+    }
+
+    [Theory, MemberData(nameof(TestDatabaseProviders))]
+    public async Task CleanupGrantsAsync_WhenBothExpiredAndValidGrantsExists_ExpectOnlyExpiredGrantsRemoved(DbContextOptions<PersistedGrantDbContext> options)
+    {
+        StoreOptions.TokenCleanupBatchSize = 20;
+
+        var expiredGrants = Enumerable.Range(1, 45)
+            .Select(i =>
+                new PersistedGrant
+                {
+                    Key = "expired-" + i,
+                    ClientId = "app1",
+                    Type = "reference",
+                    SubjectId = "123",
+                    Expiration = DateTime.UtcNow.AddMinutes(-i),
+                    Data = "{!}"
+                });
+
+        var validGrants = Enumerable.Range(1, 15)
+            .Select(i =>
+                new PersistedGrant
+                {
+                    Key = "valid-" + i,
+                    ClientId = "app1",
+                    Type = "reference",
+                    SubjectId = "123",
+                    Expiration = DateTime.UtcNow.AddMinutes(i),
+                    Data = "{!}"
+                });
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            context.PersistedGrants.AddRange(expiredGrants);
+            context.PersistedGrants.AddRange(validGrants);
+            context.SaveChanges();
+        }
+
+        await CreateSut(options).CleanupGrantsAsync();
+
+        using (var context = new PersistedGrantDbContext(options))
+        {
+            var remaining = context.PersistedGrants.ToList();
+
+            remaining.Count.Should().Be(15);
+            remaining.All(r => r.Key.StartsWith("valid-")).Should().BeTrue();
         }
     }
 
