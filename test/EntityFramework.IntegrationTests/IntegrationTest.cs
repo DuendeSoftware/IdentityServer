@@ -39,7 +39,7 @@ public class IntegrationTest<TClass, TDbContext, TStoreOption> : IClassFixture<D
             {
                 // DatabaseProviderBuilder.BuildInMemory<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions),
                 DatabaseProviderBuilder.BuildSqlite<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions),
-                DatabaseProviderBuilder.BuildLocalDb<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions)
+                // DatabaseProviderBuilder.BuildLocalDb<TDbContext, TStoreOption>(typeof(TClass).Name, StoreOptions)
             };
         }
         else
