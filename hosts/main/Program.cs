@@ -7,6 +7,8 @@ using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using System.Globalization;
 
+Console.Title = "IdentityServer (Main)";
+
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
     .CreateBootstrapLogger();

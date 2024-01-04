@@ -54,15 +54,12 @@ namespace ConsoleResourceOwnerFlowReference
 
             client.SetBearerToken(token);
 
-            while (true)
-            {
-                var response = await client.GetStringAsync("identity");
+            var response = await client.GetStringAsync("identity");
 
-                "\n\nService claims:".ConsoleGreen();
-                Console.WriteLine(response.PrettyPrintJson());
+            "\n\nService claims:".ConsoleGreen();
+            Console.WriteLine(response.PrettyPrintJson());
 
-                Console.ReadLine();
-            }
+            Console.ReadLine();
         }
     }
 }

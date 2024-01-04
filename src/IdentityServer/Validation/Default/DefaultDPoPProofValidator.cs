@@ -228,8 +228,6 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         }
 
         result.Payload = tokenValidationResult.Claims;
-
-        return;
     }
 
     /// <summary>

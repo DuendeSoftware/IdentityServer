@@ -33,6 +33,12 @@ static async Task RegisterClient()
     request.Document.Extensions.Add("client_id", "client");
     request.Document.Extensions.Add("client_secret", "secret");
 
+
+    var serialized = JsonSerializer.Serialize(request.Document);
+
+    var deserialized = JsonSerializer.Deserialize<DynamicClientRegistrationDocument>(serialized);
+
+
     var response = await client.RegisterClientAsync(request);
 
     if (response.IsError)

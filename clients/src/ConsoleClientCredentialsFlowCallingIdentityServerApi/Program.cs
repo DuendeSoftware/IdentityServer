@@ -12,20 +12,23 @@ namespace ConsoleClientCredentialsFlowCallingIdentityServerApi
         {
             Console.Title = "Console Client Credentials Flow calling IdentityServer API";
 
+
+            "JWT access token".ConsoleBox(ConsoleColor.Green);
             var response = await RequestTokenAsync("client");
             response.Show();
 
             Console.ReadLine();
             await CallServiceAsync(response.AccessToken);
-            
             Console.ReadLine();
+            
+            "Reference access token".ConsoleBox(ConsoleColor.Green);
             response = await RequestTokenAsync("client.reference");
             response.Show();
-
             Console.ReadLine();
             await CallServiceAsync(response.AccessToken);
-            
             Console.ReadLine();
+
+            "No access token (expect failure)".ConsoleBox(ConsoleColor.Green);
             await CallServiceAsync(null);
         }
 
@@ -59,10 +62,16 @@ namespace ConsoleClientCredentialsFlowCallingIdentityServerApi
             };
 
             if (token is not null) client.SetBearerToken(token);
-            var response = await client.GetStringAsync("localApi");
-
-            "\n\nService claims:".ConsoleGreen();
-            Console.WriteLine(response.PrettyPrintJson());
+            try
+            {
+                var response = await client.GetStringAsync("localApi");
+                "\n\nService claims:".ConsoleGreen();
+                Console.WriteLine(response.PrettyPrintJson());
+            }
+            catch (Exception ex)
+            {
+                ex.Message.ConsoleRed();
+            }
         }
     }
 }

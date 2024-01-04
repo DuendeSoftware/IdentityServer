@@ -24,6 +24,8 @@
     <ItemGroup>
         <!--our stuff -->
         <PackageReference Update="IdentityModel" Version="6.2.0"/>
+        <PackageReference Update="Duende.AccessTokenManagement" Version="2.1.0"/>
+        <PackageReference Update="Duende.AccessTokenManagement.OpenIdConnect" Version="2.1.0"/>
 
         <!--build related-->
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>

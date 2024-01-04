@@ -16,6 +16,21 @@ namespace Clients
         }
 
         /// <summary>
+        /// Writes text to the console in a box.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        [DebuggerStepThrough]
+        public static void ConsoleBox(this string text, ConsoleColor color)
+        {
+            var len = text.Length + 4;
+            var line = new String('*', len);
+            line.ColoredWriteLine(ConsoleColor.Green);
+            $"* {text} *".ColoredWriteLine(ConsoleColor.Green);
+            line.ColoredWriteLine(ConsoleColor.Green);
+
+        }
+
+        /// <summary>
         /// Writes red text to the console.
         /// </summary>
         /// <param name="text">The text.</param>
