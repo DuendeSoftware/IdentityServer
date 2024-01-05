@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Duende.IdentityServer;
@@ -539,5 +540,83 @@ public class DefaultPersistedGrantServiceTests
 
         grants.Count().Should().Be(1);
         grants.First().Scopes.Should().Contain(new string[] { "foo1", "foo2", "quux3" });
+    }
+
+    [Fact]
+    public async Task GetAllGrantsAsync_should_filter_items_with_corrupt_data_from_result()
+    {
+        var mockStore = new CorruptingPersistedGrantStore(_store) 
+        {
+            ClientIdToCorrupt = "client2"
+        };
+
+        _subject = new DefaultPersistedGrantService(
+           mockStore,
+           new PersistentGrantSerializer(),
+           TestLogger.Create<DefaultPersistedGrantService>());
+
+        await _userConsent.StoreUserConsentAsync(new Consent()
+        {
+            ClientId = "client1",
+            SubjectId = "123",
+            Scopes = new string[] { "foo1", "foo2" }
+        });
+        await _userConsent.StoreUserConsentAsync(new Consent()
+        {
+            ClientId = "client2",
+            SubjectId = "123",
+            Scopes = new string[] { "foo3" }
+        });
+
+        var grants = await _subject.GetAllGrantsAsync("123");
+
+        grants.Count().Should().Be(1);
+        grants.First().Scopes.Should().Contain(new string[] { "foo1", "foo2" });
+    }
+
+    class CorruptingPersistedGrantStore : IPersistedGrantStore
+    {
+        public string ClientIdToCorrupt { get; set; }
+
+        private IPersistedGrantStore _inner;
+
+        public CorruptingPersistedGrantStore(IPersistedGrantStore inner)
+        {
+            _inner = inner;
+        }
+
+        public async Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
+        {
+            var items = await _inner.GetAllAsync(filter);
+            if (ClientIdToCorrupt != null)
+            {
+                var itemsToCorrupt = items.Where(x => x.ClientId == ClientIdToCorrupt);
+                foreach(var corruptItem in itemsToCorrupt)
+                {
+                    corruptItem.Data = "corrupt";
+                }
+            }
+            return items;
+        }
+
+        public Task<PersistedGrant> GetAsync(string key)
+        {
+            return _inner.GetAsync(key);
+        }
+
+        public Task RemoveAllAsync(PersistedGrantFilter filter)
+        {
+            return _inner.RemoveAllAsync(filter);
+        }
+
+        public Task RemoveAsync(string key)
+        {
+            return _inner.RemoveAsync(key);
+        }
+
+        public Task StoreAsync(PersistedGrant grant)
+        {
+            return _inner.StoreAsync(grant);
+        }
     }
 }
