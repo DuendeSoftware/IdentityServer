@@ -28,7 +28,7 @@ public class DefaultPersistedGrantService : IPersistedGrantService
     /// <param name="store">The store.</param>
     /// <param name="serializer">The serializer.</param>
     /// <param name="logger">The logger.</param>
-    public DefaultPersistedGrantService(IPersistedGrantStore store, 
+    public DefaultPersistedGrantService(IPersistedGrantStore store,
         IPersistentGrantSerializer serializer,
         ILogger<DefaultPersistedGrantService> logger)
     {
@@ -41,18 +41,34 @@ public class DefaultPersistedGrantService : IPersistedGrantService
     public async Task<IEnumerable<Grant>> GetAllGrantsAsync(string subjectId)
     {
         using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultPersistedGrantService.GetAllGrants");
-        
+
         if (String.IsNullOrWhiteSpace(subjectId)) throw new ArgumentNullException(nameof(subjectId));
 
         var grants = (await _store.GetAllAsync(new PersistedGrantFilter { SubjectId = subjectId }))
             .Where(x => x.ConsumedTime == null) // filter consumed grants
             .ToArray();
 
+        List<Exception> errors = new List<Exception>();
+
+        T DeserializeAndCaptureErrors<T>(string data)
+        {
+            try
+            {
+                return _serializer.Deserialize<T>(data);
+            }
+            catch (Exception ex)
+            {
+                errors.Add(ex);
+                return default(T);
+            }
+        }
+
         try
         {
             var consents = grants.Where(x => x.Type == IdentityServerConstants.PersistedGrantTypes.UserConsent)
-                .Select(x => _serializer.Deserialize<Consent>(x.Data))
-                .Select(x => new Grant 
+                .Select(x => DeserializeAndCaptureErrors<Consent>(x.Data))
+                .Where(x => x != default)
+                .Select(x => new Grant
                 {
                     ClientId = x.ClientId,
                     SubjectId = subjectId,
@@ -62,7 +78,8 @@ public class DefaultPersistedGrantService : IPersistedGrantService
                 });
 
             var codes = grants.Where(x => x.Type == IdentityServerConstants.PersistedGrantTypes.AuthorizationCode)
-                .Select(x => _serializer.Deserialize<AuthorizationCode>(x.Data))
+                .Select(x => DeserializeAndCaptureErrors<AuthorizationCode>(x.Data))
+                .Where(x => x != default)
                 .Select(x => new Grant
                 {
                     ClientId = x.ClientId,
@@ -74,7 +91,8 @@ public class DefaultPersistedGrantService : IPersistedGrantService
                 });
 
             var refresh = grants.Where(x => x.Type == IdentityServerConstants.PersistedGrantTypes.RefreshToken)
-                .Select(x => _serializer.Deserialize<RefreshToken>(x.Data))
+                .Select(x => DeserializeAndCaptureErrors<RefreshToken>(x.Data))
+                .Where(x => x != default)
                 .Select(x => new Grant
                 {
                     ClientId = x.ClientId,
@@ -86,7 +104,8 @@ public class DefaultPersistedGrantService : IPersistedGrantService
                 });
 
             var access = grants.Where(x => x.Type == IdentityServerConstants.PersistedGrantTypes.ReferenceToken)
-                .Select(x => _serializer.Deserialize<Token>(x.Data))
+                .Select(x => DeserializeAndCaptureErrors<Token>(x.Data))
+                .Where(x => x != default)
                 .Select(x => new Grant
                 {
                     ClientId = x.ClientId,
@@ -100,6 +119,11 @@ public class DefaultPersistedGrantService : IPersistedGrantService
             consents = Join(consents, codes);
             consents = Join(consents, refresh);
             consents = Join(consents, access);
+
+            if (errors.Count > 0)
+            {
+                _logger.LogError(new AggregateException(errors), "One or more errors occured during deserialization of persisted grants, returning successfull items.");
+            }
 
             return consents.ToArray();
         }
@@ -115,7 +139,7 @@ public class DefaultPersistedGrantService : IPersistedGrantService
     {
         var list = first.ToList();
 
-        foreach(var other in second)
+        foreach (var other in second)
         {
             var match = list.FirstOrDefault(x => x.ClientId == other.ClientId);
             if (match != null)
@@ -154,10 +178,11 @@ public class DefaultPersistedGrantService : IPersistedGrantService
     public Task RemoveAllGrantsAsync(string subjectId, string clientId = null, string sessionId = null)
     {
         using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultPersistedGrantService.RemoveAllGrants");
-        
+
         if (String.IsNullOrWhiteSpace(subjectId)) throw new ArgumentNullException(nameof(subjectId));
 
-        return _store.RemoveAllAsync(new PersistedGrantFilter {
+        return _store.RemoveAllAsync(new PersistedGrantFilter
+        {
             SubjectId = subjectId,
             ClientId = clientId,
             SessionId = sessionId
