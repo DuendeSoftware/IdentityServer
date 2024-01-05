@@ -32,10 +32,6 @@
         "program": "${workspaceFolder}/hosts/main/bin/Debug/net8.0/Host.Main.dll",
         "args": [],
         "cwd": "${workspaceFolder}/hosts/main",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
@@ -54,10 +50,6 @@
         "program": "${workspaceFolder}/hosts/AspNetIdentity/bin/Debug/net8.0/Host.AspNetIdentity.dll",
         "args": [],
         "cwd": "${workspaceFolder}/hosts/AspNetIdentity",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
@@ -76,10 +68,6 @@
         "program": "${workspaceFolder}/hosts/EntityFramework/bin/Debug/net8.0/Host.EntityFramework.dll",
         "args": [],
         "cwd": "${workspaceFolder}/hosts/EntityFramework",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
@@ -98,10 +86,6 @@
         "program": "${workspaceFolder}/hosts/Configuration/bin/Debug/net8.0/Host.Configuration.dll",
         "args": [],
         "cwd": "${workspaceFolder}/hosts/Configuration",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
@@ -190,6 +174,20 @@
         "program": "${workspaceFolder}/clients/src/ConsoleClientCredentialsFlowCallingIdentityServerApi/bin/Debug/net8.0/ConsoleClientCredentialsFlowCallingIdentityServerApi.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/ConsoleClientCredentialsFlowCallingIdentityServerApi",
+        "console": "externalTerminal",
+        "presentation": {
+          "hidden": false,
+          "group": "20-clients",
+        }
+      },
+      {
+        "name": "client: ConsoleClientCredentialsFlowDPoP",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-client-ConsoleClientCredentialsFlowDPoP",
+        "program": "${workspaceFolder}/clients/src/ConsoleClientCredentialsFlowDPoP/bin/Debug/net8.0/ConsoleClientCredentialsFlowDPoP.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/clients/src/ConsoleClientCredentialsFlowDPoP",
         "console": "externalTerminal",
         "presentation": {
           "hidden": false,
@@ -442,10 +440,6 @@
         "program": "${workspaceFolder}/clients/src/JsOidc/bin/Debug/net8.0/JsOidc.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/JsOidc",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
@@ -462,17 +456,14 @@
         "program": "${workspaceFolder}/clients/src/MvcAutomaticTokenManagement/bin/Debug/net8.0/MvcAutomaticTokenManagement.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/MvcAutomaticTokenManagement",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
         "presentation": {
           "hidden": false,
           "group": "20-clients",
-        }
+        },
+        "console": "externalTerminal"
       },
       {
         "name": "client: MvcCode",
@@ -482,17 +473,14 @@
         "program": "${workspaceFolder}/clients/src/MvcCode/bin/Debug/net8.0/MvcCode.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/MvcCode",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
         "presentation": {
           "hidden": false,
           "group": "20-clients",
-        }
+        },
+        "console": "externalTerminal"
       },
       {
         "name": "client: MvcDPoP",
@@ -502,37 +490,14 @@
         "program": "${workspaceFolder}/clients/src/MvcDPoP/bin/Debug/net8.0/MvcDPoP.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/MvcDPoP",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
+        "console": "externalTerminal",
         "presentation": {
           "hidden": false,
           "group": "20-clients",
-        }
-      },
-      {
-        "name": "client: MvcPar",
-        "type": "coreclr",
-        "request": "launch",
-        "preLaunchTask": "build-client-MvcPar",
-        "program": "${workspaceFolder}/clients/src/MvcPar/bin/Debug/net8.0/MvcPar.dll",
-        "args": [],
-        "cwd": "${workspaceFolder}/clients/src/MvcPar",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
         },
-        "env": {
-            "ASPNETCORE_ENVIRONMENT": "Development"
-        },
-        "presentation": {
-          "hidden": false,
-          "group": "20-clients",
-        }
       },
       {
         "name": "client: MvcJarPar",
@@ -542,10 +507,7 @@
         "program": "${workspaceFolder}/clients/src/MvcJarPar/bin/Debug/net8.0/MvcJarPar.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/MvcJarPar",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
+        "console": "externalTerminal",
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
@@ -562,10 +524,6 @@
         "program": "${workspaceFolder}/clients/src/MvcHybridBackChannel/bin/Debug/net8.0/MvcHybridBackChannel.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/MvcHybridBackChannel",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
@@ -582,10 +540,6 @@
         "program": "${workspaceFolder}/clients/src/MvcJarJwt/bin/Debug/net8.0/MvcJarJwt.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/MvcJarJwt",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
@@ -602,10 +556,23 @@
         "program": "${workspaceFolder}/clients/src/MvcJarUriJwt/bin/Debug/net8.0/MvcJarUriJwt.dll",
         "args": [],
         "cwd": "${workspaceFolder}/clients/src/MvcJarUriJwt",
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
         },
+        "console": "externalTerminal",
+        "presentation": {
+          "hidden": false,
+          "group": "20-clients",
+        }
+      },
+      {
+        "name": "client: MvcPar",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-client-MvcPar",
+        "program": "${workspaceFolder}/clients/src/MvcPar/bin/Debug/net8.0/MvcPar.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/clients/src/MvcPar",
         "env": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         },
@@ -651,6 +618,23 @@
         }
       },
       {
+        "name": "api: DPoP",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-api-dpop",
+        "program": "${workspaceFolder}/clients/src/APIs/DPoPApi/bin/Debug/net8.0/DPoPApi.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/clients/src/APIs/DPoPApi",
+        "console": "externalTerminal",
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "presentation": {
+          "hidden": false,
+          "group": "15-apis",
+        }
+      },
+      {
         "name": "api: Resource Based",
         "type": "coreclr",
         "request": "launch",
@@ -664,7 +648,8 @@
         "presentation": {
           "hidden": false,
           "group": "15-apis",
-        }
+        },
+        "console": "externalTerminal"
       },
     ],
 }

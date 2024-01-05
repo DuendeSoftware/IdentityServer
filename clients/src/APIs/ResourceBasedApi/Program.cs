@@ -12,7 +12,7 @@ namespace ResourceBasedApi
     {
         public static void Main(string[] args)
         {
-            Console.Title = "Sample API";
+            Console.Title = "Resource Based API";
 
             BuildWebHost(args).Run();
         }
@@ -20,10 +20,8 @@ namespace ResourceBasedApi
         public static IHost BuildWebHost(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .MinimumLevel.Override("System", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information)
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("ResourceBasedApi", LogEventLevel.Debug)
                 .Enrich.FromLogContext()
                 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
                 .CreateLogger();

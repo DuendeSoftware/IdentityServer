@@ -136,6 +136,18 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "build-client-ConsoleClientCredentialsFlowDPoP",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+          "build",
+          "${workspaceFolder}/clients/src/ConsoleClientCredentialsFlowDPoP/ConsoleClientCredentialsFlowDPoP.csproj",
+          "/property:GenerateFullPaths=true",
+          "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "build-client-ConsoleClientCredentialsFlowPostBody",
       "type": "process",
       "command": "dotnet",
@@ -470,6 +482,18 @@
         "args": [
             "build",
             "${workspaceFolder}/clients/src/APIs/SimpleApi/SimpleApi.csproj",
+            "/property:GenerateFullPaths=true",
+            "/consoleloggerparameters:NoSummary"
+        ],
+        "problemMatcher": "$msCompile"
+      },
+      {
+        "label": "build-api-dpop",
+        "type": "process",
+        "command": "dotnet",
+        "args": [
+            "build",
+            "${workspaceFolder}/clients/src/APIs/DPoPApi/DPoPApi.csproj",
             "/property:GenerateFullPaths=true",
             "/consoleloggerparameters:NoSummary"
         ],

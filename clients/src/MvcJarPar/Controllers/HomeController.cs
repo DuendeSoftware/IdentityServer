@@ -4,32 +4,31 @@ using Clients;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace MvcJarAndPar.Controllers
+namespace MvcJarPar.Controllers;
+
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public HomeController(IHttpClientFactory httpClientFactory)
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        _httpClientFactory = httpClientFactory;
+    }
 
-        public HomeController(IHttpClientFactory httpClientFactory)
-        {
-            _httpClientFactory = httpClientFactory;
-        }
+    [AllowAnonymous]
+    public IActionResult Index() => View();
 
-        [AllowAnonymous]
-        public IActionResult Index() => View();
+    public IActionResult Secure() => View();
 
-        public IActionResult Secure() => View();
+    public IActionResult Logout() => SignOut("oidc", "cookie");
 
-        public IActionResult Logout() => SignOut("oidc", "cookie");
+    public async Task<IActionResult> CallApi()
+    {
+        var client = _httpClientFactory.CreateClient("client");
 
-        public async Task<IActionResult> CallApi()
-        {
-            var client = _httpClientFactory.CreateClient("client");
+        var response = await client.GetStringAsync("identity");
+        ViewBag.Json = response.PrettyPrintJson();
 
-            var response = await client.GetStringAsync("identity");
-            ViewBag.Json = response.PrettyPrintJson();
-
-            return View();
-        }
+        return View();
     }
 }

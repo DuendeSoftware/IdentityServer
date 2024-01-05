@@ -14,119 +14,117 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Threading.Tasks;
 
-namespace MvcCode
+namespace MvcCode;
+
+public class Startup
 {
-    public class Startup
+    private readonly IConfiguration _configuration;
+
+    public Startup(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
+        _configuration = configuration;
+    }
+    
+    public void ConfigureServices(IServiceCollection services)
+    {
+        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
-        public Startup(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+        services.AddControllersWithViews();
         
-        public void ConfigureServices(IServiceCollection services)
+        services.AddHttpClient();
+
+        services.AddSingleton<IDiscoveryCache>(r =>
         {
-            JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+            var factory = r.GetRequiredService<IHttpClientFactory>();
+            return new DiscoveryCache(Constants.Authority, () => factory.CreateClient());
+        });
 
-            services.AddControllersWithViews();
-            
-            services.AddHttpClient();
-
-            services.AddSingleton<IDiscoveryCache>(r =>
+        services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = "oidc";
+        })
+            .AddCookie(options =>
             {
-                var factory = r.GetRequiredService<IHttpClientFactory>();
-                return new DiscoveryCache(Constants.Authority, () => factory.CreateClient());
-            });
-
-            services.AddAuthentication(options =>
-            {
-                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = "oidc";
+                options.Cookie.Name = "mvccode";
             })
-                .AddCookie(options =>
-                {
-                    options.Cookie.Name = "mvccode";
-                })
-                .AddOpenIdConnect("oidc", options =>
-                {
-                    options.Authority = Constants.Authority;
-
-                    options.ClientId = "mvc.code";
-                    options.ClientSecret = "secret";
-
-                    // code flow + PKCE (PKCE is turned on by default)
-                    options.ResponseType = "code";
-                    options.UsePkce = true;
-
-                    options.Scope.Clear();
-                    options.Scope.Add("openid");
-                    options.Scope.Add("profile");
-                    options.Scope.Add("email");
-                    options.Scope.Add("custom.profile");
-                    options.Scope.Add("resource1.scope1");
-                    options.Scope.Add("resource2.scope1");
-                    options.Scope.Add("offline_access");
-
-                    // not mapped by default
-                    options.ClaimActions.MapAll();
-                    options.ClaimActions.MapJsonKey("website", "website");
-                    options.ClaimActions.MapCustomJson("address", (json) => json.GetRawText());
-
-                    options.GetClaimsFromUserInfoEndpoint = true;
-                    options.SaveTokens = true;
-
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        NameClaimType = JwtClaimTypes.Name,
-                        RoleClaimType = JwtClaimTypes.Role,
-                    };
-
-                    options.Events.OnRedirectToIdentityProvider = ctx =>
-                    {
-                        // ctx.ProtocolMessage.Prompt = "create";
-                        return Task.CompletedTask;
-                    };
-                });
-            
-            // var apiKey = _configuration["HoneyCombApiKey"];
-            // var dataset = "IdentityServerDev";
-            //
-            // services.AddOpenTelemetryTracing(builder =>
-            // {
-            //     builder
-            //         //.AddConsoleExporter()
-            //         .SetResourceBuilder(
-            //             ResourceBuilder.CreateDefault()
-            //                 .AddService("MVC Code"))
-            //         //.SetSampler(new AlwaysOnSampler())
-            //         .AddHttpClientInstrumentation()
-            //         .AddAspNetCoreInstrumentation()
-            //         .AddSqlClientInstrumentation()
-            //         .AddOtlpExporter(option =>
-            //         {
-            //             option.Endpoint = new Uri("https://api.honeycomb.io");
-            //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
-            //         });
-            // });
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseDeveloperExceptionPage();
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
+            .AddOpenIdConnect("oidc", options =>
             {
-                endpoints.MapDefaultControllerRoute()
-                    .RequireAuthorization();
+                options.Authority = Constants.Authority;
+
+                options.ClientId = "mvc.code";
+                options.ClientSecret = "secret";
+
+                // code flow + PKCE (PKCE is turned on by default)
+                options.ResponseType = "code";
+                options.UsePkce = true;
+
+                options.Scope.Clear();
+                options.Scope.Add("openid");
+                options.Scope.Add("profile");
+                options.Scope.Add("email");
+                options.Scope.Add("custom.profile");
+                options.Scope.Add("resource1.scope1");
+                options.Scope.Add("resource2.scope1");
+                options.Scope.Add("offline_access");
+
+                // not mapped by default
+                options.ClaimActions.MapAll();
+                options.ClaimActions.MapJsonKey("website", "website");
+                options.ClaimActions.MapCustomJson("address", (json) => json.GetRawText());
+
+                options.GetClaimsFromUserInfoEndpoint = true;
+                options.SaveTokens = true;
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = JwtClaimTypes.Name,
+                    RoleClaimType = JwtClaimTypes.Role,
+                };
+
+                options.Events.OnRedirectToIdentityProvider = ctx =>
+                {
+                    return Task.CompletedTask;
+                };
             });
-        }
+        
+        // var apiKey = _configuration["HoneyCombApiKey"];
+        // var dataset = "IdentityServerDev";
+        //
+        // services.AddOpenTelemetryTracing(builder =>
+        // {
+        //     builder
+        //         //.AddConsoleExporter()
+        //         .SetResourceBuilder(
+        //             ResourceBuilder.CreateDefault()
+        //                 .AddService("MVC Code"))
+        //         //.SetSampler(new AlwaysOnSampler())
+        //         .AddHttpClientInstrumentation()
+        //         .AddAspNetCoreInstrumentation()
+        //         .AddSqlClientInstrumentation()
+        //         .AddOtlpExporter(option =>
+        //         {
+        //             option.Endpoint = new Uri("https://api.honeycomb.io");
+        //             option.Headers = $"x-honeycomb-team={apiKey},x-honeycomb-dataset={dataset}";
+        //         });
+        // });
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseDeveloperExceptionPage();
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapDefaultControllerRoute()
+                .RequireAuthorization();
+        });
     }
 }

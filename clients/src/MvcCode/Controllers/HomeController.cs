@@ -8,75 +8,74 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MvcCode.Controllers
+namespace MvcCode.Controllers;
+
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IDiscoveryCache _discoveryCache;
+
+    public HomeController(IHttpClientFactory httpClientFactory, IDiscoveryCache discoveryCache)
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IDiscoveryCache _discoveryCache;
+        _httpClientFactory = httpClientFactory;
+        _discoveryCache = discoveryCache;
+    }
+    
+    [AllowAnonymous]
+    public IActionResult Index() => View();
 
-        public HomeController(IHttpClientFactory httpClientFactory, IDiscoveryCache discoveryCache)
+    public IActionResult Secure() => View();
+
+    public IActionResult Logout() => SignOut("oidc", "Cookies");
+    
+    public async Task<IActionResult> CallApi()
+    {
+        var token = await HttpContext.GetTokenAsync("access_token");
+
+        var client = _httpClientFactory.CreateClient();
+        client.SetBearerToken(token);
+
+        var response = await client.GetStringAsync(Constants.SampleApi + "identity");
+        ViewBag.Json = response.PrettyPrintJson();
+
+        return View();
+    }
+
+    public async Task<IActionResult> RenewTokens()
+    {
+        var disco = await _discoveryCache.GetAsync();
+        if (disco.IsError) throw new Exception(disco.Error);
+
+        var rt = await HttpContext.GetTokenAsync("refresh_token");
+        var tokenClient = _httpClientFactory.CreateClient();
+
+        var tokenResult = await tokenClient.RequestRefreshTokenAsync(new RefreshTokenRequest
         {
-            _httpClientFactory = httpClientFactory;
-            _discoveryCache = discoveryCache;
-        }
-        
-        [AllowAnonymous]
-        public IActionResult Index() => View();
+            Address = disco.TokenEndpoint,
 
-        public IActionResult Secure() => View();
+            ClientId = "mvc.code",
+            ClientSecret = "secret",
+            RefreshToken = rt
+        });
 
-        public IActionResult Logout() => SignOut("oidc", "Cookies");
-        
-        public async Task<IActionResult> CallApi()
+        if (!tokenResult.IsError)
         {
-            var token = await HttpContext.GetTokenAsync("access_token");
+            var oldIdToken = await HttpContext.GetTokenAsync("id_token");
+            var newAccessToken = tokenResult.AccessToken;
+            var newRefreshToken = tokenResult.RefreshToken;
+            var expiresAt = DateTime.UtcNow + TimeSpan.FromSeconds(tokenResult.ExpiresIn);
 
-            var client = _httpClientFactory.CreateClient();
-            client.SetBearerToken(token);
+            var info = await HttpContext.AuthenticateAsync("Cookies");
 
-            var response = await client.GetStringAsync(Constants.SampleApi + "identity");
-            ViewBag.Json = response.PrettyPrintJson();
+            info.Properties.UpdateTokenValue("refresh_token", newRefreshToken);
+            info.Properties.UpdateTokenValue("access_token", newAccessToken);
+            info.Properties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
 
-            return View();
+            await HttpContext.SignInAsync("Cookies", info.Principal, info.Properties);
+            return Redirect("~/Home/Secure");
         }
 
-        public async Task<IActionResult> RenewTokens()
-        {
-            var disco = await _discoveryCache.GetAsync();
-            if (disco.IsError) throw new Exception(disco.Error);
-
-            var rt = await HttpContext.GetTokenAsync("refresh_token");
-            var tokenClient = _httpClientFactory.CreateClient();
-
-            var tokenResult = await tokenClient.RequestRefreshTokenAsync(new RefreshTokenRequest
-            {
-                Address = disco.TokenEndpoint,
-
-                ClientId = "mvc.code",
-                ClientSecret = "secret",
-                RefreshToken = rt
-            });
-
-            if (!tokenResult.IsError)
-            {
-                var oldIdToken = await HttpContext.GetTokenAsync("id_token");
-                var newAccessToken = tokenResult.AccessToken;
-                var newRefreshToken = tokenResult.RefreshToken;
-                var expiresAt = DateTime.UtcNow + TimeSpan.FromSeconds(tokenResult.ExpiresIn);
-
-                var info = await HttpContext.AuthenticateAsync("Cookies");
-
-                info.Properties.UpdateTokenValue("refresh_token", newRefreshToken);
-                info.Properties.UpdateTokenValue("access_token", newAccessToken);
-                info.Properties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
-
-                await HttpContext.SignInAsync("Cookies", info.Principal, info.Properties);
-                return Redirect("~/Home/Secure");
-            }
-
-            ViewData["Error"] = tokenResult.Error;
-            return View("Error");
-        }
+        ViewData["Error"] = tokenResult.Error;
+        return View("Error");
     }
 }

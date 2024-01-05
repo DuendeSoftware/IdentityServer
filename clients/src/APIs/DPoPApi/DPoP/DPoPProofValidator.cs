@@ -130,7 +130,7 @@ public class DPoPProofValidator
             return Task.CompletedTask;
         }
 
-        if (!token.TryGetHeaderValue<IDictionary<string, object>>(JwtClaimTypes.JsonWebKey, out var jwkValues))
+        if (!token.TryGetHeaderValue<JsonElement>(JwtClaimTypes.JsonWebKey, out var jwkValues))
         {
             result.IsError = true;
             result.ErrorDescription = "Invalid 'jwk' value.";
@@ -169,7 +169,7 @@ public class DPoPProofValidator
     /// <summary>
     /// Validates the signature.
     /// </summary>
-    protected virtual Task ValidateSignatureAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
+    protected virtual async Task ValidateSignatureAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
         TokenValidationResult tokenValidationResult;
 
@@ -185,14 +185,14 @@ public class DPoPProofValidator
             };
 
             var handler = new JsonWebTokenHandler();
-            tokenValidationResult = handler.ValidateToken(context.ProofToken, tvp);
+            tokenValidationResult = await handler.ValidateTokenAsync(context.ProofToken, tvp);
         }
         catch (Exception ex)
         {
             Logger.LogDebug("Error parsing DPoP token: {error}", ex.Message);
             result.IsError = true;
             result.ErrorDescription = "Invalid signature on DPoP token.";
-            return Task.CompletedTask;
+            return;
         }
 
         if (tokenValidationResult.Exception != null)
@@ -200,12 +200,10 @@ public class DPoPProofValidator
             Logger.LogDebug("Error parsing DPoP token: {error}", tokenValidationResult.Exception.Message);
             result.IsError = true;
             result.ErrorDescription = "Invalid signature on DPoP token.";
-            return Task.CompletedTask;
+            return;
         }
 
         result.Payload = tokenValidationResult.Claims;
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
