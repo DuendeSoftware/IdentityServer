@@ -252,7 +252,7 @@ public class CibaTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task custom_validator_can_add_complex_properties_that_are_passed_to_user_notification_and_client_response()
+    public async Task custom_validator_can_add_complex_properties_that_are_passed_to_user_notification_but_not_client_response()
     {
         _mockCustomBackchannelAuthenticationValidator.Thunk = ctx =>
             {
@@ -281,13 +281,12 @@ public class CibaTests
             IdentityServerPipeline.BackchannelAuthenticationEndpoint,
             new FormUrlEncodedContent(body));
 
-        // Custom properties are flattened into the response to the client
+        // Custom request properties are not included automatically in the response to the client
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var responseContent = await response.Content.ReadAsStringAsync();
         var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseContent);
         json.Should().NotBeNull();
-        var complex = json["complex"];
-        complex.TryGetValue("nested").GetString().Should().Be("value");
+        json.Should().NotContainKey("complex");
 
         // Custom properties are passed to the notification service
         var notificationProperties = _mockCibaUserNotificationService.LoginRequest.Properties;
