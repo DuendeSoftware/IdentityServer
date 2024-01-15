@@ -62,8 +62,9 @@ public class BackchannelUserLoginRequest
     public ResourceValidationResult ValidatedResources { get; set; } = default!;
 
     /// <summary> 
-    /// Gets or sets a dictionary of custom properties that can pass additional
-    /// state to the notification process.
+    /// Gets or sets a dictionary of custom properties associated with this
+    /// request. These properties by default are copied from the validated
+    /// custom request parameters.
     /// </summary>
     public Dictionary<string, object> Properties { get; set; } = new();
 }

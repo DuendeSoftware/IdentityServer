@@ -85,8 +85,11 @@ public class ValidatedBackchannelAuthenticationRequest : ValidatedRequest
     public string? RequestObject { get; set; }
 
     /// <summary>
-    /// Gets or sets a dictionary of custom properties that can pass
-    /// additional state to the back channel authentication process.
+    /// Gets or sets a dictionary of validated custom request parameters. Custom
+    /// request parameters should be validated and added to this collection in
+    /// an <see cref="ICustomBackchannelAuthenticationValidator"/>. These
+    /// properties are persisted to the store and made available in the
+    /// backchannel authentication UI and notification services.
     /// </summary>
     public Dictionary<string, object> Properties { get; set; } = new();
 }
