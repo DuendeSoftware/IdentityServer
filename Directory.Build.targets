@@ -18,7 +18,7 @@
         <FrameworkVersion>8.0.0</FrameworkVersion>
         <ExtensionsVersion>8.0.0</ExtensionsVersion>
         <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
-        <WilsonVersion>7.0.3</WilsonVersion>
+        <WilsonVersion>7.1.2</WilsonVersion>
     </PropertyGroup>
 
     <ItemGroup>
