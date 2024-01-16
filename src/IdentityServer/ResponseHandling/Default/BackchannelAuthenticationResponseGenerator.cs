@@ -99,7 +99,6 @@ public class BackchannelAuthenticationResponseGenerator : IBackchannelAuthentica
             AuthenticationRequestId = requestId,
             ExpiresIn = request.Lifetime,
             Interval = interval,
-            Properties = validationResult.ValidatedRequest.Properties
         };
 
         await UserLoginService.SendLoginRequestAsync(new BackchannelUserLoginRequest

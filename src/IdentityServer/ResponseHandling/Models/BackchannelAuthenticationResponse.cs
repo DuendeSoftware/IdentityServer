@@ -61,8 +61,10 @@ public class BackchannelAuthenticationResponse
     public int Interval { get; set; }
     
     /// <summary> 
-    /// Gets or sets a dictionary of custom properties that can pass additional
-    /// state in the response to the client application.
+    /// Gets or sets a dictionary of custom properties that will be included in
+    /// the response to the client. This dictionary is intended to be used to
+    /// implement extensions to CIBA that defines additional response
+    /// parameters.
     /// </summary>
-    public Dictionary<string, object> Properties { get; set; } = new();
+    public Dictionary<string, object> Custom { get; set; } = new();
 }

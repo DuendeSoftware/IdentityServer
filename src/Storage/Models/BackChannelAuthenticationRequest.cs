@@ -92,7 +92,9 @@ public class BackChannelAuthenticationRequest
     public string? Description { get; set; }
 
     /// <summary>
-    /// Gets or sets a dictionary of custom properties associated with this instance.
+    /// Gets or sets a dictionary of custom properties associated with this
+    /// request. These properties by default are copied from the validated
+    /// custom request parameters.
     /// </summary>
     public Dictionary<string, object> Properties { get; set; } = new();
 }
