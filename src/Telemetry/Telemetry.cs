@@ -272,7 +272,7 @@ public static class Telemetry
         {
             if (clientId != null)
             {
-                SuccessCounter.Add(1, tag: new("client", clientId));
+                SuccessCounter.Add(1, tag: new(Tags.Client, clientId));
             }
             else
             {
@@ -294,11 +294,11 @@ public static class Telemetry
         {
             if (clientId != null)
             {
-                FailureCounter.Add(1, new("client", clientId), new("error", error));
+                FailureCounter.Add(1, new(Tags.Client, clientId), new(Tags.Error, error));
             }
             else
             {
-                FailureCounter.Add(1, tag: new("error", error));
+                FailureCounter.Add(1, tag: new(Tags.Error, error));
             }
         }
 
