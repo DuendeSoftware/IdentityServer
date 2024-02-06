@@ -108,7 +108,13 @@ public static class Telemetry
         public static void ConsentGranted(string clientId, IEnumerable<string> scopes, bool remember)
         {
             ArgumentNullException.ThrowIfNull(scopes);
-            foreach(var scope in scopes)
+
+            //var tags = scopes.Select(s => new KeyValuePair<string, string>(Tags.Scope, s))
+            //    .ToList();
+
+            //tags.Add(new(Tags.Client, clientId))
+
+            foreach (var scope in scopes)
             {
                 ConsentGrantedCounter.Add(1, new(Tags.Client, clientId), new(Tags.Scope, scope), new(Tags.Remember, remember));
             }
@@ -149,15 +155,13 @@ public static class Telemetry
         public static void UserLogin(string? clientId, string idp)
             => UserLoginCounter.Add(1, new(Tags.Client, clientId), new(Tags.Idp, idp));
 
-        private static Counter<long> UserLoginFailureCounter = Meter.CreateCounter<long>(Counters.UserLoginFailure);
-
         /// <summary>
         /// Helper method to increase <see cref="Counters.UserLoginFailure" counter.
         /// </summary>
         /// <param name="clientId">Client Id, if available</param>
         /// <param name="error">Error message</param>
         public static void UserLoginFailure(string? clientId, string idp, string error)
-            => UserLoginFailureCounter.Add(1, new(Tags.Client, clientId), new(Tags.Idp, idp), new(Tags.Error, error));
+            => UserLoginCounter.Add(1, new(Tags.Client, clientId), new(Tags.Idp, idp), new(Tags.Error, error));
 
         private static Counter<long> UserLogoutCounter = Meter.CreateCounter<long>(Counters.UserLogout);
 
