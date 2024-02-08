@@ -43,13 +43,13 @@ public static class Telemetry
             public const string ActiveRequests = "tokenservice.active_requests";
             public const string ApiSecretValidation = "tokenservice.api.secret_validation";
             public const string BackchannelAuthentication = "tokenservice.backchannel_authentication";
-            public const string ClientValidation = "tokenservice.client.config_validation";
+            public const string ClientConfigValidation = "tokenservice.client.config_validation";
             public const string ClientSecretValidation = "tokenservice.client.secret_validation";
             public const string DeviceAuthentication = "tokenservice.device_authentication";
             public const string DynamicIdentityProviderValidation = "tokenservice.dynamic_identityprovider.validation";
             public const string Introspection = "tokenservice.introspection";
             public const string PushedAuthorizationRequest = "tokenservice.pushed_authorization_request";
-            public const string ResourceOwnerAuthentication = "tokenservice.resourceowner.authentication";
+            public const string ResourceOwnerAuthentication = "tokenservice.resourceowner_authentication";
             public const string Revocation = "tokenservice.revocation";
             public const string TokenIssued = "tokenservice.token_issued";
         }
@@ -226,7 +226,7 @@ public static class Telemetry
         /// Client configuration validation
         /// </summary>
         public static Counter<long> ClientValidationCounter =
-            ExperimentalMeter.CreateCounter<long>(Counters.ClientValidation);
+            ExperimentalMeter.CreateCounter<long>(Counters.ClientConfigValidation);
 
         /// <summary>
         /// Helper method to increase <see cref="ClientValidationCounter"/>
