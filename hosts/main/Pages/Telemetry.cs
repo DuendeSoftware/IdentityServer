@@ -25,40 +25,17 @@ public static class Telemetry
     /// </summary>
     public static class Metrics
     {
+#pragma warning disable 1591
+
         /// <summary>
         /// Name of Counters
         /// </summary>
         public static class Counters
         {
-            /// <summary>
-            /// consent_granted
-            /// </summary>
-            public const string ConsentGranted = "consent_granted";
-
-            /// <summary>
-            /// consent_denied
-            /// </summary>
-            public const string ConsentDenied = "consent_denied";
-
-            /// <summary>
-            /// grants_revoked
-            /// </summary>
-            public const string GrantsRevoked = "grants_revoked";
-
-            /// <summary>
-            /// user_login
-            /// </summary>
-            public const string UserLogin = "user_login";
-
-            /// <summary>
-            /// user_login_failure
-            /// </summary>
-            public const string UserLoginFailure = "user_login_failure";
-
-            /// <summary>
-            /// user_logout
-            /// </summary>
-            public const string UserLogout = "user_logout";
+            public const string Consent = "tokenservice.consent";
+            public const string GrantsRevoked = "tokenservice.grants_revoked";
+            public const string UserLogin = "tokenservice.user_login";
+            public const string UserLogout = "tokenservice.user_logout";
         }
 
         /// <summary>
@@ -66,41 +43,34 @@ public static class Telemetry
         /// </summary>
         public static class Tags
         {
-            /// <summary>
-            /// client
-            /// </summary>
             public const string Client = "client";
-
-            /// <summary>
-            /// error
-            /// </summary>
             public const string Error = "error";
-
-            /// <summary>
-            /// idp
-            /// </summary>
             public const string Idp = "idp";
-
-            /// <summary>
-            /// remember
-            /// </summary>
             public const string Remember = "remember";
-
-            /// <summary>
-            /// scope
-            /// </summary>
             public const string Scope = "scope";
+            public const string Consent = "consent";
         }
+
+        /// <summary>
+        /// Values of tags
+        /// </summary>
+        public static class TagValues
+        {
+            public const string Granted = "granted";
+            public const string Denied = "denied";
+        }
+
+#pragma warning restore 1591
 
         /// <summary>
         /// Meter for the IdentityServer host project
         /// </summary>
         private static readonly Meter Meter = new Meter(ServiceName, ServiceVersion);
 
-        private static Counter<long> ConsentGrantedCounter = Meter.CreateCounter<long>(Counters.ConsentGranted);
+        private static Counter<long> ConsentCounter = Meter.CreateCounter<long>(Counters.Consent);
 
         /// <summary>
-        /// Helper method to increase <see cref="Counters.ConsentGranted"/> counter. The scopes
+        /// Helper method to increase <see cref="Counters.Consent"/> counter. The scopes
         /// are expanded and called one by one to not cause a combinatory explosion of scopes.
         /// </summary>
         /// <param name="clientId">Client id</param>
@@ -108,13 +78,16 @@ public static class Telemetry
         public static void ConsentGranted(string clientId, IEnumerable<string> scopes, bool remember)
         {
             ArgumentNullException.ThrowIfNull(scopes);
-            foreach(var scope in scopes)
+
+            foreach (var scope in scopes)
             {
-                ConsentGrantedCounter.Add(1, new(Tags.Client, clientId), new(Tags.Scope, scope), new(Tags.Remember, remember));
+                ConsentCounter.Add(1,
+                    new(Tags.Client, clientId),
+                    new(Tags.Scope, scope),
+                    new(Tags.Remember, remember),
+                    new(Tags.Consent, TagValues.Granted));
             }
         }
-
-        private static Counter<long> ConsentDeniedCounter = Meter.CreateCounter<long>(Counters.ConsentDenied);
 
         /// <summary>
         /// Helper method to increase <see cref="Counters.ConsentDenied"/> counter. The scopes
@@ -127,7 +100,7 @@ public static class Telemetry
             ArgumentNullException.ThrowIfNull(scopes);
             foreach (var scope in scopes)
             {
-                ConsentDeniedCounter.Add(1, new(Tags.Client, clientId), new(Tags.Scope, scope));
+                ConsentCounter.Add(1, new(Tags.Client, clientId), new(Tags.Scope, scope), new(Tags.Consent, TagValues.Denied));
             }
         }
 
@@ -149,15 +122,13 @@ public static class Telemetry
         public static void UserLogin(string? clientId, string idp)
             => UserLoginCounter.Add(1, new(Tags.Client, clientId), new(Tags.Idp, idp));
 
-        private static Counter<long> UserLoginFailureCounter = Meter.CreateCounter<long>(Counters.UserLoginFailure);
-
         /// <summary>
-        /// Helper method to increase <see cref="Counters.UserLoginFailure" counter.
+        /// Helper method to increase <see cref="Counters.UserLogin" counter on failure.
         /// </summary>
         /// <param name="clientId">Client Id, if available</param>
         /// <param name="error">Error message</param>
         public static void UserLoginFailure(string? clientId, string idp, string error)
-            => UserLoginFailureCounter.Add(1, new(Tags.Client, clientId), new(Tags.Idp, idp), new(Tags.Error, error));
+            => UserLoginCounter.Add(1, new(Tags.Client, clientId), new(Tags.Idp, idp), new(Tags.Error, error));
 
         private static Counter<long> UserLogoutCounter = Meter.CreateCounter<long>(Counters.UserLogout);
 
