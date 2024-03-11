@@ -128,6 +128,21 @@ public static class ClientsConsole
                                 "n":"wWwQFtSzeRjjerpEM5Rmqz_DsNaZ9S1Bw6UbZkDLowuuTCjBWUax0vBMMxdy6XjEEK4Oq9lKMvx9JzjmeJf1knoqSNrox3Ka0rnxXpNAz6sATvme8p9mTXyp0cX4lF4U2J54xa2_S9NF5QWvpXvBeC4GAJx7QaSw4zrUkrc6XyaAiFnLhQEwKJCwUw4NOqIuYvYp_IXhw-5Ti_icDlZS-282PcccnBeOcX7vc21pozibIdmZJKqXNsL1Ibx5Nkx1F1jLnekJAmdaACDjYRLL_6n3W4wUp19UvzB1lGtXcJKLLkqB6YDiZNu16OSiSprfmrRXvYmvD8m6Fnl5aetgKw"
                             }
                             """
+                    },
+                    new Secret
+                    {
+                        Type = IdentityServerConstants.SecretTypes.JsonWebKey,
+                        Value =
+                            """
+                            {
+                                "kty":"EC",
+                                "crv":"P-256",
+                                "x":"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4",
+                                "y":"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM",
+                                "use":"enc",
+                                "kid":"1"
+                            }
+                            """
                     }
                 },
                 AllowedGrantTypes = GrantTypes.ClientCredentials,
