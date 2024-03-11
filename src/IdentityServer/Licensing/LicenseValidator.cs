@@ -31,7 +31,7 @@ internal class LicenseValidator<T>
     protected Action<string, object[]> WarningLog;
     protected Action<string, object[]> DebugLog;
 
-    protected T License { get; private set; }
+    protected T License { get; set; }
     
     // cloned copy meant to be accessible in DI
     T _copy;

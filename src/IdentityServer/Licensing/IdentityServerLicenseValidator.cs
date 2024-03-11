@@ -7,7 +7,6 @@
 using Duende.IdentityServer.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,8 +18,6 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
     internal readonly static IdentityServerLicenseValidator Instance = new IdentityServerLicenseValidator();
 
     IdentityServerOptions _options;
-    ConcurrentDictionary<string, byte> _clientIds = new ConcurrentDictionary<string, byte>();
-    ConcurrentDictionary<string, byte> _issuers = new ConcurrentDictionary<string, byte>();
 
     public void Initialize(ILoggerFactory loggerFactory, IdentityServerOptions options, bool isDevelopment = false)
     {
@@ -56,7 +53,7 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
         {
             throw new Exception("Invalid License: The BFF edition license is not valid for IdentityServer.");
         }
-        
+
         if (_options.KeyManagement.Enabled && !License.KeyManagementFeature)
         {
             errors.Add("You have automatic key management enabled, but your license does not include that feature of Duende IdentityServer. This feature requires the Business or Enterprise Edition tier of license. Either upgrade your license or disable automatic key management by setting the KeyManagement.Enabled property to false on the IdentityServerOptions.");
@@ -70,54 +67,94 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
         }
     }
 
-    bool ValidateClientWarned = false;
-    public void ValidateClient(string clientId)
+    private void EnsureAdded(ref HashSet<string> hashSet, object lockObject, string key)
     {
-        _clientIds.TryAdd(clientId, 1);
+        // Lock free test first.
+        if (!hashSet.Contains(key))
+        {
+            lock (lockObject)
+            {
+                // Check again after lock, to quite early if another thread
+                // already did the job.
+                if (!hashSet.Contains(key))
+                {
+                    // The HashSet is not thread safe. And we don't want to lock for every single
+                    // time we use it. Our access pattern should be a lot of reads and a few writes
+                    // so better to create a new copy every time we need to add a value.
+                    var newSet = new HashSet<string>(hashSet)
+                    {
+                        key
+                    };
 
-        if (License != null)
-        {
-            if (License.ClientLimit.HasValue && _clientIds.Count > License.ClientLimit)
-            {
-                ErrorLog.Invoke(
-                    "Your license for Duende IdentityServer only permits {clientLimit} number of clients. You have processed requests for {clientCount}. The clients used were: {clients}.",
-                    new object[] { License.ClientLimit, _clientIds.Count, _clientIds.Keys.ToArray() });
-            }
-        }
-        else
-        {
-            if (_clientIds.Count > 5 && !ValidateClientWarned)
-            {
-                ValidateClientWarned = true;
-                WarningLog?.Invoke(
-                    "You do not have a license, and you have processed requests for {clientCount} clients. This number requires a tier of license higher than Starter Edition. The clients used were: {clients}.",
-                    new object[] { _clientIds.Count, _clientIds.Keys.ToArray() });
+                    // Reference assignment is atomic so non-locked readers will handle this.
+                    hashSet = newSet;
+                }
             }
         }
     }
 
-    bool ValidateIssuerWarned = false;
-    public void ValidateIssuer(string iss)
+    HashSet<string> _clientIds = new();
+    object _clientIdLock = new();
+    bool _validateClientWarned = false;
+    public void ValidateClient(string clientId)
     {
-        _issuers.TryAdd(iss, 1);
+        if (License != null && !License.ClientLimit.HasValue)
+        {
+            return;
+        }
+
+        EnsureAdded(ref _clientIds, _clientIdLock, clientId);
 
         if (License != null)
         {
-            if (License.IssuerLimit.HasValue && _issuers.Count > License.IssuerLimit)
+            if (_clientIds.Count > License.ClientLimit)
             {
                 ErrorLog.Invoke(
-                    "Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}. The issuers used were: {issuers}. This might be due to your server being accessed via different URLs or a direct IP and/or you have reverse proxy or a gateway involved. This suggests a network infrastructure configuration problem, or you are deliberately hosting multiple URLs and require an upgraded license.",
-                    new object[] { License.IssuerLimit, _issuers.Count, _issuers.Keys.ToArray() });
+                    "Your license for Duende IdentityServer only permits {clientLimit} number of clients. You have processed requests for {clientCount}. The clients used were: {clients}.",
+                    [License.ClientLimit, _clientIds.Count, _clientIds.ToArray()]);
             }
         }
         else
         {
-            if (_issuers.Count > 1 && !ValidateIssuerWarned)
+            if (!_validateClientWarned && _clientIds.Count > 5)
             {
-                ValidateIssuerWarned = true;
+                _validateClientWarned = true;
+                WarningLog?.Invoke(
+                    "You do not have a license, and you have processed requests for {clientCount} clients. This number requires a tier of license higher than Starter Edition. The clients used were: {clients}.",
+                    [_clientIds.Count, _clientIds.ToArray()]);
+            }
+        }
+    }
+
+    HashSet<string> _issuers = new();
+    object _issuerLock = new();
+    bool _validateIssuerWarned = false;
+    public void ValidateIssuer(string iss)
+    {
+        if (License != null && !License.IssuerLimit.HasValue)
+        {
+            return;
+        }
+
+        EnsureAdded(ref _issuers, _issuerLock, iss);
+
+        if (License != null)
+        {
+            if (_issuers.Count > License.IssuerLimit)
+            {
+                ErrorLog.Invoke(
+                    "Your license for Duende IdentityServer only permits {issuerLimit} number of issuers. You have processed requests for {issuerCount}. The issuers used were: {issuers}. This might be due to your server being accessed via different URLs or a direct IP and/or you have reverse proxy or a gateway involved. This suggests a network infrastructure configuration problem, or you are deliberately hosting multiple URLs and require an upgraded license.",
+                    [License.IssuerLimit, _issuers.Count, _issuers.ToArray()]);
+            }
+        }
+        else
+        {
+            if (!_validateIssuerWarned  && _issuers.Count > 1)
+            {
+                _validateIssuerWarned = true;
                 WarningLog?.Invoke(
                     "You do not have a license, and you have processed requests for {issuerCount} issuers. If you are deliberately hosting multiple URLs then this number requires a license per issuer, or the Enterprise Edition tier of license. If not then this might be due to your server being accessed via different URLs or a direct IP and/or you have reverse proxy or a gateway involved, and this suggests a network infrastructure configuration problem. The issuers used were: {issuers}.",
-                    new object[] { _issuers.Count, _issuers.Keys.ToArray() });
+                    [_issuers.Count, _issuers.ToArray()]);
             }
         }
     }
@@ -179,9 +216,9 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
     bool ValidateParWarned = false;
     public void ValidatePar()
     {
-        if(License != null)
+        if (License != null)
         {
-            if(!License.ParFeature)
+            if (!License.ParFeature)
             {
                 throw new Exception("A request was made to the pushed authorization endpoint. Your license of Duende IdentityServer does not permit pushed authorization. This features requires the Business Edition or higher tier of license.");
             }
