@@ -29,7 +29,20 @@ namespace ConsolePrivateKeyJwtClient
                 "qi":"pG6J4dcUDrDndMxa-ee1yG4KjZqqyCQcmPAfqklI2LmnpRIjcK78scclvpboI3JQyg6RCEKVMwAhVtQM6cBcIO3JrHgqeYDblp5wXHjto70HVW6Z8kBruNx1AH9E8LzNvSRL-JVTFzBkJuNgzKQfD0G77tQRgJ-Ri7qu3_9o1M4"
             }
             """;
-        
+
+        private static string ecKey =
+            """
+            {
+                "kty":"EC",
+                "crv":"P-256",
+                "x":"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4",
+                "y":"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM",
+                "d":"870MB6gfuTJ4HtUnUvYMyJpr5eUZNP4Bk43bVdj3eAE",
+                "use":"enc",
+                "kid":"1"
+            }
+            """;
+
         public static async Task Main()
         {
             Console.Title = "Console Client Credentials Flow with JWT Assertion";
@@ -51,6 +64,15 @@ namespace ConsolePrivateKeyJwtClient
             
             Console.ReadLine();
             await CallServiceAsync(response.AccessToken);
+
+            // EC JsonWebKey
+            jwk = new JsonWebKey(ecKey);
+            response = await RequestTokenAsync(new SigningCredentials(jwk, "ES256"));
+            response.Show();
+            
+            Console.ReadLine();
+            await CallServiceAsync(response.AccessToken);
+
         }
 
         static async Task<TokenResponse> RequestTokenAsync(SigningCredentials credential)
