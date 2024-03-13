@@ -383,9 +383,8 @@ public class IdentityServerLicenseValidatorTests
 
     private class MockLicenseValidator : IdentityServerLicenseValidator
     {
-        public MockLicenseValidator(IdentityServerLicense license)
+        public MockLicenseValidator()
         {
-            License = license;
             ErrorLog = (str, obj) => { ErrorLogCount++; };
             WarningLog = (str, obj) => { WarningLogCount++; };
         }
@@ -401,11 +400,11 @@ public class IdentityServerLicenseValidatorTests
     public void client_count_exceeded_should_warn(bool hasLicense, int allowedClients)
     {
         var license = hasLicense ? new IdentityServerLicense(new Claim("edition", "business")) : null;
-        var subject = new MockLicenseValidator(license);
+        var subject = new MockLicenseValidator();
 
         for (int i = 0; i < allowedClients; i++)
         {
-            subject.ValidateClient("client" + i);
+            subject.ValidateClient("client" + i, license);
         }
 
         // Adding the allowed number of clients shouldn't log.
@@ -413,12 +412,12 @@ public class IdentityServerLicenseValidatorTests
         subject.WarningLogCount.Should().Be(0);
 
         // Validating same client again shouldn't log.
-        subject.ValidateClient("client3");
+        subject.ValidateClient("client3", license);
         subject.ErrorLogCount.Should().Be(0);
         subject.WarningLogCount.Should().Be(0);
 
-        subject.ValidateClient("extra1");
-        subject.ValidateClient("extra2");
+        subject.ValidateClient("extra1", license);
+        subject.ValidateClient("extra2", license);
 
         if (hasLicense)
         {
