@@ -4,6 +4,7 @@
 
 using System;
 using System.Security.Claims;
+using Duende;
 using Duende.IdentityServer;
 using FluentAssertions;
 using Xunit;
@@ -377,6 +378,56 @@ public class IdentityServerLicenseValidatorTests
         {
             Action func = () => new IdentityServerLicense(new Claim("edition", ""));
             func.Should().Throw<Exception>();
+        }
+    }
+
+    private class MockLicenseValidator : IdentityServerLicenseValidator
+    {
+        public MockLicenseValidator()
+        {
+            ErrorLog = (str, obj) => { ErrorLogCount++; };
+            WarningLog = (str, obj) => { WarningLogCount++; };
+        }
+
+        public int ErrorLogCount { get; set; }
+        public int WarningLogCount { get; set; }
+    }
+
+    [Theory]
+    [Trait("Category", Category)]
+    [InlineData(false, 5)]
+    [InlineData(true, 15)]
+    public void client_count_exceeded_should_warn(bool hasLicense, int allowedClients)
+    {
+        var license = hasLicense ? new IdentityServerLicense(new Claim("edition", "business")) : null;
+        var subject = new MockLicenseValidator();
+
+        for (int i = 0; i < allowedClients; i++)
+        {
+            subject.ValidateClient("client" + i, license);
+        }
+
+        // Adding the allowed number of clients shouldn't log.
+        subject.ErrorLogCount.Should().Be(0);
+        subject.WarningLogCount.Should().Be(0);
+
+        // Validating same client again shouldn't log.
+        subject.ValidateClient("client3", license);
+        subject.ErrorLogCount.Should().Be(0);
+        subject.WarningLogCount.Should().Be(0);
+
+        subject.ValidateClient("extra1", license);
+        subject.ValidateClient("extra2", license);
+
+        if (hasLicense)
+        {
+            subject.ErrorLogCount.Should().Be(2);
+            subject.WarningLogCount.Should().Be(0);
+        }
+        else
+        {
+            subject.ErrorLogCount.Should().Be(0);
+            subject.WarningLogCount.Should().Be(1);
         }
     }
 }
