@@ -65,7 +65,10 @@ public class StrictRedirectUriValidator : IRedirectUriValidator
     /// </returns>
     public virtual Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
     {
-        return Task.FromResult(StringCollectionContainsString(client.PostLogoutRedirectUris, requestedUri));
+        return Task.FromResult(StringCollectionContainsString(
+            client.PostLogoutRedirectUris.Select(o => o.PostLogoutRedirectUri),
+            requestedUri
+        ));
     }
 
     /// <summary>
