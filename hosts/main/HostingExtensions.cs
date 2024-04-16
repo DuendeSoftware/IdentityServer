@@ -42,24 +42,24 @@ internal static class HostingExtensions
             return Task.FromResult(principal);
         });
 
-var openTelemetry = builder.Services.AddOpenTelemetry();
+        var openTelemetry = builder.Services.AddOpenTelemetry();
 
-openTelemetry.ConfigureResource(r => r
-    .AddService(builder.Environment.ApplicationName));
+        openTelemetry.ConfigureResource(r => r
+            .AddService(builder.Environment.ApplicationName));
 
-openTelemetry.WithMetrics(m => m
-    .AddMeter(Telemetry.ServiceName)
-    .AddMeter(Pages.Telemetry.ServiceName)
-    .AddPrometheusExporter());
+        openTelemetry.WithMetrics(m => m
+            .AddMeter(Telemetry.ServiceName)
+            .AddMeter(Pages.Telemetry.ServiceName)
+            .AddPrometheusExporter());
 
-openTelemetry.WithTracing(t => t
-    .AddSource(IdentityServerConstants.Tracing.Basic)
-    .AddSource(IdentityServerConstants.Tracing.Cache)
-    .AddSource(IdentityServerConstants.Tracing.Services)
-    .AddSource(IdentityServerConstants.Tracing.Stores)
-    .AddSource(IdentityServerConstants.Tracing.Validation)
-    .AddAspNetCoreInstrumentation()
-    .AddConsoleExporter());
+        openTelemetry.WithTracing(t => t
+            .AddSource(IdentityServerConstants.Tracing.Basic)
+            .AddSource(IdentityServerConstants.Tracing.Cache)
+            .AddSource(IdentityServerConstants.Tracing.Services)
+            .AddSource(IdentityServerConstants.Tracing.Stores)
+            .AddSource(IdentityServerConstants.Tracing.Validation)
+            .AddAspNetCoreInstrumentation()
+            .AddConsoleExporter());
 
         return builder.Build();
     }
@@ -150,7 +150,7 @@ openTelemetry.WithTracing(t => t
 
         // health checks
         app.MapHealthChecks("/health");
-        
+
         // local API endpoints
         app.MapControllers()
             .RequireAuthorization(IdentityServerConstants.LocalApi.PolicyName);
