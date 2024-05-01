@@ -244,8 +244,11 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             var authTime = request.Subject.GetAuthenticationTime();
             if (Clock.UtcNow.UtcDateTime > authTime.AddSeconds(request.MaxAge.Value))
             {
-                // Remove the max_age parameter to prevent (infinite) loop
-                request.Raw.Remove("max_age");
+                // Remove the max_age=0 parameter to prevent (infinite) loop
+                if (request.MaxAge.Value == 0)
+                {
+                    request.RemoveMaxAge();
+                }
 
                 Logger.LogInformation("Showing login: Requested MaxAge exceeded.");
 
