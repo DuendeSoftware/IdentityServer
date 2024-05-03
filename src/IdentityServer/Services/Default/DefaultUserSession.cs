@@ -83,6 +83,14 @@ public class DefaultUserSession : IUserSession
     /// The SameSite mode of the check session cookie.
     /// </value>
     protected SameSiteMode CheckSessionCookieSameSiteMode => Options.Authentication.CheckSessionCookieSameSiteMode;
+    
+    /// <summary>
+    /// Gets the HttpOnly setting of the check session cookie.
+    /// </summary>
+    /// <value>
+    /// The HttpOnly setting of the check session cookie.
+    /// </value>
+    protected bool CheckSessionCookieHttpOnly => Options.Authentication.CheckSessionCookieHttpOnly;
 
     /// <summary>
     /// The principal
@@ -268,7 +276,7 @@ public class DefaultUserSession : IUserSession
 
         var options = new CookieOptions
         {
-            HttpOnly = false,
+            HttpOnly = CheckSessionCookieHttpOnly,
             Secure = secure,
             Path = path,
             IsEssential = true,
