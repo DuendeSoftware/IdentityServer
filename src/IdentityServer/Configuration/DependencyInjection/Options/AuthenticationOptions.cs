@@ -34,6 +34,11 @@ public class AuthenticationOptions
     /// Specifies the SameSite mode for the internal authentication and temp cookie
     /// </summary>
     public SameSiteMode CookieSameSiteMode { get; set; } = SameSiteMode.None;
+    
+    /// <summary>
+    /// Specifies the HttpOnly setting for the internal authentication and temp cookie
+    /// </summary>
+    public bool CookieHttpOnly { get; set; } = false;
 
     /// <summary>
     /// Indicates if user must be authenticated to accept parameters to end session endpoint. Defaults to false.

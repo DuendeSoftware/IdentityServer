@@ -31,6 +31,7 @@ internal class ConfigureInternalCookieOptions : IConfigureNamedOptions<CookieAut
             options.Cookie.Name = IdentityServerConstants.DefaultCookieAuthenticationScheme;
             options.Cookie.IsEssential = true;
             options.Cookie.SameSite = _idsrv.Authentication.CookieSameSiteMode;
+            options.Cookie.HttpOnly = _idsrv.Authentication.CookieHttpOnly;
 
             options.LoginPath = ExtractLocalUrl(_idsrv.UserInteraction.LoginUrl);
             options.LogoutPath = ExtractLocalUrl(_idsrv.UserInteraction.LogoutUrl);
@@ -51,6 +52,7 @@ internal class ConfigureInternalCookieOptions : IConfigureNamedOptions<CookieAut
             // hold onto them and send on the next redirect to the callback page.
             // see: https://brockallen.com/2019/01/11/same-site-cookies-asp-net-core-and-external-authentication-providers/
             options.Cookie.SameSite = _idsrv.Authentication.CookieSameSiteMode;
+            options.Cookie.HttpOnly = _idsrv.Authentication.CookieHttpOnly;
         }
     }
 
