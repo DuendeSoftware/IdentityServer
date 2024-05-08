@@ -52,14 +52,14 @@ internal static class HostingExtensions
             .AddMeter(Pages.Telemetry.ServiceName)
             .AddPrometheusExporter());
 
-        openTelemetry.WithTracing(t => t
-            .AddSource(IdentityServerConstants.Tracing.Basic)
-            .AddSource(IdentityServerConstants.Tracing.Cache)
-            .AddSource(IdentityServerConstants.Tracing.Services)
-            .AddSource(IdentityServerConstants.Tracing.Stores)
-            .AddSource(IdentityServerConstants.Tracing.Validation)
-            .AddAspNetCoreInstrumentation()
-            .AddConsoleExporter());
+        //openTelemetry.WithTracing(t => t
+        //    .AddSource(IdentityServerConstants.Tracing.Basic)
+        //    .AddSource(IdentityServerConstants.Tracing.Cache)
+        //    .AddSource(IdentityServerConstants.Tracing.Services)
+        //    .AddSource(IdentityServerConstants.Tracing.Stores)
+        //    .AddSource(IdentityServerConstants.Tracing.Validation)
+        //    .AddAspNetCoreInstrumentation()
+        //    .AddConsoleExporter());
 
         return builder.Build();
     }
