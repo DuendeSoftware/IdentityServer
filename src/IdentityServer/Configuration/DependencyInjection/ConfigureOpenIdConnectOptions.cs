@@ -34,16 +34,19 @@ internal class ConfigureOpenIdConnectOptions : IPostConfigureOptions<OpenIdConne
             options.StateDataFormat = new DistributedCacheStateDataFormatter(_serviceProvider, name);
         }
 
-        var distributedCacheService = _serviceProvider.GetRequiredService<IDistributedCache>();
-
-        if (distributedCacheService is MemoryDistributedCache && !warnedInMemory)
+        if (!warnedInMemory)
         {
-            var logger = _serviceProvider
-                .GetRequiredService<ILogger<ConfigureOpenIdConnectOptions>>();
+            var distributedCacheService = _serviceProvider.GetRequiredService<IDistributedCache>();
 
-            logger.LogInformation("You have enabled the OidcStateDataFormatterCache but the distributed cache registered is the default memory based implementation. This will store any OIDC state in memory on the server that initiated the request. If the response is processed on another server it will fail. If you are running in production, you want to switch to a real distributed cache that is shared between all nodes.");
+            if (distributedCacheService is MemoryDistributedCache)
+            {
+                var logger = _serviceProvider
+                    .GetRequiredService<ILogger<ConfigureOpenIdConnectOptions>>();
 
-            warnedInMemory = true;
+                logger.LogInformation("You have enabled the OidcStateDataFormatterCache but the distributed cache registered is the default memory based implementation. This will store any OIDC state in memory on the server that initiated the request. If the response is processed on another server it will fail. If you are running in production, you want to switch to a real distributed cache that is shared between all nodes.");
+
+                warnedInMemory = true;
+            }
         }
     }
 }
