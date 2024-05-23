@@ -1,16 +1,16 @@
 <Project>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
-        <FrameworkVersion>6.35.0</FrameworkVersion>
+        <FrameworkVersion>6.0.30</FrameworkVersion>
         <OpenIdConnectVersion>6.0.30</OpenIdConnectVersion>
-        <EntityFrameworkVersion>6.0.0</EntityFrameworkVersion>
+        <EntityFrameworkVersion>6.0.30</EntityFrameworkVersion>
         <WilsonVersion>6.35.0</WilsonVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0'">
-        <FrameworkVersion>6.35.0</FrameworkVersion>
+        <FrameworkVersion>6.0.30</FrameworkVersion>
         <OpenIdConnectVersion>6.0.30</OpenIdConnectVersion>
-        <EntityFrameworkVersion>6.0.0</EntityFrameworkVersion>
+        <EntityFrameworkVersion>6.0.30</EntityFrameworkVersion>
         <WilsonVersion>6.35.0</WilsonVersion>
     </PropertyGroup>
 
@@ -65,11 +65,11 @@
         <PackageReference Update="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="$(OpenIdConnectVersion)"/>
 
         <!--microsoft entity framework -->
-        <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(OpenIdConnectVersion)"/>
-        <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="$(OpenIdConnectVersion)"/>
-        <PackageReference Update="Microsoft.EntityFrameworkCore.InMemory" Version="$(OpenIdConnectVersion)"/>
-        <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="$(OpenIdConnectVersion)"/>
-        <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(OpenIdConnectVersion)" PrivateAssets="All"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkVersion)"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EntityFrameworkVersion)"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.InMemory" Version="$(EntityFrameworkVersion)"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EntityFrameworkVersion)"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All"/>
 
         <!-- open telemetry -->
         <PackageReference Update="OpenTelemetry" Version="1.8.1" />
