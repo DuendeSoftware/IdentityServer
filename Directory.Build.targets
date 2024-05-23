@@ -1,17 +1,17 @@
 <Project>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
-        <FrameworkVersion>6.0.0</FrameworkVersion>
-        <ExtensionsVersion>6.0.0</ExtensionsVersion>
+        <FrameworkVersion>6.35.0</FrameworkVersion>
+        <OpenIdConnectVersion>6.0.30</OpenIdConnectVersion>
         <EntityFrameworkVersion>6.0.0</EntityFrameworkVersion>
-        <WilsonVersion>6.10.0</WilsonVersion>
+        <WilsonVersion>6.35.0</WilsonVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0'">
-        <FrameworkVersion>7.0.0</FrameworkVersion>
-        <ExtensionsVersion>7.0.0</ExtensionsVersion>
-        <EntityFrameworkVersion>7.0.0</EntityFrameworkVersion>
-        <WilsonVersion>6.15.1</WilsonVersion>
+        <FrameworkVersion>6.35.0</FrameworkVersion>
+        <OpenIdConnectVersion>6.0.30</OpenIdConnectVersion>
+        <EntityFrameworkVersion>6.0.0</EntityFrameworkVersion>
+        <WilsonVersion>6.35.0</WilsonVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,7 +31,7 @@
         <PackageReference Update="xunit.runner.visualstudio" Version="2.4.5" PrivateAssets="All"/>
 
         <!-- testing -->
-        <PackageReference Update="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(FrameworkVersion)" />
+        <PackageReference Update="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(OpenIdConnectVersion)" />
         <PackageReference Update="CsQuery.NETStandard" Version="1.3.6.1" />
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.3.1" />
         <PackageReference Update="coverlet.collector" Version="3.1.2">
@@ -56,29 +56,29 @@
         <PackageReference Update="Serilog.AspNetCore" Version="6.0.0"/>
 
         <!--microsoft asp.net core -->
-        <PackageReference Update="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(FrameworkVersion)"/>
-        <PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(FrameworkVersion)"/>
-        <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="$(FrameworkVersion)"/>
-        <PackageReference Update="Microsoft.AspNetCore.Identity" Version="$(FrameworkVersion)"/>
-        <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(FrameworkVersion)"/>
-        <PackageReference Update="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)"/>
-        <PackageReference Update="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="$(FrameworkVersion)"/>
+        <PackageReference Update="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.AspNetCore.Identity" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.AspNetCore.Authentication.Certificate" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="$(OpenIdConnectVersion)"/>
 
         <!--microsoft entity framework -->
-        <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkVersion)"/>
-        <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EntityFrameworkVersion)"/>
-        <PackageReference Update="Microsoft.EntityFrameworkCore.InMemory" Version="$(EntityFrameworkVersion)"/>
-        <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EntityFrameworkVersion)"/>
-        <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.InMemory" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="$(OpenIdConnectVersion)"/>
+        <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(OpenIdConnectVersion)" PrivateAssets="All"/>
 
         <!-- open telemetry -->
-        <PackageReference Update="OpenTelemetry" Version="1.3.0" />
-        <PackageReference Update="OpenTelemetry.Exporter.Console" Version="1.3.0" />
-        <PackageReference Update="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.3.0" />
-        <PackageReference Update="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc9" />
-        <PackageReference Update="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9" />
-        <PackageReference Update="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9" />
-        <PackageReference Update="OpenTelemetry.Instrumentation.SqlClient" Version="1.0.0-rc9" />
+        <PackageReference Update="OpenTelemetry" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Exporter.Console" Version="1.8.0" />
+        <PackageReference Update="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Instrumentation.Http" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Instrumentation.SqlClient" Version="1.8.1" />
     </ItemGroup>
 
     <Target Name="SetAssemblyVersion" AfterTargets="MinVer">
