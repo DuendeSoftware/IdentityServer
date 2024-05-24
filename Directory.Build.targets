@@ -1,19 +1,4 @@
 <Project>
-
-    <!--<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
-        <FrameworkVersion>6.0.0</FrameworkVersion>
-        <ExtensionsVersion>6.0.0</ExtensionsVersion>
-        <EntityFrameworkVersion>6.0.0</EntityFrameworkVersion>
-        <WilsonVersion>6.10.0</WilsonVersion>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0'">
-        <FrameworkVersion>7.0.0</FrameworkVersion>
-        <ExtensionsVersion>7.0.0</ExtensionsVersion>
-        <EntityFrameworkVersion>7.0.0</EntityFrameworkVersion>
-        <WilsonVersion>6.15.1</WilsonVersion>
-    </PropertyGroup>-->
-
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0'">
         <FrameworkVersion>8.0.3</FrameworkVersion>
         <ExtensionsVersion>8.0.0</ExtensionsVersion>
@@ -76,14 +61,14 @@
         <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All"/>
 
         <!-- open telemetry -->
-        <PackageReference Update="OpenTelemetry" Version="1.6.0" />
-        <PackageReference Update="OpenTelemetry.Exporter.Console" Version="1.6.0" />
-        <PackageReference Update="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.6.0" />
-        <PackageReference Update="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.6.0-rc.1" />
-        <PackageReference Update="OpenTelemetry.Extensions.Hosting" Version="1.6.0" />
-        <PackageReference Update="OpenTelemetry.Instrumentation.AspNetCore" Version="1.5.1-beta.1" />
-        <PackageReference Update="OpenTelemetry.Instrumentation.Http" Version="1.5.1-beta.1" />
-        <PackageReference Update="OpenTelemetry.Instrumentation.SqlClient" Version="1.0.0-rc9" />
+        <PackageReference Update="OpenTelemetry" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Exporter.Console" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.9.0-alpha.1" />
+        <PackageReference Update="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Instrumentation.Http" Version="1.8.1" />
+        <PackageReference Update="OpenTelemetry.Instrumentation.SqlClient" Version="1.8.0-beta.1" />
 
     </ItemGroup>
 
