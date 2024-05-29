@@ -17,6 +17,18 @@ namespace Duende.IdentityServer.Validation;
 
 public static class ValidatedAuthorizeRequestExtensions
 {
+    /// <summary>
+    /// Removes the prompt parameter from an authorize request. Use this method 
+    /// when processing an authorize request to indicate that the prompt parameter 
+    /// has been taken into account. Typically the prompt parameter will cause
+    /// UI to be displayed, such as the login screen, that should only be displayed 
+    /// once.
+    /// </summary>
+    // TODO - This method cannot easily interact with the PAR store, because it is an 
+    // extension method. This means that whenever this method is called, the PAR store also
+    // needs to be updated, with e.g, AuthorizeInteractionResponseGenerator.ProcessPromptInParAsync.
+    // Ideally, we should introduce a new abstraction that does both, and possibly deprecate
+    // RemovePrompt in favor of it.
     public static void RemovePrompt(this ValidatedAuthorizeRequest request)
     {
         var suppress = new StringBuilder();

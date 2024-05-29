@@ -85,8 +85,6 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         {
             await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
         }
-        // REVIEW - Is this exception possible, since we don't try to load (and then update) an existing entity?
-        // I think it isn't, but what happens if we somehow two calls to StoreAsync with the same PAR are made?
         catch (DbUpdateConcurrencyException ex)
         {
             Logger.LogWarning("exception updating {referenceValueHash} pushed authorization in database: {error}", par.ReferenceValueHash, ex.Message);

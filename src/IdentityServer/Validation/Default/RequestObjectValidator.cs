@@ -188,6 +188,7 @@ internal class RequestObjectValidator : IRequestObjectValidator
                     description: "expired pushed authorization request");
             }
         }
+        authorizeRequest.PushedAuthorizationExpiresAtUtc = pushedAuthorizationRequest.ExpiresAtUtc;
         return null;
     }
 

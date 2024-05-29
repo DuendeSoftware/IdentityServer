@@ -35,6 +35,11 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// The profile service.
     /// </summary>
     protected readonly IProfileService Profile;
+    
+    /// <summary>
+    /// The pushed authorization service.
+    /// </summary>
+    protected readonly IPushedAuthorizationService PushedAuthorization;
 
     /// <summary>
     /// The clock
@@ -54,18 +59,21 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// <param name="logger">The logger.</param>
     /// <param name="consent">The consent.</param>
     /// <param name="profile">The profile.</param>
+    /// <param name="pushedAuthorization"></param>
     public AuthorizeInteractionResponseGenerator(
         IdentityServerOptions options,
         IClock clock,
         ILogger<AuthorizeInteractionResponseGenerator> logger,
         IConsentService consent, 
-        IProfileService profile)
+        IProfileService profile,
+        IPushedAuthorizationService pushedAuthorization)
     {
         Options = options;
         Clock = clock;
         Logger = logger;
         Consent = consent;
         Profile = profile;
+        PushedAuthorization = pushedAuthorization;
     }
 
     /// <summary>
@@ -138,7 +146,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     /// </summary>
     /// <param name="request">The request.</param>
     /// <returns></returns>
-    protected internal virtual Task<InteractionResponse> ProcessCreateAccountAsync(ValidatedAuthorizeRequest request)
+    protected internal virtual async Task<InteractionResponse> ProcessCreateAccountAsync(ValidatedAuthorizeRequest request)
     {
         InteractionResponse result;
 
@@ -147,6 +155,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
         {
             Logger.LogInformation("Showing create account: request contains prompt=create");
             request.RemovePrompt();
+            await ProcessPromptInParAsync(request);
             result = new InteractionResponse
             {
                 IsCreateAccount = true
@@ -157,7 +166,7 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             result = new InteractionResponse();
         }
 
-        return Task.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -177,7 +186,8 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             // remove prompt so when we redirect back in from login page
             // we won't think we need to force a prompt again
             request.RemovePrompt();
-                
+            await ProcessPromptInParAsync(request);
+
             return new InteractionResponse { IsLogin = true };
         }
 
@@ -283,6 +293,29 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
         }
 
         return new InteractionResponse();
+    }
+
+    /// <summary>
+    /// Updates a pushed authorization request in the store to reflect that the
+    /// prompt parameter has been used.
+    /// </summary>
+    // TODO - In a future release, we should add a service that processes prompts to consolidate this code
+    // and the existing RemovePrompt extension method on ValidatedAuthorizeRequest.
+    private async Task ProcessPromptInParAsync(ValidatedAuthorizeRequest request)
+    {
+        if (request.AuthorizeRequestType == AuthorizeRequestType.AuthorizeWithPushedParameters)
+        {
+            var par = new DeserializedPushedAuthorizationRequest
+            {
+                ReferenceValue = request.PushedAuthorizationReferenceValue,
+                ExpiresAtUtc = request.PushedAuthorizationExpiresAtUtc
+                    ?? throw new InvalidOperationException("Missing ExpiresAtUtc for pushed authorization request"),
+                PushedParameters = request.Raw
+            };
+
+            par.PushedParameters.Remove("prompt");
+            await PushedAuthorization.StoreAsync(par);
+        }
     }
 
     /// <summary>

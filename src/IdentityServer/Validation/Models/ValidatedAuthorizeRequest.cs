@@ -6,6 +6,7 @@
 
 using Duende.IdentityServer.Extensions;
 using IdentityModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -259,6 +260,11 @@ public class ValidatedAuthorizeRequest : ValidatedRequest
     /// request_uri in that format is passed, the reference value portion will be extracted and saved here.
     /// </summary>
     public string? PushedAuthorizationReferenceValue { get; set; }
+
+    /// <summary>
+    /// The expiration time of the pushed authorization request, if one was used.
+    /// </summary>
+    public DateTime? PushedAuthorizationExpiresAtUtc { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating the context in which authorization
