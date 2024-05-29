@@ -30,7 +30,8 @@ public class AuthorizeInteractionResponseGeneratorTests
             _clock,
             TestLogger.Create<Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator>(),
             _mockConsentService,
-            new MockProfileService());
+            new MockProfileService(),
+            null);
     }
 
 

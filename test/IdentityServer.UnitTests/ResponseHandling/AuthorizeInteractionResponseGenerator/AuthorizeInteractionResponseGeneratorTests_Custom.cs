@@ -24,7 +24,7 @@ public class CustomAuthorizeInteractionResponseGenerator : Duende.IdentityServer
         IClock clock, 
         ILogger<Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator> logger, 
         IConsentService consent, 
-        IProfileService profile) : base(options, clock, logger, consent, profile)
+        IProfileService profile) : base(options, clock, logger, consent, profile, null)
     {
     }
 
