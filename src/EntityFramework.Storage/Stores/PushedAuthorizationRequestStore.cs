@@ -64,7 +64,7 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
         using var activity = Tracing.StoreActivitySource.StartActivity("PushedAuthorizationRequestStore.Get");
         
         var par = (await Context.PushedAuthorizationRequests
-                .AsNoTracking().Where(x => x.ReferenceValueHash == referenceValueHash)
+                .Where(x => x.ReferenceValueHash == referenceValueHash)
                 .ToArrayAsync(CancellationTokenProvider.CancellationToken))
                 .SingleOrDefault(x => x.ReferenceValueHash == referenceValueHash);
         var model = par?.ToModel();
@@ -79,8 +79,24 @@ public class PushedAuthorizationRequestStore : IPushedAuthorizationRequestStore
     public virtual async Task StoreAsync(Models.PushedAuthorizationRequest par)
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("PushedAuthorizationStore.Store");
-        
-        Context.PushedAuthorizationRequests.Add(par.ToEntity());
+
+        // If we're already tracking the PAR request, then we will update it.
+        //
+        // This is an optimization that allows us to use Store to add or update
+        // without needing extra queries to determine if we need an add or
+        // insert. It is relying on the fact that when we are updating, we will
+        // have previously retrieved the PAR and it will be tracked in the context.
+        var entry = Context.PushedAuthorizationRequests.Local.FindEntry("ReferenceValueHash", par.ReferenceValueHash);
+        if(entry?.State is EntityState.Unchanged)
+        {
+            entry.CurrentValues.SetValues(par); // Not calling ToEntityHere so that we don't try to overwrite the id
+        }
+        // Otherwise, we will add it
+        else
+        {
+            Context.PushedAuthorizationRequests.Add(par.ToEntity());
+        }
+
         try
         {
             await Context.SaveChangesAsync(CancellationTokenProvider.CancellationToken);
