@@ -97,7 +97,8 @@ public class AuthorizeInteractionResponseGeneratorTests_Consent
             new StubClock(),
             TestLogger.Create<Duende.IdentityServer.ResponseHandling.AuthorizeInteractionResponseGenerator>(),
             _mockConsent,
-            _fakeUserService);
+            _fakeUserService,
+            null);
     }
 
     private static ResourceValidationResult GetValidatedResources(params string[] scopes)
