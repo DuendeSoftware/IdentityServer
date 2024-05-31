@@ -181,6 +181,14 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             return new InteractionResponse { IsLogin = true };
         }
 
+        if (request.MaxAge == 0)
+        {
+            Logger.LogInformation("Showing login: request contains max_age=0.");
+            // Remove the max_age=0 parameter to prevent (infinite) loop
+            request.RemoveMaxAge();
+            return new InteractionResponse { IsLogin = true };
+        }
+
         // unauthenticated user
         var isAuthenticated = request.Subject.IsAuthenticated();
             
@@ -244,12 +252,6 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
             var authTime = request.Subject.GetAuthenticationTime();
             if (Clock.UtcNow.UtcDateTime > authTime.AddSeconds(request.MaxAge.Value))
             {
-                // Remove the max_age=0 parameter to prevent (infinite) loop
-                if (request.MaxAge.Value == 0)
-                {
-                    request.RemoveMaxAge();
-                }
-
                 Logger.LogInformation("Showing login: Requested MaxAge exceeded.");
 
                 return new InteractionResponse { IsLogin = true };

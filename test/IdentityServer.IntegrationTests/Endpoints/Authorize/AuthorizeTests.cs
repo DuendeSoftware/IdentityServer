@@ -1261,7 +1261,7 @@ public class AuthorizeTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task max_age_0_should_show_login_page_and_preserve_max_age()
+    public async Task max_age_0_should_show_login_page()
     {
         await _mockPipeline.LoginAsync("bob");
 
