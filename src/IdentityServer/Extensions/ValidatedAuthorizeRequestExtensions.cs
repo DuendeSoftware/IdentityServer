@@ -52,11 +52,10 @@ public static class ValidatedAuthorizeRequestExtensions
 
     public static void RemoveMaxAge(this ValidatedAuthorizeRequest request)
     {
-        request.Raw.Remove("max_age");
-
         if (request.MaxAge.HasValue)
         {
             request.Raw.Add(Constants.ProcessedMaxAge, request.MaxAge.Value.ToString(CultureInfo.InvariantCulture));
+            request.MaxAge = null;
         }
     }
 
