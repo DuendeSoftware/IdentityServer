@@ -696,6 +696,13 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
         }
 
+        var processed_max_age = request.Raw.Get(Constants.ProcessedMaxAge);
+        if(processed_max_age.IsPresent())
+        {
+            request.MaxAge = null;
+            // TODO - Consider adding an OriginalMaxAge property for consistency with prompt.
+        }
+
         //////////////////////////////////////////////////////////
         // check login_hint
         //////////////////////////////////////////////////////////

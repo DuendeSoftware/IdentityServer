@@ -131,6 +131,12 @@ internal static class Constants
     /// </summary>
     public const string ProcessedPrompt = "suppressed_" + OidcConstants.AuthorizeRequest.Prompt;
 
+    /// <summary>
+    /// The name of the parameter passed to the authorize callback to indicate
+    /// max age that have already been used.
+    /// </summary>
+    public const string ProcessedMaxAge = "suppressed_" + OidcConstants.AuthorizeRequest.MaxAge;
+
     public static class KnownAcrValues
     {
         public const string HomeRealm = "idp:";
