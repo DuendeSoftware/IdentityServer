@@ -168,16 +168,34 @@ public class AuthorizeInteractionResponseGenerator : IAuthorizeInteractionRespon
     protected internal virtual async Task<InteractionResponse> ProcessLoginAsync(ValidatedAuthorizeRequest request)
     {
         using var activity = Tracing.BasicActivitySource.StartActivity("AuthorizeInteractionResponseGenerator.ProcessLogin");
-        
+
+        // prompt=login, prompt=select_account, and max_age=0
+        //
+        // These parameters are all treated the same, and force a login.
+        // max_age=0 being equivalent to prompt=login is explicitly in the spec,
+        // and while selecting from multiple accounts would take a significant
+        // amount of work to implement, the user interaction would happen on the
+        // login page.
+        bool showLoginBecauseOfPrompt = false; // we need this flag because we want to check for (and suppress) either OR BOTH of the prompt and max_age params
         if (request.PromptModes.Contains(OidcConstants.PromptModes.Login) ||
             request.PromptModes.Contains(OidcConstants.PromptModes.SelectAccount))
         {
             Logger.LogInformation("Showing login: request contains prompt={0}", request.PromptModes.ToSpaceSeparatedString());
-
             // remove prompt so when we redirect back in from login page
             // we won't think we need to force a prompt again
             request.RemovePrompt();
-                
+            showLoginBecauseOfPrompt = true;
+        }
+        if (request.MaxAge == 0)
+        {
+            Logger.LogInformation("Showing login: request contains max_age=0.");
+            // remove max_age=0 so when we redirect back in from login page
+            // we won't think we need to force a prompt again
+            request.RemoveMaxAge();
+            showLoginBecauseOfPrompt = true;
+        }
+        if (showLoginBecauseOfPrompt)
+        {
             return new InteractionResponse { IsLogin = true };
         }
 

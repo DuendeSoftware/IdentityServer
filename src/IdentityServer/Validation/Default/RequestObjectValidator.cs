@@ -150,7 +150,20 @@ internal class RequestObjectValidator : IRequestObjectValidator
         // Record the reference value, so we can know that PAR did happen
         request.PushedAuthorizationReferenceValue = GetReferenceValue(request);
         // Copy the PAR into the raw request so that validation will use the pushed parameters
+        // But keep the query parameters we add that indicate that we have processed 
+        // prompt and max_age, as those are not pushed
+        var processedPrompt = request.Raw[Constants.ProcessedPrompt];
+        var processedMaxAge = request.Raw[Constants.ProcessedMaxAge];
+
         request.Raw = pushedAuthorizationRequest.PushedParameters;
+        if (processedPrompt != null)
+        {
+            request.Raw[Constants.ProcessedPrompt] = processedPrompt;
+        }
+        if (processedMaxAge != null)
+        {
+            request.Raw[Constants.ProcessedMaxAge] = processedMaxAge;
+        }
 
         var bindingError = ValidatePushedAuthorizationBindingToClient(pushedAuthorizationRequest, request);
         if (bindingError != null)
