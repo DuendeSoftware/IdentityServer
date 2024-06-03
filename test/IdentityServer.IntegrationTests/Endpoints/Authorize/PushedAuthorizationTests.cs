@@ -200,6 +200,8 @@ public class PushedAuthorizationTests
     public async Task prompt_login_can_be_used_with_pushed_authorization(string parameterName, string parameterValue)
     {
         // Login before we start (we expect to still be prompted to login because of the prompt param)
+        _mockPipeline.Options.UserInteraction.CreateAccountUrl = IdentityServerPipeline.CreateAccountPage;
+        _mockPipeline.Options.UserInteraction.PromptValuesSupported.Add(OidcConstants.PromptModes.Create);
         await _mockPipeline.LoginAsync("bob");
         _mockPipeline.BrowserClient.AllowAutoRedirect = false;
 
@@ -227,18 +229,21 @@ public class PushedAuthorizationTests
 
         // Verify that authorize redirects to login
         authorizeResponse.Should().Be302Found();
-        authorizeResponse.Headers.Location.ToString().ToLower().Should().Match($"{IdentityServerPipeline.LoginPage.ToLower()}*");
+        var isPromptCreate = parameterName == "prompt" && parameterValue == "create";
+        var expectedLocation = isPromptCreate ? IdentityServerPipeline.CreateAccountPage : IdentityServerPipeline.LoginPage;
+        authorizeResponse.Headers.Location.ToString().ToLower().Should().Match($"{expectedLocation.ToLower()}*");
 
         // Verify that the UI prompts the user at this point
-        var loginResponse = await _mockPipeline.BrowserClient.GetAsync(authorizeResponse.Headers.Location);
-        loginResponse.Should().Be200Ok();
+        var uiResponse = await _mockPipeline.BrowserClient.GetAsync(authorizeResponse.Headers.Location);
+        uiResponse.Should().Be200Ok();
 
         // Now login and return to the return url we were given
-        var returnUrl = new Uri(new Uri(IdentityServerPipeline.BaseUrl), _mockPipeline.LoginReturnUrl);
+        var returnPath = isPromptCreate ? _mockPipeline.CreateAccountReturnUrl : _mockPipeline.LoginReturnUrl;
+        var returnUrl = new Uri(new Uri(IdentityServerPipeline.BaseUrl), returnPath);
         await _mockPipeline.LoginAsync("bob");
         var authorizeCallbackResponse = await _mockPipeline.BrowserClient.GetAsync(returnUrl);
         
-        // The authorize callback should continue back to the application (the prompt parameter is processed so we don't go back to login)
+        // The authorize callback should continue back to the application (the prompt parameter is processed so we don't go back to the UI)
         authorizeCallbackResponse.Should().Be302Found();
         authorizeCallbackResponse.Headers.Location.Should().Be(expectedCallback);
     }
