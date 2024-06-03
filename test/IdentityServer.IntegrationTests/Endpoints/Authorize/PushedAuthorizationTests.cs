@@ -194,6 +194,8 @@ public class PushedAuthorizationTests
 
     [Theory]
     [InlineData("prompt", "login")]
+    [InlineData("prompt", "select_account")]
+    [InlineData("prompt", "create")]
     [InlineData("max_age", "0")]
     public async Task prompt_login_can_be_used_with_pushed_authorization(string parameterName, string parameterValue)
     {
