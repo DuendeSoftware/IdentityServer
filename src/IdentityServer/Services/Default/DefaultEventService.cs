@@ -111,9 +111,17 @@ public class DefaultEventService : IEventService
     /// <returns></returns>
     protected virtual async Task PrepareEventAsync(Event evt)
     {
-        evt.ActivityId = Context.HttpContext.TraceIdentifier;
         evt.TimeStamp = Clock.UtcNow.DateTime;
         evt.ProcessId = Process.GetCurrentProcess().Id;
+
+        if (Context.HttpContext?.TraceIdentifier != null)
+        {
+            evt.ActivityId = Context.HttpContext.TraceIdentifier;
+        }
+        else
+        {
+            evt.ActivityId = "unknown";
+        }
 
         if (Context.HttpContext?.Connection.LocalIpAddress != null)
         {

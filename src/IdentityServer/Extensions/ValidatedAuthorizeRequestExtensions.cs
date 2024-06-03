@@ -10,6 +10,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Collections.Specialized;
+using System.Globalization;
 
 #pragma warning disable 1591
 
@@ -47,6 +48,15 @@ public static class ValidatedAuthorizeRequestExtensions
             OidcConstants.PromptModes.SelectAccount,
             OidcConstants.PromptModes.Create
         }).ToArray();
+    }
+
+    public static void RemoveMaxAge(this ValidatedAuthorizeRequest request)
+    {
+        if (request.MaxAge.HasValue)
+        {
+            request.Raw.Add(Constants.ProcessedMaxAge, request.MaxAge.Value.ToString(CultureInfo.InvariantCulture));
+            request.MaxAge = null;
+        }
     }
 
     public static string GetPrefixedAcrValue(this ValidatedAuthorizeRequest request, string prefix)

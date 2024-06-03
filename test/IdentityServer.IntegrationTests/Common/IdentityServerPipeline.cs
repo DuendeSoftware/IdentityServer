@@ -37,6 +37,8 @@ public class IdentityServerPipeline
     public const string LoginPage = BaseUrl + "/account/login";
     public const string LogoutPage = BaseUrl + "/account/logout";
     public const string ConsentPage = BaseUrl + "/account/consent";
+    public const string CreateAccountPage = BaseUrl + "/account/create";
+
     public const string ErrorPage = BaseUrl + "/home/error";
 
     public const string DeviceAuthorization = BaseUrl + "/connect/deviceauthorization";
