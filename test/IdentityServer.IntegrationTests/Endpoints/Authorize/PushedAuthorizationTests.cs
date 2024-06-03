@@ -7,6 +7,7 @@ using Duende.IdentityServer.Test;
 using FluentAssertions;
 using IdentityModel;
 using IntegrationTests.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -188,6 +189,63 @@ public class PushedAuthorizationTests
         parJson.Should().NotBeNull();
         parJson.RootElement.GetProperty("error").GetString()
             .Should().Be(OidcConstants.AuthorizeErrors.InvalidRequest);
+    }
+
+
+    [Theory]
+    [InlineData("prompt", "login")]
+    [InlineData("prompt", "select_account")]
+    [InlineData("prompt", "create")]
+    [InlineData("max_age", "0")]
+    public async Task prompt_login_can_be_used_with_pushed_authorization(string parameterName, string parameterValue)
+    {
+        // Login before we start (we expect to still be prompted to login because of the prompt param)
+        _mockPipeline.Options.UserInteraction.CreateAccountUrl = IdentityServerPipeline.CreateAccountPage;
+        _mockPipeline.Options.UserInteraction.PromptValuesSupported.Add(OidcConstants.PromptModes.Create);
+        await _mockPipeline.LoginAsync("bob");
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        // Push Authorization
+        var expectedCallback = _client.RedirectUris.First();
+        var expectedState = "123_state";
+        var (parJson, statusCode) = await _mockPipeline.PushAuthorizationRequestAsync(
+            redirectUri: expectedCallback,
+            state: expectedState,
+            extra: new Dictionary<string, string>
+            {
+                { parameterName, parameterValue }
+            }
+        );
+        statusCode.Should().Be(HttpStatusCode.Created);
+
+        // Authorize using pushed request
+        var authorizeUrl = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            extra: new
+            {
+                request_uri = parJson.RootElement.GetProperty("request_uri").GetString()
+            });
+        var authorizeResponse = await _mockPipeline.BrowserClient.GetAsync(authorizeUrl);
+
+        // Verify that authorize redirects to login
+        authorizeResponse.Should().Be302Found();
+        var isPromptCreate = parameterName == "prompt" && parameterValue == "create";
+        var expectedLocation = isPromptCreate ? IdentityServerPipeline.CreateAccountPage : IdentityServerPipeline.LoginPage;
+        authorizeResponse.Headers.Location.ToString().ToLower().Should().Match($"{expectedLocation.ToLower()}*");
+
+        // Verify that the UI prompts the user at this point
+        var uiResponse = await _mockPipeline.BrowserClient.GetAsync(authorizeResponse.Headers.Location);
+        uiResponse.Should().Be200Ok();
+
+        // Now login and return to the return url we were given
+        var returnPath = isPromptCreate ? _mockPipeline.CreateAccountReturnUrl : _mockPipeline.LoginReturnUrl;
+        var returnUrl = new Uri(new Uri(IdentityServerPipeline.BaseUrl), returnPath);
+        await _mockPipeline.LoginAsync("bob");
+        var authorizeCallbackResponse = await _mockPipeline.BrowserClient.GetAsync(returnUrl);
+        
+        // The authorize callback should continue back to the application (the prompt parameter is processed so we don't go back to the UI)
+        authorizeCallbackResponse.Should().Be302Found();
+        authorizeCallbackResponse.Headers.Location.Should().Be(expectedCallback);
     }
 
     private void ConfigureScopesAndResources()

@@ -91,6 +91,16 @@ class AuthorizeInteractionPageHttpWriter : IHttpResponseWriter<AuthorizeInteract
                 returnUrl = returnUrl
                     .AddQueryString(OidcConstants.AuthorizeRequest.RequestUri, requestUri)
                     .AddQueryString(OidcConstants.AuthorizeRequest.ClientId, result.Request.ClientId);
+                var processedPrompt = result.Request.Raw[Constants.ProcessedPrompt];
+                if (processedPrompt != null)
+                {
+                    returnUrl = returnUrl.AddQueryString(Constants.ProcessedPrompt, processedPrompt);
+                }
+                var processedMaxAge = result.Request.Raw[Constants.ProcessedMaxAge];
+                if (processedMaxAge != null)
+                {
+                    returnUrl = returnUrl.AddQueryString(Constants.ProcessedMaxAge, processedMaxAge);
+                }
             } 
             else
             {
