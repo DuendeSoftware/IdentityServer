@@ -1,14 +1,14 @@
 <Project>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
-        <FrameworkVersion>6.0.0</FrameworkVersion>
+        <FrameworkVersion>6.0.26</FrameworkVersion>
         <ExtensionsVersion>6.0.0</ExtensionsVersion>
         <EntityFrameworkVersion>6.0.0</EntityFrameworkVersion>
         <WilsonVersion>6.35.0</WilsonVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0'">
-        <FrameworkVersion>7.0.0</FrameworkVersion>
+        <FrameworkVersion>7.0.15</FrameworkVersion>
         <ExtensionsVersion>7.0.0</ExtensionsVersion>
         <EntityFrameworkVersion>7.0.0</EntityFrameworkVersion>
         <WilsonVersion>6.35.0</WilsonVersion>
