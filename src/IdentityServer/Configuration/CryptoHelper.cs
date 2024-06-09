@@ -69,16 +69,23 @@ public static class CryptoHelper
     /// <returns></returns>
     public static string CreateHashClaimValue(string value, string tokenSigningAlgorithm)
     {
-        using (var sha = GetHashAlgorithmForSigningAlgorithm(tokenSigningAlgorithm))
+        var signingAlgorithmBits = int.Parse(tokenSigningAlgorithm.Substring(tokenSigningAlgorithm.Length - 3));
+        var toHash = Encoding.ASCII.GetBytes(value);
+
+        var hash = signingAlgorithmBits switch
         {
-            var hash = sha.ComputeHash(Encoding.ASCII.GetBytes(value));
-            var size = (sha.HashSize / 8) / 2;
+            256 => SHA256.HashData(toHash),
+            384 => SHA384.HashData(toHash),
+            512 => SHA512.HashData(toHash),
+            _ => throw new InvalidOperationException($"Invalid signing algorithm: {tokenSigningAlgorithm}"),
+        };
 
-            var leftPart = new byte[size];
-            Array.Copy(hash, leftPart, size);
+        var size = (signingAlgorithmBits / 8) / 2;
 
-            return Base64Url.Encode(leftPart);
-        }
+        var leftPart = new byte[size];
+        Array.Copy(hash, leftPart, size);
+
+        return Base64Url.Encode(leftPart);
     }
 
     /// <summary>

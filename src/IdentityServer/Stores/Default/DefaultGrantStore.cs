@@ -98,12 +98,9 @@ public class DefaultGrantStore<T>
         if (value.EndsWith(HexEncodingFormatSuffix))
         {
             // newer format >= v6; uses hex encoding to avoid collation issues
-            using (var sha = SHA256.Create())
-            {
-                var bytes = Encoding.UTF8.GetBytes(key);
-                var hash = sha.ComputeHash(bytes);
-                return BitConverter.ToString(hash).Replace("-", "");
-            }
+            var bytes = Encoding.UTF8.GetBytes(key);
+            var hash = SHA256.HashData(bytes);
+            return BitConverter.ToString(hash).Replace("-", "");
         }
 
         // old format <= v5

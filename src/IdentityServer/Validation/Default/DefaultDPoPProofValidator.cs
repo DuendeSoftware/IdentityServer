@@ -249,9 +249,8 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
                 return;
             }
 
-            using var sha = SHA256.Create();
             var bytes = Encoding.UTF8.GetBytes(context.AccessToken);
-            var hash = sha.ComputeHash(bytes);
+            var hash = SHA256.HashData(bytes);
 
             var accessTokenHash = Base64Url.Encode(hash);
             if (accessTokenHash != result.AccessTokenHash)

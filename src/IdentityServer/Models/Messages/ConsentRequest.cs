@@ -88,13 +88,10 @@ public class ConsentRequest
             var normalizedScopes = ScopesRequested?.OrderBy(x => x).Distinct().Aggregate((x, y) => x + "," + y);
             var value = $"{ClientId}:{Subject}:{Nonce}:{normalizedScopes}";
 
-            using (var sha = SHA256.Create())
-            {
-                var bytes = Encoding.UTF8.GetBytes(value);
-                var hash = sha.ComputeHash(bytes);
+            var bytes = Encoding.UTF8.GetBytes(value);
+            var hash = SHA256.HashData(bytes);
 
-                return Base64Url.Encode(hash);
-            }
+            return Base64Url.Encode(hash);
         }
     }
 }

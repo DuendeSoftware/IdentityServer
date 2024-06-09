@@ -23,13 +23,10 @@ public static class HashExtensions
     {
         if (input.IsMissing()) return string.Empty;
 
-        using (var sha = SHA256.Create())
-        {
-            var bytes = Encoding.UTF8.GetBytes(input);
-            var hash = sha.ComputeHash(bytes);
+        var bytes = Encoding.UTF8.GetBytes(input);
+        var hash = SHA256.HashData(bytes);
 
-            return Convert.ToBase64String(hash);
-        }
+        return Convert.ToBase64String(hash);
     }
 
     /// <summary>
@@ -44,10 +41,7 @@ public static class HashExtensions
             return null;
         }
 
-        using (var sha = SHA256.Create())
-        {
-            return sha.ComputeHash(input);
-        }
+        return SHA256.HashData(input);
     }
 
     /// <summary>
@@ -59,12 +53,9 @@ public static class HashExtensions
     {
         if (input.IsMissing()) return string.Empty;
 
-        using (var sha = SHA512.Create())
-        {
-            var bytes = Encoding.UTF8.GetBytes(input);
-            var hash = sha.ComputeHash(bytes);
+        var bytes = Encoding.UTF8.GetBytes(input);
+        var hash = SHA512.HashData(bytes);
 
-            return Convert.ToBase64String(hash);
-        }
+        return Convert.ToBase64String(hash);
     }
 }
