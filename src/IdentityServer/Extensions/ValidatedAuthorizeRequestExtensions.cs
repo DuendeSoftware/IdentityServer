@@ -155,12 +155,7 @@ public static class ValidatedAuthorizeRequestExtensions
         }
 
         var bytes = Encoding.UTF8.GetBytes(clientId + origin + sessionId + salt);
-        byte[] hash;
-
-        using (var sha = SHA256.Create())
-        {
-            hash = sha.ComputeHash(bytes);
-        }
+        var hash = SHA256.HashData(bytes);
 
         return Base64Url.Encode(hash) + "." + salt;
     }
