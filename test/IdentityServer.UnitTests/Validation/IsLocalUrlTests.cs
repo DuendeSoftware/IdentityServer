@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Services;
@@ -7,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using UnitTests.Common;
 using UnitTests.Endpoints.Authorize;
 using Xunit;
+
+namespace UnitTests.Validation;
 
 public class IsLocalUrlTests
 {
@@ -19,74 +22,126 @@ public class IsLocalUrlTests
         "&response_mode=form_post" +
         "&nonce=nonce" +
         "&state=state";
-    private const string ExternalWithControlCharacters =
-        "/	/evil.com/connect/authorize/callback" + // Note tab character between slashes
-        queryParameters;
-    private const string ExternalWithoutControlCharacters = 
-        "//evil.com/"
-        + queryParameters;
-    private const string Local =
-        "/connect/authorize/callback"
-        + queryParameters;
 
-    [Fact]
-    public async void GetAuthorizationContextAsync()
+    public static IEnumerable<object[]> TestCases =>
+        new List<object[]>
+        {
+            new object[] { "/connect/authorize/callback" + queryParameters, true },
+            new object[] { "//evil.com/" + queryParameters, false },
+            // Tab character
+            new object[] { "/\t/evil.com/connect/authorize/callback" + queryParameters, false },
+            // Spaces
+            //new object[] { "/ /evil.com/connect/authorize/callback" + queryParameters, false },
+            //new object[] { "/  /evil.com/connect/authorize/callback" + queryParameters, false },
+            //new object[] { "/   /evil.com/connect/authorize/callback" + queryParameters, false },
+            // Tabs and Spaces
+            new object[] { "/ \t/evil.com/connect/authorize/callback" + queryParameters, false },
+            new object[] { "/  \t/evil.com/connect/authorize/callback" + queryParameters, false },
+            new object[] { "/   \t/evil.com/connect/authorize/callback" + queryParameters, false },
+            new object[] { "/\t /evil.com/connect/authorize/callback" + queryParameters, false },
+            new object[] { "/\t  /evil.com/connect/authorize/callback" + queryParameters, false },
+            new object[] { "/\t   /evil.com/connect/authorize/callback" + queryParameters, false },
+            // Various new line related things
+            new object[] { "/\n/evil.com/" + queryParameters, false },
+            new object[] { "/\n\n/evil.com/" + queryParameters, false },
+            new object[] { "/\r/evil.com/" + queryParameters, false },
+            new object[] { "/\r\r/evil.com/" + queryParameters, false },
+            new object[] { "/\r\n/evil.com/" + queryParameters, false },
+            new object[] { "/\r\n\r\n/evil.com/" + queryParameters, false },
+        };
+
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public async void GetAuthorizationContextAsync(string returnUrl, bool expected)
     {
         var interactionService = new DefaultIdentityServerInteractionService(null, null, null, null, null, null, null, 
             GetReturnUrlParser(), new LoggerFactory().CreateLogger<DefaultIdentityServerInteractionService>());
-
-        (await interactionService.GetAuthorizationContextAsync(Local)).Should().NotBeNull();
-        (await interactionService.GetAuthorizationContextAsync(ExternalWithoutControlCharacters)).Should().BeNull();
-        (await interactionService.GetAuthorizationContextAsync(ExternalWithControlCharacters)).Should().BeNull();
+        var actual = await interactionService.GetAuthorizationContextAsync(returnUrl);
+        if (expected)
+        {
+            actual.Should().NotBeNull();
+        }
+        else
+        {
+            actual.Should().BeNull();
+        }
     }
 
-    [Fact]
+    [Theory]
+    [MemberData(nameof(TestCases))]
     // TODO - Test the duplicated method in the EF package in later release branches
-    public void IsLocalUrl()
+    public void IsLocalUrl(string returnUrl, bool expected)
     {
-        Local.IsLocalUrl().Should().BeTrue();
-        ExternalWithoutControlCharacters.IsLocalUrl().Should().BeFalse();
-        ExternalWithControlCharacters.IsLocalUrl().Should().BeFalse();
+        returnUrl.IsLocalUrl().Should().Be(expected);
     }
 
-    [Fact]
-    public void GetIdentityServerRelativeUrl()
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public void GetIdentityServerRelativeUrl(string returnUrl, bool expected)
     {
         var serverUrls = new MockServerUrls
         {
             Origin = "https://localhost:5001",
             BasePath = "/"
         };
-
-        serverUrls.GetIdentityServerRelativeUrl(Local).Should().NotBeNull();
-        serverUrls.GetIdentityServerRelativeUrl(ExternalWithoutControlCharacters).Should().BeNull();
-        serverUrls.GetIdentityServerRelativeUrl(ExternalWithControlCharacters).Should().BeNull();
+        var actual = serverUrls.GetIdentityServerRelativeUrl(returnUrl);
+        if (expected)
+        {
+            actual.Should().NotBeNull();
+        }
+        else
+        {
+            actual.Should().BeNull();
+        }
     }
 
-    [Fact]
-    public async void OidcReturnUrlParser()
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public async void OidcReturnUrlParser_ParseAsync(string returnUrl, bool expected)
     {
         var oidcParser = GetOidcReturnUrlParser();
-
-        (await oidcParser.ParseAsync(Local)).Should().NotBeNull();
-        oidcParser.IsValidReturnUrl(Local).Should().BeTrue();
-        (await oidcParser.ParseAsync(ExternalWithoutControlCharacters)).Should().BeNull();
-        oidcParser.IsValidReturnUrl(ExternalWithoutControlCharacters).Should().BeFalse();
-        (await oidcParser.ParseAsync(ExternalWithControlCharacters)).Should().BeNull();
-        oidcParser.IsValidReturnUrl(ExternalWithControlCharacters).Should().BeFalse();
+        var actual = await oidcParser.ParseAsync(returnUrl);
+        if (expected)
+        {
+            actual.Should().NotBeNull();
+        }
+        else
+        {
+            actual.Should().BeNull();
+        }
     }
 
-    [Fact]
-    public async void ReturnUrlParser()
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public void OidcReturnUrlParser_IsValidReturnUrl(string returnUrl, bool expected)
+    {
+        var oidcParser = GetOidcReturnUrlParser();
+        oidcParser.IsValidReturnUrl(returnUrl).Should().Be(expected);
+    }
+
+
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public void ReturnUrlParser_IsValidReturnUrl(string returnUrl, bool expected)
     {
         var parser = GetReturnUrlParser();
+        parser.IsValidReturnUrl(returnUrl).Should().Be(expected);
+    }
 
-        (await parser.ParseAsync(Local)).Should().NotBeNull();
-        parser.IsValidReturnUrl(Local).Should().BeTrue();
-        (await parser.ParseAsync(ExternalWithoutControlCharacters)).Should().BeNull();
-        parser.IsValidReturnUrl(ExternalWithoutControlCharacters).Should().BeFalse();
-        (await parser.ParseAsync(ExternalWithControlCharacters)).Should().BeNull();
-        parser.IsValidReturnUrl(ExternalWithControlCharacters).Should().BeFalse();
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public async void ReturnUrlParser_ParseAsync(string returnUrl, bool expected)
+    {
+        var parser = GetReturnUrlParser();
+        var actual = await parser.ParseAsync(returnUrl);
+        if (expected)
+        {
+            actual.Should().NotBeNull();
+        }
+        else
+        {
+            actual.Should().BeNull();
+        }
     }
 
     private static ReturnUrlParser GetReturnUrlParser()
