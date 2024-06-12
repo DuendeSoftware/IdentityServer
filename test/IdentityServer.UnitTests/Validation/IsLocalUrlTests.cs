@@ -20,7 +20,7 @@ public class IsLocalUrlTests
         "&nonce=nonce" +
         "&state=state";
     private const string ExternalWithControlCharacters =
-        "/  /evil.com/connect/authorize/callback" + // Note tab character between slashes
+        "/	/evil.com/connect/authorize/callback" + // Note tab character between slashes
         queryParameters;
     private const string ExternalWithoutControlCharacters = 
         "//evil.com/"
