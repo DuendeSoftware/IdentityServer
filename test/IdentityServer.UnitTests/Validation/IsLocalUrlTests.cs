@@ -30,6 +30,18 @@ public class IsLocalUrlTests
         + queryParameters;
 
     [Fact]
+    public async void GetAuthorizationContextAsync()
+    {
+        var interactionService = new DefaultIdentityServerInteractionService(null, null, null, null, null, null, null, 
+            GetReturnUrlParser(), new LoggerFactory().CreateLogger<DefaultIdentityServerInteractionService>());
+
+        (await interactionService.GetAuthorizationContextAsync(Local)).Should().NotBeNull();
+        (await interactionService.GetAuthorizationContextAsync(ExternalWithoutControlCharacters)).Should().BeNull();
+        (await interactionService.GetAuthorizationContextAsync(ExternalWithControlCharacters)).Should().BeNull();
+    }
+
+    [Fact]
+    // TODO - Test the duplicated method in the EF package in later release branches
     public void IsLocalUrl()
     {
         Local.IsLocalUrl().Should().BeTrue();
@@ -54,7 +66,7 @@ public class IsLocalUrlTests
     [Fact]
     public async void OidcReturnUrlParser()
     {
-        var oidcParser = GetOidcParser();
+        var oidcParser = GetOidcReturnUrlParser();
 
         (await oidcParser.ParseAsync(Local)).Should().NotBeNull();
         oidcParser.IsValidReturnUrl(Local).Should().BeTrue();
@@ -67,8 +79,7 @@ public class IsLocalUrlTests
     [Fact]
     public async void ReturnUrlParser()
     {
-        var oidcParser = GetOidcParser();
-        var parser = new ReturnUrlParser([oidcParser]);
+        var parser = GetReturnUrlParser();
 
         (await parser.ParseAsync(Local)).Should().NotBeNull();
         parser.IsValidReturnUrl(Local).Should().BeTrue();
@@ -78,7 +89,14 @@ public class IsLocalUrlTests
         parser.IsValidReturnUrl(ExternalWithControlCharacters).Should().BeFalse();
     }
 
-    private static OidcReturnUrlParser GetOidcParser()
+    private static ReturnUrlParser GetReturnUrlParser()
+    {
+        var oidcParser = GetOidcReturnUrlParser();
+        var parser = new ReturnUrlParser(new IReturnUrlParser[] { oidcParser });
+        return parser;
+    }
+
+    private static OidcReturnUrlParser GetOidcReturnUrlParser()
     {
         return new OidcReturnUrlParser(
             new IdentityServerOptions(),
@@ -93,4 +111,6 @@ public class IsLocalUrlTests
             new MockServerUrls(),
             new LoggerFactory().CreateLogger<OidcReturnUrlParser>());
     }
+
+
 }
