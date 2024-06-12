@@ -30,10 +30,6 @@ public class IsLocalUrlTests
             new object[] { "//evil.com/" + queryParameters, false },
             // Tab character
             new object[] { "/\t/evil.com/connect/authorize/callback" + queryParameters, false },
-            // Spaces
-            //new object[] { "/ /evil.com/connect/authorize/callback" + queryParameters, false },
-            //new object[] { "/  /evil.com/connect/authorize/callback" + queryParameters, false },
-            //new object[] { "/   /evil.com/connect/authorize/callback" + queryParameters, false },
             // Tabs and Spaces
             new object[] { "/ \t/evil.com/connect/authorize/callback" + queryParameters, false },
             new object[] { "/  \t/evil.com/connect/authorize/callback" + queryParameters, false },
@@ -48,6 +44,19 @@ public class IsLocalUrlTests
             new object[] { "/\r\r/evil.com/" + queryParameters, false },
             new object[] { "/\r\n/evil.com/" + queryParameters, false },
             new object[] { "/\r\n\r\n/evil.com/" + queryParameters, false },
+            // Tabs and Newlines
+            new object[] { "/\t\n/evil.com/" + queryParameters, false },
+            new object[] { "/\t\n\n/evil.com/" + queryParameters, false },
+            new object[] { "/\t\r/evil.com/" + queryParameters, false },
+            new object[] { "/\t\r\r/evil.com/" + queryParameters, false },
+            new object[] { "/\t\r\n/evil.com/" + queryParameters, false },
+            new object[] { "/\t\r\n\r\n/evil.com/" + queryParameters, false },
+            new object[] { "/\n/evil.com\t/" + queryParameters, false },
+            new object[] { "/\n\n/evil.com\t/" + queryParameters, false },
+            new object[] { "/\r/evil.com\t/" + queryParameters, false },
+            new object[] { "/\r\r/evil.com\t/" + queryParameters, false },
+            new object[] { "/\r\n/evil.com\t/" + queryParameters, false },
+            new object[] { "/\r\n\r\n/evil.com\t/" + queryParameters, false },
         };
 
     [Theory]
