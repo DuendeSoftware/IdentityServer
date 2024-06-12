@@ -78,7 +78,6 @@ public class IsLocalUrlTests
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    // TODO - Test the duplicated method in the EF package in later release branches
     public void IsLocalUrl(string returnUrl, bool expected)
     {
         returnUrl.IsLocalUrl().Should().Be(expected);
