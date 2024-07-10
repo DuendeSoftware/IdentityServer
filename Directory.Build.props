@@ -30,6 +30,7 @@
     <PropertyGroup>
         <MinVerAutoIncrement>minor</MinVerAutoIncrement>
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904;CA2017</WarningsNotAsErrors>
         <!--<WarningsNotAsErrors>9057</WarningsNotAsErrors>-->
     </PropertyGroup>
 </Project>
