@@ -40,9 +40,10 @@ jobs:
       run: ./build.sh
     - if: matrix.runs-on == 'windows-latest' && github.ref != 'refs/heads/main' && !contains(github.ref, 'refs/tags/')
       run: ./build.ps1
-    - if: (matrix.runs-on == 'macOS-latest') && (github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/'))
+    - if: (matrix.runs-on == 'windows-latest') && (github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/'))
       env:
         SignClientSecret: ${{ secrets.SIGNCLIENTSECRET }}
       run: |
-        ./build.sh sign
+        ./remove-sectigo-cert.ps1
+        ./build.ps1 sign
         dotnet nuget push .\artifacts\*.nupkg -s https://www.myget.org/F/duende_identityserver/api/v2/package -k ${{ secrets.MYGET }}
