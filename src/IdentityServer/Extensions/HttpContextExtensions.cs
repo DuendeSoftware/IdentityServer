@@ -46,7 +46,6 @@ public static class HttpContextExtensions
             if (currentSubId == logoutMessage?.SubjectId)
             {
                 clientIds = clientIds.Union(await userSession.GetClientListAsync());
-                clientIds = clientIds.Distinct();
             }
 
             endSessionMsg = new LogoutNotificationContext
