@@ -135,5 +135,5 @@ public class UserInteractionOptions
     /// The collection of OIDC prompt modes supported and that will be published in discovery.
     /// The value "create" is omitted unless the CreateAccountUrl value is set.
     /// </summary>
-    internal ICollection<string> PromptValuesSupported { get; set; } = new HashSet<string>(Constants.SupportedPromptModes);
+    public ICollection<string> PromptValuesSupported { get; set; } = new HashSet<string>(Constants.SupportedPromptModes);
 }
