@@ -242,7 +242,7 @@ public class KeyManager : IKeyManager
             {
                 // there are younger keys, then they might also be within the window of the key activation delay
                 // so find the youngest one and treat that one as if it's the active key.
-                activeKey = keys.OrderByDescending(x => x.Created).First();
+                activeKey = keys.MaxBy(x => x.Created);
             }
 
             // if no younger keys, then check if we're nearing the expiration of active key
