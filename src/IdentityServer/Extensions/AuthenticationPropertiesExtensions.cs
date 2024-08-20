@@ -47,13 +47,12 @@ public static class AuthenticationPropertiesExtensions
     /// <returns></returns>
     public static IEnumerable<string> GetClientList(this AuthenticationProperties properties)
     {
-        if (properties?.Items.ContainsKey(ClientListKey) == true)
+        if (properties?.Items.TryGetValue(ClientListKey, out var value) == true)
         {
-            var value = properties.Items[ClientListKey];
             return DecodeList(value);
         }
 
-        return Enumerable.Empty<string>();
+        return [];
     }
 
     /// <summary>
