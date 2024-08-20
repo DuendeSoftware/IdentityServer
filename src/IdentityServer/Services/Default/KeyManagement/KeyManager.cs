@@ -624,7 +624,7 @@ public class KeyManager : IKeyManager
         // discovery). we don't want the second server using a key that's not in the first server's
         // discovery document. this will be somewhat mitigated by the initial duration where we 
         // deliberately ignore the cache.
-        var result = keys.OrderBy(x => x.Created).First();
+        var result = keys.MinBy(x => x.Created);
         return result;
     }
 
