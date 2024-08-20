@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -100,10 +100,7 @@ public static class AuthenticationPropertiesExtensions
         var clients = properties.GetClientList();
         if (!clients.Contains(clientId))
         {
-            var update = clients.ToList();
-            update.Add(clientId);
-                
-            properties.SetClientList(update);
+            properties.SetClientList(clients.Append(clientId));
         }
     }
 
