@@ -67,7 +67,7 @@ public class DefaultUserSession : IUserSession
     /// The name of the check session cookie.
     /// </value>
     protected string CheckSessionCookieName => Options.Authentication.CheckSessionCookieName;
-        
+
     /// <summary>
     /// Gets the domain of the check session cookie.
     /// </summary>
@@ -310,12 +310,8 @@ public class DefaultUserSession : IUserSession
         await AuthenticateAsync();
         if (Properties != null)
         {
-            var clientIds = Properties.GetClientList();
-            if (!clientIds.Contains(clientId))
-            {
-                Properties.AddClientId(clientId);
-                await UpdateSessionCookie();
-            }
+            Properties.AddClientId(clientId);
+            await UpdateSessionCookie();
         }
     }
 
