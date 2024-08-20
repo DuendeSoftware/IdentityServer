@@ -26,12 +26,7 @@ public static class AuthenticationPropertiesExtensions
     /// <returns></returns>
     public static string GetSessionId(this AuthenticationProperties properties)
     {
-        if (properties?.Items.ContainsKey(SessionIdKey) == true)
-        {
-            return properties.Items[SessionIdKey];
-        }
-
-        return null;
+        return properties?.Items.TryGetValue(SessionIdKey, out var value) == true ? value : null;
     }
 
     /// <summary>
