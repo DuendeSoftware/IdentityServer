@@ -18,4 +18,10 @@ public interface IIssuerNameService
     /// </summary>
     /// <returns></returns>
     Task<string> GetCurrentAsync();
+
+    /// <summary>
+    /// Returns the list of valid issuers
+    /// </summary>
+    /// <returns></returns>
+    Task<string[]> GetListAsync();
 }
