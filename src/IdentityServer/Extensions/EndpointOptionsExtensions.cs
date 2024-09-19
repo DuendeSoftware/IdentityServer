@@ -23,6 +23,7 @@ internal static class EndpointOptionsExtensions
             IdentityServerConstants.EndpointNames.Token => options.EnableTokenEndpoint,
             IdentityServerConstants.EndpointNames.UserInfo => options.EnableUserInfoEndpoint,
             IdentityServerConstants.EndpointNames.PushedAuthorization => options.EnablePushedAuthorizationEndpoint,
+            IdentityServerConstants.EndpointNames.BackchannelAuthentication => options.EnableBackchannelAuthenticationEndpoint,
             _ => true
         };
     }
