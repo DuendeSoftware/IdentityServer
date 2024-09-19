@@ -24,7 +24,7 @@ public class CreateClientModel : ClientSummaryModel
     public string Secret { get; set; } = default!;
 }
 
-public class ClientModel : CreateClientModel, IValidatableObject
+public class EditClientModel : CreateClientModel, IValidatableObject
 {
     [Required]
     public string AllowedScopes { get; set; } = default!;
@@ -91,7 +91,7 @@ public class ClientRepository
         return await result.ToArrayAsync();
     }
 
-    public async Task<ClientModel?> GetByIdAsync(string id)
+    public async Task<EditClientModel?> GetByIdAsync(string id)
     {
         var client = await _context.Clients
             .Include(x => x.AllowedGrantTypes)
@@ -103,7 +103,7 @@ public class ClientRepository
 
         if (client == null) return null;
 
-        return new ClientModel
+        return new EditClientModel
         {
             ClientId = client.ClientId,
             Name = client.ClientName,
@@ -146,7 +146,7 @@ public class ClientRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(ClientModel model)
+    public async Task UpdateAsync(EditClientModel model)
     {
         ArgumentNullException.ThrowIfNull(model);
         var client = await _context.Clients

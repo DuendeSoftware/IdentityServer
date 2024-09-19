@@ -5,6 +5,7 @@
 using System;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Validation;
@@ -31,7 +32,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void EmptyContext()
+    public async Task EmptyContext()
     {
         var context = new DefaultHttpContext();
 
@@ -42,7 +43,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void Valid_BasicAuthentication_Request()
+    public async Task Valid_BasicAuthentication_Request()
     {
         var context = new DefaultHttpContext();
 
@@ -67,7 +68,7 @@ public class BasicAuthenticationSecretParsing
     [InlineData("cl+ ient", "se+cret")]
     [InlineData("cl+ ient", "se+ cret")]
     [InlineData("client:urn", "secret")]
-    public async void Valid_BasicAuthentication_Request_in_various_Formats_Manual(string userName, string password)
+    public async Task Valid_BasicAuthentication_Request_in_various_Formats_Manual(string userName, string password)
     {
         Encoding encoding = Encoding.UTF8;
         var context = new DefaultHttpContext();
@@ -94,7 +95,7 @@ public class BasicAuthenticationSecretParsing
     [InlineData("cl+ ient", "se+cret")]
     [InlineData("cl+ ient", "se+ cret")]
     [InlineData("client:urn", "secret")]
-    public async void Valid_BasicAuthentication_Request_in_various_Formats_IdentityModel(string userName, string password)
+    public async Task Valid_BasicAuthentication_Request_in_various_Formats_IdentityModel(string userName, string password)
     {
         Encoding encoding = Encoding.UTF8;
         var context = new DefaultHttpContext();
@@ -112,7 +113,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void Valid_BasicAuthentication_Request_With_UserName_Only_And_Colon_For_Optional_ClientSecret()
+    public async Task Valid_BasicAuthentication_Request_With_UserName_Only_And_Colon_For_Optional_ClientSecret()
     {
         var context = new DefaultHttpContext();
             
@@ -129,7 +130,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void BasicAuthentication_Request_With_Empty_Basic_Header()
+    public async Task BasicAuthentication_Request_With_Empty_Basic_Header()
     {
         var context = new DefaultHttpContext();
 
@@ -142,7 +143,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void Valid_BasicAuthentication_Request_ClientId_Too_Long()
+    public async Task Valid_BasicAuthentication_Request_ClientId_Too_Long()
     {
         var context = new DefaultHttpContext();
 
@@ -159,7 +160,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void Valid_BasicAuthentication_Request_ClientSecret_Too_Long()
+    public async Task Valid_BasicAuthentication_Request_ClientSecret_Too_Long()
     {
         var context = new DefaultHttpContext();
 
@@ -185,7 +186,7 @@ public class BasicAuthenticationSecretParsing
     [InlineData(107)]
     [InlineData(108)]
     [Trait("Category", Category)]
-    public async void Valid_BasicAuthentication_Request_Maximum_Url_Encoded_Values_Should_Work(int maxLength)
+    public async Task Valid_BasicAuthentication_Request_Maximum_Url_Encoded_Values_Should_Work(int maxLength)
     {
         var parser = CreateParser(maxLength);
 
@@ -229,7 +230,7 @@ public class BasicAuthenticationSecretParsing
     [InlineData(107)]
     [InlineData(108)]
     [Trait("Category", Category)]
-    public async void Valid_BasicAuthentication_Request_Authorization_Header_Too_Long_Should_Fail(int maxLength)
+    public async Task Valid_BasicAuthentication_Request_Authorization_Header_Too_Long_Should_Fail(int maxLength)
     {
         var parser = CreateParser(maxLength);
 
@@ -249,7 +250,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void BasicAuthentication_Request_With_Empty_Basic_Header_Variation()
+    public async Task BasicAuthentication_Request_With_Empty_Basic_Header_Variation()
     {
         var context = new DefaultHttpContext();
 
@@ -262,7 +263,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void BasicAuthentication_Request_With_Unknown_Scheme()
+    public async Task BasicAuthentication_Request_With_Unknown_Scheme()
     {
         var context = new DefaultHttpContext();
 
@@ -275,7 +276,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void BasicAuthentication_Request_With_Malformed_Credentials_NoBase64_Encoding()
+    public async Task BasicAuthentication_Request_With_Malformed_Credentials_NoBase64_Encoding()
     {
         var context = new DefaultHttpContext();
 
@@ -288,7 +289,7 @@ public class BasicAuthenticationSecretParsing
 
     [Fact]
     [Trait("Category", Category)]
-    public async void BasicAuthentication_Request_With_Malformed_Credentials_Base64_Encoding_UserName_Only()
+    public async Task BasicAuthentication_Request_With_Malformed_Credentials_Base64_Encoding_UserName_Only()
     {
         var context = new DefaultHttpContext();
 
