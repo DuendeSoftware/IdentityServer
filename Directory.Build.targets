@@ -26,7 +26,7 @@
 
         <!-- testing -->
         <PackageReference Update="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(FrameworkVersion)" />
-        <PackageReference Update="CsQuery.NETStandard" Version="1.3.6.1" />
+        <PackageReference Update="AngleSharp" Version="1.1.2" />
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.8.0" />
 
 

@@ -2,7 +2,9 @@
 // See LICENSE in the project root for license information.
 
 
-using CsQuery;
+using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
@@ -110,18 +112,17 @@ public class TestBrowserClient : HttpClient
     {
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var htmlForm = new HtmlForm
-        {
-
-        };
+        var htmlForm = new HtmlForm();
 
         var html = await response.Content.ReadAsStringAsync();
 
-        var dom = new CQ(html);
-        var form = dom.Find(selector ?? "form");
-        form.Length.Should().Be(1);
+        var parser = new HtmlParser();
+        var document = await parser.ParseDocumentAsync(html);
 
-        var postUrl = form.Attr("action");
+        var form = document.QuerySelector(selector ?? "form") as IHtmlFormElement;
+        form.Should().NotBeNull();
+
+        var postUrl = form.Action;
         if (!postUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
         {
             if (postUrl.StartsWith("/"))
@@ -135,14 +136,13 @@ public class TestBrowserClient : HttpClient
         }
         htmlForm.Action = postUrl;
 
-
         var data = new Dictionary<string, string>();
 
-        var inputs = form.Find("input");
-        foreach (var input in inputs)
+        var inputs = form.QuerySelectorAll("input");
+        foreach (var input in inputs.OfType<IHtmlInputElement>())
         {
-            var name = input.GetAttribute("name");
-            var value = input.GetAttribute("value");
+            var name = input.Name;
+            var value = input.Value;
 
             if (!data.ContainsKey(name))
             {
@@ -158,17 +158,18 @@ public class TestBrowserClient : HttpClient
         return htmlForm;
     }
 
-
     public Task<string> ReadElementTextAsync(string selector)
     {
         return ReadElementTextAsync(LastResponse, selector);
     }
+
     public async Task<string> ReadElementTextAsync(HttpResponseMessage response, string selector)
     {
         var html = await response.Content.ReadAsStringAsync();
 
-        var dom = new CQ(html);
-        var element = dom.Find(selector);
+        var parser = new HtmlParser();
+        var dom = parser.ParseDocument(html);
+        var element = dom.QuerySelector(selector);
         return element.Text();
     }
 
@@ -180,9 +181,10 @@ public class TestBrowserClient : HttpClient
     {
         var html = await response.Content.ReadAsStringAsync();
 
-        var dom = new CQ(html);
-        var element = dom.Find(selector);
-        return element.Attr(attribute);
+        var parser = new HtmlParser();
+        var dom = parser.ParseDocument(html);
+        var element = dom.QuerySelector(selector);
+        return element.GetAttribute(attribute);
     }
 
     public Task AssertExistsAsync(string selector)
@@ -196,8 +198,9 @@ public class TestBrowserClient : HttpClient
 
         var html = await response.Content.ReadAsStringAsync();
 
-        var dom = new CQ(html);
-        var element = dom.Find(selector);
+        var parser = new HtmlParser();
+        var dom = parser.ParseDocument(html);
+        var element = dom.QuerySelectorAll(selector);
         element.Length.Should().BeGreaterThan(0);
     }
 
@@ -211,8 +214,9 @@ public class TestBrowserClient : HttpClient
 
         var html = await response.Content.ReadAsStringAsync();
 
-        var dom = new CQ(html);
-        var element = dom.Find(selector);
+        var parser = new HtmlParser();
+        var dom = parser.ParseDocument(html);
+        var element = dom.QuerySelectorAll(selector);
         element.Length.Should().Be(0);
     }
 
