@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Services;
@@ -61,7 +62,7 @@ public class IsLocalUrlTests
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async void GetAuthorizationContextAsync(string returnUrl, bool expected)
+    public async Task GetAuthorizationContextAsync(string returnUrl, bool expected)
     {
         var interactionService = new DefaultIdentityServerInteractionService(null, null, null, null, null, null, null, 
             GetReturnUrlParser(), new LoggerFactory().CreateLogger<DefaultIdentityServerInteractionService>());
@@ -105,7 +106,7 @@ public class IsLocalUrlTests
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async void OidcReturnUrlParser_ParseAsync(string returnUrl, bool expected)
+    public async Task OidcReturnUrlParser_ParseAsync(string returnUrl, bool expected)
     {
         var oidcParser = GetOidcReturnUrlParser();
         var actual = await oidcParser.ParseAsync(returnUrl);
@@ -138,7 +139,7 @@ public class IsLocalUrlTests
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async void ReturnUrlParser_ParseAsync(string returnUrl, bool expected)
+    public async Task ReturnUrlParser_ParseAsync(string returnUrl, bool expected)
     {
         var parser = GetReturnUrlParser();
         var actual = await parser.ParseAsync(returnUrl);
