@@ -5,6 +5,7 @@
 #nullable enable
 
 using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.ResponseHandling;
 using System.Collections.Generic;
 
 namespace Duende.IdentityServer.Configuration;
@@ -132,8 +133,13 @@ public class UserInteractionOptions
     public bool AllowOriginInReturnUrl { get; set; }
 
     /// <summary>
-    /// The collection of OIDC prompt modes supported and that will be published in discovery.
-    /// The value "create" is omitted unless the CreateAccountUrl value is set.
+    /// The collection of OIDC prompt modes supported and that will be published
+    /// in discovery. By default, this includes all values in <see
+    /// cref="Constants.SupportedPromptModes"/>. If the <see
+    /// cref="CreateAccountUrl"/> option is set, then the "create" value is also
+    /// included. If additional prompt values are added, a customized <see
+    /// cref="IAuthorizeInteractionResponseGenerator"/> is also required to
+    /// handle those values.
     /// </summary>
-    internal ICollection<string> PromptValuesSupported { get; set; } = new HashSet<string>(Constants.SupportedPromptModes);
+    public ICollection<string> PromptValuesSupported { get; set; } = new HashSet<string>(Constants.SupportedPromptModes);
 }
