@@ -1485,14 +1485,72 @@ public class AuthorizeTests
         _mockPipeline.CustomRequest.Parameters.AllKeys.Should().Contain("foo");
         _mockPipeline.CustomRequest.Parameters["foo"].Should().Be("bar");
     }
+
+    [Fact]
+    public async Task custom_prompt_values_should_raise_error_with_default_interaction_service()
+    {
+        _mockPipeline.Options.UserInteraction.PromptValuesSupported.Add("custom-prompt");
+        await _mockPipeline.LoginAsync("bob");
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client1/callback",
+            state: "123_state",
+            nonce: "123_nonce",
+            extra: new { prompt = "custom-prompt" }
+        );
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        Func<Task> a = () => _mockPipeline.BrowserClient.GetAsync(url);
+        await a.Should().ThrowAsync<Exception>();
+    }
+
+    [Fact]
+    public async Task custom_prompt_value_should_be_passed_to_custom_interaction_service()
+    {
+        var mockAuthzInteractionService = new MockAuthzInteractionService();
+        mockAuthzInteractionService.Response.RedirectUrl = "/custom";
+        _mockPipeline.OnPostConfigureServices += services =>
+        {
+            services.AddTransient(typeof(IAuthorizeInteractionResponseGenerator), svc => mockAuthzInteractionService);
+        };
+        _mockPipeline.Initialize();
+        
+        _mockPipeline.Options.UserInteraction.PromptValuesSupported.Add("custom-prompt");
+
+        await _mockPipeline.LoginAsync("bob");
+
+        var url = _mockPipeline.CreateAuthorizeUrl(
+            clientId: "client1",
+            responseType: "id_token",
+            scope: "openid profile",
+            redirectUri: "https://client1/callback",
+            state: "123_state",
+            nonce: "123_nonce",
+            extra: new { prompt = "custom-prompt" }
+        );
+
+        _mockPipeline.BrowserClient.AllowAutoRedirect = false;
+
+        var response = await _mockPipeline.BrowserClient.GetAsync(url);
+        response.Headers.Location.GetLeftPart(UriPartial.Path).Should().Be("https://server/custom");
+        mockAuthzInteractionService.Request.PromptModes.Should()
+            .Contain("custom-prompt").And
+            .HaveCount(1);
+    }
 }
 
 public class MockAuthzInteractionService : IAuthorizeInteractionResponseGenerator
 {
     public InteractionResponse Response { get; set; } = new InteractionResponse();
+    public ValidatedAuthorizeRequest Request { get; internal set; }
 
     public Task<InteractionResponse> ProcessInteractionAsync(ValidatedAuthorizeRequest request, ConsentResponse consent = null)
     {
+        Request = request;
         return Task.FromResult(Response);
     }
 }
