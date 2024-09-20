@@ -4,11 +4,9 @@
 using System.Security.Cryptography.X509Certificates;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Stores.Default;
 using IdentityModel;
 using IdentityServerHost.Configuration;
 using IdentityServerHost.Extensions;
-using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServerHost;
@@ -33,6 +31,12 @@ internal static class IdentityServerExtensions
 
                 options.Endpoints.EnablePushedAuthorizationEndpoint = true;
                 options.PushedAuthorization.AllowUnregisteredPushedRedirectUris = true;
+
+                options.KeyManagement.SigningAlgorithms.Add(new SigningAlgorithmOptions
+                {
+                    Name = "RS256",
+                    UseX509Certificate = true
+                });
             })
             //.AddServerSideSessions()
             .AddInMemoryClients(Clients.Get().ToList())
@@ -49,8 +53,8 @@ internal static class IdentityServerExtensions
             .AddCustomTokenRequestValidator<ParameterizedScopeTokenRequestValidator>()
             .AddScopeParser<ParameterizedScopeParser>()
             .AddMutualTlsSecretValidators()
-            .AddInMemoryOidcProviders(new[]
-            {
+            .AddInMemoryOidcProviders(
+            [
                 new Duende.IdentityServer.Models.OidcProvider
                 {
                     Scheme = "dynamicprovider-idsvr",
@@ -60,7 +64,7 @@ internal static class IdentityServerExtensions
                     ResponseType = "id_token",
                     Scope = "openid profile"
                 }
-            });
+            ]);
 
 
         builder.Services.AddDistributedMemoryCache();
@@ -72,11 +76,15 @@ internal static class IdentityServerExtensions
 
         return builder;
     }
-    
+
     private static IIdentityServerBuilder AddStaticSigningCredential(this IIdentityServerBuilder builder)
     {
         // create random RS256 key
         //builder.AddDeveloperSigningCredential();
+
+
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
+        // TODO - Use X509CertificateLoader in a future release (when we drop NET8 support)
 
         // use an RSA-based certificate with RS256
         using var rsaCert = new X509Certificate2("./testkeys/identityserver.test.rsa.p12", "changeit");
@@ -87,6 +95,8 @@ internal static class IdentityServerExtensions
 
         // or manually extract ECDSA key from certificate (directly using the certificate is not support by Microsoft right now)
         using var ecCert = new X509Certificate2("./testkeys/identityserver.test.ecdsa.p12", "changeit");
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
+
         var key = new ECDsaSecurityKey(ecCert.GetECDsaPrivateKey())
         {
             KeyId = CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)

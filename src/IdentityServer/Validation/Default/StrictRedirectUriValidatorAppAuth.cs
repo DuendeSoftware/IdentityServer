@@ -32,8 +32,6 @@ public class StrictRedirectUriValidatorAppAuth : StrictRedirectUriValidator
     /// <inheritdoc/>
     public override async Task<bool> IsRedirectUriValidAsync(RedirectUriValidationContext context)
     {
-        ArgumentNullException.ThrowIfNull(nameof(context));
-
         var isAllowed = await base.IsRedirectUriValidAsync(context);
         if (isAllowed) return isAllowed;
 

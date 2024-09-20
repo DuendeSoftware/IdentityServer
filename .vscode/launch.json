@@ -25,7 +25,7 @@
       // Hosts
       //-------
       {
-        "name": "host: main",
+        "name": "host: main (dotnet 8)",
         "type": "coreclr",
         "request": "launch",
         "preLaunchTask": "build-host-main",
@@ -43,7 +43,25 @@
         }
       },
       {
-        "name": "host: AspNetIdentity",
+        "name": "host: main (dotnet 9)",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-host-main",
+        "program": "${workspaceFolder}/hosts/main/bin/Debug/net9.0/Host.Main.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/hosts/main",
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "console": "externalTerminal",
+        "presentation": {
+          "hidden": false,
+          "group": "10-hosts",
+          "order": 10
+        }
+      },
+      {
+        "name": "host: AspNetIdentity (dotnet 8)",
         "type": "coreclr",
         "request": "launch",
         "preLaunchTask": "build-host-aspnetidentity",
@@ -61,7 +79,25 @@
         }
       },
       {
-        "name": "host: EntityFramework",
+        "name": "host: AspNetIdentity (dotnet 9)",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-host-aspnetidentity",
+        "program": "${workspaceFolder}/hosts/AspNetIdentity/bin/Debug/net9.0/Host.AspNetIdentity.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/hosts/AspNetIdentity",
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "console": "externalTerminal",
+        "presentation": {
+          "hidden": false,
+          "group": "10-hosts",
+          "order": 30
+        }
+      },
+      {
+        "name": "host: EntityFramework (dotnet 8)",
         "type": "coreclr",
         "request": "launch",
         "preLaunchTask": "build-host-entityframework",
@@ -79,11 +115,47 @@
         }
       },
       {
-        "name": "host: Configuration",
+        "name": "host: EntityFramework (dotnet 9)",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-host-entityframework",
+        "program": "${workspaceFolder}/hosts/EntityFramework/bin/Debug/net9.0/Host.EntityFramework.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/hosts/EntityFramework",
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "console": "externalTerminal",
+        "presentation": {
+          "hidden": false,
+          "group": "10-hosts",
+          "order": 40
+        }
+      },
+      {
+        "name": "host: Configuration (dotnet 8)",
         "type": "coreclr",
         "request": "launch",
         "preLaunchTask": "build-host-configuration",
         "program": "${workspaceFolder}/hosts/Configuration/bin/Debug/net8.0/Host.Configuration.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/hosts/Configuration",
+        "env": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "console": "externalTerminal",
+        "presentation": {
+          "hidden": false,
+          "group": "10-hosts",
+          "order": 50
+        }
+      },
+      {
+        "name": "host: Configuration (dotnet 9)",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build-host-configuration",
+        "program": "${workspaceFolder}/hosts/Configuration/bin/Debug/net9.0/Host.Configuration.dll",
         "args": [],
         "cwd": "${workspaceFolder}/hosts/Configuration",
         "env": {

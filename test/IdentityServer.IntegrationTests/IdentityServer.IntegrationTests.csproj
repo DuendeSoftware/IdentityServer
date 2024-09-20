@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,7 +12,6 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Microsoft.AspNetCore.TestHost" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
-        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
         <PackageReference Include="AngleSharp" />
         <PackageReference Include="xunit" />
         <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="All" />

@@ -91,6 +91,9 @@ public class X509KeyContainer : KeyContainer
     {
         if (_cert == null)
         {
+
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
+            // TODO - Use X509CertificateLoader in a future release (when we drop NET8 support)
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 try
@@ -109,6 +112,8 @@ public class X509KeyContainer : KeyContainer
             {
                 _cert = new X509Certificate2(Convert.FromBase64String(CertificateRawData));
             }
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
+
         }
 
         var key = new X509SecurityKey(_cert, Id);

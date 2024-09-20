@@ -73,6 +73,10 @@ internal static class IdentityServerExtensions
         // create random RS256 key
         //builder.AddDeveloperSigningCredential();
 
+
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
+        // TODO - Use X509CertificateLoader in a future release (when we drop NET8 support)
+
         // use an RSA-based certificate with RS256
         using var rsaCert = new X509Certificate2("./testkeys/identityserver.test.rsa.p12", "changeit");
         builder.AddSigningCredential(rsaCert, "RS256");
@@ -82,6 +86,8 @@ internal static class IdentityServerExtensions
 
         // or manually extract ECDSA key from certificate (directly using the certificate is not support by Microsoft right now)
         using var ecCert = new X509Certificate2("./testkeys/identityserver.test.ecdsa.p12", "changeit");
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
+
         var key = new ECDsaSecurityKey(ecCert.GetECDsaPrivateKey())
         {
             KeyId = CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)
