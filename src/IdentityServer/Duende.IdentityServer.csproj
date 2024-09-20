@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>Duende.IdentityServer</PackageId>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
 
         <Description>OpenID Connect and OAuth 2.0 Framework for ASP.NET Core</Description>
 
