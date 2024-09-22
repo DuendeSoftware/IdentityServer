@@ -20,6 +20,7 @@
         <DebugType Condition="'$(GITHUB_ACTIONS)' == 'true'">embedded</DebugType>
 
         <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">True</ContinuousIntegrationBuild>
+		<LangVersion>preview</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

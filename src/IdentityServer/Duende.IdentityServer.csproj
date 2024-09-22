@@ -18,6 +18,10 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     </ItemGroup>
 
+    <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
+        <PackageReference Include="Backport.System.Threading.Lock" />
+    </ItemGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\Storage\Duende.IdentityServer.Storage.csproj" />
     </ItemGroup>

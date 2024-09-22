@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 
@@ -15,6 +16,7 @@ namespace Duende.IdentityServer.Stores;
 /// <seealso cref="IdentityServer.Stores.IDeviceFlowStore" />
 public class InMemoryDeviceFlowStore : IDeviceFlowStore
 {
+    private readonly Lock _syncLock = new();
     private readonly List<InMemoryDeviceAuthorization> _repository = new List<InMemoryDeviceAuthorization>();
 
     /// <summary>
@@ -28,7 +30,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.StoreDeviceAuthorization");
         
-        lock (_repository)
+        lock (_syncLock)
         {
             _repository.Add(new InMemoryDeviceAuthorization(deviceCode, userCode, data));
         }
@@ -46,7 +48,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
         
         DeviceCode foundDeviceCode;
 
-        lock (_repository)
+        lock (_syncLock)
         {
             foundDeviceCode = _repository.FirstOrDefault(x => x.UserCode == userCode)?.Data;
         }
@@ -64,7 +66,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
         
         DeviceCode foundDeviceCode;
 
-        lock (_repository)
+        lock (_syncLock)
         {
             foundDeviceCode = _repository.FirstOrDefault(x => x.DeviceCode == deviceCode)?.Data;
         }
@@ -81,7 +83,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.UpdateByUserCode");
         
-        lock (_repository)
+        lock (_syncLock)
         {
             var foundData = _repository.FirstOrDefault(x => x.UserCode == userCode);
 
@@ -103,7 +105,7 @@ public class InMemoryDeviceFlowStore : IDeviceFlowStore
     {
         using var activity = Tracing.StoreActivitySource.StartActivity("InMemoryDeviceFlowStore.RemoveByDeviceCode");
         
-        lock (_repository)
+        lock (_syncLock)
         {
             var foundData = _repository.FirstOrDefault(x => x.DeviceCode == deviceCode);
 

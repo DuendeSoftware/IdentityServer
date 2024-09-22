@@ -23,6 +23,7 @@
 
         <!--build related-->
         <PackageReference Include="MinVer" Version="4.3.0" PrivateAssets="All"/>
+		<PackageReference Update="Backport.System.Threading.Lock" Version="2.0.3"/>
         <PackageReference Update="SimpleExec" Version="11.0.0"/>
         <PackageReference Update="Bullseye" Version="4.2.1"/>
 

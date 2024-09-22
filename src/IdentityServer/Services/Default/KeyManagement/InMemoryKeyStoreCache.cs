@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Duende.IdentityServer.Services.KeyManagement;
@@ -15,7 +16,7 @@ class InMemoryKeyStoreCache : ISigningKeyStoreCache
 {
     private readonly IClock _clock;
 
-    private object _lock = new object();
+    private Lock _lock = new();
 
     private DateTime _expires = DateTime.MinValue;
     private IEnumerable<KeyContainer> _cache;

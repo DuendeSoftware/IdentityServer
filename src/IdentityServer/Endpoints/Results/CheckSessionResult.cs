@@ -7,6 +7,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Hosting;
 using Microsoft.AspNetCore.Http;
 using Duende.IdentityServer.Extensions;
+using System.Threading;
 
 namespace Duende.IdentityServer.Endpoints.Results;
 
@@ -27,7 +28,7 @@ internal class CheckSessionHttpWriter : IHttpResponseWriter<CheckSessionResult>
 
     private IdentityServerOptions _options;
     private static volatile string FormattedHtml;
-    private static readonly object Lock = new object();
+    private static readonly Lock Lock = new();
     private static volatile string LastCheckSessionCookieName;
 
     public async Task WriteHttpResponse(CheckSessionResult result, HttpContext context)

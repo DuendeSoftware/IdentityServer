@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Duende.IdentityServer;
 
@@ -67,7 +68,7 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
         }
     }
 
-    private void EnsureAdded(ref HashSet<string> hashSet, object lockObject, string key)
+    private void EnsureAdded(ref HashSet<string> hashSet, Lock lockObject, string key)
     {
         // Lock free test first.
         if (!hashSet.Contains(key))
@@ -96,7 +97,7 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
     public void ValidateClient(string clientId) => ValidateClient(clientId, License);
 
     HashSet<string> _clientIds = new();
-    object _clientIdLock = new();
+    Lock _clientIdLock = new();
     bool _validateClientWarned = false;
     // Internal method that takes license as parameter to allow testing
     internal void ValidateClient(string clientId, IdentityServerLicense license)
@@ -130,7 +131,7 @@ internal class IdentityServerLicenseValidator : LicenseValidator<IdentityServerL
     }
 
     HashSet<string> _issuers = new();
-    object _issuerLock = new();
+    Lock _issuerLock = new();
     bool _validateIssuerWarned = false;
     public void ValidateIssuer(string iss)
     {
