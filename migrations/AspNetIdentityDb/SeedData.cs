@@ -38,9 +38,9 @@ public class SeedData
                     new Claim(JwtClaimTypes.Name, "Alice Smith"),
                     new Claim(JwtClaimTypes.GivenName, "Alice"),
                     new Claim(JwtClaimTypes.FamilyName, "Smith"),
-                    new Claim(JwtClaimTypes.Email, "AliceSmith@email.com"),
+                    new Claim(JwtClaimTypes.Email, "AliceSmith@example.com"),
                     new Claim(JwtClaimTypes.EmailVerified, "true", ClaimValueTypes.Boolean),
-                    new Claim(JwtClaimTypes.WebSite, "http://alice.com"),
+                    new Claim(JwtClaimTypes.WebSite, "http://alice.example.com"),
                 }).Result;
                 if (!result.Succeeded)
                 {
@@ -70,9 +70,9 @@ public class SeedData
                     new Claim(JwtClaimTypes.Name, "Bob Smith"),
                     new Claim(JwtClaimTypes.GivenName, "Bob"),
                     new Claim(JwtClaimTypes.FamilyName, "Smith"),
-                    new Claim(JwtClaimTypes.Email, "BobSmith@email.com"),
+                    new Claim(JwtClaimTypes.Email, "BobSmith@example.com"),
                     new Claim(JwtClaimTypes.EmailVerified, "true", ClaimValueTypes.Boolean),
-                    new Claim(JwtClaimTypes.WebSite, "http://bob.com"),
+                    new Claim(JwtClaimTypes.WebSite, "http://bob.example.com"),
                     new Claim("location", "somewhere")
                 }).Result;
                 if (!result.Succeeded)
