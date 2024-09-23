@@ -61,7 +61,7 @@ public class UserInfoEndpointClient
         userInfo.Claims.Count().Should().Be(3);
 
         userInfo.Claims.Should().Contain(c => c.Type == "sub" && c.Value == "88421113");
-        userInfo.Claims.Should().Contain(c => c.Type == "email" && c.Value == "BobSmith@email.com");
+        userInfo.Claims.Should().Contain(c => c.Type == "email" && c.Value == "BobSmith@example.com");
         userInfo.Claims.Should().Contain(c => c.Type == "email_verified" && c.Value == "true");
     }
 
