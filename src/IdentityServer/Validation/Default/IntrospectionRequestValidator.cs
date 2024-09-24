@@ -3,6 +3,7 @@
 
 
 using Duende.IdentityServer.Extensions;
+using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using IdentityModel;
 using Microsoft.Extensions.Logging;
@@ -83,15 +84,8 @@ internal class IntrospectionRequestValidator : IIntrospectionRequestValidator
             }
             else
             {
-                _logger.LogError("Invalid token type hint: {tokenTypeHint}", hint);
-                return new IntrospectionRequestValidationResult
-                {
-                    IsError = true,
-                    Api = api,
-                    Client = client,
-                    Error = "invalid_request",
-                    Parameters = parameters
-                };
+                _logger.LogDebug("Unsupported token type hint found in request: {tokenTypeHint}", hint);
+                hint = null; // Discard an unknown hint, in line with RFC 7662
             }
         }
 
@@ -100,65 +94,50 @@ internal class IntrospectionRequestValidator : IIntrospectionRequestValidator
 
         if (api != null)
         {
-            // if we have an API calling, then the token should only ever be an access token
-            if (hint.IsMissing() || hint == TokenTypeHints.AccessToken)
-            {
-                // validate token
-                var tokenValidationResult = await _tokenValidator.ValidateAccessTokenAsync(token);
-
-                // success
-                if (!tokenValidationResult.IsError)
-                {
-                    _logger.LogDebug("Validated access token");
-                    claims = tokenValidationResult.Claims;
-                }
-            }
+            // APIs can only introspect access tokens. We ignore the hint and just immediately try to 
+            // validate the token as an access token. If that fails, claims will be null and 
+            // we'll return { "isActive": false }.
+            claims = await GetAccessTokenClaimsAsync(token);
         }
         else
         {
-            // clients can pass either token type
+            // Clients can introspect access tokens and refresh tokens. They can pass a hint to us to
+            // help us introspect, but RFC 7662 says if the hint is wrong we have to fall back to
+            // trying the other type.
+            //
+            // RFC 7662 (OAuth 2.0 Token Introspection), Section 2.1:
+            //
+            // > If the server is unable to locate the token using the given hint,
+            // > it MUST extend its search across all of its supported token types.
+            // > An authorization server MAY ignore this parameter, particularly if
+            // > it is able to detect the token type automatically.
+    
             if (hint.IsMissing() || hint == TokenTypeHints.AccessToken)
             {
                 // try access token
-                var tokenValidationResult = await _tokenValidator.ValidateAccessTokenAsync(token);
-                if (!tokenValidationResult.IsError)
+                claims = await GetAccessTokenClaimsAsync(token, client);
+                if (claims == null)
                 {
-                    var list = tokenValidationResult.Claims.ToList();
-
-                    var tokenClientId = list.SingleOrDefault(x => x.Type == JwtClaimTypes.ClientId)?.Value;
-                    if (tokenClientId == client.ClientId)
+                    // fall back to refresh token
+                    if (hint.IsPresent())
                     {
-                        _logger.LogDebug("Validated access token");
-                        list.Add(new Claim("token_type", TokenTypeHints.AccessToken));
-                        claims = list;
+                        _logger.LogDebug("Failed to validate token as access token. Possible incorrect token_type_hint parameter.");
                     }
+                    claims = await GetRefreshTokenClaimsAsync(token, client);
                 }
             }
-
-            if (claims == null)
+            else
             {
-                // we get in here if hint is for refresh token, or the access token lookup failed
-                var refreshValidationResult = await _refreshTokenService.ValidateRefreshTokenAsync(token, client);
-                if (!refreshValidationResult.IsError)
+                // try refresh token
+                claims = await GetRefreshTokenClaimsAsync(token, client);
+                if (claims == null)
                 {
-                    _logger.LogDebug("Validated refresh token");
-                    
-                    var iat = refreshValidationResult.RefreshToken.CreationTime.ToEpochTime();
-                    var list = new List<Claim>
+                    // fall back to access token
+                    if (hint.IsPresent())
                     {
-                        new Claim("client_id", client.ClientId),
-                        new Claim("token_type", TokenTypeHints.RefreshToken),
-                        new Claim("iat", iat.ToString(), ClaimValueTypes.Integer),
-                        new Claim("exp", (iat + refreshValidationResult.RefreshToken.Lifetime).ToString(), ClaimValueTypes.Integer),
-                        new Claim("sub", refreshValidationResult.RefreshToken.SubjectId),
-                    };
-
-                    foreach (var scope in refreshValidationResult.RefreshToken.AuthorizedScopes)
-                    {
-                        list.Add(new Claim("scope", scope));
+                        _logger.LogDebug("Failed to validate token as refresh token. Possible incorrect token_type_hint parameter.");
                     }
-
-                    claims = list;
+                    claims = await GetAccessTokenClaimsAsync(token, client);
                 }
             }
         }
@@ -192,5 +171,74 @@ internal class IntrospectionRequestValidator : IIntrospectionRequestValidator
             Client = client,
             Parameters = parameters
         };
+    }
+
+    /// <summary>
+    /// Attempt to obtain the claims for a token as a refresh token for a client.
+    /// </summary>
+    private async Task<IEnumerable<Claim>> GetRefreshTokenClaimsAsync(string token, Client client)
+    {
+        var refreshValidationResult = await _refreshTokenService.ValidateRefreshTokenAsync(token, client);
+        if (!refreshValidationResult.IsError)
+        {
+            var iat = refreshValidationResult.RefreshToken.CreationTime.ToEpochTime();
+            var claims = new List<Claim>
+            {
+                new Claim("client_id", client.ClientId),
+                new Claim("token_type", TokenTypeHints.RefreshToken),
+                new Claim("iat", iat.ToString(), ClaimValueTypes.Integer),
+                new Claim("exp", (iat + refreshValidationResult.RefreshToken.Lifetime).ToString(), ClaimValueTypes.Integer),
+                new Claim("sub", refreshValidationResult.RefreshToken.SubjectId),
+            };
+
+            foreach (var scope in refreshValidationResult.RefreshToken.AuthorizedScopes)
+            {
+                claims.Add(new Claim("scope", scope));
+            }
+
+            return claims;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Attempt to obtain the claims for a token as an access token, and validate that it belongs to the client. 
+    /// </summary>
+    private async Task<IEnumerable<Claim>> GetAccessTokenClaimsAsync(string token, Client client)
+    {
+        var tokenValidationResult = await _tokenValidator.ValidateAccessTokenAsync(token);
+        if (!tokenValidationResult.IsError)
+        {
+            var claims = tokenValidationResult.Claims.ToList();
+
+            var tokenClientId = claims.SingleOrDefault(x => x.Type == JwtClaimTypes.ClientId)?.Value;
+            if (tokenClientId == client.ClientId)
+            {
+                _logger.LogDebug("Validated access token");
+                claims.Add(new Claim("token_type", TokenTypeHints.AccessToken));
+                return claims;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Attempt to obtain the claims for a token as an access token. This overload does no validation that the
+    /// token belongs to a particular client, and is intended for use when we have an API caller (any API can 
+    /// introspect a token). 
+    /// </summary>
+    private async Task<IEnumerable<Claim>> GetAccessTokenClaimsAsync(string token)
+    {
+        // TODO - Should we validate that the api resource is among the token's audiences during introspection? 
+        var tokenValidationResult = await _tokenValidator.ValidateAccessTokenAsync(token);
+        if (!tokenValidationResult.IsError)
+        {
+            _logger.LogDebug("Validated access token");
+            return tokenValidationResult.Claims;
+        }
+
+        return null;
     }
 }

@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Duende.IdentityServer;
 using FluentAssertions;
 using IdentityModel.Client;
 using IntegrationTests.Endpoints.Introspection.Setup;
@@ -129,7 +131,7 @@ public class IntrospectionTests
 
     [Fact]
     [Trait("Category", Category)]
-    public async Task Invalid_token_type_hint_should_fail()
+    public async Task Invalid_token_type_hint_should_not_fail()
     {
         var tokenResponse = await _client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
         {
@@ -149,7 +151,113 @@ public class IntrospectionTests
             TokenTypeHint = "invalid"
         });
 
-        introspectionResponse.IsError.Should().BeTrue();
+        introspectionResponse.IsActive.Should().Be(true);
+        introspectionResponse.IsError.Should().Be(false);
+
+        var scopes = from c in introspectionResponse.Claims
+            where c.Type == "scope"
+            select c;
+
+        scopes.Count().Should().Be(1);
+        scopes.First().Value.Should().Be("api1");
+    }
+
+
+    [Theory]
+    [Trait("Category", Category)]
+    [InlineData("ro.client", Constants.TokenTypeHints.RefreshToken)]
+    [InlineData("ro.client", Constants.TokenTypeHints.AccessToken)]
+    [InlineData("ro.client", "bogus")]
+    [InlineData("api1", Constants.TokenTypeHints.RefreshToken)]
+    [InlineData("api1", Constants.TokenTypeHints.AccessToken)]
+    [InlineData("api1", "bogus")]
+    public async Task Access_tokens_can_be_introspected_with_any_hint(string introspectedBy, string hint)
+    {
+        TokenResponse tokenResponse;
+
+        tokenResponse = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
+        {
+            Address = TokenEndpoint,
+            ClientId = "ro.client",
+            ClientSecret = "secret",
+            UserName = "bob",
+            Password = "bob",
+            Scope = "api1 offline_access"
+        });
+
+        var introspectionResponse = await _client.IntrospectTokenAsync(new TokenIntrospectionRequest
+        {
+            Address = IntrospectionEndpoint,
+            ClientId = introspectedBy,
+            ClientSecret = "secret",
+
+            Token = tokenResponse.AccessToken,
+            TokenTypeHint = hint
+        });
+
+        introspectionResponse.IsActive.Should().Be(true);
+        introspectionResponse.IsError.Should().Be(false);
+
+        var scopes = from c in introspectionResponse.Claims
+                        where c.Type == "scope"
+                        select c.Value;
+        scopes.Should().Contain("api1");
+    }
+
+    [Theory]
+    [Trait("Category", Category)]
+    
+    // Validate that refresh tokens can be introspected with any hint by the client they were issued to
+    [InlineData("ro.client", Constants.TokenTypeHints.RefreshToken, true)]
+    [InlineData("ro.client", Constants.TokenTypeHints.AccessToken, true)]
+    [InlineData("ro.client", "bogus", true)]
+    
+    // Validate that APIs cannot introspect refresh tokens and that we always return isActive: false
+    [InlineData("api1", Constants.TokenTypeHints.RefreshToken, false)]
+    [InlineData("api1", Constants.TokenTypeHints.AccessToken, false)]
+    [InlineData("api1", "bogus", false)]
+
+    public async Task Refresh_tokens_can_be_introspected_by_their_client_with_any_hint(string introspectedBy, string hint, bool isActive)
+    {
+        TokenResponse tokenResponse;
+
+        tokenResponse = await _client.RequestPasswordTokenAsync(new PasswordTokenRequest
+        {
+            Address = TokenEndpoint,
+            ClientId = "ro.client",
+            ClientSecret = "secret",
+            UserName = "bob",
+            Password = "bob",
+            Scope = "api1 offline_access"
+        });
+     
+        var introspectionResponse = await _client.IntrospectTokenAsync(new TokenIntrospectionRequest
+        {
+            Address = IntrospectionEndpoint,
+            ClientId = introspectedBy,
+            ClientSecret = "secret",
+
+            Token = tokenResponse.RefreshToken,
+            TokenTypeHint = hint
+        });
+
+        if (isActive)
+        {
+            introspectionResponse.IsActive.Should().Be(true);
+            introspectionResponse.IsError.Should().Be(false);
+
+            var scopes = from c in introspectionResponse.Claims
+                         where c.Type == "scope"
+                         select c;
+
+            scopes.Count().Should().Be(2);
+            scopes.First().Value.Should().Be("api1");
+        }
+        else
+        {
+            introspectionResponse.IsActive.Should().Be(false);
+            introspectionResponse.IsError.Should().Be(false);
+        }
     }
 
     [Fact]
