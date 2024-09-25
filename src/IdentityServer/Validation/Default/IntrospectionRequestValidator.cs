@@ -80,11 +80,19 @@ internal class IntrospectionRequestValidator : IIntrospectionRequestValidator
         {
             if (Constants.SupportedTokenTypeHints.Contains(hint))
             {
-                _logger.LogDebug("Token type hint found in request: {tokenTypeHint}", hint);
+                if(_logger.IsEnabled(LogLevel.Debug))
+                {
+                    var sanitized = hint.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+                    _logger.LogDebug("Token type hint found in request: {tokenTypeHint}", sanitized);
+                }
             }
             else
             {
-                _logger.LogDebug("Unsupported token type hint found in request: {tokenTypeHint}", hint);
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    var sanitized = hint.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+                    _logger.LogDebug("Unsupported token type hint found in request: {tokenTypeHint}", sanitized);
+                }
                 hint = null; // Discard an unknown hint, in line with RFC 7662
             }
         }

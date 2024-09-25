@@ -162,7 +162,6 @@ public class IntrospectionTests
         scopes.First().Value.Should().Be("api1");
     }
 
-
     [Theory]
     [Trait("Category", Category)]
     [InlineData("ro.client", Constants.TokenTypeHints.RefreshToken)]
