@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Internal;
+using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services.KeyManagement;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,7 @@ public class KeyManagerTests
     public KeyManagerTests()
     {
         // just to speed up the tests
-        _options.KeyManagement.InitializationSynchronizationDelay = TimeSpan.FromSeconds(1);
+        _options.KeyManagement.InitializationSynchronizationDelay = TimeSpan.FromMilliseconds(1);
             
         _options.KeyManagement.SigningAlgorithms = new[] { _rsaOptions };
 
@@ -47,6 +48,12 @@ public class KeyManagerTests
             new NopConcurrencyLock<KeyManager>(),
             new LoggerFactory().CreateLogger<KeyManager>(),
             new TestIssuerNameService());
+    }
+
+    SerializedKey CreateSerializedKey(TimeSpan? age = null, string alg = "RS256", bool x509 = false)
+    {
+        var container = CreateKey(age, alg, x509);
+        return _mockKeyProtector.Protect(container);
     }
 
     KeyContainer CreateKey(TimeSpan? age = null, string alg = "RS256", bool x509 = false)
@@ -69,7 +76,14 @@ public class KeyManagerTests
         _mockKeyStore.Keys.Add(_mockKeyProtector.Protect(container));
         return container.Id;
     }
-        
+
+    string CreateAndStoreKeyThatCannotBeUnprotected(TimeSpan? age = null)
+    {
+        var container = CreateKey(age);
+        _mockKeyStore.Keys.Add(_mockKeyProtector.ProtectAndLoseDataProtectionKey(container));
+        return container.Id;
+    }
+
     string CreateCacheAndStoreKey(TimeSpan? age = null)
     {
         var container = CreateKey(age);
@@ -458,12 +472,12 @@ public class KeyManagerTests
     [Fact]
     public async Task FilterRetiredKeys_should_filter_retired_keys()
     {
-        var key1 = CreateKey(_options.KeyManagement.KeyRetirementAge.Add(TimeSpan.FromSeconds(1)));
-        var key2 = CreateKey(_options.KeyManagement.KeyRetirementAge);
-        var key3 = CreateKey(_options.KeyManagement.KeyRetirementAge.Subtract(TimeSpan.FromSeconds(1)));
-        var key4 = CreateKey(_options.KeyManagement.PropagationTime.Add(TimeSpan.FromSeconds(1)));
-        var key5 = CreateKey(_options.KeyManagement.PropagationTime);
-        var key6 = CreateKey(_options.KeyManagement.PropagationTime.Subtract(TimeSpan.FromSeconds(1)));
+        var key1 = CreateSerializedKey(_options.KeyManagement.KeyRetirementAge.Add(TimeSpan.FromSeconds(1)));
+        var key2 = CreateSerializedKey(_options.KeyManagement.KeyRetirementAge);
+        var key3 = CreateSerializedKey(_options.KeyManagement.KeyRetirementAge.Subtract(TimeSpan.FromSeconds(1)));
+        var key4 = CreateSerializedKey(_options.KeyManagement.PropagationTime.Add(TimeSpan.FromSeconds(1)));
+        var key5 = CreateSerializedKey(_options.KeyManagement.PropagationTime);
+        var key6 = CreateSerializedKey(_options.KeyManagement.PropagationTime.Subtract(TimeSpan.FromSeconds(1)));
 
         var result = await _subject.FilterAndDeleteRetiredKeysAsync(new[] { key1, key2, key3, key4, key5, key6 });
 
@@ -592,6 +606,24 @@ public class KeyManagerTests
         var keys = await _subject.GetAllKeysFromStoreAsync();
 
         keys.Select(x => x.Id).Should().BeEquivalentTo(new[] { key1, key2, key3, key4 });
+    }
+
+    [Fact]
+    public async Task GetKeysFromStoreAsync_should_filter_retired_keys_that_cannot_be_unprotected()
+    {
+        var key1 = CreateAndStoreKey(TimeSpan.FromSeconds(10));
+        var key2 = CreateAndStoreKey(TimeSpan.FromSeconds(5));
+        var key3 = CreateAndStoreKey(-TimeSpan.FromSeconds(5));
+        var key4 = CreateAndStoreKey(_options.KeyManagement.RotationInterval.Add(TimeSpan.FromSeconds(1)));
+        var key5 = CreateAndStoreKeyThatCannotBeUnprotected(_options.KeyManagement.KeyRetirementAge.Add(TimeSpan.FromSeconds(5)));
+
+        var keys = await _subject.GetAllKeysFromStoreAsync();
+
+        keys.Select(x => x.Id).Should().BeEquivalentTo(new[] { key1, key2, key3, key4 });
+
+        _mockKeyStore.DeleteWasCalled.Should().BeTrue();
+        var keysInStore = await _mockKeyStore.LoadKeysAsync();
+        keysInStore.Select(x => x.Id).Should().BeEquivalentTo(new[] { key1, key2, key3, key4 });
     }
 
     [Fact]

@@ -28,8 +28,27 @@ class MockSigningKeyProtector : ISigningKeyProtector
             Id = key.Id,
             Algorithm = key.Algorithm,
             IsX509Certificate = key.HasX509Certificate,
-            Created = DateTime.UtcNow,
+            Created = key.Created,
             Data = _dataProtector.Protect(KeySerializer.Serialize(key)),
+        };
+    }
+
+    /// <summary>
+    /// Simulate a situation where a signing key was protected in the past with a signing key that is no longer available
+    /// </summary>
+    public SerializedKey ProtectAndLoseDataProtectionKey(KeyContainer key)
+    {
+        var provider = new EphemeralDataProtectionProvider();
+        var badProtector = provider.CreateProtector("unavailable-when-we-unprotect");
+
+        ProtectWasCalled = true;
+        return new SerializedKey
+        {
+            Id = key.Id,
+            Algorithm = key.Algorithm,
+            IsX509Certificate = key.HasX509Certificate,
+            Created = key.Created,
+            Data = badProtector.Protect(KeySerializer.Serialize(key)),
         };
     }
 
