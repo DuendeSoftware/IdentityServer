@@ -262,4 +262,19 @@ public class DefaultUserSessionTests
         var clients = await _subject.GetClientListAsync();
         clients.Should().Contain(new string[] { "client2", "client1" });
     }
+
+    [Fact]
+    public async Task adding_existing_client_should_not_add_new_client()
+    {
+        _mockAuthenticationHandler.Result = AuthenticateResult.Success(new AuthenticationTicket(_user, _props, "scheme"));
+
+        const string clientId = "client";
+        await _subject.AddClientIdAsync(clientId);
+        await _subject.AddClientIdAsync(clientId);
+        
+        var clients = await _subject.GetClientListAsync();
+        
+        _props.Items.Count.Should().Be(1);
+        clients.Should().BeEquivalentTo([clientId]);
+    }
 }
