@@ -239,7 +239,6 @@ internal class IntrospectionRequestValidator : IIntrospectionRequestValidator
     /// </summary>
     private async Task<IEnumerable<Claim>> GetAccessTokenClaimsAsync(string token)
     {
-        // TODO - Should we validate that the api resource is among the token's audiences during introspection? 
         var tokenValidationResult = await _tokenValidator.ValidateAccessTokenAsync(token);
         if (!tokenValidationResult.IsError)
         {
