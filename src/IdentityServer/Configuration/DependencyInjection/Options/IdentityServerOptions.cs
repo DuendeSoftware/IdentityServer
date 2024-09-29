@@ -23,6 +23,15 @@ public class IdentityServerOptions
     public string? IssuerUri { get; set; }
 
     /// <summary>
+    /// Gets or sets the list of valid issuers, e.g. https://myissuer.com.
+    /// If not set, the issuer name is inferred from the request
+    /// </summary>
+    /// <value>
+    /// List of valid issuers, e.g. https://myissuer.com
+    /// </value>
+    public string[]? ValidIssuers { get; set; }
+
+    /// <summary>
     /// Set to false to preserve the original casing of the IssuerUri. Defaults to true.
     /// </summary>
     public bool LowerCaseIssuerUri { get; set; } = true;

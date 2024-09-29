@@ -281,6 +281,7 @@ internal class TokenValidator : ITokenValidator
         var parameters = new TokenValidationParameters
         {
             ValidIssuer = await _issuerNameService.GetCurrentAsync(),
+            ValidIssuers = await _issuerNameService.GetListAsync(),
             IssuerSigningKeys = validationKeys.Select(k => k.Key),
             ValidateLifetime = validateLifetime
         };

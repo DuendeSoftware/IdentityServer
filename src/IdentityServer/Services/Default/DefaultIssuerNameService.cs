@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
@@ -31,7 +32,7 @@ public class DefaultIssuerNameService : IIssuerNameService
         _urls = urls;
         _httpContextAccessor = httpContextAccessor;
     }
-        
+
     /// <inheritdoc />
     public Task<string> GetCurrentAsync()
     {
@@ -74,5 +75,26 @@ public class DefaultIssuerNameService : IIssuerNameService
         }
 
         return Task.FromResult(issuer);
+    }
+
+    /// <inheritdoc />
+    public Task<string[]> GetListAsync()
+    {
+        // if they've explicitly configured a URI then use it,
+        // otherwise dynamically calculate it
+        var issuers = _options.ValidIssuers;
+
+        if (issuers == null || issuers.Length < 1)
+        {
+            issuers = [GetCurrentAsync().Result];
+
+        }
+        else if (_options.LowerCaseIssuerUri)
+        {
+            issuers = issuers.Select(x => x.ToLowerInvariant()).ToArray();
+        }
+
+
+        return Task.FromResult(issuers);
     }
 }
