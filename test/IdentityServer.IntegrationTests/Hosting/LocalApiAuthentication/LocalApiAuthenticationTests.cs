@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -42,10 +44,15 @@ public class LocalApiAuthenticationTests
 
     static LocalApiAuthenticationTests()
     {
+        _jwk = GenerateKey();
+    }
+
+    private static string GenerateKey()
+    {
         var rsaKey = new RsaSecurityKey(RSA.Create(2048));
         var jsonWebKey = JsonWebKeyConverter.ConvertFromRSASecurityKey(rsaKey);
         jsonWebKey.Alg = "PS256";
-        _jwk = JsonSerializer.Serialize(jsonWebKey);
+        return JsonSerializer.Serialize(jsonWebKey);
     }
 
     public LocalApiAuthenticationTests()
@@ -151,9 +158,9 @@ public class LocalApiAuthenticationTests
 
         return result.AccessToken;
     }
-    string CreateProofToken(string method, string url, string accessToken = null, string nonce = null)
+    string CreateProofToken(string method, string url, string accessToken = null, string nonce = null, string jwkString = null)
     {
-        var jsonWebKey = new Microsoft.IdentityModel.Tokens.JsonWebKey(_jwk);
+        var jsonWebKey = new Microsoft.IdentityModel.Tokens.JsonWebKey(jwkString ?? _jwk);
 
         // jwk: representing the public key chosen by the client, in JSON Web Key (JWK) [RFC7517] format,
         // as defined in Section 4.1.3 of [RFC7515]. MUST NOT contain a private key.
@@ -265,6 +272,41 @@ public class LocalApiAuthenticationTests
         response.IsSuccessStatusCode.Should().BeTrue();
         ApiWasCalled.Should().BeTrue();
         ApiPrincipal.Identity.IsAuthenticated.Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task dpop_token_should_not_validate_if_cnf_does_not_match_proof_token()
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, "https://server/api");
+        var at = await GetAccessTokenAsync(true);
+        req.Headers.Authorization = new AuthenticationHeaderValue("DPoP", at);
+        
+        // Use a new key to make the proof token that we present when we make the API request.
+        // This doesn't prove that we have possession of the key that the access token is bound to,
+        // so it should fail.
+        var newKey = GenerateKey();
+        var newJwk = new Microsoft.IdentityModel.Tokens.JsonWebKey(newKey);
+        var newJkt  = Base64Url.Encode(newJwk.ComputeJwkThumbprint());
+        var proofToken = CreateProofToken("GET", "https://server/api", at, jwkString: newKey);
+        req.Headers.Add("DPoP", proofToken);
+
+        // Double check that the thumbprint in the access token's cnf claim doesn't match
+        // the thumbprint of the new key we just used.
+        var handler = new JwtSecurityTokenHandler();
+        var parsedAt = handler.ReadJwtToken(at);
+        var parsedProof = handler.ReadJwtToken(proofToken);
+        var cnf = parsedAt.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Confirmation);
+        var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(cnf.Value);
+        if (json.TryGetValue(JwtClaimTypes.ConfirmationMethods.JwkThumbprint, out var jktJson))
+        {
+            var accessTokenJkt = jktJson.ToString();
+            accessTokenJkt.Should().NotBeEquivalentTo(newJkt);
+        }
+
+        var response = await _pipeline.BackChannelClient.SendAsync(req);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
