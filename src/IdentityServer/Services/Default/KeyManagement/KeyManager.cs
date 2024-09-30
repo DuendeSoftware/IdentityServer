@@ -12,6 +12,7 @@ using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Internal;
 using System.Security.Cryptography;
+using Duende.IdentityServer.Models;
 
 namespace Duende.IdentityServer.Services.KeyManagement;
 
@@ -335,14 +336,13 @@ public class KeyManager : IKeyManager
         return result;
     }
 
-    internal async Task<IEnumerable<KeyContainer>> FilterAndDeleteRetiredKeysAsync(IEnumerable<KeyContainer> keys)
+    internal async Task<IEnumerable<SerializedKey>> FilterAndDeleteRetiredKeysAsync(IEnumerable<SerializedKey> keys)
     {
         var retired = keys
             .Where(x =>
             {
-                var age = _clock.GetAge(x.Created);
-                var isRetired = _options.KeyManagement.IsRetired(age);
-                return isRetired;
+                return (x != null) &&
+                    _options.KeyManagement.IsRetired(_clock.GetAge(x.Created));
             })
             .ToArray();
 
@@ -428,6 +428,9 @@ public class KeyManager : IKeyManager
         var protectedKeys = await _store.LoadKeysAsync();
         if (protectedKeys != null && protectedKeys.Any())
         {
+            // retired keys are those that are beyond inclusion, thus we act as if they don't exist.
+            protectedKeys = await FilterAndDeleteRetiredKeysAsync(protectedKeys);
+            
             var keys = protectedKeys.Select(x =>
                 {
                     try
@@ -459,9 +462,7 @@ public class KeyManager : IKeyManager
                 _logger.LogTrace("Loaded keys from store: {kids}", ids.Aggregate((x, y) => $"{x},{y}"));
             }
 
-            // retired keys are those that are beyond inclusion, thus we act as if they don't exist.
-            keys = await FilterAndDeleteRetiredKeysAsync(keys);
-                
+
             if (_logger.IsEnabled(LogLevel.Trace) && keys.Any())
             {
                 var ids = keys.Select(x => x.Id).ToArray();
