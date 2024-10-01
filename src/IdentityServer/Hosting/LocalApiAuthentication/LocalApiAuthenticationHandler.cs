@@ -129,6 +129,7 @@ public class LocalApiAuthenticationHandler : AuthenticationHandler<LocalApiAuthe
                 Url = Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.PathBase + Context.Request.Path,
                 ValidateAccessToken = true,
                 AccessToken = token,
+                AccessTokenClaims = tokenResult.Claims,
                 ExpirationValidationMode = client.DPoPValidationMode,
                 ClientClockSkew = client.DPoPClockSkew,
             };

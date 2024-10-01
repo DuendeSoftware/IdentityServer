@@ -187,32 +187,24 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
 
         if (context.ValidateAccessToken)
         {
-            if (handler.CanReadToken(context.AccessToken))
+            var cnf = context.AccessTokenClaims.FirstOrDefault(c => c.Type == JwtClaimTypes.Confirmation);
+            if (cnf == null)
             {
-                var accessToken = handler.ReadJsonWebToken(context.AccessToken);
-                var cnf = accessToken.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Confirmation);
-                if (cnf == null)
+                result.IsError = true;
+                result.ErrorDescription = "Missing 'cnf' value.";
+                return Task.CompletedTask;
+            }
+            var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(cnf.Value);
+            if (json.TryGetValue(JwtClaimTypes.ConfirmationMethods.JwkThumbprint, out var jktJson))
+            {
+                var accessTokenJkt = jktJson.ToString();
+                if (accessTokenJkt != result.JsonWebKeyThumbprint)
                 {
                     result.IsError = true;
                     result.ErrorDescription = "Invalid 'cnf' value.";
                     return Task.CompletedTask;
                 }
-                var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(cnf.Value);
-                if (json.TryGetValue(JwtClaimTypes.ConfirmationMethods.JwkThumbprint, out var jktJson))
-                {
-                    var accessTokenJkt = jktJson.ToString();
-                    if (accessTokenJkt != result.JsonWebKeyThumbprint)
-                    {
-                        result.IsError = true;
-                        result.ErrorDescription = "Invalid 'cnf' value.";
-                        return Task.CompletedTask;
-                    }
-                    result.Confirmation = cnf.Value;
-                }
-            }
-            else
-            {
-                // TODO
+                result.Confirmation = cnf.Value;
             }
         }
         else

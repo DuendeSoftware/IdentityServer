@@ -334,7 +334,6 @@ public class LocalApiAuthenticationTests
         var proofToken = CreateProofToken("GET", "https://server/api", at, jwkString: newKey);
         req.Headers.Add("DPoP", proofToken);
 
-
         var introspectionRequest = new TokenIntrospectionRequest
         {
             Address = "https://server/connect/introspect",
