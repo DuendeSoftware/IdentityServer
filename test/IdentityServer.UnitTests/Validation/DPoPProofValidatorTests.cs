@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -145,15 +146,8 @@ public class DPoPProofValidatorTests
     {
         _context.ValidateAccessToken = true;
         _context.AccessToken = "access_token";
-
-        var jwk = new Microsoft.IdentityModel.Tokens.JsonWebKey(_publicJWK);
-        var cnf = jwk.CreateThumbprintCnf();
-        _context.AccessTokenClaims = [new Claim(JwtClaimTypes.Confirmation, cnf)];
-
-        using var sha = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(_context.AccessToken);
-        var hash = sha.ComputeHash(bytes);
-        var accessTokenHash = Base64Url.Encode(hash);
+        _context.AccessTokenClaims = [CnfClaim()];
+        var accessTokenHash = HashAccessToken();
         _payload["ath"] = accessTokenHash;
         _context.ProofToken = CreateDPoPProofToken();
 
@@ -164,18 +158,36 @@ public class DPoPProofValidatorTests
         result.AccessTokenHash.Should().Be(accessTokenHash);
     }
 
+    private Claim CnfClaim(string jwkString = null )
+    {
+        jwkString ??= _publicJWK;
+        var jwk = new Microsoft.IdentityModel.Tokens.JsonWebKey(jwkString);
+        var cnf = jwk.CreateThumbprintCnf();
+        return new Claim(JwtClaimTypes.Confirmation, cnf);
+    }
+
+    private string HashAccessToken()
+    {
+        using var sha = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(_context.AccessToken);
+        var hash = sha.ComputeHash(bytes);
+        return Base64Url.Encode(hash);
+    }
+
     [Fact]
     [Trait("Category", Category)]
     public async Task missing_ath_should_fail()
     {
         _context.ValidateAccessToken = true;
         _context.AccessToken = "access_token";
-
+        _context.AccessTokenClaims = [CnfClaim()];
         _context.ProofToken = CreateDPoPProofToken();
 
         var result = await _subject.ValidateAsync(_context);
 
         result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidDPoPProof);
+        result.ErrorDescription.Should().Be("Invalid 'ath' value.");
     }
 
     [Fact]
@@ -184,15 +196,120 @@ public class DPoPProofValidatorTests
     {
         _context.ValidateAccessToken = true;
         _context.AccessToken = "access_token";
-
+        _context.AccessTokenClaims = [CnfClaim()];
         _payload["ath"] = "invalid";
         _context.ProofToken = CreateDPoPProofToken();
 
         var result = await _subject.ValidateAsync(_context);
 
         result.IsError.Should().BeTrue();
+        result.ErrorDescription.Should().Be("Invalid 'ath' value.");
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidDPoPProof);
     }
 
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task missing_cnf_should_fail()
+    {
+        _context.ValidateAccessToken = true;
+        _context.AccessToken = "access_token";
+        _context.AccessTokenClaims.Should()
+            .NotContain(c => c.Type == JwtClaimTypes.Confirmation);
+        var accessTokenHash = HashAccessToken();
+        _payload["ath"] = accessTokenHash;
+        _context.ProofToken = CreateDPoPProofToken();
+
+        var result = await _subject.ValidateAsync(_context);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidDPoPProof);
+        result.ErrorDescription.Should().Be("Missing 'cnf' value.");
+    }
+    
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task malformed_cnf_should_fail()
+    {
+        _context.ValidateAccessToken = true;
+        _context.AccessToken = "access_token";
+        _context.AccessTokenClaims = [new Claim(JwtClaimTypes.Confirmation, "not-a-json-object")];
+        var accessTokenHash = HashAccessToken();
+        _payload["ath"] = accessTokenHash;
+        _context.ProofToken = CreateDPoPProofToken();
+
+        var result = await _subject.ValidateAsync(_context);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidDPoPProof);
+        result.ErrorDescription.Should().Be("Invalid 'cnf' value.");
+    }
+    
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task null_cnf_values_should_fail()
+    {
+        _context.ValidateAccessToken = true;
+        _context.AccessToken = "access_token";
+        _context.AccessTokenClaims = [new Claim(JwtClaimTypes.Confirmation, "null")];
+        var accessTokenHash = HashAccessToken();
+        _payload["ath"] = accessTokenHash;
+        _context.ProofToken = CreateDPoPProofToken();
+
+        var result = await _subject.ValidateAsync(_context);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidDPoPProof);
+        result.ErrorDescription.Should().Be("Missing 'cnf' value.");
+    }
+    
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task cnf_missing_jkt_should_fail()
+    {
+        _context.ValidateAccessToken = true;
+        _context.AccessToken = "access_token";
+        var cnfObject = new Dictionary<string, string>
+        {
+            { "no-jkt-member-in-this-object", "causes-failure" }
+        };
+        _context.AccessTokenClaims = [new Claim(JwtClaimTypes.Confirmation, JsonSerializer.Serialize(cnfObject))];
+        var accessTokenHash = HashAccessToken();
+        _payload["ath"] = accessTokenHash;
+        _context.ProofToken = CreateDPoPProofToken();
+
+        var result = await _subject.ValidateAsync(_context);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidDPoPProof);
+        result.ErrorDescription.Should().Be("Invalid 'cnf' value.");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
+    public async Task mismatched_jkt_should_fail()
+    {
+        _context.ValidateAccessToken = true;
+        _context.AccessToken = "access_token";
+        _context.AccessTokenClaims = [CnfClaim(GenerateJwk())];
+        var accessTokenHash = HashAccessToken();
+        _payload["ath"] = accessTokenHash;
+        _context.ProofToken = CreateDPoPProofToken();
+
+        var result = await _subject.ValidateAsync(_context);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidDPoPProof);
+        result.ErrorDescription.Should().Be("Invalid 'cnf' value.");
+    }
+    
+    private static string GenerateJwk()
+    {
+        var rsaKey = new RsaSecurityKey(RSA.Create(2048));
+        var jsonWebKey = JsonWebKeyConverter.ConvertFromRSASecurityKey(rsaKey);
+        jsonWebKey.Alg = "PS256";
+        return JsonSerializer.Serialize(jsonWebKey);
+    }
+    
     [Fact]
     [Trait("Category", Category)]
     public async Task server_clock_skew_should_allow_tokens_outside_normal_duration()

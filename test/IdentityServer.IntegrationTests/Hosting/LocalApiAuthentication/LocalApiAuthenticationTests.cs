@@ -44,10 +44,10 @@ public class LocalApiAuthenticationTests
 
     static LocalApiAuthenticationTests()
     {
-        _jwk = GenerateKey();
+        _jwk = GenerateJwk();
     }
 
-    private static string GenerateKey()
+    private static string GenerateJwk()
     {
         var rsaKey = new RsaSecurityKey(RSA.Create(2048));
         var jsonWebKey = JsonWebKeyConverter.ConvertFromRSASecurityKey(rsaKey);
@@ -293,7 +293,7 @@ public class LocalApiAuthenticationTests
         // Use a new key to make the proof token that we present when we make the API request.
         // This doesn't prove that we have possession of the key that the access token is bound to,
         // so it should fail.
-        var newKey = GenerateKey();
+        var newKey = GenerateJwk();
         var newJwk = new Microsoft.IdentityModel.Tokens.JsonWebKey(newKey);
         var newJkt  = Base64Url.Encode(newJwk.ComputeJwkThumbprint());
         var proofToken = CreateProofToken("GET", "https://server/api", at, jwkString: newKey);
@@ -328,7 +328,7 @@ public class LocalApiAuthenticationTests
         // Use a new key to make the proof token that we present when we make the API request.
         // This doesn't prove that we have possession of the key that the access token is bound to,
         // so it should fail.
-        var newKey = GenerateKey();
+        var newKey = GenerateJwk();
         var newJwk = new Microsoft.IdentityModel.Tokens.JsonWebKey(newKey);
         var newJkt  = Base64Url.Encode(newJwk.ComputeJwkThumbprint());
         var proofToken = CreateProofToken("GET", "https://server/api", at, jwkString: newKey);
