@@ -44,7 +44,7 @@ public class TestUserStore
                 return true;
             }
 
-            return user.Password.Equals(password);
+            return Equals(user.Password, password);
         }
 
         return false;
