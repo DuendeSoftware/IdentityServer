@@ -1,4 +1,4 @@
-﻿// Copyright (c) Duende Software. All rights reserved.
+// Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
 
@@ -26,12 +26,7 @@ public static class AuthenticationPropertiesExtensions
     /// <returns></returns>
     public static string GetSessionId(this AuthenticationProperties properties)
     {
-        if (properties?.Items.ContainsKey(SessionIdKey) == true)
-        {
-            return properties.Items[SessionIdKey];
-        }
-
-        return null;
+        return properties?.Items.TryGetValue(SessionIdKey, out var value) == true ? value : null;
     }
 
     /// <summary>
@@ -52,13 +47,12 @@ public static class AuthenticationPropertiesExtensions
     /// <returns></returns>
     public static IEnumerable<string> GetClientList(this AuthenticationProperties properties)
     {
-        if (properties?.Items.ContainsKey(ClientListKey) == true)
+        if (properties?.Items.TryGetValue(ClientListKey, out var value) == true)
         {
-            var value = properties.Items[ClientListKey];
             return DecodeList(value);
         }
 
-        return Enumerable.Empty<string>();
+        return [];
     }
 
     /// <summary>
@@ -100,10 +94,7 @@ public static class AuthenticationPropertiesExtensions
         var clients = properties.GetClientList();
         if (!clients.Contains(clientId))
         {
-            var update = clients.ToList();
-            update.Add(clientId);
-                
-            properties.SetClientList(update);
+            properties.SetClientList(clients.Append(clientId));
         }
     }
 
