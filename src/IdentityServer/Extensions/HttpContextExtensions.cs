@@ -40,13 +40,12 @@ public static class HttpContextExtensions
         // if we have a logout message, then that take precedence over the current user
         if (logoutMessage?.ClientIds?.Any() == true)
         {
-            var clientIds = logoutMessage?.ClientIds;
+            var clientIds = logoutMessage.ClientIds;
 
             // check if current user is same, since we might have new clients (albeit unlikely)
-            if (currentSubId == logoutMessage?.SubjectId)
+            if (currentSubId == logoutMessage.SubjectId)
             {
                 clientIds = clientIds.Union(await userSession.GetClientListAsync());
-                clientIds = clientIds.Distinct();
             }
 
             endSessionMsg = new LogoutNotificationContext

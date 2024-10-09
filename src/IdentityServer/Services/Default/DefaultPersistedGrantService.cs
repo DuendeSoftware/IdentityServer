@@ -144,7 +144,7 @@ public class DefaultPersistedGrantService : IPersistedGrantService
             var match = list.FirstOrDefault(x => x.ClientId == other.ClientId);
             if (match != null)
             {
-                match.Scopes = match.Scopes.Union(other.Scopes).Distinct();
+                match.Scopes = match.Scopes.Union(other.Scopes);
 
                 if (match.CreationTime > other.CreationTime)
                 {
