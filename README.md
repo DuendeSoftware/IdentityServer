@@ -16,7 +16,7 @@ Duende IdentityServer is a highly extensible, standards-compliant framework for 
 
 Duende IdentityServer supports a wide range of security scenarios for modern applications:
 
-- **Federation**: Easily integrate with external identity providers or other authentication services using [ederation](https://docs.duendesoftware.com/identityserver/v7/ui/federation/).
+- **Federation**: Easily integrate with external identity providers or other authentication services using [federation](https://docs.duendesoftware.com/identityserver/v7/ui/federation/).
 - **Token Exchange**: Enable secure token exchange between clients and services with [Token Exchange](https://docs.duendesoftware.com/identityserver/v7/tokens/extension_grants/token_exchange/).
 - **Audience Constrained Tokens**: Restrict tokens to specific audiences, increasing security in multi-service architectures. Learn more about [audience-constrained tokens](https://docs.duendesoftware.com/identityserver/v7/fundamentals/resources/isolation/).
 - **Sender Constrained Tokens**: Implement Proof of Possession (PoP) tokens with [DPoP or mTLS](https://docs.duendesoftware.com/identityserver/v7/tokens/pop/), which bind tokens to the client, adding another layer of protection.
