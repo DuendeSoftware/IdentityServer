@@ -228,6 +228,25 @@ public class DPoPProofValidatorTests
     
     [Fact]
     [Trait("Category", Category)]
+    public async Task empty_cnf_should_fail()
+    {
+        _context.ValidateAccessToken = true;
+        _context.AccessToken = "access_token";
+        _context.AccessTokenClaims = [new Claim(JwtClaimTypes.Confirmation, "")];
+
+        var accessTokenHash = HashAccessToken();
+        _payload["ath"] = accessTokenHash;
+        _context.ProofToken = CreateDPoPProofToken();
+
+        var result = await _subject.ValidateAsync(_context);
+
+        result.IsError.Should().BeTrue();
+        result.Error.Should().Be(OidcConstants.TokenErrors.InvalidDPoPProof);
+        result.ErrorDescription.Should().Be("Missing 'cnf' value.");
+    }
+
+    [Fact]
+    [Trait("Category", Category)]
     public async Task malformed_cnf_should_fail()
     {
         _context.ValidateAccessToken = true;

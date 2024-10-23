@@ -188,7 +188,7 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
         if (context.ValidateAccessToken)
         {
             var cnf = context.AccessTokenClaims.FirstOrDefault(c => c.Type == JwtClaimTypes.Confirmation);
-            if (cnf == null)
+            if (cnf is not { Value.Length: > 0 })
             {
                 result.IsError = true;
                 result.ErrorDescription = "Missing 'cnf' value.";
