@@ -13,7 +13,6 @@ using System.Text.Json;
 using IdentityModel;
 using System.Linq;
 using Duende.IdentityServer.Services;
-using static Duende.IdentityServer.IdentityServerConstants;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 using System.Security.Cryptography;
@@ -126,10 +125,10 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
     protected virtual Task ValidateHeaderAsync(DPoPProofValidatonContext context, DPoPProofValidatonResult result)
     {
         JsonWebToken token;
+        var handler = new JsonWebTokenHandler();
 
         try
         {
-            var handler = new JsonWebTokenHandler();
             token = handler.ReadJsonWebToken(context.ProofToken);
         }
         catch (Exception ex)
@@ -185,8 +184,60 @@ public class DefaultDPoPProofValidator : IDPoPProofValidator
 
         result.JsonWebKey = jwkJson;
         result.JsonWebKeyThumbprint = jwk.CreateThumbprint();
-        result.Confirmation = jwk.CreateThumbprintCnf();
 
+        if (context.ValidateAccessToken)
+        {
+            var cnf = context.AccessTokenClaims.FirstOrDefault(c => c.Type == JwtClaimTypes.Confirmation);
+            if (cnf is not { Value.Length: > 0 })
+            {
+                result.IsError = true;
+                result.ErrorDescription = "Missing 'cnf' value.";
+                return Task.CompletedTask;
+            }
+            try
+            {
+                var cnfJson = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(cnf.Value);
+                if (cnfJson == null)
+                {
+                    Logger.LogDebug("Null cnf value in DPoP access token.");
+                    result.IsError = true;
+                    result.ErrorDescription = "Missing 'cnf' value.";
+                    return Task.CompletedTask;
+                } 
+                else if (cnfJson.TryGetValue(JwtClaimTypes.ConfirmationMethods.JwkThumbprint, out var jktJson))
+                {
+                    var accessTokenJkt = jktJson.ToString();
+                    if (accessTokenJkt == result.JsonWebKeyThumbprint)
+                    {
+                        result.Confirmation = cnf.Value;
+                    }
+                    else
+                    {
+                        Logger.LogDebug("jkt in DPoP access token does not match proof token key thumbprint.");
+                    }
+                }
+                else
+                {
+                    Logger.LogDebug("jkt member missing from cnf claim in DPoP access token.");
+                }
+            }
+            catch (JsonException e)
+            {
+                Logger.LogDebug("Failed to parse DPoP cnf claim: {JsonExceptionMessage}", e.Message);
+            }
+
+            if (result.Confirmation == null)
+            {
+                result.IsError = true;
+                result.ErrorDescription = "Invalid 'cnf' value.";
+            }
+        }
+        else
+        {
+            // The ValidateAccessToken == false case occurs when we are generating tokens. The confirmation value here
+            // ultimately is put into the generated token's cnf claim.
+            result.Confirmation = jwk.CreateThumbprintCnf();
+        }
         return Task.CompletedTask;
     }
 

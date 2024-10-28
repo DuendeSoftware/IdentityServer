@@ -6,6 +6,9 @@
 
 using Duende.IdentityServer.Models;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 
 namespace Duende.IdentityServer.Validation;
 
@@ -47,7 +50,14 @@ public class DPoPProofValidatonContext
     public bool ValidateAccessToken { get; set; }
 
     /// <summary>
-    /// The access token to validate if ValidateAccessToken is set
+    /// The access token to validate if <see cref="ValidateAccessToken"/> is set
     /// </summary>
     public string? AccessToken { get; set; }
+
+    /// <summary>
+    /// The claims associated with the access token, used if <see cref="ValidateAccessToken"/> is set. 
+    /// This is included separately from the <see cref="AccessToken"/> because getting the claims 
+    /// might be an expensive operation (especially if the token is a reference token).
+    /// </summary>
+    public IEnumerable<Claim> AccessTokenClaims { get; set; } = Enumerable.Empty<Claim>();
 }
