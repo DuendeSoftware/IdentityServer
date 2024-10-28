@@ -764,6 +764,15 @@ internal class TokenRequestValidator : ITokenRequestValidator
         }
 
         //////////////////////////////////////////////////////////
+        // validate scopes
+        //////////////////////////////////////////////////////////
+        if (_validatedRequest.RefreshToken.AuthorizedScopes == null)
+        {
+            LogError("Refresh token has no associated scopes");
+            return Invalid(OidcConstants.AuthorizeErrors.InvalidScope, "Invalid scope.");
+        }
+
+        //////////////////////////////////////////////////////////
         // resource indicator
         //////////////////////////////////////////////////////////
         var resourceIndicators = _validatedRequest.RefreshToken.AuthorizedResourceIndicators;
