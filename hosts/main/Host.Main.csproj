@@ -36,15 +36,6 @@
         <PackageReference Include="Serilog.AspNetCore" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-        <!-- These two dependencies should hopefully be removed in a future release. 
-             The dotnet 9.0-rc.1 version of some of the EF packages has transitive 
-             dependnecies with vulnerabilites -->
-        <PackageReference Include="System.Text.Json" />
-        <PackageReference Include="System.Drawing.Common" />
-    </ItemGroup>
-    
-
     <ItemGroup>
         <ProjectReference Include="..\..\src\IdentityServer\Duende.IdentityServer.csproj" />
         <ProjectReference Include="..\..\src\Configuration\Duende.IdentityServer.Configuration.csproj" />
