@@ -1,18 +1,16 @@
 <Project>
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0'">
-        <FrameworkVersion>8.0.3</FrameworkVersion>
-        <ExtensionsVersion>8.0.0</ExtensionsVersion>
-        <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
+        <FrameworkVersion>8.0.10</FrameworkVersion>
+        <ExtensionsVersion>8.0.1</ExtensionsVersion>
+        <EntityFrameworkVersion>8.0.10</EntityFrameworkVersion>
         <WilsonVersion>7.1.2</WilsonVersion>
-        <SqlClientVersion>5.1.6</SqlClientVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net9.0'">
-        <FrameworkVersion>9.0.0-rc.1.24452.1</FrameworkVersion>
-        <ExtensionsVersion>9.0.0-rc.1.24431.7</ExtensionsVersion>
-        <EntityFrameworkVersion>9.0.0-rc.1.24451.1</EntityFrameworkVersion>
+        <FrameworkVersion>9.0.0-rc.2.24474.3</FrameworkVersion>
+        <ExtensionsVersion>9.0.0-rc.2.24473.5</ExtensionsVersion>
+        <EntityFrameworkVersion>9.0.0-rc.2.24474.1</EntityFrameworkVersion>
         <WilsonVersion>8.0.1</WilsonVersion>
-        <SqlClientVersion>5.2.1</SqlClientVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -87,10 +85,11 @@
              that future versions of the intermediate dependencies that don't have this
              problem exist someday). -->
         <PackageReference Update="Azure.Identity" Version="1.11.4" />
-        <PackageReference Update="System.Formats.Asn1" Version="8.0.1" />
-        <PackageReference Update="Microsoft.Data.SqlClient" Version="$(SqlClientVersion)" />
-        <PackageReference Update="System.Text.Json" Version="8.0.4" />
+        <PackageReference Update="System.Formats.Asn1" Version="$(ExtensionsVersion)" />
         <PackageReference Update="System.Drawing.Common" Version="6.0.0" />
+
+        <PackageReference Update="Microsoft.Data.SqlClient" Version="5.2.2" />
+
     </ItemGroup>
 
     <Target Name="SetAssemblyVersion" AfterTargets="MinVer">

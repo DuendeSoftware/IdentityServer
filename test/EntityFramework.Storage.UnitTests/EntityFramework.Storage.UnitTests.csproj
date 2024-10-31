@@ -14,15 +14,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- This package is a transitive dependency that would otherwise resolve 
-             to a version with a security vulnerabilitiy. 
-             In future, we would like to update Microsoft.EntityFrameworkCore.Sqlite,
-             and remove this explicit dependency (assuming that future versions of 
-             the sqlite package that doesn't have this problem exist someday). -->
-        <PackageReference Include="System.Text.Json" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\src\EntityFramework.Storage\Duende.IdentityServer.EntityFramework.Storage.csproj" />
     </ItemGroup>
 
