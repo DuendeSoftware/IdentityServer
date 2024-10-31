@@ -144,6 +144,19 @@ public class EndpointOptionsExtensionsTests
                 CreateTestEndpoint(IdentityServerConstants.EndpointNames.PushedAuthorization)));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void IsEndpointEnabledShouldReturnExpectedForBackchannelAuthenticationEndpoint(bool expectedIsEndpointEnabled)
+    {
+        _options.EnableBackchannelAuthenticationEndpoint = expectedIsEndpointEnabled;
+
+        Assert.Equal(
+            expectedIsEndpointEnabled,
+            _options.IsEndpointEnabled(
+                CreateTestEndpoint(IdentityServerConstants.EndpointNames.BackchannelAuthentication)));
+    }    
+
     private Endpoint CreateTestEndpoint(string name)
     {
         return new Endpoint(name, "", null);
