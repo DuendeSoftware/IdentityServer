@@ -75,7 +75,7 @@ that supports the target frameworks our products target (8, 9, 10) -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(EFCoreVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="10.1.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="10.1.0" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.7" />
@@ -98,6 +98,10 @@ that supports the target frameworks our products target (8, 9, 10) -->
     <PackageVersion Include="Microsoft.NETCore.Jit" Version="2.0.8" />
     <PackageVersion Include="Microsoft.Playwright.Xunit" Version="1.50.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <!-- Transitive pin: Microsoft.SourceLink.GitHub 8.0.0 pulls in the vulnerable
+         Microsoft.Build.Tasks.Git 8.0.0 (GHSA-23fw-v26w-5fgq / CVE-2026-62900), which has no
+         patched 8.x release. Pin the transitive dependency to a patched 10.x version. -->
+    <PackageVersion Include="Microsoft.Build.Tasks.Git" Version="10.0.303" />
     <PackageVersion Include="MinVer" Version="6.0.0" />
     <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="0.4.0-preview.3" />

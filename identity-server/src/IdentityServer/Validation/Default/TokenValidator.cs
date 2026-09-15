@@ -67,7 +67,7 @@ internal class TokenValidator : ITokenValidator
 
         if (token.Length > _options.InputLengthRestrictions.Jwt)
         {
-            _logger.LogError("JWT too long");
+            _logger.LogInformation("JWT too long");
             return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
         }
 
@@ -77,7 +77,7 @@ internal class TokenValidator : ITokenValidator
 
             if (clientId.IsMissing())
             {
-                _logger.LogError("No clientId supplied, can't find id in identity token.");
+                _logger.LogInformation("No clientId supplied, can't find id in identity token.");
                 return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
             }
         }
@@ -88,7 +88,7 @@ internal class TokenValidator : ITokenValidator
         var client = await _clients.FindEnabledClientByIdAsync(clientId);
         if (client == null)
         {
-            _logger.LogError("Unknown or disabled client: {clientId}.", clientId);
+            _logger.LogInformation("Unknown or disabled client: {clientId}.", clientId);
             return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
         }
 
@@ -102,7 +102,7 @@ internal class TokenValidator : ITokenValidator
 
         if (result.IsError)
         {
-            LogError("Error validating JWT");
+            LogInformation("Error validating JWT");
             return result;
         }
 
@@ -111,7 +111,7 @@ internal class TokenValidator : ITokenValidator
 
         if (customResult.IsError)
         {
-            LogError("Custom validator failed: " + (customResult.Error ?? "unknown"));
+            LogInformation("Custom validator failed: " + (customResult.Error ?? "unknown"));
             return customResult;
         }
 
@@ -183,7 +183,7 @@ internal class TokenValidator : ITokenValidator
             var client = await _clients.FindEnabledClientByIdAsync(clientClaim.Value);
             if (client == null)
             {
-                _logger.LogError("Client deleted or disabled: {clientId}", clientClaim.Value);
+                _logger.LogInformation("Client deleted or disabled: {clientId}", clientClaim.Value);
 
                 result.IsError = true;
                 result.Error = OidcConstants.ProtectedResourceErrors.InvalidToken;
@@ -211,7 +211,7 @@ internal class TokenValidator : ITokenValidator
 
             if (isActiveCtx.IsActive == false)
             {
-                _logger.LogError("User marked as not active: {subject}", subClaim.Value);
+                _logger.LogInformation("User marked as not active: {subject}", subClaim.Value);
 
                 result.IsError = true;
                 result.Error = OidcConstants.ProtectedResourceErrors.InvalidToken;
@@ -234,7 +234,7 @@ internal class TokenValidator : ITokenValidator
 
                 if (!sessionResult)
                 {
-                    _logger.LogError("Server-side session invalid for subject Id {subjectId} and session Id {sessionId}.", sub, sid);
+                    _logger.LogInformation("Server-side session invalid for subject Id {subjectId} and session Id {sessionId}.", sub, sid);
                     return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
                 }
             }
@@ -247,7 +247,7 @@ internal class TokenValidator : ITokenValidator
                 c.Type == JwtClaimTypes.Scope && c.Value == expectedScope);
             if (scope == null)
             {
-                LogError($"Checking for expected scope {expectedScope} failed");
+                LogInformation($"Checking for expected scope {expectedScope} failed");
                 return Invalid(OidcConstants.ProtectedResourceErrors.InsufficientScope);
             }
         }
@@ -257,7 +257,7 @@ internal class TokenValidator : ITokenValidator
 
         if (customResult.IsError)
         {
-            LogError("Custom validator failed: " + (customResult.Error ?? "unknown"));
+            LogInformation("Custom validator failed: " + (customResult.Error ?? "unknown"));
             return customResult;
         }
 
@@ -311,7 +311,7 @@ internal class TokenValidator : ITokenValidator
             }
             else
             {
-                _logger.LogError(result.Exception, "JWT token validation error: {exception}",
+                _logger.LogInformation(result.Exception, "JWT token validation error: {exception}",
                     result.Exception.Message);
                 return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
             }
@@ -334,7 +334,7 @@ internal class TokenValidator : ITokenValidator
             client = await _clients.FindEnabledClientByIdAsync(clientId.Value);
             if (client == null)
             {
-                LogError($"Client deleted or disabled: {clientId}");
+                LogInformation($"Client deleted or disabled: {clientId}");
                 return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
             }
         }
@@ -375,13 +375,13 @@ internal class TokenValidator : ITokenValidator
 
         if (token == null)
         {
-            LogError("Invalid reference token.");
+            LogInformation("Invalid reference token.");
             return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
         }
 
         if (token.CreationTime.HasExceeded(token.Lifetime, _clock.UtcNow.UtcDateTime))
         {
-            LogError("Token expired.");
+            LogInformation("Token expired.");
 
             await _referenceTokenStore.RemoveReferenceTokenAsync(tokenHandle);
             return Invalid(OidcConstants.ProtectedResourceErrors.ExpiredToken);
@@ -396,7 +396,7 @@ internal class TokenValidator : ITokenValidator
 
         if (client == null)
         {
-            LogError($"Client deleted or disabled: {token.ClientId}");
+            LogInformation($"Client deleted or disabled: {token.ClientId}");
             return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
         }
 
@@ -455,7 +455,7 @@ internal class TokenValidator : ITokenValidator
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Malformed JWT token: {exception}", ex.Message);
+            _logger.LogInformation(ex, "Malformed JWT token: {exception}", ex.Message);
             return null;
         }
     }
@@ -466,7 +466,7 @@ internal class TokenValidator : ITokenValidator
         Error = error
     };
 
-    private void LogError(string message) => _logger.LogError("{Message}:{@logMessage}", message, _log);
+    private void LogInformation(string message) => _logger.LogInformation("{Message}:{@logMessage}", message, _log);
 
     private void LogSuccess() => _logger.LogDebug("Token validation success:{@logMessage}", _log);
 }

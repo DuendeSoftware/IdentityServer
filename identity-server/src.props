@@ -66,6 +66,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!-- Microsoft.SourceLink.GitHub 8.0.0 transitively pulls in the vulnerable
+         Microsoft.Build.Tasks.Git 8.0.0 (GHSA-23fw-v26w-5fgq / CVE-2026-62900), which has no
+         patched 8.x release. Reference the patched 10.x version directly (build-time only, never
+         shipped) so it wins over the transitive one. Scoped to packable src projects only. -->
+    <PackageReference Include="Microsoft.Build.Tasks.Git">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="MinVer">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -158,7 +158,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         var customResult = context.Result;
         if (customResult.IsError)
         {
-            LogError("Error in custom validation", customResult.Error, request);
+            LogInformation("Error in custom validation", customResult.Error, request);
             return Invalid(request, customResult.Error, customResult.ErrorDescription);
         }
 
@@ -184,7 +184,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (uilocales.Length > _options.InputLengthRestrictions.UiLocale)
             {
-                LogError("UI locale too long", request);
+                LogInformation("UI locale too long", request);
                 return Invalid(request, description: "Invalid ui_locales");
             }
 
@@ -203,7 +203,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
         if (clientId.IsMissingOrTooLong(_options.InputLengthRestrictions.ClientId))
         {
-            LogError("client_id is missing or too long", request);
+            LogInformation("client_id is missing or too long", request);
             return Invalid(request, description: "Invalid client_id");
         }
 
@@ -215,7 +215,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         var client = await _clients.FindEnabledClientByIdAsync(request.ClientId);
         if (client == null)
         {
-            LogError("Unknown client or not enabled", request.ClientId, request);
+            LogInformation("Unknown client or not enabled", request.ClientId, request);
             return Invalid(request, OidcConstants.AuthorizeErrors.UnauthorizedClient, "Unknown client or client not enabled");
         }
 
@@ -244,13 +244,13 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
         if (redirectUri.IsMissingOrTooLong(_options.InputLengthRestrictions.RedirectUri))
         {
-            LogError("redirect_uri is missing or too long", request);
+            LogInformation("redirect_uri is missing or too long", request);
             return Invalid(request, description: "Invalid redirect_uri");
         }
 
         if (!redirectUri.IsUri())
         {
-            LogError("malformed redirect_uri", redirectUri, request);
+            LogInformation("malformed redirect_uri", redirectUri, request);
             return Invalid(request, description: "Invalid redirect_uri");
         }
 
@@ -259,7 +259,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         //////////////////////////////////////////////////////////
         if (request.Client.ProtocolType != IdentityServerConstants.ProtocolTypes.OpenIdConnect)
         {
-            LogError("Invalid protocol type for OIDC authorize endpoint", request.Client.ProtocolType, request);
+            LogInformation("Invalid protocol type for OIDC authorize endpoint", request.Client.ProtocolType, request);
             return Invalid(request, OidcConstants.AuthorizeErrors.UnauthorizedClient, description: "Invalid protocol");
         }
 
@@ -269,7 +269,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         var uriContext = new RedirectUriValidationContext(redirectUri, request);
         if (await _uriValidator.IsRedirectUriValidAsync(uriContext) == false)
         {
-            LogError("Invalid redirect_uri", redirectUri, request);
+            LogInformation("Invalid redirect_uri", redirectUri, request);
             return Invalid(request, OidcConstants.AuthorizeErrors.InvalidRequest, "Invalid redirect_uri");
         }
 
@@ -295,7 +295,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         var responseType = request.Raw.Get(OidcConstants.AuthorizeRequest.ResponseType);
         if (responseType.IsMissing())
         {
-            LogError("Missing response_type", request);
+            LogInformation("Missing response_type", request);
             return Invalid(request, OidcConstants.AuthorizeErrors.InvalidRequest, "Missing response_type");
         }
 
@@ -310,7 +310,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         // as a space-delimited list of values in which the order of values does not matter.'
         if (!Constants.SupportedResponseTypes.Contains(responseType, _responseTypeEqualityComparer))
         {
-            LogError("Response type not supported", responseType, request);
+            LogInformation("Response type not supported", responseType, request);
             return Invalid(request, OidcConstants.AuthorizeErrors.UnsupportedResponseType, "Response type not supported");
         }
 
@@ -333,7 +333,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         //////////////////////////////////////////////////////////
         if (!Constants.AllowedGrantTypesForAuthorizeEndpoint.Contains(request.GrantType))
         {
-            LogError("Invalid grant type", request.GrantType, request);
+            LogInformation("Invalid grant type", request.GrantType, request);
             return Invalid(request, description: "Invalid response_type");
         }
 
@@ -371,13 +371,13 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 }
                 else
                 {
-                    LogError("Invalid response_mode for response_type", responseMode, request);
+                    LogInformation("Invalid response_mode for response_type", responseMode, request);
                     return Invalid(request, OidcConstants.AuthorizeErrors.InvalidRequest, description: "Invalid response_mode for response_type");
                 }
             }
             else
             {
-                LogError("Unsupported response_mode", responseMode, request);
+                LogInformation("Unsupported response_mode", responseMode, request);
                 return Invalid(request, OidcConstants.AuthorizeErrors.UnsupportedResponseType, description: "Invalid response_mode");
             }
         }
@@ -388,7 +388,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         //////////////////////////////////////////////////////////
         if (!request.Client.AllowedGrantTypes.Contains(request.GrantType))
         {
-            LogError("Invalid grant type for client", request.GrantType, request);
+            LogInformation("Invalid grant type for client", request.GrantType, request);
             return Invalid(request, OidcConstants.AuthorizeErrors.UnauthorizedClient, "Invalid grant type for client");
         }
 
@@ -401,7 +401,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (!request.Client.AllowAccessTokensViaBrowser)
             {
-                LogError("Client requested access token - but client is not configured to receive access tokens via browser", request);
+                LogInformation("Client requested access token - but client is not configured to receive access tokens via browser", request);
                 return Invalid(request, description: "Client not configured to receive access tokens via browser");
             }
         }
@@ -418,7 +418,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (request.Client.RequirePkce)
             {
-                LogError("code_challenge is missing", request);
+                LogInformation("code_challenge is missing", request);
                 fail.ErrorDescription = "code challenge required";
             }
             else
@@ -433,7 +433,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         if (codeChallenge.Length < _options.InputLengthRestrictions.CodeChallengeMinLength ||
             codeChallenge.Length > _options.InputLengthRestrictions.CodeChallengeMaxLength)
         {
-            LogError("code_challenge is either too short or too long", request);
+            LogInformation("code_challenge is either too short or too long", request);
             fail.ErrorDescription = "Invalid code_challenge";
             return fail;
         }
@@ -449,7 +449,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
         if (!Constants.SupportedCodeChallengeMethods.Contains(codeChallengeMethod))
         {
-            LogError("Unsupported code_challenge_method", codeChallengeMethod, request);
+            LogInformation("Unsupported code_challenge_method", codeChallengeMethod, request);
             fail.ErrorDescription = "Transform algorithm not supported";
             return fail;
         }
@@ -459,7 +459,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (!request.Client.AllowPlainTextPkce)
             {
-                LogError("code_challenge_method of plain is not allowed", request);
+                LogInformation("code_challenge_method of plain is not allowed", request);
                 fail.ErrorDescription = "Transform algorithm not supported";
                 return fail;
             }
@@ -478,13 +478,13 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         var scope = request.Raw.Get(OidcConstants.AuthorizeRequest.Scope);
         if (scope.IsMissing())
         {
-            LogError("scope is missing", request);
+            LogInformation("scope is missing", request);
             return Invalid(request, description: "Invalid scope");
         }
 
         if (scope.Length > _options.InputLengthRestrictions.Scope)
         {
-            LogError("scopes too long.", request);
+            LogInformation("scopes too long.", request);
             return Invalid(request, description: "Invalid scope");
         }
 
@@ -500,7 +500,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (request.IsOpenIdRequest == false)
             {
-                LogError("response_type requires the openid scope", request);
+                LogInformation("response_type requires the openid scope", request);
                 return Invalid(request, description: "Missing openid scope");
             }
         }
@@ -564,7 +564,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
         if (validatedResources.Resources.IdentityResources.Count > 0 && !request.IsOpenIdRequest)
         {
-            LogError("Identity related scope requests, but no openid scope", request);
+            LogInformation("Identity related scope requests, but no openid scope", request);
             return Invalid(request, OidcConstants.AuthorizeErrors.InvalidScope, "Identity scopes requested, but openid scope is missing");
         }
 
@@ -582,21 +582,21 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             case Constants.ScopeRequirement.Identity:
                 if (validatedResources.Resources.IdentityResources.Count == 0)
                 {
-                    _sanitizedLogger.LogError("Requests for id_token response type must include identity scopes");
+                    _sanitizedLogger.LogInformation("Requests for id_token response type must include identity scopes");
                     responseTypeValidationCheck = false;
                 }
                 break;
             case Constants.ScopeRequirement.IdentityOnly:
                 if (validatedResources.Resources.IdentityResources.Count == 0 || validatedResources.Resources.ApiScopes.Count > 0)
                 {
-                    _sanitizedLogger.LogError("Requests for id_token response type only must not include resource scopes");
+                    _sanitizedLogger.LogInformation("Requests for id_token response type only must not include resource scopes");
                     responseTypeValidationCheck = false;
                 }
                 break;
             case Constants.ScopeRequirement.ResourceOnly:
                 if (validatedResources.Resources.IdentityResources.Count > 0 || validatedResources.Resources.ApiScopes.Count == 0)
                 {
-                    _sanitizedLogger.LogError("Requests for token response type only must include resource scopes, but no identity scopes.");
+                    _sanitizedLogger.LogInformation("Requests for token response type only must include resource scopes, but no identity scopes.");
                     responseTypeValidationCheck = false;
                 }
                 break;
@@ -622,7 +622,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (nonce.Length > _options.InputLengthRestrictions.Nonce)
             {
-                LogError("Nonce too long", request);
+                LogInformation("Nonce too long", request);
                 return Invalid(request, description: "Invalid nonce");
             }
 
@@ -632,7 +632,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (request.ResponseType.FromSpaceSeparatedString().Contains(TokenTypes.IdentityToken))
             {
-                LogError("Nonce required for flow with id_token response type", request);
+                LogInformation("Nonce required for flow with id_token response type", request);
                 return Invalid(request, description: "Invalid nonce");
             }
         }
@@ -649,12 +649,12 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             {
                 if (prompts.Contains(OidcConstants.PromptModes.None) && prompts.Length > 1)
                 {
-                    LogError("prompt contains 'none' and other values. 'none' should be used by itself.", request);
+                    LogInformation("prompt contains 'none' and other values. 'none' should be used by itself.", request);
                     return Invalid(request, description: "Invalid prompt");
                 }
                 if (prompts.Contains(OidcConstants.PromptModes.Create) && prompts.Length > 1)
                 {
-                    LogError("prompt contains 'create' and other values. 'create' should be used by itself.", request);
+                    LogInformation("prompt contains 'create' and other values. 'create' should be used by itself.", request);
                     return Invalid(request, description: "Invalid prompt");
                 }
 
@@ -662,7 +662,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
             else
             {
-                LogError("Unsupported prompt mode", request);
+                LogInformation("Unsupported prompt mode", request);
                 return Invalid(request, description: "Unsupported prompt mode");
             }
         }
@@ -675,12 +675,12 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             {
                 if (prompts.Contains(OidcConstants.PromptModes.None) && prompts.Length > 1)
                 {
-                    LogError("processed_prompt contains 'none' and other values. 'none' should be used by itself.", request);
+                    LogInformation("processed_prompt contains 'none' and other values. 'none' should be used by itself.", request);
                     return Invalid(request, description: "Invalid prompt");
                 }
                 if (prompts.Contains(OidcConstants.PromptModes.Create) && prompts.Length > 1)
                 {
-                    LogError("prompt contains 'create' and other values. 'create' should be used by itself.", request);
+                    LogInformation("prompt contains 'create' and other values. 'create' should be used by itself.", request);
                     return Invalid(request, description: "Invalid prompt");
                 }
 
@@ -688,7 +688,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
             else
             {
-                LogError("Unsupported processed_prompt mode.", request);
+                LogInformation("Unsupported processed_prompt mode.", request);
                 return Invalid(request, description: "Invalid prompt");
             }
         }
@@ -723,13 +723,13 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
                 }
                 else
                 {
-                    LogError("Invalid max_age.", request);
+                    LogInformation("Invalid max_age.", request);
                     return Invalid(request, description: "Invalid max_age");
                 }
             }
             else
             {
-                LogError("Invalid max_age.", request);
+                LogInformation("Invalid max_age.", request);
                 return Invalid(request, description: "Invalid max_age");
             }
         }
@@ -749,7 +749,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (loginHint.Length > _options.InputLengthRestrictions.LoginHint)
             {
-                LogError("Login hint too long", request);
+                LogInformation("Login hint too long", request);
                 return Invalid(request, description: "Invalid login_hint");
             }
 
@@ -764,7 +764,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (acrValues.Length > _options.InputLengthRestrictions.AcrValues)
             {
-                LogError("Acr values too long", request);
+                LogInformation("Acr values too long", request);
                 return Invalid(request, description: "Invalid acr_values");
             }
 
@@ -800,7 +800,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
             }
             else
             {
-                LogError("SessionId is missing", request);
+                LogInformation("SessionId is missing", request);
             }
         }
         else
@@ -827,7 +827,7 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
         {
             if (dpop_jkt.Length > _options.InputLengthRestrictions.DPoPKeyThumbprint)
             {
-                LogError("dpop_jwt value too long", request);
+                LogInformation("dpop_jwt value too long", request);
                 return false;
             }
 
@@ -841,15 +841,15 @@ internal class AuthorizeRequestValidator : IAuthorizeRequestValidator
 
     private static AuthorizeRequestValidationResult Valid(ValidatedAuthorizeRequest request) => new AuthorizeRequestValidationResult(request);
 
-    private void LogError(string message, ValidatedAuthorizeRequest request)
+    private void LogInformation(string message, ValidatedAuthorizeRequest request)
     {
         var requestDetails = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
-        _sanitizedLogger.LogError(message + "\n{@requestDetails}", requestDetails);
+        _sanitizedLogger.LogInformation(message + "\n{@requestDetails}", requestDetails);
     }
 
-    private void LogError(string message, string detail, ValidatedAuthorizeRequest request)
+    private void LogInformation(string message, string detail, ValidatedAuthorizeRequest request)
     {
         var requestDetails = new AuthorizeRequestValidationLog(request, _options.Logging.AuthorizeRequestSensitiveValuesFilter);
-        _sanitizedLogger.LogError(message + ": {detail}\n{@requestDetails}", detail, requestDetails);
+        _sanitizedLogger.LogInformation(message + ": {detail}\n{@requestDetails}", detail, requestDetails);
     }
 }
