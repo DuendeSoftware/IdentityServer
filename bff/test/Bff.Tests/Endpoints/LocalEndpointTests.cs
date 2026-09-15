@@ -263,6 +263,35 @@ public class LocalEndpointTests : BffTestBase
             url: Bff.Url(The.Path),
             expectedStatusCode: HttpStatusCode.Unauthorized
         );
+
+        response.HttpResponse.Headers.Location.ShouldBeNull();
+        response.HttpResponse.Headers.Contains("Set-Cookie").ShouldBeFalse();
+    }
+
+    [Theory]
+    [MemberData(nameof(AllSetups))]
+    public async Task forbid_response_should_return_403(BffSetupType setup)
+    {
+        Bff.OnConfigureApp += app =>
+        {
+            _ = app.MapGet(The.Path, c => c.ForbidAsync())
+                .RequireAuthorization()
+                .AsBffApiEndpoint();
+        };
+
+        await ConfigureBff(setup);
+
+
+
+        _ = await Bff.BrowserClient.Login();
+
+        var response = await Bff.BrowserClient.CallBffHostApi(
+            url: Bff.Url(The.Path),
+            expectedStatusCode: HttpStatusCode.Forbidden
+        );
+
+        response.HttpResponse.Headers.Location.ShouldBeNull();
+        response.HttpResponse.Headers.Contains("Set-Cookie").ShouldBeFalse();
     }
 
     [Theory]

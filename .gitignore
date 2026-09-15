@@ -214,6 +214,13 @@ FakesAssemblies/
 *.opt
 docs/_build/
 
+# Generated insight report pages (created by internal-site generate-insights
+# build target). Kept separate from docs/insights/data (tracked history) and
+# docs/insights/index.md (authored landing page) so regeneration can never
+# overwrite authored content.
+docs/insights/generated/
+
+
 # Visual Studio Code workspace options
 **/.vscode/settings.json
 
@@ -239,7 +246,6 @@ artifacts
 *.Artifacts/
 
 reports
-!docs/estimation/estimation/reports/
 
 *.db
 *.db-shm

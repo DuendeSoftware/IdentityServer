@@ -281,4 +281,22 @@ public class LoginEndpointTests : BffTestBase
         _ = await Bff.BrowserClient.GetAsync(Bff.Url("/bff/login?prompt=none"))
             .CheckHttpStatusCode(HttpStatusCode.BadRequest);
     }
+
+    [Fact]
+    public async Task login_endpoint_rejects_returnUrl_when_custom_validator_rejects_it()
+    {
+        // A local return URL that the built-in LocalUrlReturnUrlValidator would accept, so a
+        // rejection can only come from the custom validator being invoked and honored.
+        var validator = new RecordingReturnUrlValidator(result: false);
+        Bff.OnConfigureBff += bff =>
+            bff.Services.AddSingleton<Duende.Bff.Endpoints.IReturnUrlValidator>(validator);
+        await ConfigureBff(BffSetupType.V4Bff);
+
+        var problem = await Bff.BrowserClient.GetAsync(Bff.Url("/bff/login") + "?returnUrl=/foo")
+            .ShouldBeProblem();
+
+        problem.Errors.ShouldContainKey(Constants.RequestParameters.ReturnUrl);
+        validator.WasCalled.ShouldBeTrue();
+        validator.ReturnUrl.ShouldBe(new Uri("/foo", UriKind.Relative));
+    }
 }

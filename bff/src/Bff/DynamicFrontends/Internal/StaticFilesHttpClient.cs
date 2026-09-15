@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Mime;
+using System.Text;
 using Duende.Bff.Configuration;
 using Duende.Bff.Otel;
 using Microsoft.AspNetCore.Http;
@@ -105,8 +106,9 @@ internal class StaticFilesHttpClient(
         {
             var html = await response.Content.ReadAsStringAsync(ct);
 
-            html = await transformer.Transform(html, frontend, ct);
-            await context.Response.WriteAsync(html ?? string.Empty, ct);
+            html = await transformer.Transform(html, frontend, ct) ?? string.Empty;
+            context.Response.ContentLength = Encoding.UTF8.GetByteCount(html);
+            await context.Response.WriteAsync(html, ct);
             return;
         }
 

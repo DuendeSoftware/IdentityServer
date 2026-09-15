@@ -174,4 +174,24 @@ public class LogoutEndpointTests : BffTestBase
 
         problem.Errors.ShouldContainKey(Constants.RequestParameters.ReturnUrl);
     }
+
+    [Fact]
+    public async Task logout_endpoint_rejects_returnUrl_when_custom_validator_rejects_it()
+    {
+        // A local return URL that the built-in LocalUrlReturnUrlValidator would accept, so a
+        // rejection can only come from the custom validator being invoked and honored.
+        var validator = new RecordingReturnUrlValidator(result: false);
+        Bff.OnConfigureBff += bff =>
+            bff.Services.AddSingleton<Duende.Bff.Endpoints.IReturnUrlValidator>(validator);
+        await ConfigureBff(BffSetupType.V4Bff);
+
+        _ = await Bff.BrowserClient.Login();
+
+        var problem = await Bff.BrowserClient.Logout(returnUrl: new Uri("/foo", UriKind.Relative))
+            .ShouldBeProblem();
+
+        problem.Errors.ShouldContainKey(Constants.RequestParameters.ReturnUrl);
+        validator.WasCalled.ShouldBeTrue();
+        validator.ReturnUrl.ShouldBe(new Uri("/foo", UriKind.Relative));
+    }
 }

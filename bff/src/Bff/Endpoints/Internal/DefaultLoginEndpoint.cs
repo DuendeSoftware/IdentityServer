@@ -55,7 +55,7 @@ internal class DefaultLoginEndpoint(
         if (!string.IsNullOrWhiteSpace(returnUrl))
         {
             if (!Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out var returnUri)
-                || !returnUrlValidator.IsValidAsync(returnUri))
+                || !await returnUrlValidator.IsValidAsync(returnUri, ct))
             {
                 logger.InvalidReturnUrl(LogLevel.Information, returnUrl.Sanitize());
                 context.ReturnHttpProblem("Invalid return url", (Constants.RequestParameters.ReturnUrl, [$"ReturnUrl '{returnUrl}' was invalid"]));

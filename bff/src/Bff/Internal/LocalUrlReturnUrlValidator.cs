@@ -9,7 +9,10 @@ internal class LocalUrlReturnUrlValidator : IReturnUrlValidator
 {
     /// <inheritdoc/>
 #pragma warning disable CA1822 // Can't be marked as static, because it implements an interface method.
-    public bool IsValidAsync(Uri returnUrl) => IsLocalUrl(returnUrl.ToString());
+    public Task<bool> IsValidAsync(Uri returnUrl, Ct ct) =>
+        ct.IsCancellationRequested
+            ? Task.FromCanceled<bool>(ct)
+            : Task.FromResult(IsLocalUrl(returnUrl.ToString()));
 #pragma warning restore CA1822
 
     internal static bool IsLocalUrl(string url)

@@ -58,55 +58,79 @@ internal class BffAuthenticationService(Decorator<IAuthenticationService> decora
 
     public async Task ChallengeAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
     {
-        await _inner.ChallengeAsync(context, scheme, properties);
-
-        if (context.Response.StatusCode != 302)
+        if (!ShouldHandleBffApiResponse(context))
         {
+            await _inner.ChallengeAsync(context, scheme, properties);
             return;
         }
 
-        var endpoint = context.GetEndpoint();
-
-        var isBffEndpoint = endpoint?.Metadata.GetMetadata<IBffApiMetadata>() != null;
-        if (!isBffEndpoint)
+        if (!IsKnownBffScheme(scheme))
         {
-            return;
+            await _inner.ChallengeAsync(context, scheme, properties);
+            if (context.Response.StatusCode != StatusCodes.Status302Found)
+            {
+                return;
+            }
         }
 
-        var requireResponseHandling = endpoint?.Metadata.GetMetadata<IBffApiSkipResponseHandling>() == null;
-        if (requireResponseHandling)
-        {
-            logger.ChallengeForBffApiEndpoint(LogLevel.Debug);
-            context.Response.StatusCode = 401;
-            _ = context.Response.Headers.Remove("Location");
-            _ = context.Response.Headers.Remove("Set-Cookie");
-        }
+        logger.ChallengeForBffApiEndpoint(LogLevel.Debug);
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        RemoveChallengeResponseHeaders(context);
     }
 
     public async Task ForbidAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
     {
-        await _inner.ForbidAsync(context, scheme, properties);
-
-        if (context.Response.StatusCode != 302)
+        if (!ShouldHandleBffApiResponse(context))
         {
+            await _inner.ForbidAsync(context, scheme, properties);
             return;
         }
 
+        if (!IsKnownBffScheme(scheme))
+        {
+            await _inner.ForbidAsync(context, scheme, properties);
+            if (context.Response.StatusCode != StatusCodes.Status302Found)
+            {
+                return;
+            }
+        }
+
+        logger.ForbidForBffApiEndpoint(LogLevel.Debug);
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        RemoveChallengeResponseHeaders(context);
+    }
+
+    private static bool ShouldHandleBffApiResponse(HttpContext context)
+    {
         var endpoint = context.GetEndpoint();
-
         var isBffEndpoint = endpoint?.Metadata.GetMetadata<IBffApiMetadata>() != null;
-        if (!isBffEndpoint)
+        var skipResponseHandling = endpoint?.Metadata.GetMetadata<IBffApiSkipResponseHandling>() != null;
+        return isBffEndpoint && !skipResponseHandling;
+    }
+
+    private bool IsKnownBffScheme(string? scheme)
+    {
+        if (string.IsNullOrWhiteSpace(scheme))
         {
-            return;
+            return true;
         }
 
-        var requireResponseHandling = endpoint?.Metadata.GetMetadata<IBffApiSkipResponseHandling>() == null;
-        if (requireResponseHandling)
+        if (scheme == BffAuthenticationSchemes.BffCookie.ToString() || scheme == BffAuthenticationSchemes.BffOpenIdConnect.ToString())
         {
-            logger.ForbidForBffApiEndpoint(LogLevel.Debug);
-            context.Response.StatusCode = 403;
-            _ = context.Response.Headers.Remove("Location");
-            _ = context.Response.Headers.Remove("Set-Cookie");
+            return true;
         }
+
+        if (!currentFrontendAccessor.TryGet(out var frontend))
+        {
+            return false;
+        }
+
+        return scheme == frontend.CookieSchemeName.ToString() || scheme == frontend.OidcSchemeName.ToString();
+    }
+
+    private static void RemoveChallengeResponseHeaders(HttpContext context)
+    {
+        _ = context.Response.Headers.Remove("Location");
+        _ = context.Response.Headers.Remove("Set-Cookie");
     }
 }

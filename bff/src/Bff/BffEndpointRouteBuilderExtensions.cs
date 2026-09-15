@@ -27,7 +27,7 @@ public static class BffEndpointRouteBuilderExtensions
         where T : IBffEndpoint
     {
         var service = context.RequestServices.GetRequiredService<T>();
-        return service.ProcessRequestAsync(context);
+        return service.ProcessRequestAsync(context, context.RequestAborted);
     }
 
     /// <summary>
