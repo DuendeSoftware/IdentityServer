@@ -36,8 +36,14 @@ public static class IdentityServerBuilderOidcExtensions
     /// <summary>
     /// Adds the in memory OIDC provider store.
     /// </summary>
+    /// <remarks>
+    /// Providers registered by multiple calls to any in-memory identity provider
+    /// registration method are accumulated rather than replacing one another. The supplied
+    /// collection is retained by reference, so callers may mutate their own collection at
+    /// runtime and have the changes observed by the store.
+    /// </remarks>
     /// <param name="builder">The builder.</param>
-    /// <param name="providers"></param>
-    /// <returns></returns>
+    /// <param name="providers">The OIDC providers to register.</param>
+    /// <returns>The <see cref="IIdentityServerBuilder"/>.</returns>
     public static IIdentityServerBuilder AddInMemoryOidcProviders(this IIdentityServerBuilder builder, IEnumerable<OidcProvider> providers) => builder.AddInMemoryIdentityProviders(providers);
 }

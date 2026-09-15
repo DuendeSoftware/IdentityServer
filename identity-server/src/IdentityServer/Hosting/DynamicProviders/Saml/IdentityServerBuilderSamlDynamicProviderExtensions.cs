@@ -40,10 +40,16 @@ public static class IdentityServerBuilderSamlDynamicProviderExtensions
     /// <summary>
     /// Adds the in-memory SAML provider store.
     /// </summary>
+    /// <remarks>
+    /// Providers registered by multiple calls to any in-memory identity provider
+    /// registration method are accumulated rather than replacing one another. The supplied
+    /// collection is retained by reference, so callers may mutate their own collection at
+    /// runtime and have the changes observed by the store.
+    /// </remarks>
     /// <param name="builder">The builder.</param>
     /// <param name="providers">The SAML providers to register.</param>
-    /// <returns></returns>
+    /// <returns>The <see cref="IIdentityServerBuilder"/>.</returns>
     public static IIdentityServerBuilder AddInMemorySamlProviders(
         this IIdentityServerBuilder builder, IEnumerable<SamlProvider> providers) =>
-        builder.AddInMemoryIdentityProviders(providers.Cast<IdentityProvider>().ToList());
+        builder.AddInMemoryIdentityProviders(providers);
 }

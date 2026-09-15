@@ -76,7 +76,8 @@ public sealed class SpLogoutCompletionEndpointTests
         LogoutRequestId = "_req-123",
         ResponseBinding = SamlConstants.Bindings.HttpPost,
         ResponseDestination = ResponseDestination,
-        RelayState = "some-relay-state"
+        RelayState = "some-relay-state",
+        SamlLogoutCorrelationId = "test-logout-id"
     };
 
     [Fact]

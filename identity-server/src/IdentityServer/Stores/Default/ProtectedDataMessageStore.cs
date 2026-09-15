@@ -57,7 +57,7 @@ public class ProtectedDataMessageStore<TModel> : IMessageStore<TModel>
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Exception reading protected message");
+                Logger.LogInformation(ex, "Exception reading protected message");
             }
         }
 

@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
+using Duende.IdentityModel;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Saml;
@@ -81,6 +82,8 @@ internal class AuthenticationRequestHandlerWrapper : IAuthenticationRequestHandl
         var userSession = _context.RequestServices.GetRequiredService<IUserSession>();
         var user = await userSession.GetUserAsync(_context.RequestAborted);
 
+        var samlLogoutCorrelationId = CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex);
+
         var logoutMessage = new SamlSpLogoutMessage
         {
             IdpEntityId = samlContext.IdpEntityId,
@@ -89,20 +92,23 @@ internal class AuthenticationRequestHandlerWrapper : IAuthenticationRequestHandl
             ResponseBinding = samlContext.ResponseBinding,
             ResponseDestination = samlContext.ResponseDestination,
             SubjectId = user?.GetSubjectId(),
-            SessionId = user != null ? await userSession.GetSessionIdAsync(_context.RequestAborted) : null
+            SessionId = user != null ? await userSession.GetSessionIdAsync(_context.RequestAborted) : null,
+            SamlLogoutCorrelationId = samlLogoutCorrelationId
         };
 
         var messageStore = _context.RequestServices.GetRequiredService<IMessageStore<SamlSpLogoutMessage>>();
         var timeProvider = _context.RequestServices.GetRequiredService<TimeProvider>();
-        var logoutId = await messageStore.WriteAsync(new Message<SamlSpLogoutMessage>(logoutMessage, timeProvider.GetUtcNow().UtcDateTime), _context.RequestAborted);
+        var logoutMessageHandle = await messageStore.WriteAsync(new Message<SamlSpLogoutMessage>(logoutMessage, timeProvider.GetUtcNow().UtcDateTime), _context.RequestAborted);
 
         // Check if downstream clients need notification.
-        // Pass logoutId so the end-session-callback can track SAML SP responses.
-        var iframeUrl = await _context.GetIdentityServerSignoutFrameCallbackUrlAsync(logoutId: logoutId);
+        // Pass the SAML logout correlation ID so the end-session-callback can track SAML SP responses.
+        var iframeUrl = await _context.GetIdentityServerSignoutFrameCallbackUrlAsync(samlLogoutCorrelationId: samlLogoutCorrelationId);
 
-        // Build the completion endpoint URL (needed for both paths below)
+        // Build the completion endpoint URL (needed for both paths below).
+        // The protected message store handle is passed as logoutId so the completion
+        // endpoint can look up the stored SamlSpLogoutMessage.
         var serverUrls = _context.RequestServices.GetRequiredService<IServerUrls>();
-        var completionUrl = serverUrls.BaseUrl.EnsureTrailingSlash() + SamlConstants.Defaults.SpLogoutCompletionPath.TrimStart('/') + "?logoutId=" + Uri.EscapeDataString(logoutId);
+        var completionUrl = serverUrls.BaseUrl.EnsureTrailingSlash() + SamlConstants.Defaults.SpLogoutCompletionPath.TrimStart('/') + "?logoutId=" + Uri.EscapeDataString(logoutMessageHandle);
 
         if (iframeUrl == null)
         {
@@ -113,7 +119,7 @@ internal class AuthenticationRequestHandlerWrapper : IAuthenticationRequestHandl
             return;
         }
 
-        _logger?.LogDebug("Stored SAML logout context with logoutId {LogoutId}, rendering combined page", logoutId);
+        _logger?.LogDebug("Stored SAML logout context, rendering combined page");
 
         // Reset the response to render our combined HTML page.
         // Guard against the (unlikely) case where the SAML handler already started

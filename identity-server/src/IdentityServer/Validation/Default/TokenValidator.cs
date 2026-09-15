@@ -43,7 +43,7 @@ internal class TokenValidator(
 
         if (token.Length > options.InputLengthRestrictions.Jwt)
         {
-            _logger.LogError("JWT too long");
+            _logger.LogInformation("JWT too long");
             return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
         }
 
@@ -53,7 +53,7 @@ internal class TokenValidator(
 
             if (clientId.IsMissing())
             {
-                _logger.LogError("No clientId supplied, can't find id in identity token.");
+                _logger.LogInformation("No clientId supplied, can't find id in identity token.");
                 return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
             }
         }
@@ -64,7 +64,7 @@ internal class TokenValidator(
         var client = await clients.FindEnabledClientByIdAsync(clientId, ct);
         if (client == null)
         {
-            _logger.LogError("Unknown or disabled client: {clientId}.", clientId);
+            _logger.LogInformation("Unknown or disabled client: {clientId}.", clientId);
             return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
         }
 
@@ -78,7 +78,7 @@ internal class TokenValidator(
 
         if (result.IsError)
         {
-            LogError("Error validating JWT");
+            LogInformation("Error validating JWT");
             return result;
         }
 
@@ -87,7 +87,7 @@ internal class TokenValidator(
 
         if (customResult.IsError)
         {
-            LogError("Custom validator failed: " + (customResult.Error ?? "unknown"));
+            LogInformation("Custom validator failed: " + (customResult.Error ?? "unknown"));
             return customResult;
         }
 
@@ -112,7 +112,7 @@ internal class TokenValidator(
         {
             if (token.Length > options.InputLengthRestrictions.Jwt)
             {
-                _logger.LogError("JWT too long");
+                _logger.LogInformation("JWT too long");
 
                 return new TokenValidationResult
                 {
@@ -132,7 +132,7 @@ internal class TokenValidator(
         {
             if (token.Length > options.InputLengthRestrictions.TokenHandle)
             {
-                _logger.LogError("token handle too long");
+                _logger.LogInformation("token handle too long");
 
                 return new TokenValidationResult
                 {
@@ -161,7 +161,7 @@ internal class TokenValidator(
             var client = await clients.FindEnabledClientByIdAsync(clientClaim.Value, ct);
             if (client == null)
             {
-                _logger.LogError("Client deleted or disabled: {clientId}", clientClaim.Value);
+                _logger.LogInformation("Client deleted or disabled: {clientId}", clientClaim.Value);
 
                 result.IsError = true;
                 result.Error = OidcConstants.ProtectedResourceErrors.InvalidToken;
@@ -190,7 +190,7 @@ internal class TokenValidator(
 
             if (isActiveCtx.IsActive == false)
             {
-                _logger.LogError("User marked as not active: {subject}", subClaim.Value);
+                _logger.LogInformation("User marked as not active: {subject}", subClaim.Value);
 
                 result.IsError = true;
                 result.Error = OidcConstants.ProtectedResourceErrors.InvalidToken;
@@ -213,7 +213,7 @@ internal class TokenValidator(
 
                 if (!sessionResult)
                 {
-                    _logger.LogError("Server-side session invalid for subject Id {subjectId} and session Id {sessionId}.", sub, sid);
+                    _logger.LogInformation("Server-side session invalid for subject Id {subjectId} and session Id {sessionId}.", sub, sid);
                     return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
                 }
             }
@@ -226,7 +226,7 @@ internal class TokenValidator(
                 c.Type == JwtClaimTypes.Scope && c.Value == expectedScope);
             if (scope == null)
             {
-                LogError($"Checking for expected scope {expectedScope} failed");
+                LogInformation($"Checking for expected scope {expectedScope} failed");
                 return Invalid(OidcConstants.ProtectedResourceErrors.InsufficientScope);
             }
         }
@@ -236,7 +236,7 @@ internal class TokenValidator(
 
         if (customResult.IsError)
         {
-            LogError("Custom validator failed: " + (customResult.Error ?? "unknown"));
+            LogInformation("Custom validator failed: " + (customResult.Error ?? "unknown"));
             return customResult;
         }
 
@@ -290,7 +290,7 @@ internal class TokenValidator(
             }
             else
             {
-                _logger.LogError(result.Exception, "JWT token validation error: {exception}",
+                _logger.LogInformation(result.Exception, "JWT token validation error: {exception}",
                     result.Exception.Message);
                 return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
             }
@@ -313,7 +313,7 @@ internal class TokenValidator(
             client = await clients.FindEnabledClientByIdAsync(clientId.Value, ct);
             if (client == null)
             {
-                LogError($"Client deleted or disabled: {clientId}");
+                LogInformation($"Client deleted or disabled: {clientId}");
                 return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
             }
         }
@@ -354,13 +354,13 @@ internal class TokenValidator(
 
         if (token == null)
         {
-            LogError("Invalid reference token.");
+            LogInformation("Invalid reference token.");
             return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
         }
 
         if (token.CreationTime.HasExceeded(token.Lifetime, timeProvider.GetUtcNow().UtcDateTime))
         {
-            LogError("Token expired.");
+            LogInformation("Token expired.");
 
             await referenceTokenStore.RemoveReferenceTokenAsync(tokenHandle, ct);
             return Invalid(OidcConstants.ProtectedResourceErrors.ExpiredToken);
@@ -375,7 +375,7 @@ internal class TokenValidator(
 
         if (client == null)
         {
-            LogError($"Client deleted or disabled: {token.ClientId}");
+            LogInformation($"Client deleted or disabled: {token.ClientId}");
             return Invalid(OidcConstants.ProtectedResourceErrors.InvalidToken);
         }
 
@@ -434,7 +434,7 @@ internal class TokenValidator(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Malformed JWT token: {exception}", ex.Message);
+            _logger.LogInformation(ex, "Malformed JWT token: {exception}", ex.Message);
             return null;
         }
     }
@@ -445,7 +445,7 @@ internal class TokenValidator(
         Error = error
     };
 
-    private void LogError(string message) => _logger.LogError("{Message}:{@logMessage}", message, _log);
+    private void LogInformation(string message) => _logger.LogInformation("{Message}:{@logMessage}", message, _log);
 
     private void LogSuccess() => _logger.LogDebug("Token validation success:{@logMessage}", _log);
 }

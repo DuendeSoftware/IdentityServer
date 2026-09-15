@@ -2,6 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
+using Duende.IdentityModel;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
@@ -54,12 +55,8 @@ public static class HttpContextExtensions
     /// </summary>
     /// <param name="context">The current HTTP context.</param>
     /// <param name="logoutMessage">The logout message, if one exists.</param>
-    /// <param name="logoutId">An identifier used to correlate SAML logout session tracking.
-    /// When present and downstream SAML SPs exist, this is stored in
-    /// <see cref="LogoutNotificationContext.SamlLogoutId"/> so that the
-    /// <c>EndSessionRequestValidator</c> can create a <c>SamlLogoutSession</c> to
-    /// track SP logout responses.</param>
-    internal static async Task<string> GetIdentityServerSignoutFrameCallbackUrlAsync(this HttpContext context, LogoutMessage logoutMessage = null, string logoutId = null)
+    /// <param name="samlLogoutCorrelationId">An optional identifier used to correlate SAML logout responses.</param>
+    internal static async Task<string> GetIdentityServerSignoutFrameCallbackUrlAsync(this HttpContext context, LogoutMessage logoutMessage = null, string samlLogoutCorrelationId = null)
     {
         var userSession = context.RequestServices.GetRequiredService<IUserSession>();
         var user = await userSession.GetUserAsync(context.RequestAborted);
@@ -91,7 +88,9 @@ public static class HttpContextExtensions
                     ClientIds = clientIds,
                     SamlSessions = samlSessions,
                     SamlInitiatingServiceProviderEntityId = logoutMessage.SamlServiceProviderEntityId,
-                    SamlLogoutId = samlSessions.Count > 0 ? logoutId : null
+                    SamlLogoutId = samlSessions.Count > 0
+                        ? logoutMessage.SamlLogoutCorrelationId ?? CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)
+                        : null
                 };
             }
         }
@@ -111,7 +110,7 @@ public static class HttpContextExtensions
                     SessionId = await userSession.GetSessionIdAsync(context.RequestAborted),
                     ClientIds = clientIds,
                     SamlSessions = samlSessions,
-                    SamlLogoutId = samlSessions.Count > 0 ? logoutId : null
+                    SamlLogoutId = samlSessions.Count > 0 ? samlLogoutCorrelationId ?? CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex) : null
                 };
             }
         }

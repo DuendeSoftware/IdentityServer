@@ -171,16 +171,17 @@ public class SamlSingleLogoutCallbackEndpointTests
         var logoutMessage = new LogoutMessage
         {
             SamlServiceProviderEntityId = sp.EntityId,
-            SamlLogoutRequestId = "_abc123"
+            SamlLogoutRequestId = "_abc123",
+            SamlLogoutCorrelationId = "test-correlation-id"
         };
         var messageStore = Fixture.Get<IMessageStore<LogoutMessage>>();
         var logoutId = await messageStore.WriteAsync(new Message<LogoutMessage>(logoutMessage, DateTime.UtcNow), _ct);
 
-        // Store a logout session keyed by the actual logoutId, with one expected SP response recorded as success
+        // Store a logout session keyed by the SAML logout correlation id, with one expected SP response recorded as success
         var sessionStore = Fixture.Get<ISamlLogoutSessionStore>();
         var session = new SamlLogoutSession
         {
-            LogoutId = logoutId,
+            LogoutId = "test-correlation-id",
             ExpectedResponses = new Dictionary<string, ExpectedSpLogout>
             {
                 ["_req-sp2"] = new("https://sp2.example.com")
@@ -212,7 +213,8 @@ public class SamlSingleLogoutCallbackEndpointTests
         var logoutMessage = new LogoutMessage
         {
             SamlServiceProviderEntityId = sp.EntityId,
-            SamlLogoutRequestId = "_abc123"
+            SamlLogoutRequestId = "_abc123",
+            SamlLogoutCorrelationId = "test-correlation-id"
         };
         var messageStore = Fixture.Get<IMessageStore<LogoutMessage>>();
         var logoutId = await messageStore.WriteAsync(new Message<LogoutMessage>(logoutMessage, DateTime.UtcNow), _ct);
@@ -221,7 +223,7 @@ public class SamlSingleLogoutCallbackEndpointTests
         var sessionStore = Fixture.Get<ISamlLogoutSessionStore>();
         var session = new SamlLogoutSession
         {
-            LogoutId = logoutId,
+            LogoutId = "test-correlation-id",
             ExpectedResponses = new Dictionary<string, ExpectedSpLogout>
             {
                 ["_req-sp2"] = new("https://sp2.example.com")
@@ -253,7 +255,8 @@ public class SamlSingleLogoutCallbackEndpointTests
         var logoutMessage = new LogoutMessage
         {
             SamlServiceProviderEntityId = sp.EntityId,
-            SamlLogoutRequestId = "_abc123"
+            SamlLogoutRequestId = "_abc123",
+            SamlLogoutCorrelationId = "test-correlation-id"
         };
         var messageStore = Fixture.Get<IMessageStore<LogoutMessage>>();
         var logoutId = await messageStore.WriteAsync(new Message<LogoutMessage>(logoutMessage, DateTime.UtcNow), _ct);
@@ -261,7 +264,7 @@ public class SamlSingleLogoutCallbackEndpointTests
         var sessionStore = Fixture.Get<ISamlLogoutSessionStore>();
         var session = new SamlLogoutSession
         {
-            LogoutId = logoutId,
+            LogoutId = "test-correlation-id",
             ExpectedResponses = new Dictionary<string, ExpectedSpLogout>
             {
                 ["_req-sp2"] = new("https://sp2.example.com")
@@ -319,7 +322,8 @@ public class SamlSingleLogoutCallbackEndpointTests
         var logoutMessage = new LogoutMessage
         {
             SamlServiceProviderEntityId = sp.EntityId,
-            SamlLogoutRequestId = "_abc123"
+            SamlLogoutRequestId = "_abc123",
+            SamlLogoutCorrelationId = "test-correlation-id"
         };
         var messageStore = Fixture.Get<IMessageStore<LogoutMessage>>();
         var logoutId = await messageStore.WriteAsync(new Message<LogoutMessage>(logoutMessage, DateTime.UtcNow), _ct);
@@ -327,7 +331,7 @@ public class SamlSingleLogoutCallbackEndpointTests
         var sessionStore = Fixture.Get<ISamlLogoutSessionStore>();
         var session = new SamlLogoutSession
         {
-            LogoutId = logoutId,
+            LogoutId = "test-correlation-id",
             ExpectedResponses = new Dictionary<string, ExpectedSpLogout>
             {
                 ["_req-sp2"] = new("https://sp2.example.com")
@@ -341,8 +345,8 @@ public class SamlSingleLogoutCallbackEndpointTests
         // Act
         await Fixture.NonRedirectingClient.GetAsync($"/Saml2/SLO/Callback?logoutId={logoutId}", _ct);
 
-        // Assert — session should be removed from the store
-        var remaining = await sessionStore.GetByLogoutIdAsync(logoutId, _ct);
+        // Assert - session should be removed from the store
+        var remaining = await sessionStore.GetByLogoutIdAsync("test-correlation-id", _ct);
         remaining.ShouldBeNull();
     }
 

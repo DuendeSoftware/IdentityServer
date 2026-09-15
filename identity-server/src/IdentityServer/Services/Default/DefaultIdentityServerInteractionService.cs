@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using Duende.IdentityModel;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
@@ -102,18 +103,22 @@ internal class DefaultIdentityServerInteractionService : IIdentityServerInteract
     {
         using var activity = Tracing.ServiceActivitySource.StartActivity("DefaultIdentityServerInteractionService.GetLogoutContext");
 
-        var msg = await _logoutMessageStore.ReadAsync(logoutId, ct);
-        var iframeUrl = await _context.HttpContext.GetIdentityServerSignoutFrameCallbackUrlAsync(msg?.Data, logoutId);
+        // The protected value passed in (and returned from CreateLogoutContextAsync) is a handle
+        // referencing the persisted LogoutMessage in the message store, not a SAML correlation ID.
+        var logoutMessageHandle = logoutId;
+
+        var msg = await _logoutMessageStore.ReadAsync(logoutMessageHandle, ct);
+        var iframeUrl = await _context.HttpContext.GetIdentityServerSignoutFrameCallbackUrlAsync(msg?.Data);
         var logoutRequest = new LogoutRequest(iframeUrl, msg?.Data);
 
-        // For SAML-initiated logouts, append logoutId to PostLogoutRedirectUri so the
-        // SingleLogoutCallbackEndpoint can retrieve the logout session from the store.
-        // The logoutId cannot be embedded in the stored LogoutMessage itself because the
-        // message store generates the ID from the content (chicken-and-egg).
+        // For SAML-initiated logouts, append the logout message handle to PostLogoutRedirectUri so the
+        // SingleLogoutCallbackEndpoint can retrieve the logout message (and its SAML sessions) from the store.
+        // The SAML logout correlation ID lives inside the stored LogoutMessage itself and is routed
+        // separately into LogoutNotificationContext.SamlLogoutId.
         if (logoutRequest.SamlServiceProviderEntityId != null && logoutRequest.PostLogoutRedirectUri != null)
         {
             logoutRequest.PostLogoutRedirectUri = logoutRequest.PostLogoutRedirectUri
-                .AddQueryString(_options.UserInteraction.LogoutIdParameter, logoutId!);
+                .AddQueryString(_options.UserInteraction.LogoutIdParameter, logoutMessageHandle!);
         }
 
         return logoutRequest;
@@ -137,7 +142,12 @@ internal class DefaultIdentityServerInteractionService : IIdentityServerInteract
                     SubjectId = user.GetSubjectId(),
                     SessionId = sid,
                     ClientIds = clientIds,
-                    SamlSessions = samlSessions
+                    SamlSessions = samlSessions,
+                    // Assign a correlation ID at creation time when there are downstream SAML sessions
+                    // to notify, so the SAML logout session store can track SP responses.
+                    SamlLogoutCorrelationId = samlSessions.Count > 0
+                        ? CryptoRandom.CreateUniqueId(16, CryptoRandom.OutputFormat.Hex)
+                        : null
                 }, _timeProvider.GetUtcNow().UtcDateTime);
                 var id = await _logoutMessageStore.WriteAsync(msg, ct);
                 return id;

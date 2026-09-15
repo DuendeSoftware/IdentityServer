@@ -125,7 +125,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var store = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = null,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var context = CreateGetContext(logoutId: "test-logout-id");
         var endpoint = CreateEndpoint(messageStore: store);
@@ -143,7 +144,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var store = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = "https://unknown.example.com",
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var context = CreateGetContext(logoutId: "test-logout-id");
         var endpoint = CreateEndpoint(messageStore: store);
@@ -161,7 +163,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var store = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var context = CreateGetContext(logoutId: "test-logout-id");
         var endpoint = CreateEndpoint(
@@ -183,7 +186,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var store = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var context = CreateGetContext(logoutId: "test-logout-id");
         var endpoint = CreateEndpoint(messageStore: store);
@@ -217,7 +221,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var messageStore = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var responseGenerator = new StubSloResponseGenerator();
         var context = CreateGetContext(logoutId: "test-logout-id");
@@ -254,7 +259,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var messageStore = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var responseGenerator = new StubSloResponseGenerator();
         var context = CreateGetContext(logoutId: "test-logout-id");
@@ -291,7 +297,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var messageStore = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var responseGenerator = new StubSloResponseGenerator();
         var context = CreateGetContext(logoutId: "test-logout-id");
@@ -313,7 +320,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var messageStore = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var responseGenerator = new StubSloResponseGenerator();
         var context = CreateGetContext(logoutId: "test-logout-id");
@@ -344,7 +352,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var messageStore = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var responseGenerator = new StubSloResponseGenerator();
         var context = CreateGetContext(logoutId: "test-logout-id");
@@ -379,7 +388,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var messageStore = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var context = CreateGetContext(logoutId: "test-logout-id");
         var endpoint = CreateEndpoint(
@@ -411,7 +421,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var messageStore = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var responseGenerator = new StubSloResponseGenerator();
         var context = CreateGetContext(logoutId: "test-logout-id");
@@ -447,7 +458,8 @@ public sealed class SingleLogoutCallbackEndpointTests
         var messageStore = CreateMessageStoreWithMessage(new LogoutMessage
         {
             SamlServiceProviderEntityId = SpEntityId,
-            SamlLogoutRequestId = "_req-id"
+            SamlLogoutRequestId = "_req-id",
+            SamlLogoutCorrelationId = "test-logout-id"
         });
         var responseGenerator = new StubSloResponseGenerator();
         var context = CreateGetContext(logoutId: "test-logout-id");
